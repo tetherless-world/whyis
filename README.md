@@ -1,5 +1,5 @@
 # Graphene
-Graphene is a nano-scale knowledge graph publishing, management, and analysis framework.
+Graphene is a nano-scale knowledge graph publishing, management, and analysis framework. Check back soon for more details.
 
 # Nano-scale?
 
