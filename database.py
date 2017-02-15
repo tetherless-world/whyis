@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from flask.ext import ld
+import flask_ld as ld
 from rdflib import *
 
 def engine_from_config(config, prefix):
