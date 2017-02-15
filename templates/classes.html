@@ -1,0 +1,86 @@
+
+{% macro render_class(top_class, curr_class) %}
+
+  {% for s in sort_by(curr_class.subjects(ns.RDFS.subClassOf), ns.RDFS.label) %}
+    , {
+      "type" : "OntologyClass",
+      "label" : "{{s.value(ns.RDFS.label)}}",
+      "class" : "{{s.value(ns.RDFS.label)}}",
+      "superClass" : "{{curr_class.value(ns.RDFS.label)}}",
+      "topClass" : "{{top_class.value(ns.RDFS.label)}}",
+      {% if s.value(ns.skos.definition) %}
+      "definition" : "{{s.value(ns.skos.definition).replace('"','\"').strip()}}",
+      "definitionType" : [
+          {% for defn in s[ns.hbgd.hasDefinitionType] %}"{{defn}}"{% if not loop.last %},{% endif %}{% endfor %}
+      ],
+      {% endif %}
+      "classView" : "{{s.identifier}}",
+      "raisedBy" : [
+        {% for q in s.subjects(ns.dc.subject) %}
+          "{{q.value(ns.dc.title)}}"
+          {% if not loop.last %} ,
+          {% endif %}
+        {% endfor %}
+       ]
+    } ,
+
+    {
+       "type" : "ClassHierarchy",
+       "label" : "{{s.value(ns.RDFS.label)}}",
+       "subClassOf" : "{{curr_class.value(ns.RDFS.label)}}"
+    }
+
+    {{render_class(top_class, s)}}
+  {% endfor %}
+
+{%- endmacro %}
+
+{
+    "types": {
+      "OntologyClass" : {
+        "pluralLabel" : "OntologyClasses"
+      },
+      "Question" : {
+        "pluralLabel" : "Questions",
+        "valueType": "item"
+      }
+    },
+    "items" : [
+
+{% block content %}
+
+  {% for c in top_classes %}
+    {% if not loop.first %}
+    ,
+    {% endif %}
+    {
+      "type"  : "OntologyClass",
+      "label" : "{{c.value(ns.RDFS.label)}}",
+      "class" : "{{c.value(ns.RDFS.label)}}",
+      "superClass" : "None",
+      "topClass" : "{{c.value(ns.RDFS.label)}}",
+      "definition" : "{{c.value(ns.skos.definition)}}",
+      "classView" : "{{c.identifier}}"
+    } ,
+    {
+       "type" : "ClassHierarchy",
+       "label" : "{{c.value(ns.RDFS.label)}}"
+    }
+
+    {{ render_class(c, c) }}
+
+  {% endfor %}
+
+  {% for q in questions %}
+    ,
+    {
+      "type" : "Question",
+      "label" : "{{q.value(ns.dc.title)}}",
+      "link" : "<p><a href='{{q}}'>{{q.value(ns.dc.title)}}</a></p>"
+    }
+    {% endfor %}
+
+{% endblock %}
+
+     ]
+}

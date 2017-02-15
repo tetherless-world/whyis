@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Request an Account{% endblock %}
+
+{% block content %}
+<form class="form-horizontal" method="POST" action="{{ url_for('request_account') }}">
+  {{ form.csrf_token }}
+  <div class="form-group">
+    <label class="col-sm-3 control-label">{{ form.givenName.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.givenName() }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.givenName.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label">{{ form.familyName.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.familyName() }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.familyName.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label">{{ form.email.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.email() }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.email.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label">{{ form.purpose.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.purpose(rows=5,cols=40) }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.purpose.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-4">
+      {{ form.recaptcha }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.recaptcha.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-3 col-sm-10">
+      <input type="submit" class="btn btn-default"></button>
+      <p class="text-danger">* Field is required.</p>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

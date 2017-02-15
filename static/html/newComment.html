@@ -1,0 +1,27 @@
+<div class="form-horizontal">
+  <div class="form-group">
+    <label class="sr-only" for="commentArea">{{verb}}</label>
+    <div class="col-xs-9">
+      <textarea id="commentArea" class="form-control input-sm" placeholder="{{verb}}" data-ng-model="comment['http://www.w3.org/ns/prov#value']" rows="{{comment['http://www.w3.org/ns/prov#value'].length == 0 ? 1 : 4}}"></textarea>
+    </div>
+    <div class="col-xs-1">
+      <button type="submit" data-ng-click="save()" class="btn btn-default">
+        <span class="sr-only">{{verb}}</span>
+        <span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!--<div class="panel panel-default">
+  <div class="panel-default">
+    <textarea class="form-control input-sm"  placeholder="{{verb}}" data-ng-model="comment['http://www.w3.org/ns/prov#value']" rows="{{comment['http://www.w3.org/ns/prov#value'].length == 0 ? 1 : 4}}"></textarea>
+  </div>
+  <div class="panel-footer">
+    Add Comment
+    <button class="pull-right btn btn-default" data-ng-click="save()">
+      <span class="sr-only">{{verb}}</span>
+      <span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+    </button>
+  </div>
+</div>-->

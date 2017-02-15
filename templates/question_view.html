@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{this.value(ns.RDFS.label)}}{% endblock %}
+{% block subtitle %}
+{% for type in this[ns.RDF.type] %}
+{% if type[ns.RDFS.subClassOf:ns.hbgd.Question] %}
+<br/>{{type.value(ns.RDFS.label)}}
+{% endif %}
+{% endfor %}
+{% endblock %}
+{% block content %}
+<blockquote><p>{{this.value(ns.prov.value) }}</p></blockquote>
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Classes</h2>
+      </div>
+      <ul class="list-group">
+        {% for class in this.subjects(ns.hbgd.raisedBy) %}
+        <li class="list-group-item">
+        <a style="font-weight:bold" href="{{class.identifier}}">{{class.value(ns.RDFS.label)}}</a>
+        {% if class.value(ns.skos.definition) %}{{class.value(ns.skos.definition)}}{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Details</h2>
+      </div>
+      <div class="panel-body">
+        <dl class="dl-horizontal">
+          <dt>See also</dt>
+          {% for article in this[ns.RDFS.seeAlso] %}
+          <dd>
+            <a href="{{article.identifier}}">{{article.value(ns.RDFS.label) or article.identifier}}</a>
+          </dd>
+          {% endfor %}
+        </dl>
+        <dl class="dl-horizontal clearfix">
+          <dt>References</dt>
+          <dd>
+          {% for ref in this[ns.dc.references] %}
+            <p><a href="{{ref.identifier}}">{{ref.value(ns.RDFS.label) or ref.identifier}}</a></p>
+          {% endfor %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Related Questions</h2>
+      </div>
+      <div class="panel-body">
+        {% if this[ns.RDF.type:ns.hbgd.SubQuestion] %}
+        <dl class="dl-horizontal clearfix">
+          <dt>Prioritized</dt>
+          <dd>
+            {% for q in this[ns.skos.related] %}
+            {% if q[ns.RDF.type:ns.hbgd.PrioritizedQuestion] %}
+            <p><a href="{{q.identifier}}">{{q.value(ns.RDFS.label) or q.identifier}}</a></p>
+            {% endif %}
+            {% endfor %}
+          </dd>
+        </dl>
+        {% endif %}
+        <dl class="dl-horizontal clearfix">
+          <dt>Sub Questions</dt>
+          <dd>
+            {% for q in this[ns.skos.related] %}
+            {% if q[ns.RDF.type:ns.hbgd.SubQuestion] %}
+            <p><a href="{{q.identifier}}">{{q.value(ns.RDFS.label) or q.identifier}}</a></p>
+            {% endif %}
+            {% endfor %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

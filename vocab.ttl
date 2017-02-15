@@ -1,0 +1,459 @@
+@prefix : <http://vocab.rpi.edu/graphene/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sio: <http://semanticscience.org/resource/> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix auth: <http://vocab.tw.rpi.edu/auth/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
+@base <http://vocab.rpi.edu/graphene/> .
+@prefix graphene: <http://vocab.rpi.edu/graphene/> .
+
+<http://vocab.rpi.edu/graphene/> rdf:type owl:Ontology .
+
+
+#################################################################
+#
+#    Annotation properties
+#
+#################################################################
+
+
+###  http://purl.org/dc/terms/description
+
+dc:description rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/fieldName
+
+flaskld:fieldName rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/hasField
+
+flaskld:hasField rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/hideField
+
+flaskld:hideField rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/key
+
+flaskld:key rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/owner
+
+flaskld:owner rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/prefix
+
+flaskld:prefix rdf:type owl:AnnotationProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/visibleTo
+
+flaskld:visibleTo rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.w3.org/2004/02/skos/core#prefLabel
+
+skos:prefLabel rdf:type owl:AnnotationProperty .
+
+
+
+
+
+#################################################################
+#
+#    Object Properties
+#
+#################################################################
+
+
+###  http://vocab.rpi.edu/flaskld/hasOwner
+
+flaskld:hasOwner rdf:type owl:ObjectProperty ;
+                 
+                 rdfs:range prov:Agent .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hasRole
+
+auth:hasRole rdf:type owl:ObjectProperty ;
+             
+             rdfs:label "roles" ;
+             
+             flaskld:fieldName "roles" ;
+             
+             rdfs:subPropertyOf owl:topObjectProperty ;
+             
+             rdfs:range prov:Role .
+
+
+
+###  http://www.nanopub.org/nschema#hasAssertion
+
+np:hasAssertion rdf:type owl:FunctionalProperty ,
+                         owl:ObjectProperty ;
+                
+                rdfs:range np:Assertion ;
+                
+                rdfs:domain np:Nanopublication .
+
+
+
+###  http://www.nanopub.org/nschema#hasProvenance
+
+np:hasProvenance rdf:type owl:FunctionalProperty ,
+                          owl:ObjectProperty ;
+                 
+                 rdfs:domain np:Nanopublication ;
+                 
+                 rdfs:range np:Provenance .
+
+
+
+###  http://www.nanopub.org/nschema#hasPublicationInfo
+
+np:hasPublicationInfo rdf:type owl:FunctionalProperty ,
+                               owl:ObjectProperty ;
+                      
+                      rdfs:domain np:Nanopublication ;
+                      
+                      rdfs:range np:PublicationInfo .
+
+
+
+###  http://www.w3.org/2000/01/rdf-schema#seeAlso
+
+rdfs:seeAlso rdf:type owl:ObjectProperty ;
+             
+             rdfs:subPropertyOf owl:topObjectProperty .
+
+
+
+
+
+#################################################################
+#
+#    Data properties
+#
+#################################################################
+
+
+###  http://purl.org/dc/terms/description
+
+dc:description rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty .
+
+
+
+###  http://purl.org/dc/terms/identifier
+
+dc:identifier rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty ;
+              
+              flaskld:fieldName "identifier" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/active
+
+auth:active rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            
+            rdfs:label "active" ;
+            
+            flaskld:fieldName "active" ;
+            
+            rdfs:range xsd:boolean .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/confirmed
+
+auth:confirmed rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty ;
+               
+               rdfs:label "confirmed" ;
+               
+               flaskld:fieldName "confirmed_at" ;
+               
+               rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/email
+
+auth:email rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty ;
+           
+           rdfs:label "email address" ;
+           
+           flaskld:fieldName "email" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadCurrentLogin
+
+auth:hadCurrentLogin rdf:type owl:DatatypeProperty ,
+                              owl:FunctionalProperty ;
+                     
+                     rdfs:label "current login at" ;
+                     
+                     flaskld:fieldName "current_login_at" ;
+                     
+                     rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadCurrentLoginIP
+
+auth:hadCurrentLoginIP rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty ;
+                       
+                       rdfs:label "current login IP" ;
+                       
+                       flaskld:fieldName "current_login_ip" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLastLogin
+
+auth:hadLastLogin rdf:type owl:DatatypeProperty ,
+                           owl:FunctionalProperty ;
+                  
+                  rdfs:label "last login" ;
+                  
+                  flaskld:fieldName "last_login_at" ;
+                  
+                  rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLastLoginIP
+
+auth:hadLastLoginIP rdf:type owl:DatatypeProperty ,
+                             owl:FunctionalProperty ;
+                    
+                    rdfs:label "last login IP" ;
+                    
+                    flaskld:fieldName "last_login_ip" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLoginCount
+
+auth:hadLoginCount rdf:type owl:DatatypeProperty ,
+                            owl:FunctionalProperty ;
+                   
+                   rdfs:label "login count" ;
+                   
+                   flaskld:fieldName "login_count" ;
+                   
+                   rdfs:range xsd:integer .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/passwd
+
+auth:passwd rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            
+            rdfs:label "password" ;
+            
+            flaskld:fieldName "password" .
+
+
+
+###  http://www.w3.org/2000/01/rdf-schema#label
+
+rdfs:label rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty .
+
+
+
+###  http://xmlns.com/foaf/0.1/familyName
+
+foaf:familyName rdf:type owl:DatatypeProperty ,
+                         owl:FunctionalProperty ;
+                
+                rdfs:label "last name" ;
+                
+                flaskld:fieldName "familyName" .
+
+
+
+###  http://xmlns.com/foaf/0.1/givenName
+
+foaf:givenName rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty ;
+               
+               rdfs:label "first name" ;
+               
+               flaskld:fieldName "givenName" .
+
+
+
+###  http://xmlns.com/foaf/0.1/mbox
+
+foaf:mbox rdf:type owl:DatatypeProperty ,
+                   owl:FunctionalProperty .
+
+
+
+
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+
+###  http://vocab.rpi.edu/graphene/Graph
+
+:Graph rdf:type owl:Class ;
+       
+       flaskld:prefix "role" ;
+       
+       flaskld:hasField dc:description ;
+       
+       flaskld:key rdfs:label ;
+       
+       flaskld:hasField rdfs:label .
+
+
+
+###  http://www.nanopub.org/nschema#Assertion
+
+np:Assertion rdf:type owl:Class ;
+             
+             rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.nanopub.org/nschema#Nanopublication
+
+np:Nanopublication rdf:type owl:Class .
+
+
+
+###  http://www.nanopub.org/nschema#Provenance
+
+np:Provenance rdf:type owl:Class ;
+              
+              rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.nanopub.org/nschema#PublicationInfo
+
+np:PublicationInfo rdf:type owl:Class ;
+                   
+                   rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.w3.org/2002/07/owl#Ontology
+
+owl:Ontology rdf:type owl:Class ;
+             
+             rdfs:subClassOf :Graph .
+
+
+
+###  http://www.w3.org/2004/03/trix/rdfg-1/Graph
+
+rdfg:Graph rdf:type owl:Class .
+
+
+
+###  http://www.w3.org/ns/prov#Agent
+
+prov:Agent rdf:type owl:Class ;
+           
+           rdfs:label "User" ;
+           
+           flaskld:prefix "user" ;
+           
+           flaskld:hasField dc:identifier ;
+           
+           flaskld:key dc:identifier ;
+           
+           flaskld:hasField auth:active ,
+                            auth:confirmed ,
+                            auth:email ,
+                            auth:hadCurrentLogin ,
+                            auth:hadCurrentLoginIP ,
+                            auth:hadLastLogin ,
+                            auth:hadLastLoginIP ,
+                            auth:hadLoginCount ,
+                            auth:hasRole ,
+                            auth:passwd ;
+           
+           flaskld:hideField auth:passwd ;
+           
+           flaskld:hasField foaf:familyName ,
+                            foaf:givenName .
+
+
+
+###  http://www.w3.org/ns/prov#Role
+
+prov:Role rdf:type owl:Class ;
+          
+          flaskld:prefix "role" ;
+          
+          flaskld:key rdfs:label ;
+          
+          flaskld:hasField rdfs:label .
+
+graphene:hasView dc:identifier "view".
+
+graphene:hasDownload dc:identifer "download";
+  rdfs:subPropertyOf graphene:hasView.
+
+rdfs:Resource graphene:hasView "resource_view.html".
+
+#owl:Class rdfs:label "Class";
+#    graphene:hasView "class_view.html".
+
+#owl:Ontology rdfs:label "Ontology";
+#    graphene:hasView "ontology_view.html".
+
+
+#################################################################
+#
+#    Annotations
+#
+#################################################################
+
+
+rdfs:label flaskld:fieldName "name" .
+
+
+
+
+###  Generated by the OWL API (version 3.5.1) http://owlapi.sourceforge.net
+

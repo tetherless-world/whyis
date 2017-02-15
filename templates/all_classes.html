@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% macro render_reference(ref) %}
+
+{{ref.value(ns.dc.creator)}}.
+<em>{{ref.value(ns.dc.title)}}</em>,
+{{ref.value(ns.dc.bibliographicCitation)}}
+{% for also in ref[ns.RDFS.seeAlso] %}
+<a href="{{also.identifier}}">
+{% if also[ns.RDF.type:ns.hbgd.PubMedCentralArticle] %}
+<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/3977009"></img>
+{% elif also[ns.RDF.type:ns.hbgd.PubMedArticle] %}
+<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/2318832"></img>
+{% endif %}
+</a>
+{% endfor %}
+
+{% endmacro %}
+
+{% macro render_definition(def) %}
+
+<div class="panel panel-default {% if def[ns.RDF.type:ns.hbgd.UnreviewedDefinition] %}panel-warning{% endif %} {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}panel-primary{% endif %}" >
+  <div class="panel-body">
+    <blockquote>
+      <p>{{def.value(ns.prov.value)}}</p>
+    </blockquote>
+
+    <dl class="dl-horizontal clearfix">
+      <dt>Status</dt>
+      {% for type in def[ns.RDF.type] %}
+      {% if type[ns.RDFS.subClassOf:ns.sio.definition] %}
+      <dd>{{type.value(ns.RDFS.label)}}</dd>
+      {% endif %}
+      {% endfor %}
+    </dl>
+    <div id="{{def.identifier.split('/')[-1]}}_more">
+    {% if def.value(ns.skos.editorialNote) %}
+    <dl class="dl-horizontal clearfix">
+      <dt>Editorial Notes</dt>
+      <dd>
+        {% for note in def[ns.skos.editorialNote] %}
+          <p>{{note}}</p>
+        {% endfor %}
+      </dd>
+    </dl>
+    {% endif %}
+    {% if def.value(ns.skos.example) %}
+    <dl class="dl-horizontal clearfix">
+      <dt>Appears in</dt>
+      <dd>
+        {% for ex in def[ns.skos.example] %}
+          {% if ex.value(ns.dc.title) %} <p>{{render_reference(ex)}}</p>{% endif %}
+        {% endfor %}
+      </dd>
+    </dl>
+    {% endif %}
+    {% if def.value(ns.RDFS.seeAlso) %}
+    <dl class="dl-horizontal clearfix">
+      <dt>See also</dt>
+      <dd>
+        {% for quoted in def[ns.RDFS.seeAlso] %}
+          <p><a href="{{quoted.identifier}}">{{quoted.value(ns.RDFS.label) or quoted.identifier}}</a></p>
+        {% endfor %}
+      </dd>
+    </dl>
+    {% endif %}
+    {% if def.value(ns.prov.wasAttributedTo) %}
+    <dl class="dl-horizontal clearfix" >
+      <dt>Attributed To</dt>
+      <dd>
+        {% for attrib in def[ns.prov.wasAttributedTo] %}
+          <p><a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
+        {% endfor %}
+      </dd>
+    </dl>
+    {% endif %}
+  </div>
+  </div>
+</div>
+{% endmacro %}
+
+
+{% block title %}All HBGDki Classes{% endblock %}
+{% block content %}
+<style>
+.HighRatingDefinition span.pull-right span:after {
+  content: " &#9733;&#9733;&#9733;";
+}
+.MediumRatingDefinition span.pull-right span:after {
+  content: " &#9733;&#9733;&#9734;";
+}
+.LowRatingDefinition span.pull-right span:after {
+  content: " &#9733;&#9734;&#9734;";
+}
+.PreferredDefinition span.status:before {
+  content: "Preferred";
+}
+.AlternateDefinition span.status:before {
+  content: "Alternate";
+}
+</style>
+
+<div class="jumbotron" style="color: #eee; background: url('/static/images/kidsrunning.png') no-repeat top center; background-size:cover">
+<div class="container" style="text-shadow: 0px 0px 20px black;">
+  <div class="row">
+  <div class="col-xs-5">
+  <h1 class="">HBGD Ontology</h1>
+    <p class="lead">The <em>Healthy Birth, Growth, and Development Ontology</em> helps HBGD<em>ki</em> ensure that the results of HBGD investigations can be translated into actionable interventions for healthy birth, growth and development.</p>
+  </div>
+  </div>
+</div>
+</div>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h1>Learn.<h1>
+        <p class="lead">An ontology is an organized collection of key terminology and concepts relevant to a particular domain of knowledge.</p>
+      </div>
+      <ul class="list-group">
+        <li class="list-group-item"><a href="https://basecamp.com/2491529/projects/7713467/messages/49051934?enlarge=188423386#attachment_188423386">Watch the ontology video.</a></li>
+        <li class="list-group-item"><a href="http://www.dataversity.net/introduction-to-ontologies/">Read "Introduction to Ontologies".</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h1>Explore.<h1>
+        <p class="lead">Our browser is designed for easy access to terms and definitions which are grounded with links to other resources.</p>
+      </div>
+      <ul class="list-group">
+        <li class="list-group-item"><a href="/ns/">See an overview of the ontology.</a></li>
+        <li class="list-group-item"><a href="/faceted/">Browse the ontology with facets.</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h1>Help.<h1>
+        <p class="lead">Help us refine our definitions and find new terms. Contact the Ontology Team for feedback or to request an account. 
+      </div>
+      <ul class="list-group">
+        <li class="list-group-item"><a href="/request_account">Request an account.</a></li>
+        <li class="list-group-item"><a href="/contact">Contact the Ontology Team.</a></li>
+      </ul>
+    </div>
+  </div>
+</div>  
+
+
+{% for this in classes %}
+<h1>{{this.value(ns.RDFS.label)}}</h1>
+
+              <h2>Definitions</h2>
+              <div class="PreferredDefinition">
+                {% for def in this[ns.hbgd.hasDefinition] %}
+                {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
+                {{ render_definition(def) }}
+                {% endif %}
+                {% endfor %}
+              </div>
+              <div class="AlternateDefinition">
+                {% for def in this[ns.hbgd.hasDefinition] %}
+                {% if not def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
+                {{ render_definition(def) }}
+                {% endif %}
+                {% endfor %}
+              </div>
+               <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Details</h2>
+                    </div>
+                    <div class="panel-body">
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Term</dt>
+                            <dd>{{this.value(ns.RDFS.label)}}</dd>
+                        </dl>
+                        {% if this.value(ns.skos.altLabel) %}
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Synonyms</dt>
+                            <dd>
+                              {% for term in this[ns.skos.altLabel] %}
+                              <p>{{term}}</p>
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        {% endif %}  
+                        {% if False %}  
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Prioritized Questions</dt>
+                            <dd>
+                              {% for question in this[ns.hbgd.raisedBy] %}
+                              {% if question[ns.RDF.type:ns.hbgd.PrioritizedQuestion] %}
+                              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
+                              {% endif %}
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Sub-Questions</dt>
+                            <dd>
+                              {% for question in this[ns.hbgd.raisedBy] %}
+                              {% if question[ns.RDF.type:ns.hbgd.SubQuestion] %}
+                              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
+                              {% endif %}
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        {% endif %}  
+                        {% if this.value(ns.cmo.hasPrimaryConcept) %}  
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Terminology Reference</dt>
+                            <dd>
+                              {% for concept in this[ns.cmo.hasPrimaryConcept] %}
+                              <p><a href="{{concept.identifier}}">{{concept.value(ns.skos.prefLabel) or concept.identifier}}</a></p>
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        {% endif %}  
+                        {% if this.value(ns.OWL.equivalentClass) %}  
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Equivalent To</dt>
+                            <dd>
+                              {% for concept in this[ns.OWL.equivalentClass] %}
+                              <p><a href="{{concept.identifier}}">{{concept.value(ns.RDFS.label) or concept.identifier}}</a></p>
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        {% endif %}  
+                        {% if this.value(ns.dc.reference) %}
+                        <dl class="dl-horizontal clearfix">
+                            <dt>References</dt>
+                            <dd>
+                              {% for reference in this[ns.dc.references] %}
+                              <p><a href="{{reference.identifier}}">{{reference.value(ns.RDFS.label) or reference.identifier}}</a></p>
+                              {% endfor %}
+                            </dd>
+                        </dl>
+                        {% endif %}  
+                        {% if this.value[ns.prov.wasAttributedTo] %}
+                        {% set attrib = this.value(ns.prov.wasAttributedTo) %}
+                        <dl class="dl-horizontal clearfix">
+                            <dt>Attributed to</dt>
+                            <dd>
+                                <a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.value(ns.dc.identifier) or  attrib.identifier}}</a>
+                            </dd>
+                        </dl>
+                        {%endif%}
+                    </div>
+                </div>
+              <h2>Related Classes</h2>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Super Classes</h2>
+                    </div>
+                    <ul class="list-group">
+                      {% for superClass in this[ns.RDFS.subClassOf] %}
+                        <li class="list-group-item">
+                          <a style="font-weight:bold" href="{{superClass.identifier}}">
+                            {{superClass.value(ns.RDFS.label)}}
+                            {% if not superClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+                            <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+                            {% endif %}
+                          </a>
+                          {% if superClass.value(ns.skos.definition) %}
+                          <span>{{superClass.value(ns.skos.definition)}}</span>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Sub Classes</h2>
+                    </div>
+                    <ul class="list-group">
+                      {% for subClass in this.subjects(ns.RDFS.subClassOf) %}
+                        <li class="list-group-item">
+                          <a style="font-weight:bold" href="{{subClass.identifier}}">
+                            {{subClass.value(ns.RDFS.label)}}
+                            {% if not subClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+                            <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+                            {% endif %}
+                          </a>
+                          {% if subClass.value(ns.skos.definition) %}
+                          <span>{{subClass.value(ns.skos.definition)}}</span>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                </div>
+{% endfor %}
+{%endblock%}

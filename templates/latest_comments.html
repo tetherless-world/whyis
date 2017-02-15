@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Latest Commentary{% endblock %}
+{% block content %}
+{% for entry in entries %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h2 class="panel-title">
+      {{entry['creator'].value(ns.foaf.givenName)}}
+      {{entry['creator'].value(ns.foaf.familyName)}}
+      commented on
+      <a href="{{entry['thing'].identifier}}">{{entry['thing'].value(ns.RDFS.label)}}</a>
+    </h2>
+  </div>
+  <div class="panel-body" data-ng-controller="CommentController">
+    <comments disable-commenting="true" resource="{{entry['thing'].identifier}}"/>
+  </div>
+</div>
+{% endfor %}
+
+{%endblock%}

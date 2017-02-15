@@ -1,0 +1,113 @@
+{% macro title() %}
+{% block title %}{% endblock %}
+{%- endmacro %}
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{ title() }} - {{ config['site_name'] }}</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    
+    <link rel="stylesheet" href="/static/css/graphene.css">
+
+    <style>
+      div.container {
+      width: 95%;
+      }
+      a:visited { 
+      color: #887ab7;
+      }
+    </style>
+    
+    {% block styles %}{% endblock %}
+    
+    <script>
+      LOD_PREFIX = '{{config.lod_prefix}}';
+{% if current_user and current_user.resUri %}
+      USER = { uri: '{{current_user.resUri}}', admin: '{{current_user.has_role('admin')}}' };
+{% else %}
+      USER = { }
+{% endif %}
+    </script>
+
+    <script src="/static/js/lib/jquery/dist/jquery.js"></script>
+
+    <script src="/static/js/lib/d3/d3.js"></script>
+    <script src="/static/js/lib/angular/angular.js"></script>
+    <script src="/static/js/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/static/js/lib/angular-sanitize/angular-sanitize.js"></script>
+    <script src="/static/js/graphene.js"></script>
+    
+
+  </head>
+  <body>
+    <nav class="navbar navbar-default" style="margin-bottom: 0px">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/" class="navbar-brand">Home</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if not current_user or current_user.is_anonymous %}
+            <li><a href="/login">Log in <span class="glyphicon glyphicon-log-in"></span></a></li>
+            {% else %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
+              <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="/logout">Log out</a></li>
+                <li><a href="/change">Change password</a></li>
+              </ul>
+            </li>
+            {% endif %}
+            {% if current_user and current_user.is_anonymous and current_user.is_authenticated %}
+            <li><a href="{{config['SECURITY_REGISTER_URL']}}">Register <span class="glyphicon glyphicon-log-in"></span></a></li>
+            {% endif %}
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+    <div class="container">
+      <div class="clearfix"></div>
+    </div>
+    {% block pageheader %}
+    <div class="container">
+      <div class="page-header">
+        <h1 property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small></h1>
+      </div>
+    </div>
+    {% endblock %}
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-info alert-{{category}} alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              {{message}}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}
+      {% endblock %}
+    </div>
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
+
+

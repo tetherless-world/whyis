@@ -1,0 +1,40 @@
+{% macro render_field_with_errors(field) %}
+  <div class="form-group">
+    <label for="{{field.id}}" class="col-sm-2 control-label">{{ field.label }}</label>
+    <div class="col-sm-4">
+      {{ field(class_='form-control', **kwargs)|safe }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in field.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro render_tabs(active) %}
+    <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="{% if active == 'login' %}active {% endif %}">
+      <a aria-controls="login" href="{{ config['SECURITY_LOGIN_URL'] }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}" role="tab">
+        Login
+      </a>
+    </li>
+    {% if current_user and current_user.is_anonymous() and current_user.is_authenticated() %}
+    <li role="presentation" class="{% if active == 'register' %}active{% endif %}">
+      <a href="{{ config['SECURITY_REGISTER_URL'] }}{% if 'next' in request.args %}?next={{ request.args.next|urlencode }}{% endif %}" aria-controls="register" role="tab" >Register</a>
+    </li>
+    {% endif %}
+    <li role="presentation" class="{% if active == 'forgot' %}active {% endif %}">
+      <a href="{{ config['SECURITY_RESET_URL'] }}" aria-controls="forgot" role="tab">Forgot Password</a>
+    </li>
+  </ul>
+{% endmacro %}  
+  
+{% macro render_field(field) %}
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-8">
+      {{ field(class_='btn btn-default', **kwargs)|safe }}
+    </div>
+  </div>
+{% endmacro %}

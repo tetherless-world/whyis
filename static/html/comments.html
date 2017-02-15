@@ -1,0 +1,81 @@
+<newcomment data-ng-if="current_user.uri" data-ng-hide="disableCommenting" verb="Add Comment..." comment="newComment" on-save="createComment(newComment)"/>
+
+<div data-ng-hide="disableCommenting || current_user.uri" class="alert alert-warning" role="alert">Please log in or register to comment.</div>
+
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" role="dialog" >
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">Are you sure you want to delete this comment?</div>
+      <div class="modal-footer">
+        <button class="btn btn-link" type="button" data-ng-click="delete(toDelete)" data-dismiss="modal" >
+          Yes
+        </button>
+        <button class="btn btn-link" type="button" data-ng-click="toDelete = null" data-dismiss="modal" >
+          No
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<div style="background-color: white">
+  <blockquote data-ng-repeat="comment in comments">
+    <div class="dropdown pull-right" data-ng-if="canEdit(comment)" data-ng-hide="comment.editing && !disableCommenting" >
+      <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <span class="glyphicon glyphicon-chevron-down"></span>
+      </button>
+      <ul class="dropdown-menu" >
+        <li><a href="#" data-ng-click="editComment(comment)">Edit</a></li>
+        <li><a href="#" data-ng-click="deleteComment(comment)">Delete</a></li>
+      </ul>
+    </div>
+
+    <div data-ng-if="comment.editing" >
+      <button type="button" class="close" aria-label="Cancel" data-ng-click="comment.editing = false"><span aria-hidden="true">&times;</span></button>
+      <newcomment verb="Edit Comment..." comment="comment.po" on-save="saveComment(comment)"/>
+    </div>
+    <div data-ng-hide="comment.editing" data-ng-bind-html="trust(comment.value('http://rdfs.org/sioc/ns#content'))"></div>
+    <a class="pull-right" data-ng-hide="current_user.uri == null || disableCommenting || comment.showReply"
+       style="font-size:0.6em" data-ng-hide="comment.showReply"
+       href="" data-ng-click="comment.showReply=true">Reply</a>
+    <footer>
+      <span data-ng-bind="comment.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
+      <span data-ng-bind="comment.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
+          (
+          <span data-ng-show="comment.value('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="comment.value('http://purl.org/dc/terms/modified') | date"/>
+          </span>
+          <span data-ng-hide="comment.value('http://purl.org/dc/terms/modified')" data-ng-bind="comment.value('http://purl.org/dc/terms/created') | date"/>)
+    </footer>
+      <div data-ng-hide="current_user.uri || disableCommenting">
+        <newcomment  data-ng-show="comment.showReply" verb="Reply..." comment="comment.newComment" on-save="createComment(comment.newComment)"/>
+      </div>
+    <div>
+      <blockquote style="font-size:0.8em" data-ng-repeat="reply in comment.values('http://rdfs.org/sioc/ns#has_reply')">
+        <div class="dropdown pull-right" data-ng-hide="reply.editing" data-ng-if="canEdit(reply) && !disableCommenting">
+          <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+          </button>
+          <ul class="dropdown-menu" >
+            <li><a href="#" data-ng-click="editComment(reply)">Edit</a></li>
+            <li><a href="#" data-ng-click="deleteComment(reply)">Delete</a></li>
+          </ul>
+        </div>
+        <div data-ng-if="reply.editing" >
+          <button type="button" class="close" aria-label="Cancel" data-ng-click="reply.editing = false">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <newcomment verb="Edit Reply..." comment="reply.po" on-save="saveComment(reply)"/>
+        </div>
+        <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.value('http://rdfs.org/sioc/ns#content'))"></div>
+
+        <footer>
+          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
+          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
+          (<span data-ng-show="reply.value('http://purl.org/dc/terms/modified')">Edited <span data-ng-bind="reply.value('http://purl.org/dc/terms/modified') | date"/></span><span data-ng-hide="reply.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.value('http://purl.org/dc/terms/created') | date"/>)
+        </footer>
+      </blockquote>
+    </div>
+  </blockquote>
+</div>

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% macro render_class(concept) %}
+<ul>
+  {% for s in sort_by(concept.subjects(ns.RDFS.subClassOf), ns.RDFS.label) %}
+  <li>
+     <a title="{{s.value(ns.skos.definition)}}" href="{{s.identifier}}">
+       {{s.value(ns.RDFS.label)}}
+       {% if not s[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+       <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+       {% endif %}
+     </a>
+     {{render_class(s)}}
+  </li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% block title %}{{this.value(ns.RDFS.label)}}{% endblock %}
+{% block content %}
+      <p property="dc:description">{{this.value(ns.dc.description)}}</p>
+      <div class="row">
+          
+        </div>
+        <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">HBGDki Prioritized Questions</h2>
+                    </div>
+                    <div class="panel-body">These research questions have been prioritized to as a starting point for developing the HBGD Ontology.</div>
+                    <ul class="list-group">
+                      {% for question in this[ns.dc.subject] %}
+                        <li class="list-group-item">
+                            <h4 ><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></h4>
+                            <p>{{question.value(ns.prov.value)}}</p>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        <div class="col-md-6">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">HBGDki Concepts</h2>
+            </div>
+            <ul class="list-group">
+              {% for c in top_classes %}
+                <li class="list-group-item">
+                    <a href="{{c.identifier}}">
+                        {{c.value(ns.RDFS.label)}}
+                        {% if not c[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+                        <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+                        {% endif %}
+                    </a>
+                    <span>{% if c.value(ns.skos.definition) %}{{c.value(ns.skos.definition)}}{% endif %}</span>
+                    {{ render_class(c) }}
+              </li>
+              {% endfor %}
+            </ul>
+        </div>
+     </div>
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<form class="form-horizontal" method="POST" action="{{ url_for('contact') }}">
+  {{ form.csrf_token }}
+  <div class="form-group">
+    <label class="col-sm-2 control-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.name() }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.name.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label">{{ form.email.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.email() }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.email.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label">{{ form.message.label }} <span class="text-danger">*</span></label>
+    <div class="col-sm-4">
+      {{ form.message(rows=10,cols=40) }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.message.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-4">
+      {{ form.recaptcha }}
+    </div>
+    <div class="col-sm-4">
+      {% for error in form.recaptcha.errors %}
+      <div class="alert alert-info alert-danger alert-dismissible" role="alert">{{error}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <input type="submit" class="btn btn-default"></button>
+      <p class="text-danger">* Field is required.</p>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

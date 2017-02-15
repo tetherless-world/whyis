@@ -1,0 +1,81 @@
+<newnanopub data-ng-if="current_user.uri" data-ng-hide="disableNanopubing" verb="Add Nanopub..." nanopub="newNanopub" on-save="createNanopub(newNanopub)"/>
+
+<div data-ng-hide="disableNanopubing || current_user.uri" class="alert alert-warning" role="alert">Please log in or register to nanopub.</div>
+
+<div class="modal fade" id="deleteNanopubModal" tabindex="-1" role="dialog" >
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">Are you sure you want to delete this nanopub?</div>
+      <div class="modal-footer">
+        <button class="btn btn-link" type="button" data-ng-click="delete(toDelete)" data-dismiss="modal" >
+          Yes
+        </button>
+        <button class="btn btn-link" type="button" data-ng-click="toDelete = null" data-dismiss="modal" >
+          No
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<div style="background-color: white">
+  <blockquote data-ng-repeat="nanopub in nanopubs">
+    <div class="dropdown pull-right" data-ng-if="canEdit(nanopub)" data-ng-hide="nanopub.editing && !disableNanopubing" >
+      <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <span class="glyphicon glyphicon-chevron-down"></span>
+      </button>
+      <ul class="dropdown-menu" >
+        <li><a href="#" data-ng-click="editNanopub(nanopub)">Edit</a></li>
+        <li><a href="#" data-ng-click="deleteNanopub(nanopub)">Delete</a></li>
+      </ul>
+    </div>
+
+    <div data-ng-if="nanopub.editing" >
+      <button type="button" class="close" aria-label="Cancel" data-ng-click="nanopub.editing = false"><span aria-hidden="true">&times;</span></button>
+      <newnanopub verb="Edit Nanopub..." nanopub="nanopub.po" on-save="saveNanopub(nanopub)"/>
+    </div>
+    <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.value('http://rdfs.org/sioc/ns#content'))"></div>
+    <a class="pull-right" data-ng-hide="current_user.uri == null || disableNanopubing || nanopub.showReply"
+       style="font-size:0.6em" data-ng-hide="nanopub.showReply"
+       href="" data-ng-click="nanopub.showReply=true">Reply</a>
+    <footer>
+      <span data-ng-bind="nanopub.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
+      <span data-ng-bind="nanopub.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
+          (
+          <span data-ng-show="nanopub.value('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="nanopub.value('http://purl.org/dc/terms/modified') | date"/>
+          </span>
+          <span data-ng-hide="nanopub.value('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.value('http://purl.org/dc/terms/created') | date"/>)
+    </footer>
+      <div data-ng-hide="current_user.uri || disableNanopubing">
+        <newnanopub  data-ng-show="nanopub.showReply" verb="Reply..." nanopub="nanopub.newNanopub" on-save="createNanopub(nanopub.newNanopub)"/>
+      </div>
+    <div>
+      <blockquote style="font-size:0.8em" data-ng-repeat="reply in nanopub.values('http://rdfs.org/sioc/ns#has_reply')">
+        <div class="dropdown pull-right" data-ng-hide="reply.editing" data-ng-if="canEdit(reply) && !disableNanopubing">
+          <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+          </button>
+          <ul class="dropdown-menu" >
+            <li><a href="#" data-ng-click="editNanopub(reply)">Edit</a></li>
+            <li><a href="#" data-ng-click="deleteNanopub(reply)">Delete</a></li>
+          </ul>
+        </div>
+        <div data-ng-if="reply.editing" >
+          <button type="button" class="close" aria-label="Cancel" data-ng-click="reply.editing = false">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <newnanopub verb="Edit Reply..." nanopub="reply.po" on-save="saveNanopub(reply)"/>
+        </div>
+        <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.value('http://rdfs.org/sioc/ns#content'))"></div>
+
+        <footer>
+          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
+          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
+          (<span data-ng-show="reply.value('http://purl.org/dc/terms/modified')">Edited <span data-ng-bind="reply.value('http://purl.org/dc/terms/modified') | date"/></span><span data-ng-hide="reply.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.value('http://purl.org/dc/terms/created') | date"/>)
+        </footer>
+      </blockquote>
+    </div>
+  </blockquote>
+</div>
