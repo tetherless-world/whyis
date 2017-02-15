@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl http://downloads.sourceforge.net/project/bigdata/bigdata/2.1.1/blazegraph.jar > blazegraph.jar
+curl -L http://downloads.sourceforge.net/project/bigdata/bigdata/2.1.1/blazegraph.jar > blazegraph.jar
 virtualenv --no-site-packages venv
 source venv/bin/activate
 pip install -r requirements/dev.txt
@@ -11,5 +11,6 @@ echo "  > java -jar blazegraph.jar &"
 echo ""
 echo "to start the RDF database (Blazegraph)."
 echo "And then run the following to start graphene:"
+echo ""
 echo "  > source venv/bin/activate"
 echo "  > python manage.py runserver"
