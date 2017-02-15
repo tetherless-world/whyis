@@ -70,8 +70,8 @@ Config = dict(
     ADMIN_EMAIL_RECIPIENTS = [],
     db_defaultGraph = LOD_PREFIX + '/',
     
-    db_queryEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
-    db_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
+    db_queryEndpoint = 'http://localhost:9999/blazegraph/sparql',
+    db_updateEndpoint = 'http://localhost:9999/blazegraph/sparql',
     LOGIN_USER_TEMPLATE = "auth/login.html",
 
 )
