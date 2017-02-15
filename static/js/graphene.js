@@ -342,7 +342,7 @@ $( function() {
         };
     });
 
-    app.factory('Resource', function() {
+    app.factory('Resource', ['listify', function(listify) {
         function resource (id, values) {
             var result = { 
                 "@id" : id 
@@ -357,20 +357,55 @@ $( function() {
                 result = this.resource.resources[id];
                 return result;
             };
-            result.resource.resources = {};
-            if (values['@graph']) {
-                values['@graph'].forEach(function(r) {
-                    result.resource(r['@id'], r);
-                });
-                delete values['@graph'];
+
+            result.values = function(p) {
+                if (!this[p]) this[p] = [];
+                if (!this[p].forEach) this[p] = [this[p]];
+                return this[p];
+            };
+            result.has = function(p, o) {
+                var hasP = result[p] && (!result.forEach || result[p].length > 0);
+                if ( o == null || hasP == false) {
+                    return hasP;
+                } else {
+                    return result.values(p).filter(function(value) {
+                        if (o['@id']) {
+                            return value['@id'] == o['@id'];
+                        }
+                        if (o['@value']) o = o['@value'];
+                        if (value['@value']) value = value['@value'];
+                        return o == value;
+                    });
+                }
             }
+            result.value = function(p) {
+                if (result.has(p)) {
+                    return result.values(p)[0];
+                }
+            }
+            result.add = function(p, o) {
+                result.values(p).push(o);
+            }
+            result.set = function(p, o) {
+                result.po[p] = [o];
+            }
+            result.del = function(p) {
+                delete this.po[p];
+            }
+            result.resource.resources = {};
             if (values) {
+                if (values['@graph']) {
+                    values['@graph'].forEach(function(r) {
+                        result.resource(r['@id'], r);
+                    });
+                    delete values['@graph'];
+                }
                 Object.assign(result, values);
             }
             return result;
         }
         return resource;
-    });
+    }]);
     
     app.factory('Graph', ['$http', 'listify', function($http, listify) {
         function Resource(uri, graph) {
@@ -554,23 +589,54 @@ $( function() {
         }
         function processNanopubs(response) {
             console.log(response);
-            var graphs = Resource({'@graph': response.data});
+            var graphs = Resource(null, {'@graph': response.data});
             var nanopubs = [];
+            var graphMap = {};
+            function nanopubComparator(a,b) {
+                return b.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'] -
+                    a.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'];
+            }
             graphs['@graph'].forEach(function(graph) {
-                nanopub.
+                graphMap[graph['@id']] = graph;
+                graph.resource.self = graph.resource(graph['@id']);
+                if (graph.resource.self.has('http://www.nanopub.org/nschema#hasAssertion')) {
+                    nanopubs.push(graph);
+                    graph.resource.assertion = graph.resource.self.value('http://www.nanopub.org/nschema#hasAssertion');
+                    graph.resource.provenance = graph.resource.self.value('http://www.nanopub.org/nschema#hasProvenance');
+                    graph.resource.pubinfo = graph.resource.self.value('http://www.nanopub.org/nschema#hasPublicationInfo');
+                    graph.resource.replies = [];
+                }
+            });
+            nanopubs.forEach(function(np) {
+                if (graphMap[np.resource.assertion['@id']]) {
+                    np.resource.assertion = graphMap[np.resource.assertion['@id']];
+                    np.resource.assertion = np.resource(np.resource.assertion['@id'],np.resource.assertion);
+                }
+                if (graphMap[np.resource.provenance['@id']]) {
+                    np.resource.provenance = graphMap[np.resource.provenance['@id']];
+                    np.resource.provenance = np.resource(np.resource.provenance['@id'],np.resource.provenance);
+                    np.resource.provenance.resource.assertion = np.resource.provenance.resource(np.resource.assertion['@id']);
+                }
+                if (graphMap[np.resource.pubinfo['@id']]) {
+                    np.resource.pubinfo = graphMap[np.resource.pubinfo['@id']];
+                    np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
+                    np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
+                    if (np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']) {
+                        var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']['@id']];
+                        parent.resource.replies.push(np);
+                        parent.resource.replies = parent.resource.replies.sort(nanopubComparator);
+                    }
+                }
             })
-            g.merge(response.data);
-            
-            var topNanopubs = g.ofType('http://www.nanopub.org/nschema#Nanopub')
-                .filter(function(nanopub) {
-                    return nanopub.value('http://rdfs.org/sioc/ns#reply_of') == null;
-                });
-            topNanopubs = topNanopubs.sort(function(a,b) {
-                return b.value('http://purl.org/dc/terms/created') - a.value('http://purl.org/dc/terms/created');
-            }).map(function(nanopub) {
-                nanopub.newNanopub = Nanopub(nanopub.value('http://semanticscience.org/resource/isAbout').uri, nanopub.uri);
+            var topNanopubs = nanopubs.filter(function(nanopub) {
+                return !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
+            });
+            topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
+                nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
+                                             nanopub['@id']);
                 return nanopub;
             });
+            console.log(topNanopubs);
             return topNanopubs;
         }
         Nanopub.list = function(about) {
@@ -617,7 +683,9 @@ $( function() {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
                 $scope.canEdit = function(nanopub) {
-                    return USER.admin == "True" || nanopub.value('http://www.w3.org/ns/prov#wasAttributedTo').uri == USER.uri;
+                    console.log( USER.uri, nanopub.resource.pubinfo);
+                    return USER.admin == "True";// ||
+                        //nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
                 };
                 $scope.$watch('resource', function(newval) {
                     if ($scope.about != null) {
@@ -638,12 +706,16 @@ $( function() {
                 };
                 $scope.saveNanopub = function(nanopub) {
                     Nanopub.update(nanopub.toJSON())
-                        .then(function() { return Nanopub.list($scope.resource) })
-                        .then($scope.update);
+                        .then(function() {
+                            location.reload();
+                            //return Nanopub.list($scope.resource)
+                        })
+                    //.then($scope.update);
                 };
                 $scope.createNanopub = function(nanopub) {
                     Nanopub.save(nanopub).then($scope.update).then(function() {
-                        nanopub['http://www.w3.org/ns/prov#value'] = '';
+                        location.reload();
+                        //nanopub['http://www.w3.org/ns/prov#value'] = '';
                     });
                 };
                 $scope.delete = function(nanopub) {

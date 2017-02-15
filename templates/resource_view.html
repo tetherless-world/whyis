@@ -15,7 +15,15 @@
   <div class="col-md-8">
     {{ summary_panel(this) }}
     {{ content(this) }}
-    <nanopubs resource="{{this.identifier}}"/>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Nanpublications for {{get_label(this)}}</h2>
+      </div>
+      <div class="panel-body">
+        <nanopubs resource="{{this.identifier}}"/>
+      </div>
+    </div>
   </div>
   <div class="col-md-4">
     {{ facts_panel(this) }}

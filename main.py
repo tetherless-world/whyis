@@ -320,6 +320,7 @@ select distinct ?uri ?name ?type ?score ?text where{
         }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
+            print result.serialize(format="trig")
             return result.resource(entity)
 
         self.get_entity = get_entity
@@ -340,6 +341,7 @@ select distinct ?uri ?name ?type ?score ?text where{
         @self.route('/about')
         @self.route('/<name>.<format>')
         @self.route('/<name>')
+        @self.route('/')
         @login_required
         def view(name=None, format=None, view=None):
             #print name
@@ -347,6 +349,8 @@ select distinct ?uri ?name ?type ?score ?text where{
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
                 entity = URIRef(request.args['uri'])
+            else:
+                entity = self.NS.local.Home
             content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
             if format is not None and format in extensions:
                 content_type = extensions[format]
@@ -507,7 +511,7 @@ values ?c { %s }
                 return False
 
             def _get_uri(self, ident):
-                return URIRef('%s/pub/%s'%(app.config['lod_prefix'], name, ident))
+                return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
 
             def get(self, ident):
                 uri = self._get_uri(ident)

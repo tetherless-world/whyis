@@ -1,6 +1,6 @@
 <newnanopub data-ng-if="current_user.uri" data-ng-hide="disableNanopubing" verb="Add Nanopub..." nanopub="newNanopub" on-save="createNanopub(newNanopub)"/>
 
-<div data-ng-hide="disableNanopubing || current_user.uri" class="alert alert-warning" role="alert">Please log in or register to nanopub.</div>
+<div data-ng-hide="disableNanopubing || current_user.uri" class="alert alert-warning" role="alert">Please log in or register to add knowledge.</div>
 
 <div class="modal fade" id="deleteNanopubModal" tabindex="-1" role="dialog" >
   <div class="modal-dialog modal-sm">
@@ -35,21 +35,23 @@
       <button type="button" class="close" aria-label="Cancel" data-ng-click="nanopub.editing = false"><span aria-hidden="true">&times;</span></button>
       <newnanopub verb="Edit Nanopub..." nanopub="nanopub.po" on-save="saveNanopub(nanopub)"/>
     </div>
-    <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.value('http://rdfs.org/sioc/ns#content'))"></div>
+    <div data-ng-hide="nanopub.editing" data-ng-repeat="content in nanopub.resource.assertion.values('http://rdfs.org/sioc/ns#content')" data-ng-bind-html="trust(content['@value'])"></div>
     <a class="pull-right" data-ng-hide="current_user.uri == null || disableNanopubing || nanopub.showReply"
        style="font-size:0.6em" data-ng-hide="nanopub.showReply"
        href="" data-ng-click="nanopub.showReply=true">Reply</a>
     <footer>
-      <span data-ng-bind="nanopub.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
-      <span data-ng-bind="nanopub.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
+      <span data-ng-repeat="contributor in nanopub.resource.pubinfo.assertion.values('http://purl.org/dc/terms/contributor')">
+        <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
+        <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>
+      </span>
           (
-          <span data-ng-show="nanopub.value('http://purl.org/dc/terms/modified')">
-            Edited <span data-ng-bind="nanopub.value('http://purl.org/dc/terms/modified') | date"/>
+          <span data-ng-show="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified') | date"/>
           </span>
-          <span data-ng-hide="nanopub.value('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.value('http://purl.org/dc/terms/created') | date"/>)
+          <span data-ng-hide="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/created') | date"/>)
     </footer>
       <div data-ng-hide="current_user.uri || disableNanopubing">
-        <newnanopub  data-ng-show="nanopub.showReply" verb="Reply..." nanopub="nanopub.newNanopub" on-save="createNanopub(nanopub.newNanopub)"/>
+        <newnanopub  data-ng-show="nanopub.showReply" verb="Reply..." nanopub="nanopub.resource.newNanopub" on-save="createNanopub(nanopub.resource.newNanopub)"/>
       </div>
     <div>
       <blockquote style="font-size:0.8em" data-ng-repeat="reply in nanopub.values('http://rdfs.org/sioc/ns#has_reply')">
@@ -71,9 +73,15 @@
         <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.value('http://rdfs.org/sioc/ns#content'))"></div>
 
         <footer>
-          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/givenName')"/>
-          <span data-ng-bind="reply.value('http://www.w3.org/ns/prov#wasAttributedTo').value('http://xmlns.com/foaf/0.1/familyName')"/>
-          (<span data-ng-show="reply.value('http://purl.org/dc/terms/modified')">Edited <span data-ng-bind="reply.value('http://purl.org/dc/terms/modified') | date"/></span><span data-ng-hide="reply.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.value('http://purl.org/dc/terms/created') | date"/>)
+          <span data-ng-repeat="contributor in reply.resource.pubinfo.assertion.values('http://purl.org/dc/terms/contributor')">
+            <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
+            <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>
+          </span>
+          (
+          <span data-ng-show="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified') | date"/>
+          </span>
+          <span data-ng-hide="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/created') | date"/>)
         </footer>
       </blockquote>
     </div>
