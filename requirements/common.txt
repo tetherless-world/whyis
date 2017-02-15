@@ -17,3 +17,4 @@ rdflib-jsonld
 git+git://github.com/gjhiggins/RDFAlchemy.git#egg=RDFAlchemy
 git+git://github.com/jimmccusker/flask-ld.git#egg=flask-ld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
+SPARQLWrapper
