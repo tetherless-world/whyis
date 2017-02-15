@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from flask.ext.script import Command, Option, prompt_bool
+from flask_script import Command, Option, prompt_bool
 
 from flask_security.utils import encrypt_password, verify_password, get_hmac
 

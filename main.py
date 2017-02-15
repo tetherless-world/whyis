@@ -5,21 +5,21 @@ import os
 import sys, collections
 from empty import Empty
 from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort
-from flask.ext import ld
-from flask.ext.ld.utils import lru
-from flask.ext.restful import Resource
+import flask_ld as ld
+from flask_ld.utils import lru
+from flask_restful import Resource
 
 from flask_admin import Admin, BaseView, expose
 
 import rdflib
-from flask.ext.security import Security, \
+from flask_security import Security, \
     UserMixin, RoleMixin, login_required
 from flask_security.core import current_user
 from flask_login import AnonymousUserMixin, login_user
 from flask_security.forms import RegisterForm
 from flask_security.utils import encrypt_password
 from werkzeug.datastructures import ImmutableList
-from flask.ext.wtf import Form, RecaptchaField
+from flask_wtf import Form, RecaptchaField
 from wtforms import TextField, TextAreaField, StringField, validators
 import rdfalchemy
 from rdfalchemy.orm import mapper
@@ -64,7 +64,7 @@ class NamespaceContainer:
         return result
 
 from rdfalchemy import *
-from flask.ext.ld.datastore import *
+from flask_ld.datastore import *
 
 # Setup Flask-Security
 class ExtendedRegisterForm(RegisterForm):

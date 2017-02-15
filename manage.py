@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from flask.ext import script
+import flask_script as script
 
 import commands
 
