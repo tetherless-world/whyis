@@ -3,7 +3,9 @@
 curl -L http://downloads.sourceforge.net/project/bigdata/bigdata/2.1.1/blazegraph.jar > blazegraph.jar
 virtualenv --no-site-packages venv
 source venv/bin/activate
-pip install -r requirements/dev.txt || env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install -r requirements/dev.txt
+pip install --upgrade pip
+pip install cryptography || env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography
+pip install -r requirements/dev.txt
 
 echo "To run graphene in development mode, run:"
 echo ""
