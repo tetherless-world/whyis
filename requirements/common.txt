@@ -10,7 +10,8 @@ nltk
 beautifulsoup4
 Flask
 Flask-Script
-Flask-Login==0.2.11
+Flask-Login
+flask-security
 Nose
 flask-admin
 rdflib-jsonld
