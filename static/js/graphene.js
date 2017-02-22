@@ -556,7 +556,7 @@ $( function() {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');
             graph.resource.np = graph.resource('urn:nanopub', {
-                '@type' : 'http://www.nanopub.org/nschema#Nanopub',
+                '@type' : 'http://www.nanopub.org/nschema#Nanopublication',
                 'http://semanticscience.org/resource/isAbout': {'@id':about}
             });
             graph.resource.assertion = graph.resource( 'urn:nanopub_assertion', {

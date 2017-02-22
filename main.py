@@ -554,7 +554,7 @@ values ?c { %s }
                 contentType = request.headers['Content-Type']
                 sadi.deserialize(inputGraph,request.data,contentType)
 
-                nanopub = inputGraph.resource(URIRef(uri+"#assertion"))
+                nanopub = inputGraph.resource(URIRef(uri+"_assertion"))
                 nanopub_text = nanopub.value(app.NS.prov.value)
                 rendered_nanopub = markdown.markdown(nanopub_text, extensions=['rdfa'])
                 nanopub.set(app.NS.sioc.content, Literal(rendered_nanopub))
