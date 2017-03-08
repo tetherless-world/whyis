@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import lib
 
 import os
 import sys, collections

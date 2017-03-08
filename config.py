@@ -93,3 +93,11 @@ Test.update(dict(
     TESTING = True,
     WTF_CSRF_ENABLED = False
 ))
+
+namespaces = {
+	"doi/":
+	{
+		"type":"LOD", 
+		"source":"http://dx.doi.org/"
+	}
+}
