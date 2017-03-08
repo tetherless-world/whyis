@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import lib
+import lit
 
 import os
 import sys, collections
@@ -355,6 +355,8 @@ select distinct ?uri ?name ?type ?score ?text where{
             if format is not None and format in extensions:
                 content_type = extensions[format]
 
+            if entity is not self.NS.local.Home:
+        		print lit.getfullname(entity)
             resource = get_entity(entity)
             print resource.identifier, content_type
             
