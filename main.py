@@ -320,7 +320,6 @@ select distinct ?uri ?name ?type ?score ?text where{
         }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
-            print result.serialize(format="trig")
             return result.resource(entity)
 
         self.get_entity = get_entity
@@ -360,12 +359,12 @@ select distinct ?uri ?name ?type ?score ?text where{
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
-                print lit.getfullname(resource.identifier)
                 print resource.identifier
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
+                
 
         def render_view(resource):
             template_args = dict(ns=self.NS,
@@ -378,9 +377,6 @@ select distinct ?uri ?name ?type ?score ?text where{
                                  hasattr=hasattr,
                                  set=set)
             view = None
-            print template_args['this']
-            new_url = lit.getfullname(resource.identifier)
-            print new_url
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
