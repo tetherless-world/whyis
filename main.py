@@ -71,7 +71,7 @@ class ExtendedRegisterForm(RegisterForm):
     identifier = TextField('Identifier', [validators.Required()])
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
-    
+
 # Form for full-text search
 class SearchForm(Form):
     search_query = StringField('search_query', [validators.DataRequired()])
@@ -79,8 +79,8 @@ class SearchForm(Form):
 def to_json(result):
     return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in x.items()]) for x in result.bindings])
 
-        
-class App(Empty): 
+
+class App(Empty):
 
     def _top_classes(self):
 
@@ -96,7 +96,7 @@ class App(Empty):
                                'rdflib.plugins.sparql.processor', 'SPARQLProcessor')
         rdflib.plugin.register('sparql', UpdateProcessor,
                                'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
-        
+
         retr_query = '''
 construct {
   ?subClass rdfs:subClassOf ?id;
@@ -124,7 +124,7 @@ construct {
         g = self.db.query(retr_query).graph
 
         #print list(g[::self.NS.sio.object])
-        
+
         query = '''
 
 select distinct ?id where {
@@ -139,8 +139,8 @@ select distinct ?id where {
     FILTER (isURI(?id))
 } order by ?label'''
         return [g.resource(i[0]) for i in g.query(query)]
-    
-    
+
+
 
 #full-text search
     def search(self, term):
@@ -170,7 +170,7 @@ select distinct ?uri ?name ?type ?score ?text where{
       optional{ ?uri skos:definition ?text . }
       BIND(hbgd:HBGDkiConcept as ?type)
       BIND(?term as ?name)
-    } UNION 
+    } UNION
     { ?uri a hbgd:Question ;
            rdfs:label ?term ;
       optional{ ?uri prov:value ?text . }
@@ -244,7 +244,7 @@ select distinct ?uri ?name ?type ?score ?text where{
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
 
-        
+
     def configure_views(self):
 
         def sort_by(resources, property):
@@ -274,7 +274,7 @@ select distinct ?uri ?name ?type ?score ?text where{
             g.get_entity = get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
-                    
+
         @self.login_manager.user_loader
         def load_user(user_id):
             if user_id != None:
@@ -302,7 +302,7 @@ select distinct ?uri ?name ?type ?score ?text where{
             "application/n-triples" : "nt",
             None: "json-ld"
         }
-            
+
         def get_graphs(graphs):
             query = 'select ?s ?p ?o ?g where {graph ?g {?s ?p ?o} } values ?g { %s }'
             query = query % ' '.join([graph.n3() for graph in graphs])
@@ -311,7 +311,7 @@ select distinct ?uri ?name ?type ?score ?text where{
             result = Dataset()
             result.addN(quads)
             return result
-            
+
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
@@ -336,7 +336,7 @@ select distinct ?uri ?name ?type ?score ?text where{
             return resource.graph.preferredLabel(resource.identifier, default=[], labelProperties=summary_properties)
 
         self.get_summary = get_summary
-        
+
         @self.route('/about.<format>')
         @self.route('/about')
         @self.route('/<name>.<format>')
@@ -359,14 +359,14 @@ select distinct ?uri ?name ?type ?score ?text where{
         		print lit.getfullname(entity)
             resource = get_entity(entity)
             print resource.identifier, content_type
-            
+
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
-        
+                
 
         def render_view(resource):
             template_args = dict(ns=self.NS,
@@ -437,7 +437,7 @@ values ?c { %s }
             # if available, replace with class view
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args)
-        
+
         @self.route('/comments')
         @login_required
         def latest_comments():
@@ -534,19 +534,19 @@ values ?c { %s }
                 #nanopub = graph.resource(nanopub_uri)
                 processed_graph = nanopub.graph
                 nanopub.add(app.NS.RDF.type, app.NS.np.Nanopublication)
-                
+
                 nanopub_assertion = nanopub.value(app.NS.np.hasAssertion)
                 about = nanopub.value(app.NS.sio['isAbout'])
                 self._prep_graph(nanopub_assertion, about=about)
-                
+
                 nanopub_provenance = nanopub.value(app.NS.np.hasProvenance)
                 self._prep_graph(nanopub_provenance, about=nanopub_assertion.identifier)
-                
+
                 nanopub_pubinfo = nanopub.value(app.NS.np.hasPublicationInfo)
                 self._prep_graph(nanopub_pubinfo, about=nanopub_assertion.identifier)
 
                 return nanopub_assertion, nanopub_provenance, nanopub_pubinfo
-            
+
             def put(self,ident):
                 uri = self._get_uri(ident)
                 #print uri
@@ -574,7 +574,7 @@ values ?c { %s }
                     default_prefix = URIRef('urn:nanopub')
                     inputGraph = ConjunctiveGraph()
                     contentType = request.headers['Content-Type']
-                    
+
                     sadi.deserialize(inputGraph, request.data, contentType)
                     nanopub_id = ld.create_id()
                     nanopub_uri = app.NS.local["pub/%s" % nanopub_id]
@@ -593,12 +593,12 @@ values ?c { %s }
 
                     #print "Adding a nanopublication"
                     print processed_graph.serialize(format="trig")
-                    
+
                     app.db.addN(processed_graph.quads())
 
                 return '', 201
 
-            
+
             def _prep_graph(self, resource, about = None):
                 #print '_prep_graph', resource.identifier, about
                 content_type = resource.value(app.NS.ov.hasContentType)
@@ -635,10 +635,10 @@ values ?c { %s }
                         except:
                             pass
                 #print Graph(store=resource.graph.store).serialize(format="trig")
-                    
-            
+
+
         self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
-        
+
 def config_str_to_obj(cfg):
     if isinstance(cfg, basestring):
         module = __import__('config', fromlist=[cfg])

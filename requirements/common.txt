@@ -10,7 +10,7 @@ nltk
 beautifulsoup4
 Flask
 Flask-Script
-Flask-Login
+Flask-Login==0.3.2
 flask-security
 Nose
 flask-admin

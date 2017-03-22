@@ -10,7 +10,7 @@ project_name = "hbgd"
 # Set to be custom for your project
 LOD_PREFIX = 'http://graphene.tw.rpi.edu'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
-    
+
 # base config class; extend it to your needs.
 Config = dict(
     # use DEBUG mode?
@@ -29,7 +29,7 @@ Config = dict(
 
 
     vocab_file = "vocab.ttl",
-    
+
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
     LOG_FILENAME = "/var/tmp/app.%s.log" % project_name,
@@ -69,7 +69,7 @@ Config = dict(
     SECURITY_DEFAULT_REMEMBER_ME = True,
     ADMIN_EMAIL_RECIPIENTS = [],
     db_defaultGraph = LOD_PREFIX + '/',
-    
+
     db_queryEndpoint = 'http://localhost:9999/blazegraph/namespace/kb/sparql',
     db_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/kb/sparql',
     LOGIN_USER_TEMPLATE = "auth/login.html",
@@ -97,7 +97,62 @@ Test.update(dict(
 namespaces = {
 	"doi/":
 	{
-		"type":"LOD", 
+		"type":"LOD",
 		"source":"http://dx.doi.org/"
-	}
+	},
+    "author/":
+    {
+		"type":"LOD",
+		"source":"http://nanomine.tw.rpi.edu/author/"
+    },
+    "bibo/":
+    {
+		"type":"LOD",
+        "source":"http://purl.org/ontology/bibo/"
+    },
+    "chear/":
+    {
+		"type":"LOD",
+        "source":"http://hadatac.org/ont/chear#"
+    },
+    "compound/":
+    {
+		"type":"LOD",
+        "source":"http://nanomine.tw.rpi.edu/compound/"
+    },
+    "dataset/":
+    {
+		"type":"LOD",
+        "source":"https://hbgd.tw.rpi.edu/dataset/"
+    },
+    "dcat/":
+    {
+		"type":"LOD",
+        "source":"http://www.w3.org/ns/dcat#"
+    },
+    "dcterms/":
+    {
+		"type":"LOD",
+        "source":"http://purl.org/dc/terms/"
+    },
+    "entry/":
+    {
+        "type":"LOD",
+        "source":"http://nanomine.tw.rpi.edu/entry/"
+    },
+    "foaf/":
+    {
+		"type":"LOD",
+        "source":"http://xmlns.com/foaf/0.1/"
+    },
+    "lang/":
+    {
+		"type":"LOD",
+        "source":"http://nanomine.tw.rpi.edu/language/"
+    },
+    "location/":
+    {
+        "type":"LOD",
+        "source":"http://nanomine.tw.rpi.edu/location/"
+    }
 }
