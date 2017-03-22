@@ -355,8 +355,6 @@ select distinct ?uri ?name ?type ?score ?text where{
             if format is not None and format in extensions:
                 content_type = extensions[format]
 
-            if entity is not self.NS.local.Home:
-        		print lit.getfullname(entity)
             resource = get_entity(entity)
             print resource.identifier, content_type
 
@@ -366,7 +364,6 @@ select distinct ?uri ?name ?type ?score ?text where{
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
-                
 
         def render_view(resource):
             template_args = dict(ns=self.NS,
@@ -379,6 +376,9 @@ select distinct ?uri ?name ?type ?score ?text where{
                                  hasattr=hasattr,
                                  set=set)
             view = None
+            print template_args['this']
+            new_url = lit.getfullname(resource.identifier)
+            print new_url
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
