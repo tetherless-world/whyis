@@ -362,6 +362,8 @@ select distinct ?uri ?name ?type ?score ?text where{
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                print lit.getfullname(resource.identifier)
+                print resource.identifier
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
@@ -433,6 +435,7 @@ values ?c { %s }
             #print views
             if len(views) == 0:
                 abort(404)
+
             # default view (list of nanopubs)
             # if available, replace with class view
             # if available, replace with instance view
