@@ -341,8 +341,9 @@ select distinct ?uri ?name ?type ?score ?text where{
         @self.route('/<name>.<format>')
         @self.route('/<name>')
         @self.route('/')
+        @self.route('/<name>/<prefix>/<suffix>')
         @login_required
-        def view(name=None, format=None, view=None):
+        def view(name=None, format=None, view=None, prefix=None, suffix=None):
             #print name
             if name is not None:
                 entity = self.NS.local[name]
@@ -359,10 +360,13 @@ select distinct ?uri ?name ?type ?score ?text where{
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                url = lit.getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
                 print resource.identifier
+                print url
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
+                print "This is in the else", resource.identifier
                 return resource.graph.serialize(format=fmt)
                 
 
