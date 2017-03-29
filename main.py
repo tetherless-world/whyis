@@ -342,9 +342,14 @@ select distinct ?uri ?name ?type ?score ?text where{
         @self.route('/<name>.<format>')
         @self.route('/<name>')
         @self.route('/')
+        @self.route('/<name>/<prefix>/<suffix>')
         @login_required
+<<<<<<< HEAD
         def view(name=None, format=None, view=None):
 
+=======
+        def view(name=None, format=None, view=None, prefix=None, suffix=None):
+>>>>>>> 62dbc9bceafd6ac5c8111289ad772af2c0530c9e
             #print name
             if name is not None:
                 entity = self.NS.local[name]
@@ -361,6 +366,8 @@ select distinct ?uri ?name ?type ?score ?text where{
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                url = lit.getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
+                print url
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
@@ -377,9 +384,6 @@ select distinct ?uri ?name ?type ?score ?text where{
                                  hasattr=hasattr,
                                  set=set)
             view = None
-            print template_args['this']
-            new_url = lit.getfullname(resource.identifier)
-            print new_url
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
@@ -434,6 +438,7 @@ values ?c { %s }
             #print views
             if len(views) == 0:
                 abort(404)
+
             # default view (list of nanopubs)
             # if available, replace with class view
             # if available, replace with instance view
