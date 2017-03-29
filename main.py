@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import lit
+import requests
 
 import os
 import sys, collections
@@ -361,7 +362,10 @@ select distinct ?uri ?name ?type ?score ?text where{
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 url = lit.getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
-                print url
+                if url is not None:
+                    headers = {'Accept': 'application/rdf+xml'}
+                    r = requests.get(url, headers=headers)
+                    print r.text
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
