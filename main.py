@@ -361,14 +361,11 @@ select distinct ?uri ?name ?type ?score ?text where{
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 url = lit.getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
-                print resource.identifier
                 print url
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
-                print "This is in the else", resource.identifier
                 return resource.graph.serialize(format=fmt)
-                
 
         def render_view(resource):
             template_args = dict(ns=self.NS,
