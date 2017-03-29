@@ -344,12 +344,8 @@ select distinct ?uri ?name ?type ?score ?text where{
         @self.route('/')
         @self.route('/<name>/<prefix>/<suffix>')
         @login_required
-<<<<<<< HEAD
-        def view(name=None, format=None, view=None):
-
-=======
+        
         def view(name=None, format=None, view=None, prefix=None, suffix=None):
->>>>>>> 62dbc9bceafd6ac5c8111289ad772af2c0530c9e
             #print name
             if name is not None:
                 entity = self.NS.local[name]
