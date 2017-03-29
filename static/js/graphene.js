@@ -348,11 +348,22 @@ $( function() {
                 "@id" : id 
             };
             result.resource = function(id, values) {
+                var valuesGraph = null;
+                if (values && values['@graph'])
+                    valuesGraph = values['@graph'];
                 var result = resource(id, values);
+
                 if (!this.resource.resources[id]) {
                     this.resource.resources[id] = result;
                     if (!this['@graph']) this['@graph'] = [];
                     this['@graph'].push(this.resource.resources[id]);
+                } else {
+                    result = this.resource.resources[id];
+                    if (valuesGraph) {
+                        valuesGraph.forEach(function(r) {
+                            result.resource(r['@id'], r);
+                        });
+                    }
                 }
                 result = this.resource.resources[id];
                 return result;
@@ -621,6 +632,8 @@ $( function() {
                     np.resource.pubinfo = graphMap[np.resource.pubinfo['@id']];
                     np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
                     np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
+                    console.log(np, np.resource.pubinfo.resource.assertion);
+
                     if (np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']) {
                         var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']['@id']];
                         parent.resource.replies.push(np);
@@ -648,10 +661,10 @@ $( function() {
         };
         Nanopub.save = function(nanopub) {
             return $http.post('/pub', nanopub,
-                              {headers:{'ContentType':"application/ld+json"}, responseType:"json"}).then(processNanopubs);
+                              {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
-            return $http.delete(nanopub.uri);
+            return $http.delete(nanopub['@id']);
         }
         return Nanopub;
     }]);
@@ -684,8 +697,8 @@ $( function() {
                 $scope.Nanopub = Nanopub;
                 $scope.canEdit = function(nanopub) {
                     console.log( USER.uri, nanopub.resource.pubinfo);
-                    return USER.admin == "True";// ||
-                        //nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
+                    return USER.admin == "True" ||
+                        nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
                 };
                 $scope.$watch('resource', function(newval) {
                     if ($scope.about != null) {
@@ -705,24 +718,25 @@ $( function() {
                     nanopub.editing = true;
                 };
                 $scope.saveNanopub = function(nanopub) {
-                    Nanopub.update(nanopub.toJSON())
+                    Nanopub.update(nanopub)
                         .then(function() {
-                            location.reload();
-                            //return Nanopub.list($scope.resource)
+                            //location.reload();
+                            return Nanopub.list($scope.resource)
                         })
                     //.then($scope.update);
                 };
                 $scope.createNanopub = function(nanopub) {
-                    Nanopub.save(nanopub).then($scope.update).then(function() {
-                        location.reload();
-                        //nanopub['http://www.w3.org/ns/prov#value'] = '';
+                    Nanopub.save(nanopub).then(function() {
+                        //location.reload();
+                        $scope.newNanopub = Nanopub($scope.resource);
+                        return Nanopub.list($scope.resource)
                     });
                 };
                 $scope.delete = function(nanopub) {
                     Nanopub.delete($scope.toDelete)
                         .then(function() { return Nanopub.list($scope.resource) })
                         .then($scope.update);
-                    toDelete = null;
+                    $scope.toDelete = null;
                 }
                 this.update = $scope.update;
                 Nanopub.list($scope.resource).then($scope.update);
