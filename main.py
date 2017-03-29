@@ -321,6 +321,7 @@ select distinct ?uri ?name ?type ?score ?text where{
         }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
+            #print result.serialize(format="json-ld")
             return result.resource(entity)
 
         self.get_entity = get_entity
@@ -344,6 +345,7 @@ select distinct ?uri ?name ?type ?score ?text where{
         @self.route('/')
         @self.route('/<name>/<prefix>/<suffix>')
         @login_required
+        
         def view(name=None, format=None, view=None, prefix=None, suffix=None):
             #print name
             if name is not None:
@@ -510,9 +512,13 @@ values ?c { %s }
                 self.local_resource = app.nanopub_api
 
             def _can_edit(self, uri):
-                if current_user.has_role('Publisher') or current_user.has_role('Editor'):
+                if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
                     return True
-                if (uri +"#assertion", app.NS.prov.wasAttributedTo, current_user.resUri) in app.db:
+                if app.db.query('''ask {
+                    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
+                    graph ?info { ?assertion dc:contributor ?user. }
+                    }''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=app.NS.np, dc=app.NS.dc)):
+                    print "Is owner."
                     return True
                 return False
 
@@ -521,8 +527,8 @@ values ?c { %s }
 
             def get(self, ident):
                 uri = self._get_uri(ident)
-                if not self._can_edit(uri):
-                    return app.login_manager.unauthorized()
+                #if not self._can_edit(uri):
+                #    return app.login_manager.unauthorized()
                 result = self.local_resource.read(uri)
                 #print result
                 return result
@@ -530,7 +536,7 @@ values ?c { %s }
             def delete(self, ident):
                 uri = self._get_uri(ident)
                 if not self._can_edit(uri):
-                    return app.login_manager.unauthorized()
+                    return '<h1>Not Authorized</h1>', 401
                 self.local_resource.delete(uri)
                 return '', 204
 
@@ -598,6 +604,8 @@ values ?c { %s }
                     #print "Adding a nanopublication"
                     print processed_graph.serialize(format="trig")
 
+                    #print processed_graph.serialize(format="trig")
+
                     app.db.addN(processed_graph.quads())
 
                 return '', 201
@@ -642,6 +650,7 @@ values ?c { %s }
 
 
         self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
+
 
 def config_str_to_obj(cfg):
     if isinstance(cfg, basestring):

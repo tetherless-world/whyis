@@ -355,8 +355,9 @@ np:Assertion rdf:type owl:Class ;
 
 ###  http://www.nanopub.org/nschema#Nanopublication
 
-np:Nanopublication rdf:type owl:Class .
-
+np:Nanopublication rdf:type owl:Class ;
+      flaskld:prefix "pub";
+      flaskld:hasField sio:isAbout.
 
 
 ###  http://www.nanopub.org/nschema#Provenance
@@ -434,13 +435,15 @@ graphene:hasView dc:identifier "view".
 graphene:hasDownload dc:identifer "download";
   rdfs:subPropertyOf graphene:hasView.
 
-rdfs:Resource graphene:hasView "resource_view.html".
+rdfs:Resource graphene:hasView "resource_view.html";
+  graphene:hasDownload "download_view.html".
 
-#owl:Class rdfs:label "Class";
-#    graphene:hasView "class_view.html".
+owl:Class rdfs:label "Class";
+    graphene:hasView "class_view.html".
 
-#owl:Ontology rdfs:label "Ontology";
-#    graphene:hasView "ontology_view.html".
+
+owl:Ontology rdfs:label "Ontology";
+    graphene:hasView "ontology_view.html".
 
 
 #################################################################

@@ -40,15 +40,14 @@
        style="font-size:0.6em" data-ng-hide="nanopub.showReply"
        href="" data-ng-click="nanopub.showReply=true">Reply</a>
     <footer>
-      <span data-ng-repeat="contributor in nanopub.resource.pubinfo.assertion.values('http://purl.org/dc/terms/contributor')">
+      <span data-ng-repeat="contributor in nanopub.resource.pubinfo.resource.assertion.values('http://purl.org/dc/terms/contributor')">
         <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
         <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>
+        <span data-ng-bind="contributor['@id']"/>
       </span>
-          (
-          <span data-ng-show="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')">
-            Edited <span data-ng-bind="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified') | date"/>
-          </span>
-          <span data-ng-hide="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.resource.pubinfo.assertion.value('http://purl.org/dc/terms/created') | date"/>)
+          (<span data-ng-show="nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')['@value'] | date"/>
+          </span><span data-ng-hide="nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/created')['@value'] | date"/>)
     </footer>
       <div data-ng-hide="current_user.uri || disableNanopubing">
         <newnanopub  data-ng-show="nanopub.showReply" verb="Reply..." nanopub="nanopub.resource.newNanopub" on-save="createNanopub(nanopub.resource.newNanopub)"/>
@@ -78,10 +77,10 @@
             <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>
           </span>
           (
-          <span data-ng-show="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')">
-            Edited <span data-ng-bind="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified') | date"/>
+          <span data-ng-show="reply.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')">
+            Edited <span data-ng-bind="reply.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')['@value'] | date"/>
           </span>
-          <span data-ng-hide="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.resource.pubinfo.assertion.value('http://purl.org/dc/terms/created') | date"/>)
+          <span data-ng-hide="reply.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')" data-ng-bind="reply.resource.pubinfo.assertion.resource.value('http://purl.org/dc/terms/created')['@value'] | date"/>)
         </footer>
       </blockquote>
     </div>
