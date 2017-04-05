@@ -8,6 +8,7 @@ from flask import Flask, render_template, g, session, redirect, url_for, request
 import flask_ld as ld
 from flask_ld.utils import lru
 from flask_restful import Resource
+from nanopub import NanopublicationManager, Nanopublication
 
 from flask_admin import Admin, BaseView, expose
 
@@ -81,118 +82,6 @@ def to_json(result):
 
         
 class App(Empty): 
-
-    def _top_classes(self):
-
-        import rdflib.plugin
-        from rdflib.store import Store
-        from rdflib.parser import Parser
-        from rdflib.serializer import Serializer
-        from rdflib.query import ResultParser, ResultSerializer, Processor, Result, UpdateProcessor
-        from rdflib.exceptions import Error
-        rdflib.plugin.register('sparql', Result,
-                               'rdflib.plugins.sparql.processor', 'SPARQLResult')
-        rdflib.plugin.register('sparql', Processor,
-                               'rdflib.plugins.sparql.processor', 'SPARQLProcessor')
-        rdflib.plugin.register('sparql', UpdateProcessor,
-                               'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
-        
-        retr_query = '''
-construct {
-  ?subClass rdfs:subClassOf ?id;
-            a ?type;
-            rdfs:label ?sclabel.
-  ?id rdfs:label ?label;
-      a ?idtype.
-} where {
-    {
-       ?subClass rdfs:subClassOf ?id.
-    }
-    optional {
-       ?subClass a ?type.
-    }
-    optional {
-        ?subClass rdfs:label ?sclabel.
-    }
-    optional {
-        ?id rdfs:label ?label
-    }
-    optional {
-        ?id a ?idtype.
-    }
-}'''
-        g = self.db.query(retr_query).graph
-
-        #print list(g[::self.NS.sio.object])
-        
-        query = '''
-
-select distinct ?id where {
-    {
-       ?subClass rdfs:subClassOf ?id.
-    }
-    ?id rdfs:label ?label.
-    optional {
-        ?id rdfs:subClassOf ?superClass.
-    }
-    FILTER (!bound(?superClass))
-    FILTER (isURI(?id))
-} order by ?label'''
-        return [g.resource(i[0]) for i in g.query(query)]
-    
-    
-
-#full-text search
-    def search(self, term):
-        import rdflib.plugin
-        from rdflib.store import Store
-        from rdflib.parser import Parser
-        from rdflib.serializer import Serializer
-        from rdflib.query import ResultParser, ResultSerializer, Processor, Result, UpdateProcessor
-        from rdflib.exceptions import Error
-        rdflib.plugin.register('sparql', Result,
-                               'rdflib.plugins.sparql.processor', 'SPARQLResult')
-        rdflib.plugin.register('sparql', Processor,
-                               'rdflib.plugins.sparql.processor', 'SPARQLProcessor')
-        rdflib.plugin.register('sparql', UpdateProcessor,
-                               'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
-
-        search_query = '''PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX bds: <http://www.bigdata.com/rdf/search#>
-PREFIX hbgd: <%s>
-
-select distinct ?uri ?name ?type ?score ?text where{
-    ?term bds:search "%s" .
-    ?term bds:relevance ?score .
-    ?uri rdfs:label ?term .
-    { ?uri a hbgd:HBGDkiConcept ;
-      optional{ ?uri skos:definition ?text . }
-      BIND(hbgd:HBGDkiConcept as ?type)
-      BIND(?term as ?name)
-    } UNION 
-    { ?uri a hbgd:Question ;
-           rdfs:label ?term ;
-      optional{ ?uri prov:value ?text . }
-      BIND(hbgd:Question as ?type)
-      BIND(?term as ?name)
-    } UNION
-    { ?uri a ?type ;
-           rdfs:label ?name ;
-           prov:value|skos:definition ?term .
-      BIND(?term as ?text)
-    }
-} order by DESC(?score)''' % (self.NS.hbgd, term)
-        r = self.db.query(search_query)
-        condensed = []
-        included = set()
-        for row in r:
-            if row['uri'] not in included:
-                included.add(row['uri'])
-                condensed.append(row)
-        return condensed
-
-
 
     def configure_database(self):
         """
@@ -281,6 +170,7 @@ select distinct ?uri ?name ?type ?score ?text where{
                 return self.datastore.find_user(id=user_id)
             else:
                 return None
+            
         extensions = {
             "rdf": "application/rdf+xml",
             "json": "application/ld+json",
@@ -315,9 +205,12 @@ select distinct ?uri ?name ?type ?score ?text where{
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+                np:hasPublicationInfo ?pubinfo;
+                np:hasAssertion ?assertion;
                 sio:isAbout ?e.
+            graph ?pubinfo { ?assertion dc:created [].}
             graph ?g {?s ?p ?o.}
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio})
+        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
             #print result.serialize(format="json-ld")
@@ -436,61 +329,8 @@ values ?c { %s }
             # if available, replace with class view
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args)
-        
-        @self.route('/comments')
-        @login_required
-        def latest_comments():
-            query = '''select distinct ?thing ?creator (max(?c) as ?created) where {
-  ?comment a <http://rdfs.org/sioc/types#Comment>;
-           <http://semanticscience.org/resource/isAbout> ?thing;
-           <http://purl.org/dc/terms/created> ?c;
-           <http://www.w3.org/ns/prov#wasAttributedTo> ?creator.
-  filter(isURI(?thing))
-} group by ?thing ?creator order by desc(?created) limit 20'''
-            entries = {}
-            entry_list = []
-            for thing, creator, created in self.db.query(query):
-                if thing not in entries:
-                    entry = dict(thing=self.db.resource(thing), creator=self.db.resource(creator), created=created)
-                    entries[thing] = entry
-                    entry_list.append(entry)
-            return render_template('latest_comments.html', ns=self.NS, entries=entry_list, g=g, current_user=current_user)
-
-        # @self.route('/<name>/comment', methods=['GET', 'POST'])
-        # @login_required
-        # def comments(name):
-        #     this = self.NS.local[name]
-        #     if request.method == 'POST':
-        #         inputGraph = ConjunctiveGraph()
-        #         contentType = request.headers['Content-Type']
-        #         inputGraph.parse(data=request.data,format="json-ld")
-        #         processed_graph = ConjunctiveGraph()
-        #         comment_id = ld.create_id()
-        #         comment_uri = URIRef("%s/comment/%s#assertion" % (this, comment_id))
-        #         processed_graph += ld.rebase(inputGraph, URIRef("urn:nanopub#"), comment_uri)
-        #         comment = processed_graph.resource(comment_uri)
-        #         comment.add(self.NS.RDF.type, self.NS.sioc_types.Comment)
-        #         comment.add(self.NS.dc.created, Literal(datetime.utcnow()))
-        #         comment.add(self.NS.prov.wasAttributedTo, current_user.resUri)
-        #         comment.add(self.NS.sio['isAbout'], this)
-        #         print processed_graph.serialize(format='turtle')
-        #         if comment.value(self.NS.sioc.reply_of):
-        #             comment.value(self.NS.sioc.reply_of).add(self.NS.sioc.has_reply, comment)
-        #         comment.add(self.NS.prov.wasAttributedTo, current_user.resUri)
-        #         comment_text = comment.value(self.NS.prov.value)
-        #         rendered_comment = markdown.markdown(comment_text, extensions=['rdfa'])
-        #         comment.add(self.NS.sioc.content, Literal(rendered_comment))
-
-        #         pub_info = ConjunctiveGraph(self.db.store,URIRef("%s/pub/%s" % (this, comment_id)))
-
-        @self.route('/ns/search_results/<query>')
-        @login_required
-        def search_results(query):
-            results = self.search(query)
-            return render_template('search_results.html', ns=self.NS, query=query, results=results, sort_by=sort_by, current_user=current_user)
 
         self.api = ld.LinkedDataApi(self, "", self.db.store, "")
-
 
         self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
         self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
@@ -498,10 +338,13 @@ values ?c { %s }
         self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
 
         app = self
+
+        self.nanopub_manager = NanopublicationManager(app.db.store, app.config['nanopub_archive_path'],
+                                                      Namespace('%s/pub/'%(app.config['lod_prefix'])))
         class NanopublicationResource(ld.LinkedDataResource):
             decorators = [login_required]
 
-            def __init__(self):
+            def __init__(self, ):
                 self.local_resource = app.nanopub_api
 
             def _can_edit(self, uri):
@@ -520,84 +363,55 @@ values ?c { %s }
 
             def get(self, ident):
                 uri = self._get_uri(ident)
-                #if not self._can_edit(uri):
-                #    return app.login_manager.unauthorized()
-                result = self.local_resource.read(uri)
-                #print result
+                result = app.nanopub_manager.get(uri)
                 return result
 
             def delete(self, ident):
                 uri = self._get_uri(ident)
                 if not self._can_edit(uri):
                     return '<h1>Not Authorized</h1>', 401
-                self.local_resource.delete(uri)
+                app.nanopub_manager.retire(uri)
+                #self.local_resource.delete(uri)
                 return '', 204
 
-            def _prepare_nanopub(self, nanopub):
-                #nanopub = graph.resource(nanopub_uri)
-                processed_graph = nanopub.graph
-                nanopub.add(app.NS.RDF.type, app.NS.np.Nanopublication)
-                
-                nanopub_assertion = nanopub.value(app.NS.np.hasAssertion)
-                about = nanopub.value(app.NS.sio['isAbout'])
-                self._prep_graph(nanopub_assertion, about=about)
-                
-                nanopub_provenance = nanopub.value(app.NS.np.hasProvenance)
-                self._prep_graph(nanopub_provenance, about=nanopub_assertion.identifier)
-                
-                nanopub_pubinfo = nanopub.value(app.NS.np.hasPublicationInfo)
-                self._prep_graph(nanopub_pubinfo, about=nanopub_assertion.identifier)
-
-                return nanopub_assertion, nanopub_provenance, nanopub_pubinfo
-            
-            def put(self,ident):
-                uri = self._get_uri(ident)
-                #print uri
-                if not self._can_edit(uri):
-                    return app.login_manager.unauthorized()
-                inputGraph = Graph()
+            def _get_graph(self):
+                inputGraph = ConjunctiveGraph()
                 contentType = request.headers['Content-Type']
-                sadi.deserialize(inputGraph,request.data,contentType)
+                sadi.deserialize(inputGraph, request.data, contentType)
+                return inputGraph
+            
+            def put(self, ident):
+                nanopub_uri = self._get_uri(ident)
+                inputGraph = self._get_graph()
+                old_nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    modified = Literal(datetime.utcnow())
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
+                    nanopub.pubinfo.add((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.modified, modified))
+                    app.nanopub_manager.publish(nanopub)
 
-                nanopub = inputGraph.resource(URIRef(uri+"_assertion"))
-                nanopub_text = nanopub.value(app.NS.prov.value)
-                rendered_nanopub = markdown.markdown(nanopub_text, extensions=['rdfa'])
-                nanopub.set(app.NS.sioc.content, Literal(rendered_nanopub))
-                nanopub.set(app.NS.dc.modified,Literal(datetime.utcnow()))
-                if nanopub.value(app.NS.sioc.reply_of):
-                    nanopub.value(app.NS.sioc.reply_of).add(app.NS.sioc.has_reply, nanopub)
-
-                self.local_resource.update(uri, inputGraph)
-                return '', 201
-
+            def _prep_nanopub(self, nanopub_uri, graph):
+                nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
+                about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
+                print nanopub.assertion_resource.identifier, about
+                self._prep_graph(nanopub.assertion_resource, about.identifier)
+                self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
+                self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
+                nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
+                return nanopub
+            
             def post(self, ident=None):
                 if ident is not None:
                     return self.put(ident)
-                else:
-                    default_prefix = URIRef('urn:nanopub')
-                    inputGraph = ConjunctiveGraph()
-                    contentType = request.headers['Content-Type']
-                    
-                    sadi.deserialize(inputGraph, request.data, contentType)
-                    nanopub_id = ld.create_id()
-                    nanopub_uri = app.NS.local["pub/%s" % nanopub_id]
-                    processed_graph = ConjunctiveGraph()
-                    nanopub_graph = ConjunctiveGraph(identifier=nanopub_uri, store=processed_graph.store)
-                    quads = [x for x in ld.rebase(inputGraph, default_prefix, nanopub_uri)]
-                    processed_graph.addN(quads)
 
-                    assertion, provenance, pubinfo = self._prepare_nanopub(nanopub_graph.resource(nanopub_uri))
+                inputGraph = self._get_graph()
+                for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
+                    nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
 
-                    pubinfo_graph = Graph(processed_graph.store, pubinfo.identifier)
-
-                    assertion_in_pubinfo = pubinfo_graph.resource(assertion.identifier)
-                    assertion_in_pubinfo.add(app.NS.dc.created, Literal(datetime.utcnow()))
-                    assertion_in_pubinfo.add(app.NS.dc.contributor, current_user.resUri)
-
-                    #print "Adding a nanopublication"
-                    #print processed_graph.serialize(format="trig")
-                    
-                    app.db.addN(processed_graph.quads())
+                for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    app.nanopub_manager.publish(nanopub)
 
                 return '', 201
 

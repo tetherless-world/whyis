@@ -27,7 +27,7 @@ Config = dict(
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
 
-
+    nanopub_archive_path = "nanopublications",
     vocab_file = "vocab.ttl",
     
     # LOGGING
