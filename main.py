@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-import lit
 import requests
+import config
 
 import os
 import sys, collections
@@ -81,6 +81,13 @@ class SearchForm(Form):
 def to_json(result):
     return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in x.items()]) for x in result.bindings])
 
+
+def getfullname(name):
+    for key in config.namespaces.keys():
+        if key in name:
+            i = name.find(key)
+            new_url = name[i:]
+            return new_url.replace(key, config.namespaces[key]["source"])
 
 class App(Empty):
 
@@ -256,7 +263,7 @@ class App(Empty):
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
-                url = lit.getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
+                url = getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
                 if url is not None:
                     headers = {'Accept': 'application/rdf+xml'}
                     r = requests.get(url, headers=headers)
