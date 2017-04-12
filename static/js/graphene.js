@@ -642,7 +642,7 @@ $( function() {
                 }
             })
             var topNanopubs = nanopubs.filter(function(nanopub) {
-                return !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
+                return !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
             });
             topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
                 nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],

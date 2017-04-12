@@ -33,7 +33,7 @@
 
     <div data-ng-if="nanopub.editing" >
       <button type="button" class="close" aria-label="Cancel" data-ng-click="nanopub.editing = false"><span aria-hidden="true">&times;</span></button>
-      <newnanopub verb="Edit Nanopub..." nanopub="nanopub.po" on-save="saveNanopub(nanopub)"/>
+      <newnanopub verb="Edit Nanopub..." nanopub="nanopub" on-save="saveNanopub(nanopub)"/>
     </div>
     <div data-ng-hide="nanopub.editing" data-ng-repeat="content in nanopub.resource.assertion.values('http://rdfs.org/sioc/ns#content')" data-ng-bind-html="trust(content['@value'])"></div>
     <a class="pull-right" data-ng-hide="current_user.uri == null || disableNanopubing || nanopub.showReply"
@@ -49,7 +49,8 @@
             Edited <span data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')['@value'] | date"/>
           </span><span data-ng-hide="nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/created')['@value'] | date"/>)
     </footer>
-      <div data-ng-hide="current_user.uri || disableNanopubing">
+    <div data-ng-hide="current_user.uri || disableNanopubing">
+      <pre>{{nanopub|json}}</pre>
         <newnanopub  data-ng-show="nanopub.showReply" verb="Reply..." nanopub="nanopub.resource.newNanopub" on-save="createNanopub(nanopub.resource.newNanopub)"/>
       </div>
     <div>
@@ -67,7 +68,7 @@
           <button type="button" class="close" aria-label="Cancel" data-ng-click="reply.editing = false">
             <span aria-hidden="true">&times;</span>
           </button>
-          <newnanopub verb="Edit Reply..." nanopub="reply.po" on-save="saveNanopub(reply)"/>
+          <newnanopub verb="Edit Reply..." nanopub="reply" on-save="saveNanopub(reply)"/>
         </div>
         <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.value('http://rdfs.org/sioc/ns#content'))"></div>
 
