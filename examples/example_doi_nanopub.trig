@@ -1,0 +1,128 @@
+@prefix ns1: <http://localhost:5000/pub/> .
+@prefix ns2: <http://www.w3.org/ns/rdfa#> .
+@prefix ns3: <http://open.vocab.org/terms/> .
+@prefix ns4: <http://semanticscience.org/resource/> .
+@prefix ns5: <http://purl.org/dc/terms/> .
+@prefix ns6: <http://www.w3.org/ns/prov#> .
+@prefix ns7: <http://rdfs.org/sioc/ns#> .
+@prefix ns8: <http://www.nanopub.org/nschema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+{
+    ns1:MzU4MTQzLjU4ODY2OQ a ns8:Nanopublication ;
+        ns4:isAbout <http://localhost:5000/doi/10.7717/peerj-cs.106> ;
+        ns8:hasAssertion ns1:MzU4MTQzLjU4ODY2OQ_assertion ;
+        ns8:hasProvenance ns1:MzU4MTQzLjU4ODY2OQ_provenance ;
+        ns8:hasPublicationInfo ns1:MzU4MTQzLjU4ODY2OQ_pubinfo .
+
+    ns1:MzU4MTQzLjU4ODY2OQ_assertion a ns8:Assertion .
+
+    ns1:MzU4MTQzLjU4ODY2OQ_provenance a ns8:Provenance ;
+        ns3:hasContentType "text/markdown" .
+
+    ns1:MzU4MTQzLjU4ODY2OQ_pubinfo a ns8:PublicationInfo ;
+        ns3:hasContentType "text/markdown" .
+}
+
+ns1:MzU4MTQzLjU4ODY2OQ_assertion {
+
+<http://id.crossref.org/contributor/michel-dumontier-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://www.w3.org/2002/07/owl#sameAs>
+              <http://orcid.org/0000-0003-4727-9435> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "Dumontier" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "Michel" ;
+      <http://xmlns.com/foaf/0.1/name>
+              "Michel Dumontier" .
+
+<http://id.crossref.org/contributor/sylvia-he-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "He" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "Sylvia" ;
+      <http://xmlns.com/foaf/0.1/name>
+              "Sylvia He" .
+
+<http://id.crossref.org/contributor/deborah-l-mcguinness-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "McGuinness" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "Deborah L." ;
+      <http://xmlns.com/foaf/0.1/name>
+              "Deborah L. McGuinness" .
+
+<http://id.crossref.org/contributor/james-p-mccusker-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://www.w3.org/2002/07/owl#sameAs>
+              <http://orcid.org/0000-0003-1085-6059> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "McCusker" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "James P." ;
+      <http://xmlns.com/foaf/0.1/name>
+              "James P. McCusker" .
+
+<http://localhost:5000/doi/10.7717/peerj-cs.106>
+      <http://prismstandard.org/namespaces/basic/2.1/doi>
+              "10.7717/peerj-cs.106" ;
+      <http://prismstandard.org/namespaces/basic/2.1/startingPage>
+              "e106" ;
+      <http://prismstandard.org/namespaces/basic/2.1/volume>
+              "3" ;
+      <http://purl.org/dc/terms/creator>
+              <http://id.crossref.org/contributor/michel-dumontier-65opt3uf6h58> , <http://id.crossref.org/contributor/sylvia-he-65opt3uf6h58> , <http://id.crossref.org/contributor/deborah-l-mcguinness-65opt3uf6h58> , <http://id.crossref.org/contributor/james-p-mccusker-65opt3uf6h58> , <http://id.crossref.org/contributor/jonathan-s-dordick-65opt3uf6h58> , <http://id.crossref.org/contributor/rui-yan-65opt3uf6h58> ;
+      <http://purl.org/dc/terms/date>
+              "2017-02-13"^^<http://www.w3.org/2001/XMLSchema#date> ;
+      <http://purl.org/dc/terms/identifier>
+              "10.7717/peerj-cs.106" ;
+      <http://purl.org/dc/terms/isPartOf>
+              <http://id.crossref.org/issn/2376-5992> ;
+      <http://purl.org/dc/terms/publisher>
+              "PeerJ" ;
+      <http://purl.org/dc/terms/title>
+              "Finding melanoma drugs through a probabilistic knowledge graph" ;
+      <http://purl.org/ontology/bibo/doi>
+              "10.7717/peerj-cs.106" ;
+      <http://purl.org/ontology/bibo/pageStart>
+              "e106" ;
+      <http://purl.org/ontology/bibo/volume>
+              "3" ;
+      <http://www.w3.org/2002/07/owl#sameAs>
+              <doi:10.7717/peerj-cs.106> , <info:doi/10.7717/peerj-cs.106> <http://dx.doi.org/10.7717/peerj-cs.106> .
+
+<http://id.crossref.org/contributor/jonathan-s-dordick-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "Dordick" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "Jonathan S." ;
+      <http://xmlns.com/foaf/0.1/name>
+              "Jonathan S. Dordick" .
+
+<http://id.crossref.org/issn/2376-5992>
+      a       <http://purl.org/ontology/bibo/Journal> ;
+      <http://prismstandard.org/namespaces/basic/2.1/issn>
+              "2376-5992" ;
+      <http://purl.org/dc/terms/title>
+              "PeerJ Computer Science" ;
+      <http://purl.org/ontology/bibo/issn>
+              "2376-5992" ;
+      <http://www.w3.org/2002/07/owl#sameAs>
+              "urn:issn:2376-5992" .
+
+<http://id.crossref.org/contributor/rui-yan-65opt3uf6h58>
+      a       <http://xmlns.com/foaf/0.1/Person> ;
+      <http://xmlns.com/foaf/0.1/familyName>
+              "Yan" ;
+      <http://xmlns.com/foaf/0.1/givenName>
+              "Rui" ;
+      <http://xmlns.com/foaf/0.1/name>
+              "Rui Yan" .
+}
