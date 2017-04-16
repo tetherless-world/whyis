@@ -15,6 +15,7 @@
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
 @base <http://vocab.rpi.edu/graphene/> .
 @prefix graphene: <http://vocab.rpi.edu/graphene/> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
 
 <http://vocab.rpi.edu/graphene/> rdf:type owl:Ontology .
 
