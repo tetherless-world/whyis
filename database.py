@@ -101,7 +101,6 @@ def check_update_dblp():
 
     last_update = get_date("dblp")
 
-
     try:
         conv_last_update = datetime.strptime(last_update, "%Y-%m-%d %H:%M")
     except:
@@ -116,8 +115,6 @@ def check_update_dblp():
         return True
     else:
         return False
-    #print conv_check_time
-    #print conv_last_update
 
 def update_dblp():
     print "downloading dblp.xml"

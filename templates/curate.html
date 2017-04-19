@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
   <body>
-    <h1> graphene curate test1 </h1>
+    <h1> Curation </h1>
+    <h2> Updates that are available: </h2>
     {%if needs_update %}
-    <h2> needs update </h2>
     <form method="post">
-      <input type="submit" name="button" id="button" value="Update DBLP">
+      <input type="submit" name="button" id="button"  class="btn btn-warning" value="Update DBLP">
     </form>
     {% endif %}
   </body>

@@ -8,6 +8,7 @@ from flask import Flask, render_template, g, session, redirect, url_for, request
 import flask_ld as ld
 from flask_ld.utils import lru
 from flask_restful import Resource
+from nanopub import NanopublicationManager, Nanopublication
 
 from flask_admin import Admin, BaseView, expose
 
@@ -81,6 +82,7 @@ def to_json(result):
 
 
 class App(Empty):
+
 
     def _top_classes(self):
 
@@ -281,6 +283,7 @@ select distinct ?uri ?name ?type ?score ?text where{
                 return self.datastore.find_user(id=user_id)
             else:
                 return None
+
         extensions = {
             "rdf": "application/rdf+xml",
             "json": "application/ld+json",
@@ -315,9 +318,12 @@ select distinct ?uri ?name ?type ?score ?text where{
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+                np:hasPublicationInfo ?pubinfo;
+                np:hasAssertion ?assertion;
                 sio:isAbout ?e.
+            graph ?pubinfo { ?assertion dc:created [].}
             graph ?g {?s ?p ?o.}
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio})
+        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
             #print result.serialize(format="json-ld")
@@ -437,6 +443,7 @@ values ?c { %s }
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args)
 
+
         @self.route('/comments')
         @login_required
         def latest_comments():
@@ -503,8 +510,8 @@ values ?c { %s }
             results = self.search(query)
             return render_template('search_results.html', ns=self.NS, query=query, results=results, sort_by=sort_by, current_user=current_user)
 
-        self.api = ld.LinkedDataApi(self, "", self.db.store, "")
 
+        self.api = ld.LinkedDataApi(self, "", self.db.store, "")
 
         self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
         self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
@@ -512,10 +519,13 @@ values ?c { %s }
         self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
 
         app = self
+
+        self.nanopub_manager = NanopublicationManager(app.db.store, app.config['nanopub_archive_path'],
+                                                      Namespace('%s/pub/'%(app.config['lod_prefix'])))
         class NanopublicationResource(ld.LinkedDataResource):
             decorators = [login_required]
 
-            def __init__(self):
+            def __init__(self, ):
                 self.local_resource = app.nanopub_api
 
             def _can_edit(self, uri):
@@ -534,17 +544,15 @@ values ?c { %s }
 
             def get(self, ident):
                 uri = self._get_uri(ident)
-                #if not self._can_edit(uri):
-                #    return app.login_manager.unauthorized()
-                result = self.local_resource.read(uri)
-                #print result
+                result = app.nanopub_manager.get(uri)
                 return result
 
             def delete(self, ident):
                 uri = self._get_uri(ident)
                 if not self._can_edit(uri):
                     return '<h1>Not Authorized</h1>', 401
-                self.local_resource.delete(uri)
+                app.nanopub_manager.retire(uri)
+                #self.local_resource.delete(uri)
                 return '', 204
 
             def _prepare_nanopub(self, nanopub):
@@ -570,19 +578,32 @@ values ?c { %s }
                 if not self._can_edit(uri):
                     return app.login_manager.unauthorized()
                 inputGraph = Graph()
+            def _get_graph(self):
+                inputGraph = ConjunctiveGraph()
                 contentType = request.headers['Content-Type']
-                sadi.deserialize(inputGraph,request.data,contentType)
+                sadi.deserialize(inputGraph, request.data, contentType)
+                return inputGraph
 
-                nanopub = inputGraph.resource(URIRef(uri+"_assertion"))
-                nanopub_text = nanopub.value(app.NS.prov.value)
-                rendered_nanopub = markdown.markdown(nanopub_text, extensions=['rdfa'])
-                nanopub.set(app.NS.sioc.content, Literal(rendered_nanopub))
-                nanopub.set(app.NS.dc.modified,Literal(datetime.utcnow()))
-                if nanopub.value(app.NS.sioc.reply_of):
-                    nanopub.value(app.NS.sioc.reply_of).add(app.NS.sioc.has_reply, nanopub)
+            def put(self, ident):
+                nanopub_uri = self._get_uri(ident)
+                inputGraph = self._get_graph()
+                old_nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    modified = Literal(datetime.utcnow())
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
+                    nanopub.pubinfo.add((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.modified, modified))
+                    app.nanopub_manager.publish(nanopub)
 
-                self.local_resource.update(uri, inputGraph)
-                return '', 201
+            def _prep_nanopub(self, nanopub_uri, graph):
+                nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
+                about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
+                print nanopub.assertion_resource.identifier, about
+                self._prep_graph(nanopub.assertion_resource, about.identifier)
+                self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
+                self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
+                nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
+                return nanopub
 
             def post(self, ident=None):
                 if ident is not None:
@@ -602,8 +623,11 @@ values ?c { %s }
 
                     assertion, provenance, pubinfo = self._prepare_nanopub(nanopub_graph.resource(nanopub_uri))
 
-                    pubinfo_graph = Graph(processed_graph.store, pubinfo.identifier)
 
+                inputGraph = self._get_graph()
+                for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
+                    nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
                     assertion_in_pubinfo = pubinfo_graph.resource(assertion.identifier)
                     assertion_in_pubinfo.add(app.NS.dc.created, Literal(datetime.utcnow()))
                     assertion_in_pubinfo.add(app.NS.dc.contributor, current_user.resUri)
@@ -612,6 +636,8 @@ values ?c { %s }
                     #print processed_graph.serialize(format="trig")
 
                     app.db.addN(processed_graph.quads())
+                for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    app.nanopub_manager.publish(nanopub)
 
                 return '', 201
 
