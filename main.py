@@ -232,11 +232,16 @@ class App(Empty):
         
         @self.route('/about.<format>')
         @self.route('/about')
-        @self.route('/<name>.<format>')
-        @self.route('/<name>')
+        @self.route('/<path:name>.<format>')
+        @self.route('/<path:name>')
         @self.route('/')
         @login_required
         def view(name=None, format=None, view=None):
+            if format is not None:
+                if format in extensions:
+                    content_type = extensions[format]
+                else:
+                    name = '.'.join([name, format])
             
             #print name
             if name is not None:
@@ -246,8 +251,6 @@ class App(Empty):
             else:
                 entity = self.NS.local.Home
             content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
-            if format is not None and format in extensions:
-                content_type = extensions[format]
 
             resource = get_entity(entity)
             print resource.identifier, content_type
@@ -389,6 +392,7 @@ values ?c { %s }
                     nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
                     nanopub.pubinfo.add((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
                     nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.modified, modified))
+                    app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
             def _prep_nanopub(self, nanopub_uri, graph):
