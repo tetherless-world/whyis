@@ -6,11 +6,7 @@
   <a relation="{{predicate}}" href="{{resource.identifier}}">{{get_label(resource)}}</a>
 {% endmacro %}
 
-{% macro get_label(resource) %}{{
-resource.graph.preferredLabel(resource.identifier,
-                              default=[('',resource.graph.qname(resource.identifier).split(":")[1]|title)],
-                              labelProperties=(g.ns.RDFS.label, g.ns.skos.prefLabel, g.ns.dc.title, g.ns.foaf.name))[0][1]
-}}{% endmacro %}
+{% macro get_label(resource) %}{{g.get_label(resource)}}{% endmacro %}
 
 {% macro content(resource) %}
     {% for value in resource[g.ns.sioc.content] %}

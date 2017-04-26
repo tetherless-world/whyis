@@ -173,11 +173,26 @@ class App(Empty):
             def is_authenticated(self):
                 return True
 
+        def get_label(resource):
+            print resource.identifier
+            label = resource.graph.preferredLabel(resource.identifier, default = None,
+                                labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
+            if len(label) == 0:
+                try:
+                    label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
+                except:
+                    label = str(resource.identifier)
+            else:
+                label = label[0]
+            print label
+            return label
+            
         @self.before_request
         def load_forms():
             #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
+            g.get_label = get_label
             g.get_entity = get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
@@ -281,6 +296,7 @@ class App(Empty):
                 return resource.graph.serialize(format=fmt)
         
 
+        views = {}
         def render_view(resource):
             template_args = dict(ns=self.NS,
                                  this=resource, g=g,
@@ -316,34 +332,27 @@ class App(Empty):
                 view = 'view'
 
             if 'as' in request.args:
-                types = [URIRef(request.args['as'])]
+                types = [URIRef(request.args['as']), 0]
             else:
-                types = list(resource[RDF.type])
+                types = list([(x.identifier, 0) for x in resource[RDF.type]])
             #if len(types) == 0:
-            types.append(self.NS.RDFS.Resource)
-            #print types
-            type_string = ' '.join([x.n3() if hasattr(x,'n3') else x.identifier.n3() for x in types])
-            view_query = '''select ?id ?view ?rank where {
-    {
-        select ?class (count(?mid) as ?rank) where {
-            ?c rdfs:subClassOf* ?mid.
-            ?mid rdfs:subClassOf* ?class.
-        } group by ?class ?c order by ?class ?c
-    }
+            types.append([self.NS.RDFS.Resource, 100])
+            print types
+            type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
+            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
+    values (?c ?priority) { %s }
+    ?c rdfs:subClassOf* ?mid.
+    ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
     ?viewProperty rdfs:subPropertyOf* graphene:hasView.
     ?viewProperty dc:identifier ?id.
-} order by ?rank
-values ?c { %s }
+} group by ?c ?class order by ?rank
 ''' % type_string
 
-            #print view_query
+            print view_query
             views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc),
                                           initBindings=dict(id=Literal(view))))
-            if len(views) == 0:
-                views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc),
-                                          initBindings=dict(id=Literal(view))))
-            #print views
+            print '\n'.join([str(x.asdict()) for x in views])
             if len(views) == 0:
                 abort(404)
             # default view (list of nanopubs)
