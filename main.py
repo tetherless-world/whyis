@@ -55,6 +55,12 @@ sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
 basestring = getattr(__builtins__, 'basestring', str)
 
+# we create some comparison keys:
+# increase probability that the rule will be near or at the top
+top_compare_key = False, -100, [(-2, 0)]
+# increase probability that the rule will be near or at the bottom 
+bottom_compare_key = True, 100, [(2, 0)]
+
 class NamespaceContainer:
     @property
     def prefixes(self):
@@ -133,7 +139,19 @@ class App(Empty):
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
 
-        
+    def weighted_route(self, *args, **kwargs):
+        def decorator(view_func):
+            compare_key = kwargs.pop('compare_key', None)
+            # register view_func with route
+            self.route(*args, **kwargs)(view_func)
+    
+            if compare_key is not None:
+                rule = self.url_map._rules[-1]
+                rule.match_compare_key = lambda: compare_key
+    
+            return view_func
+        return decorator
+                
     def configure_views(self):
 
         def sort_by(resources, property):
@@ -232,8 +250,8 @@ class App(Empty):
         
         @self.route('/about.<format>')
         @self.route('/about')
-        @self.route('/<path:name>.<format>')
-        @self.route('/<path:name>')
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key)
+        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key)
         @self.route('/')
         @login_required
         def view(name=None, format=None, view=None):
