@@ -21,13 +21,14 @@
         <h2 class="panel-title">Nanopublications for {{get_label(this)}}</h2>
       </div>
       <div class="panel-body">
-        <!-- <p>this is the article view file!</p> -->
         <nanopubs resource="{{this.identifier}}"/>
       </div>
     </div>
   </div>
   <div class="col-md-4">
     {{ facts_panel(this) }}
-  </div>          
+  </div>
+  <p>this is the article_view.html!</p>
+  <!-- for debugging purposes -->
 
 {% endblock %}

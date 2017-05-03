@@ -56,6 +56,12 @@ sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
 basestring = getattr(__builtins__, 'basestring', str)
 
+# we create some comparison keys:
+# increase probability that the rule will be near or at the top
+top_compare_key = False, -100, [(-2, 0)]
+# increase probability that the rule will be near or at the bottom 
+bottom_compare_key = True, 100, [(2, 0)]
+
 class NamespaceContainer:
     @property
     def prefixes(self):
@@ -141,7 +147,19 @@ class App(Empty):
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
 
-
+    def weighted_route(self, *args, **kwargs):
+        def decorator(view_func):
+            compare_key = kwargs.pop('compare_key', None)
+            # register view_func with route
+            self.route(*args, **kwargs)(view_func)
+    
+            if compare_key is not None:
+                rule = self.url_map._rules[-1]
+                rule.match_compare_key = lambda: compare_key
+    
+            return view_func
+        return decorator
+                
     def configure_views(self):
 
         def sort_by(resources, property):
@@ -163,11 +181,31 @@ class App(Empty):
             def is_authenticated(self):
                 return True
 
+        def get_label(resource):
+            print resource.identifier
+            label = resource.graph.preferredLabel(resource.identifier, default = None,
+                                labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
+            if len(label) == 0:
+                dbres = self.db.resource(resource.identifier)
+                name = [x.value for x in [dbres.value(self.NS.foaf.givenName), dbres.value(self.NS.foaf.familyName)] if x is not None]
+                if len(name) > 0:
+                    label = ' '.join(name)
+                else:
+                    try:
+                        label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
+                    except:
+                        label = str(resource.identifier)
+            else:
+                label = label[0]
+            print label
+            return label
+            
         @self.before_request
         def load_forms():
             #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
+            g.get_label = get_label
             g.get_entity = get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
@@ -212,13 +250,20 @@ class App(Empty):
 
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
+#            {
+#              select ?np ?g where {
+#                { ?np sio:isAbout ?e.}
+#                UNION
+#                { graph ?g { ?e ?p ?o} }
+#              }
+#            }
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
-                sio:isAbout ?e.
             graph ?pubinfo { ?assertion dc:created [].}
-            graph ?g {?s ?p ?o.}
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc})
+            ?np sio:isAbout ?e.
+            graph ?g {?s ?p ?o.} 
+        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
             #print result.serialize(format="json-ld")
@@ -240,14 +285,16 @@ class App(Empty):
 
         @self.route('/about.<format>')
         @self.route('/about')
-        @self.route('/<name>.<format>')
-        @self.route('/<name>')
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key)
+        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key)
         @self.route('/')
-        @self.route('/<name>/<prefix>/<suffix>')
         @login_required
-        
-        def view(name=None, format=None, view=None, prefix=None, suffix=None):
-            #print name
+        def view(name=None, format=None, view=None):
+            if format is not None:
+                if format in extensions:
+                    content_type = extensions[format]
+                else:
+                    name = '.'.join([name, format])
             if name is not None:
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
@@ -255,24 +302,19 @@ class App(Empty):
             else:
                 entity = self.NS.local.Home
             content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
-            if format is not None and format in extensions:
-                content_type = extensions[format]
+            print entity
 
             resource = get_entity(entity)
             print resource.identifier, content_type
 
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
-                url = getfullname(resource.identifier + "/" + str(prefix) + "/" + str(suffix))
-                if url is not None:
-                    headers = {'Accept': 'application/rdf+xml'}
-                    r = requests.get(url, headers=headers)
-                    print r.text
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
 
+        views = {}
         def render_view(resource):
             template_args = dict(ns=self.NS,
                                  this=resource, g=g,
@@ -308,34 +350,26 @@ class App(Empty):
                 view = 'view'
 
             if 'as' in request.args:
-                types = [URIRef(request.args['as'])]
+                types = [URIRef(request.args['as']), 0]
             else:
-                types = list(resource[RDF.type])
+                types = list([(x.identifier, 0) for x in resource[RDF.type]])
             #if len(types) == 0:
-            types.append(self.NS.RDFS.Resource)
-            #print types
-            type_string = ' '.join([x.n3() if hasattr(x,'n3') else x.identifier.n3() for x in types])
-            view_query = '''select ?id ?view ?rank where {
-    {
-        select ?class (count(?mid) as ?rank) where {
-            ?c rdfs:subClassOf* ?mid.
-            ?mid rdfs:subClassOf* ?class.
-        } group by ?class ?c order by ?class ?c
-    }
+            types.append([self.NS.RDFS.Resource, 100])
+            print view, resource.identifier, types
+            type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
+            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
+    values (?c ?priority ?id) { %s }
+    ?c rdfs:subClassOf* ?mid.
+    ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
     ?viewProperty rdfs:subPropertyOf* graphene:hasView.
     ?viewProperty dc:identifier ?id.
-} order by ?rank
-values ?c { %s }
+} group by ?c ?class order by ?rank
 ''' % type_string
 
-            #print view_query
-            views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc),
-                                          initBindings=dict(id=Literal(view))))
-            if len(views) == 0:
-                views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc),
-                                          initBindings=dict(id=Literal(view))))
-            #print views
+            print view_query
+            views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc)))
+            print '\n'.join([str(x.asdict()) for x in views])
             if len(views) == 0:
                 abort(404)
 
@@ -403,6 +437,7 @@ values ?c { %s }
                     nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
                     nanopub.pubinfo.add((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
                     nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.modified, modified))
+                    app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
             def _prep_nanopub(self, nanopub_uri, graph):

@@ -433,14 +433,15 @@ prov:Role rdf:type owl:Class ;
 
 graphene:hasView dc:identifier "view".
 
-graphene:hasDownload dc:identifer "download";
+graphene:hasDownload dc:identifier "download";
   rdfs:subPropertyOf graphene:hasView.
 
-#rdfs:Resource graphene:hasView "resource_view.html";
-#  graphene:hasDownload "download_view.html".
+graphene:hasLabel dc:identifier "label";
+  rdfs:subPropertyOf graphene:hasView.
 
-# replaced resource view with article_view for test
-# replaced rdfs:Resource with bibo:Document
+rdfs:Resource graphene:hasView "resource_view.html";
+  graphene:hasLabel "label_view.html".
+
 dc:BibliographicResource graphene:hasView "article_view.html";
   graphene:hasDownload "download_view.html".
 
