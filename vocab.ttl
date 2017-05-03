@@ -432,11 +432,14 @@ prov:Role rdf:type owl:Class ;
 
 graphene:hasView dc:identifier "view".
 
-graphene:hasDownload dc:identifer "download";
+graphene:hasDownload dc:identifier "download";
+  rdfs:subPropertyOf graphene:hasView.
+
+graphene:hasLabel dc:identifier "label";
   rdfs:subPropertyOf graphene:hasView.
 
 rdfs:Resource graphene:hasView "resource_view.html";
-  graphene:hasDownload "download_view.html".
+  graphene:hasLabel "label_view.html".
 
 owl:Class rdfs:label "Class";
     graphene:hasView "class_view.html".

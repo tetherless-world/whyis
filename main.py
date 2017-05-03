@@ -178,10 +178,15 @@ class App(Empty):
             label = resource.graph.preferredLabel(resource.identifier, default = None,
                                 labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
             if len(label) == 0:
-                try:
-                    label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
-                except:
-                    label = str(resource.identifier)
+                dbres = self.db.resource(resource.identifier)
+                name = [x.value for x in [dbres.value(self.NS.foaf.givenName), dbres.value(self.NS.foaf.familyName)] if x is not None]
+                if len(name) > 0:
+                    label = ' '.join(name)
+                else:
+                    try:
+                        label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
+                    except:
+                        label = str(resource.identifier)
             else:
                 label = label[0]
             print label
@@ -237,13 +242,20 @@ class App(Empty):
             
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
+#            {
+#              select ?np ?g where {
+#                { ?np sio:isAbout ?e.}
+#                UNION
+#                { graph ?g { ?e ?p ?o} }
+#              }
+#            }
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
-                sio:isAbout ?e.
             graph ?pubinfo { ?assertion dc:created [].}
-            graph ?g {?s ?p ?o.}
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc})
+            ?np sio:isAbout ?e.
+            graph ?g {?s ?p ?o.} 
+        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
             result = ConjunctiveGraph()
             result.addN(nanopubs)
             #print result.serialize(format="json-ld")
@@ -276,7 +288,6 @@ class App(Empty):
                 else:
                     name = '.'.join([name, format])
             
-            #print name
             if name is not None:
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
@@ -284,6 +295,7 @@ class App(Empty):
             else:
                 entity = self.NS.local.Home
             content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
+            print entity
 
             resource = get_entity(entity)
             print resource.identifier, content_type
@@ -337,10 +349,10 @@ class App(Empty):
                 types = list([(x.identifier, 0) for x in resource[RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
-            print types
-            type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
+            print view, resource.identifier, types
+            type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
             view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
-    values (?c ?priority) { %s }
+    values (?c ?priority ?id) { %s }
     ?c rdfs:subClassOf* ?mid.
     ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
@@ -350,8 +362,7 @@ class App(Empty):
 ''' % type_string
 
             print view_query
-            views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc),
-                                          initBindings=dict(id=Literal(view))))
+            views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc)))
             print '\n'.join([str(x.asdict()) for x in views])
             if len(views) == 0:
                 abort(404)

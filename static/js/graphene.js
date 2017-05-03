@@ -314,7 +314,7 @@ $( function() {
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
     
-    app = angular.module('App', ['ngSanitize']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial']);
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');
@@ -416,6 +416,17 @@ $( function() {
             return result;
         }
         return resource;
+    }]);
+
+    app.factory('formats', [function() {
+        return [
+            { mimetype: "application/rdf+xml", name: "RDF/XML", extensions: [".rdf"]},
+            { mimetype: "application/ld+json", name: 'JSON-LD', extensions: [".json",'.jsonld']},
+            { mimetype: "text/turtle", name : "Turtle", extensions: ['.ttl']},
+            { mimetype: "application/trig", name : "TRiG", extensions: ['.trig']},
+            { mimetype: "application/n-quads", name : "n-Quads", extensions: ['.nq','.nquads']},
+            { mimetype: "application/n-triples", name : "N-Triples", extensions: ['.nt','.ntriples']},
+        ];
     }]);
     
     app.factory('Graph', ['$http', 'listify', function($http, listify) {
@@ -572,23 +583,23 @@ $( function() {
             });
             graph.resource.assertion = graph.resource( 'urn:nanopub_assertion', {
                 '@type' : 'http://www.nanopub.org/nschema#Assertion',
-                'http://www.w3.org/ns/prov#value': null,
-                'http://open.vocab.org/terms/hasContentType':"text/markdown",
+                'http://www.w3.org/ns/prov#value': [{"@value":null}],
+                'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasAssertion'] = graph.resource.assertion;
 
             graph.resource.provenance = graph.resource( 'urn:nanopub_provenance', {
                 '@type' : 'http://www.nanopub.org/nschema#Provenance',
-                'http://www.w3.org/ns/prov#value': null,
-                'http://open.vocab.org/terms/hasContentType':"text/markdown"
+                'http://www.w3.org/ns/prov#value':[{"@value":null}],
+                'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}]
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasProvenance'] = graph.resource.provenance;
             graph.resource.provenance.resource.assertion = graph.resource.provenance.resource('urn:nanopub_assertion');
 
             graph.resource.pubinfo = graph.resource( 'urn:nanopub_publication_info', {
                 '@type' : 'http://www.nanopub.org/nschema#PublicationInfo',
-                'http://www.w3.org/ns/prov#value': null,
-                'http://open.vocab.org/terms/hasContentType':"text/markdown",
+                'http://www.w3.org/ns/prov#value': [{"@value":null}],
+                'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasPublicationInfo'] = graph.resource.pubinfo;
             graph.resource.pubinfo.resource.assertion = graph.resource.pubinfo.resource('urn:nanopub_assertion');
@@ -615,7 +626,7 @@ $( function() {
                     graph.resource.assertion = graph.resource.self.value('http://www.nanopub.org/nschema#hasAssertion');
                     graph.resource.provenance = graph.resource.self.value('http://www.nanopub.org/nschema#hasProvenance');
                     graph.resource.pubinfo = graph.resource.self.value('http://www.nanopub.org/nschema#hasPublicationInfo');
-                    graph.resource.replies = [];
+                    if (graph.resource.replies === undefined) graph.resource.replies = [];
                 }
             });
             nanopubs.forEach(function(np) {
@@ -635,7 +646,8 @@ $( function() {
                     console.log(np, np.resource.pubinfo.resource.assertion);
 
                     if (np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']) {
-                        var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']['@id']];
+                        var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of'][0]['@id']];
+                        if (parent.resource.replies === undefined) parent.resource.replies = [];
                         parent.resource.replies.push(np);
                         parent.resource.replies = parent.resource.replies.sort(nanopubComparator);
                     }
@@ -668,18 +680,27 @@ $( function() {
         }
         return Nanopub;
     }]);
-
-    app.directive("newnanopub",['Nanopub',function(Nanopub) {
+    
+    app.directive("newnanopub",['Nanopub','formats', function(Nanopub, formats) {
         return {
             restrict: "E",
             require: "^nanopubs",
             scope: {
                 nanopub: "=",
                 verb: "@",
-                save: "&onSave"
+                save: "&onSave",
+                editing: "@"
             },
             templateUrl: '/static/html/newNanopub.html',
             link: function (scope, element, attrs, nanopubsCtrl) {
+                scope.currentGraph = "assertion";
+                scope.formats = formats;
+                scope.graphs =  ['assertion','provenance','pubinfo'];
+                scope.isArray = function(variable) {
+                    if (variable === undefined || variable === null) return false;
+                    if (typeof variable === 'string' || variable instanceof String) return false;
+                    return typeof variable === 'Array' || variable instanceof Array || variable.constructor === Array;
+                };
             },
         };
     }]);
@@ -696,15 +717,15 @@ $( function() {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
                 $scope.canEdit = function(nanopub) {
-                    console.log( USER.uri, nanopub.resource.pubinfo);
-                    return USER.admin == "True" ||
-                        nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
+                    //console.log( USER.uri, nanopub.resource.pubinfo);
+                    return true;//USER.admin == "True"; ||
+                        //nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
                 };
-                $scope.$watch('resource', function(newval) {
-                    if ($scope.about != null) {
-                        Nanopub.list($scope.resource).then($scope.update);
-                    }
-                });
+                //$scope.$watch('resource', function(newval) {
+                //    if ($scope.about != null) {
+                //        Nanopub.list($scope.resource).then($scope.update);
+                //    }
+                //});
                 $scope.trust = $sce.trustAsHtml;
                 $scope.newNanopub = Nanopub($scope.resource);
                 $scope.update = function(nanopubs) {
