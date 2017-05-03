@@ -295,6 +295,26 @@ class App(Empty):
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
 
+                @self.route('/curate',methods=['GET','POST'])
+
+        #=========================#
+        #Curation team Spring 2017#
+        @login_required
+        def curate():
+            database.init_db()
+            if not database.does_exist("dblp"):
+                database.update_date("dblp","1900-01-01 00:00")
+            needs_update = database.check_update_dblp()
+            if request.method == "GET":
+                return render_template("curate.html",needs_update = needs_update)
+            elif request.method == "POST":
+                button = request.form['button']
+                if button == "Update DBLP":
+                    database.update_dblp()
+                    needs_update = database.check_update_dblp()
+                    return render_template("curate.html",needs_update = needs_update)
+        #End of curation implement#
+        #=========================#
 
         views = {}
         def render_view(resource):

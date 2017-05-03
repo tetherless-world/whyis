@@ -1,0 +1,504 @@
+@prefix prov:          <http://www.w3.org/ns/prov#> .
+@prefix dcat:          <http://www.w3.org/ns/dcat#> .
+@prefix dcterms:       <http://purl.org/dc/terms/> .
+@prefix void:          <http://rdfs.org/ns/void#> .
+@prefix setl:          <http://purl.org/twc/vocab/setl/> .
+@prefix pv:            <http://purl.org/net/provenance/ns#> .
+@prefix xsd:           <http://www.w3.org/2001/XMLSchema#> .
+@prefix :              <http://example.com/setl/> .
+:xml_tree a setl:XML, setl:DTDValidatedXML;
+  setl:xpath "//article", "//inproceedings", "//proceedings", "//book", "//incollection", "//phdthesis", "//mastersthesis", "//www", "//person", "//data";
+  prov:wasGeneratedBy [
+    a setl:Extract;
+    prov:used <dblp.xml>;
+  ].
+<http://dblp.uni-trier.de/> a void:Dataset;
+  prov:wasGeneratedBy [
+    a setl:Transform, setl:JSLDT;
+    prov:used :xml_tree;
+    setl:hasContext '''{
+      "dblp": "http://dblp.uni-trier.de/db/",
+      "dcterms": "http://purl.org/dc/terms/",
+      "bibo": "http://purl.org/ontology/bibo/",
+      "book": "http://purl.org/NET/book/vocab#",
+      "bibtex": "http://purl.org/net/nknouf/ns/bibtex#",
+      "foaf" : "http://xmlns.com/foaf/0.1/",
+      "namespaces": "http://prismstandard.org/namespaces/basic/2.1/",
+      "graphene" :    "http://graphene.tw.rpi.edu/",
+      "schema": "http://schema.org/",
+      "unknown": "http://unknown.unknown/"
+    }''';
+    prov:value '''[
+    {
+        "@if": "row.tag == 'article'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibo:Article",
+        "dcterms:title": "{{row.find('title').text}}",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}",
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "dcterms:title": [{
+          "@if": "row.find('booktitle') != None",
+          "@value": "{{row.find('booktitle').text}}"
+        }],
+        "dcterms:publisher": {"@value": "{{row.find('journal').text}}"},
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "bibo:volume": {"@value": "{{row.find('volume').text}}"},
+        "bibo:pageStart": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "bibo:pageEnd": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "namespaces:startingPage": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "namespaces:endingPage": [{
+          "@if": "row.find('pages') != None  and len(row.find('pages').text.split('-')) == 2",
+          "@value": "{{row.find('pages').text.split('-')[1]}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'phdthesis'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibtex:Phdthesis",
+        "dcterms:title": "{{row.find('title').text}}",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}",
+            "schema:affiliation" : [{
+              "@if": "row.find('school') != None",
+              "@id": "school:{{slugify(row.find('school').text)}}"
+            }],
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "graphene:school": [{
+          "@for" : "school in row.findall('school')",
+          "@do":{
+            "@id": "school:{{slugify(school.text)}}",
+            "@type" : "prov:Organization",
+            "foaf:name" : "{{school.text}}"
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "bibo:note": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('note').text}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'book'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibo:Book",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}",
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "dcterms:contributor": [{
+          "@for" : "editor in row.findall('editor')",
+          "@do": {
+            "@id" : "contributor:{{slugify(editor.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{editor.text}}",
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "book:isbn13": [{
+          "@for": "isbn in row.findall('isbn')",
+          "@do": {"@value": "{{(isbn.text).replace('-','')}}"}
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "dcterms:publisher": {"@value": "{{row.find('publisher').text}}"},
+        "bibo:Note": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('note').text}}"
+        }],
+        "dcterms:title": [{
+          "@if": "row.find('title') != None",
+          "@value": "{{row.find('title').text}}"
+        }],
+        "bibo:volume": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('volume').text}}"
+        }],
+        "bibo:Series": [{
+          "@if": "row.find('series') != None",
+          "@value": "{{row.find('series').text}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'incollection'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibtex:Incollection",
+        "dcterms:title": "{{row.find('title').text}}",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}"
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "bibo:pageStart": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "bibo:pageEnd": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "bibo:endingPage": [{
+          "@if": "row.find('pages') != None  and len(row.find('pages').text.split('-')) == 2",
+          "@value": "{{row.find('pages').text.split('-')[1]}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'mastersthesis'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibtex:Mastersthesis",
+        "dcterms:title": "{{row.find('title').text}}",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}",
+            "schema:affiliation" : [{
+              "@if": "row.find('school') != None",
+              "@id": "school:{{slugify(row.find('school').text)}}"
+            }],
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "graphene:school": [{
+          "@for" : "school in row.findall('school')",
+          "@do":{
+            "@id": "school:{{slugify(school.text)}}",
+            "@type" : "prov:Organization",
+            "foaf:name" : "{{school.text}}"
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "bibo:note": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('note').text}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'inproceedings'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibo:Proceedings",
+        "dcterms:creator": [{
+          "@for" : "author in row.findall('author')",
+          "@do": {
+            "@id" : "contributor:{{slugify(author.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{author.text}}",
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "dcterms:title": "{{row.find('title').text}}",
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "bibo:pageStart": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "bibo:pageEnd": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "namespaces:startingPage": [{
+          "@if": "row.find('pages') != None",
+          "@value": "{{row.find('pages').text.split('-')[0]}}"
+        }],
+        "namespaces:endingPage": [{
+          "@if": "row.find('pages') != None  and len(row.find('pages').text.split('-')) == 2",
+          "@value": "{{row.find('pages').text.split('-')[1]}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'proceedings'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibo:Proceedings",
+        "dcterms:title": "{{row.find('title').text}}",
+        "dcterms:contributor": [{
+          "@for" : "editor in row.findall('editor')",
+          "@do": {
+            "@id" : "contributor:{{slugify(editor.text)}}",
+            "@type" : "prov:Person",
+            "foaf:name" : "{{editor.text}}",
+            "foaf:publications": [{
+              "@for": "url in row.findall('url')",
+              "@do": [{
+                "@if": "url.text.find('http') == -1",
+                "@value": "dblp.uni-trier.de/{{url.text}}"
+              },
+              {
+                "@if": "url.text.find('http') != -1",
+                "@value": "{{url.text}}"
+              }]
+            }]
+          }
+        }],
+        "namespaces:doi": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') != -1",
+            "@value": "{{ee.text.split('http://dx.doi.org/')[1]}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@for": "ee in row.findall('ee')",
+          "@do": [{
+            "@if": "(ee.text).find('dx.doi') == -1",
+            "@value": "{{ee.text}}"
+          }]
+        }],
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "dblp:{{row.find('url').text}}"
+        }],
+        "book:isbn": [{
+          "@for": "isbn in row.findall('isbn')",
+          "@do": {"@value": "{{isbn.text}}"}
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }],
+        "dcterms:publisher": {"@value": "{{row.find('publisher').text}}"},
+        "bibo:Note": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('note').text}}"
+        }],
+        "dcterms:title": [{
+          "@if": "row.find('booktitle') != None",
+          "@value": "{{row.find('booktitle').text}}"
+        }],
+        "bibo:volume": [{
+          "@if": "row.find('note') != None",
+          "@value": "{{row.find('volume').text}}"
+        }],
+        "bibo:Series": [{
+          "@if": "row.find('series') != None",
+          "@value": "{{row.find('series').text}}"
+        }]
+    },
+    {
+        "@if": "row.tag == 'www'",
+        "@id": "dblp:{{row.attrib['key']}}",
+        "@type": "bibo:Website",
+        "dcterms:title": "{{row.find('title').text}}",
+        "bibo:Website": [{
+          "@if": "row.find('url') != None and row.find('ee') == None",
+          "@value": "{{row.find('url').text}}"
+        }],
+        "dcterms:created": [{
+          "@if": "row.find('year')!= None",
+          "@value": "{{row.find('year').text}}", "@type": "xsd:gYear"
+        }]
+    }
+  ]'''].
+<dblp.ttl> a pv:File;
+  dcterms:format "text/turtle";
+  prov:wasGeneratedBy [
+    a setl:Load;
+    prov:used <http://dblp.uni-trier.de/> ;
+  ].
