@@ -228,7 +228,7 @@ class App(Empty):
 
         def get_summary(resource):
             summary_properties = [
-                self.NS.skos.definition,
+                self.NS.skos.definition,/doi/10.7717/peerj-cs.10
                 self.NS.dc.abstract,
                 self.NS.dc.description,
                 self.NS.RDFS.comment,

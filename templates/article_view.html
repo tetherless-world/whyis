@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this)}}{% endblock %}
+{% block subtitle %}
+{% if this.value(ns.RDF.type) %} a
+  {% for superClass in this[ns.RDF.type] %}
+  {% if loop.last %} and {% endif %}
+  {{ render_resource_link(superClass) }}
+  {% if loop.revindex > 2 %}, {% endif %}
+{% endfor %}
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="row" >
+  <div class="col-md-8">
+    {{ summary_panel(this) }}
+    {{ content(this) }}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Nanopublications for {{get_label(this)}}</h2>
+      </div>
+      <div class="panel-body">
+        <!-- <p>this is the article view file!</p> -->
+        <nanopubs resource="{{this.identifier}}"/>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    {{ facts_panel(this) }}
+  </div>          
+
+{% endblock %}

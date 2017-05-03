@@ -15,6 +15,7 @@
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
 @base <http://vocab.rpi.edu/graphene/> .
 @prefix graphene: <http://vocab.rpi.edu/graphene/> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
 
 <http://vocab.rpi.edu/graphene/> rdf:type owl:Ontology .
 
@@ -435,7 +436,12 @@ graphene:hasView dc:identifier "view".
 graphene:hasDownload dc:identifer "download";
   rdfs:subPropertyOf graphene:hasView.
 
-rdfs:Resource graphene:hasView "resource_view.html";
+#rdfs:Resource graphene:hasView "resource_view.html";
+#  graphene:hasDownload "download_view.html".
+
+# replaced resource view with article_view for test
+# replaced rdfs:Resource with bibo:Document
+dc:BibliographicResource graphene:hasView "article_view.html";
   graphene:hasDownload "download_view.html".
 
 owl:Class rdfs:label "Class";
