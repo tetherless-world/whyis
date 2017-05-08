@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<link rel="stylesheet" type="text/css" href="topics.less"></link>
+<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
+
+
+<body>
+<div ng-app="topics" ng-controller="topicCtrl">
+
+  <label>Topics:</label>
+<div class="topic-list">
+  <span ng-repeat = "topic in topics track by $index">
+    <a href=""> {{topic}}</a>
+  </span>
+</div>
+</div>
+
+<script type="text/javascript" src="topicCtrl.js"></script>
+
+</body>
+</html>
