@@ -99,14 +99,14 @@ class NanopublicationManager:
                     mappings[pubinfo] = rdflib.URIRef(new_uri+"_pubinfo")
                 for provenance in graph.objects(nanopub, np.hasProvenance):
                     mappings[provenance] = rdflib.URIRef(new_uri+"_provenance")
-        print mappings
+        #print mappings
                     
         output_graph = rdflib.ConjunctiveGraph()
 
         for s, p, o, g in graph.quads():
             quad = (mappings.get(s,s), mappings.get(p,p), mappings.get(o,o), mappings.get(g.identifier,g.identifier))
-            print s, p, o, g
-            print quad
+            #print s, p, o, g
+            #print quad
             output_graph.add(quad)
 
         for nanopub_uri in output_graph.subjects(rdflib.RDF.type, np.Nanopublication):

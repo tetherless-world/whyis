@@ -177,7 +177,7 @@ class App(Empty):
             print resource.identifier
             label = resource.graph.preferredLabel(resource.identifier, default = None,
                                 labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
-            if len(label) == 0:
+            if label is None or len(label) < 2:
                 dbres = self.db.resource(resource.identifier)
                 name = [x.value for x in [dbres.value(self.NS.foaf.givenName), dbres.value(self.NS.foaf.familyName)] if x is not None]
                 if len(name) > 0:
@@ -461,15 +461,18 @@ class App(Empty):
             def _prep_graph(self, resource, about = None):
                 #print '_prep_graph', resource.identifier, about
                 content_type = resource.value(app.NS.ov.hasContentType)
+                if content_type is not None:
+                    content_type = content_type.value
+                print 'graph content type', resource.identifier, content_type
                 #print resource.graph.serialize(format="nquads")
                 g = Graph(store=resource.graph.store,identifier=resource.identifier)
                 text = resource.value(app.NS.prov.value)
                 if content_type is not None and text is not None:
-                    #print 'Content type:', content_type, resource.identifier
+                    print 'Content type:', content_type, resource.identifier
                     html = None
-                    if content_type.value in ["text/html", "application/xhtml+xml"]:
+                    if content_type in ["text/html", "application/xhtml+xml"]:
                         html = Literal(text.value, datatype=RDF.HTML)
-                    if content_type.value == 'text/markdown':
+                    if content_type == 'text/markdown':
                         #print "Aha, markdown!"
                         #print text.value
                         html = markdown.markdown(text.value, extensions=['rdfa'])
@@ -482,6 +485,7 @@ class App(Empty):
                         html = Literal(html, datatype=RDF.HTML)
                         text = html
                         content_type = "text/html"
+                    print resource.identifier, content_type
                     if html is not None:
                         resource.add(app.NS.sioc.content, html)
                         try:
@@ -489,10 +493,17 @@ class App(Empty):
                         except:
                             pass
                     else:
-                        try:
-                            sadi.deserialize(g, text, content_type)
-                        except:
-                            pass
+                        print "Deserializing", g.identifier, 'as', content_type
+                        print dataFormats
+                        if content_type in dataFormats:
+                            g.parse(data=text, format=dataFormats[content_type])
+                            print len(g)
+                        else:
+                            print "not attempting to deserialize."
+#                            try:
+#                                sadi.deserialize(g, text, content_type)
+#                            except:
+#                                pass
                 #print Graph(store=resource.graph.store).serialize(format="trig")
                     
             

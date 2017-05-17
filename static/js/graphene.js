@@ -2,6 +2,90 @@
     $('[data-toggle="tooltip"]').tooltip()
 //});
 
+/**
+ * Decode payload in the given data URI, return the result as a Buffer.
+ * See [RFC2397](http://www.ietf.org/rfc/rfc2397.txt) for the specification
+ * of data URL scheme.
+ * @param {String} uri
+ * @returns {Buffer}
+ */
+function decodeDataURI(uri) {
+
+    //  dataurl    := "data:" [ mediatype ] [ ";base64" ] "," data
+    //  mediatype  := [ type "/" subtype ] *( ";" parameter )
+    //  data       := *urlchar
+    //  parameter  := attribute "=" value
+    
+    var m = /^data:([^;,]+)?((?:;(?:[^;,]+))*?)(;base64)?,(.*)/.exec(uri);
+    if (!m) {
+        throw new Error('Not a valid data URI: "' + uri.slice(0, 20) + '"');
+    }
+    
+    var media    = '';
+    var b64      = m[3];
+    var body     = m[4];
+    var result   = null;
+    var charset  = null;
+    var mimetype = null;
+    
+    // If <mediatype> is omitted, it defaults to text/plain;charset=US-ASCII.
+    // As a shorthand, "text/plain" can be omitted but the charset parameter
+    // supplied.
+    if (m[1]) {
+        mimetype = m[1];
+        media = mimetype + (m[2] || '');
+    } else {
+        mimetype = 'text/plain';
+        if (m[2]) {
+            media = mimetype + m[2];
+        } else {
+            charset = 'US-ASCII';
+            media = 'text/plain;charset=US-ASCII';
+        }
+    }
+    
+    // The RFC doesn't say what the default encoding is if there is a mediatype
+    // so we will return null.  For example, charset doesn't make sense for
+    // binary types like image/png
+    if (!charset && m[2]) {
+        var cm = /;charset=([^;,]+)/.exec(m[2]);
+        if (cm) {
+            charset = cm[1];
+        }
+    }
+    
+    if (b64) {
+        result = {value : atob(body)};
+        
+    } else {
+        result = {value : decodeURIComponent(body)};
+    }
+    
+    result.mimetype  = mimetype;
+    result.mediatype = media;
+    result.charset   = charset;
+    
+    return result;
+}
+
+
+function encodeDataURI(input, mediatype) {
+    var buf;
+    if (Buffer.isBuffer(input)) {
+        buf = input;
+        mediatype = mediatype || 'application/octet-stream';
+    } else if (typeof(input) == 'string') {
+        buf = new Buffer(input, 'utf8');
+        mediatype = mediatype || 'text/plain;charset=UTF-8';
+    } else {
+        // TODO: support streams?
+        throw new Error('Invalid input, expected Buffer or string');
+    }
+    // opinionatedly base64
+    return 'data:' + mediatype + ';base64,' + buf.toString('base64');
+}
+
+
 //require(["d3", "angular", "jquery", 'angular-sanitize', "bootstrap" ], function () {
 $( function() {
     PALETTE = [
@@ -314,7 +398,7 @@ $( function() {
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
     
-    app = angular.module('App', ['ngSanitize', 'ngMaterial']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput']);
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');
@@ -419,14 +503,29 @@ $( function() {
     }]);
 
     app.factory('formats', [function() {
-        return [
-            { mimetype: "application/rdf+xml", name: "RDF/XML", extensions: [".rdf"]},
-            { mimetype: "application/ld+json", name: 'JSON-LD', extensions: [".json",'.jsonld']},
-            { mimetype: "text/turtle", name : "Turtle", extensions: ['.ttl']},
-            { mimetype: "application/trig", name : "TRiG", extensions: ['.trig']},
-            { mimetype: "application/n-quads", name : "n-Quads", extensions: ['.nq','.nquads']},
-            { mimetype: "application/n-triples", name : "N-Triples", extensions: ['.nt','.ntriples']},
+        var formats =  [
+            { mimetype: "application/rdf+xml", name: "RDF/XML", extensions: ["rdf"]},
+            { mimetype: "application/ld+json", name: 'JSON-LD', extensions: ["json",'jsonld']},
+            { mimetype: "text/turtle", name : "Turtle", extensions: ['ttl']},
+            { mimetype: "application/trig", name : "TRiG", extensions: ['trig']},
+            { mimetype: "application/n-quads", name : "n-Quads", extensions: ['nq','nquads']},
+            { mimetype: "application/n-triples", name : "N-Triples", extensions: ['nt','ntriples']},
         ];
+        formats.lookup = {};
+        formats.forEach(function(f) {
+            f.extensions.forEach(function(extension) {
+                formats.lookup[extension] = f;
+            });
+        });
+        [
+            { mimetype: "text/html", name : "HTML+RDFa", extensions: ['html','htm']},
+            { mimetype: "text/markdown", name : "Semantic Markdown", extensions: ['html','htm']},
+        ].forEach(function(f) {
+            f.extensions.forEach(function(extension) {
+                formats.lookup[extension] = f;
+            });
+        });
+        return formats;
     }]);
     
     app.factory('Graph', ['$http', 'listify', function($http, listify) {
@@ -574,6 +673,22 @@ $( function() {
         };
     }]);
 
+    app.factory("getLabel", ["$http", '$q', function($http, $q) {
+        var promises = {}
+        function getLabel(uri) {
+            if (getLabel.labels[uri] === undefined && promises[uri] === undefined) {
+                promises[uri] = $http.get('/about?uri='+encodeURI(uri)+"&view=label")
+                    .then(function(data, status, headers, config) {
+                        var label = data.data;
+                        getLabel.labels[uri] = data.data;
+                    });
+            }
+            return getLabel.labels[uri];
+        };
+        getLabel.labels = {};
+        return getLabel;
+    }]);
+
     app.factory("Nanopub", ["$http", "Graph", "Resource", function($http, Graph, Resource) {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');
@@ -584,6 +699,7 @@ $( function() {
             graph.resource.assertion = graph.resource( 'urn:nanopub_assertion', {
                 '@type' : 'http://www.nanopub.org/nschema#Assertion',
                 'http://www.w3.org/ns/prov#value': [{"@value":null}],
+                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasAssertion'] = graph.resource.assertion;
@@ -591,6 +707,7 @@ $( function() {
             graph.resource.provenance = graph.resource( 'urn:nanopub_provenance', {
                 '@type' : 'http://www.nanopub.org/nschema#Provenance',
                 'http://www.w3.org/ns/prov#value':[{"@value":null}],
+                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}]
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasProvenance'] = graph.resource.provenance;
@@ -599,6 +716,7 @@ $( function() {
             graph.resource.pubinfo = graph.resource( 'urn:nanopub_publication_info', {
                 '@type' : 'http://www.nanopub.org/nschema#PublicationInfo',
                 'http://www.w3.org/ns/prov#value': [{"@value":null}],
+                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasPublicationInfo'] = graph.resource.pubinfo;
@@ -618,17 +736,18 @@ $( function() {
                 return b.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'] -
                     a.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'];
             }
-            graphs['@graph'].forEach(function(graph) {
-                graphMap[graph['@id']] = graph;
-                graph.resource.self = graph.resource(graph['@id']);
-                if (graph.resource.self.has('http://www.nanopub.org/nschema#hasAssertion')) {
-                    nanopubs.push(graph);
-                    graph.resource.assertion = graph.resource.self.value('http://www.nanopub.org/nschema#hasAssertion');
-                    graph.resource.provenance = graph.resource.self.value('http://www.nanopub.org/nschema#hasProvenance');
-                    graph.resource.pubinfo = graph.resource.self.value('http://www.nanopub.org/nschema#hasPublicationInfo');
-                    if (graph.resource.replies === undefined) graph.resource.replies = [];
-                }
-            });
+            if (graphs['@graph'])
+                graphs['@graph'].forEach(function(graph) {
+                    graphMap[graph['@id']] = graph;
+                    graph.resource.self = graph.resource(graph['@id']);
+                    if (graph.resource.self.has('http://www.nanopub.org/nschema#hasAssertion')) {
+                        nanopubs.push(graph);
+                        graph.resource.assertion = graph.resource.self.value('http://www.nanopub.org/nschema#hasAssertion');
+                        graph.resource.provenance = graph.resource.self.value('http://www.nanopub.org/nschema#hasProvenance');
+                        graph.resource.pubinfo = graph.resource.self.value('http://www.nanopub.org/nschema#hasPublicationInfo');
+                        if (graph.resource.replies === undefined) graph.resource.replies = [];
+                    }
+                });
             nanopubs.forEach(function(np) {
                 if (graphMap[np.resource.assertion['@id']]) {
                     np.resource.assertion = graphMap[np.resource.assertion['@id']];
@@ -701,11 +820,40 @@ $( function() {
                     if (typeof variable === 'string' || variable instanceof String) return false;
                     return typeof variable === 'Array' || variable instanceof Array || variable.constructor === Array;
                 };
+                scope.filesUpdated = function(graph) {
+                    console.log(graph);
+                }
             },
         };
     }]);
 
-    app.directive("nanopubs", ["Nanopub", "$sce", function(Nanopub, $sce) {
+    app.directive('fileModel', ['$parse', 'formats', function ($parse, formats) {
+        return {
+            fileModel: 'A',
+            scope: {
+                fileModel: "=",
+                format: "="
+            },
+            link: function(scope, element, attrs) {
+                element.bind('change', function(changeEvent){
+                    var reader = new FileReader();
+                    var extension = changeEvent.target.files[0].name.split(".").slice(-1)[0];
+                    var format = formats.lookup[extension];
+                    if (format !== undefined)
+                        scope.format = format.mimetype;
+                    reader.onload = function (loadEvent) {
+                        scope.$apply(function () {
+                            scope.fileModel = decodeDataURI(loadEvent.target.result).value;
+                            
+                        });
+                    }
+                    reader.readAsDataURL(changeEvent.target.files[0]);
+                });
+            }
+        };
+    }]);
+    
+    app.directive("nanopubs", ["Nanopub", "$sce", "getLabel", function(Nanopub, $sce, getLabel) {
         return {
             restrict: "E",
             scope: {
@@ -716,6 +864,7 @@ $( function() {
             controller: ['$scope', function ($scope) {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
+                $scope.getLabel = getLabel;
                 $scope.canEdit = function(nanopub) {
                     //console.log( USER.uri, nanopub.resource.pubinfo);
                     return true;//USER.admin == "True"; ||
