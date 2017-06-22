@@ -1,0 +1,35 @@
+{
+  "name": "semantic-faceted-search",
+  "version": "0.2.0",
+  "description": "## Installation",
+  "main": "tests/test.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-angular-templates": "^1.0.3",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-concat": "^1.0.0",
+    "grunt-ngdocs": "^0.2.10",
+    "jasmine": "^2.4.1",
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.22",
+    "karma-chrome-launcher": "^0.2.3",
+    "karma-jasmine": "^0.3.8"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SemanticComputing/angular-semantic-faceted-search.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SemanticComputing/angular-semantic-faceted-search/issues"
+  },
+  "homepage": "https://github.com/SemanticComputing/angular-semantic-faceted-search#readme"
+}

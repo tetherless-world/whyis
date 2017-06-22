@@ -4,11 +4,12 @@
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context
 import flask_ld as ld
 from flask_ld.utils import lru
 from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
+import requests
 
 from flask_admin import Admin, BaseView, expose
 
@@ -116,25 +117,26 @@ class App(Empty):
         self.NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 
 
-        self.db = database.engine_from_config(self.config, "db_")
+        self.admin_db = database.engine_from_config(self.config, "admin_")
+        self.db = database.engine_from_config(self.config, "knowledge_")
         load_namespaces(self.db,locals())
-        Resource.db = self.db
+        Resource.db = self.admin_db
 
         self.vocab = Graph()
         #print URIRef(self.config['vocab_file'])
         self.vocab.load(open(self.config['vocab_file']), format="turtle")
 
-        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
+        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
         self.Role = self.role_api.alchemy
 
-        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.db.store, self.vocab, self.config['lod_prefix'], UserMixin)
+        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.admin_db.store, self.vocab, self.config['lod_prefix'], UserMixin)
         self.User = self.user_api.alchemy
 
         self.nanopub_api = ld.LocalResource(self.NS.np.Nanopublication,"pub", self.db.store, self.vocab, self.config['lod_prefix'], name="Graph")
         self.Nanopub = self.nanopub_api.alchemy
 
         self.classes = mapper(self.Role, self.User)
-        self.datastore = RDFAlchemyUserDatastore(self.db, self.classes, self.User, self.Role)
+        self.datastore = RDFAlchemyUserDatastore(self.admin_db, self.classes, self.User, self.Role)
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
@@ -178,15 +180,24 @@ class App(Empty):
             label = resource.graph.preferredLabel(resource.identifier, default = None,
                                 labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
             if label is None or len(label) < 2:
-                dbres = self.db.resource(resource.identifier)
-                name = [x.value for x in [dbres.value(self.NS.foaf.givenName), dbres.value(self.NS.foaf.familyName)] if x is not None]
-                if len(name) > 0:
-                    label = ' '.join(name)
-                else:
-                    try:
-                        label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
-                    except:
-                        label = str(resource.identifier)
+                for db in [self.db, self.admin_db]:
+                    label = resource.graph.preferredLabel(resource.identifier, default = None,
+                                                          labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel,
+                                                                           self.NS.dc.title, self.NS.foaf.name))
+                    if label is None or len(label) < 2:
+                        dbres = db.resource(resource.identifier)
+                        name = [x.value for x in [dbres.value(self.NS.foaf.givenName),
+                                                  dbres.value(self.NS.foaf.familyName)] if x is not None]
+                        if len(name) > 0:
+                            label = [' '.join(name),None]
+                            return label
+                    else:
+                        return label[0]
+            if label is None or len(label) < 2:
+                try:
+                    label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
+                except:
+                    label = str(resource.identifier)
             else:
                 label = label[0]
             print label
@@ -274,6 +285,44 @@ class App(Empty):
             return resource.graph.preferredLabel(resource.identifier, default=[], labelProperties=summary_properties)
 
         self.get_summary = get_summary
+
+        @self.route('/sparql', methods=['GET', 'POST'])
+        @login_required
+        def sparql_view():
+            has_query = False
+            for arg in request.args.keys():
+                if arg.lower() == "update":
+                    return "Update not allowed.", 403
+                if arg.lower() == 'query':
+                    has_query = True
+            if request.method == 'GET' and not has_query:
+                return redirect(url_for('sparql_form'))
+            print self.db.store.query_endpoint
+            if request.method == 'GET':
+                req = requests.get(self.db.store.query_endpoint,
+                                   headers = request.headers, params=request.args)
+            elif request.method == 'POST':
+                if 'application/sparql-update' in request.headers['content-type']:
+                    return "Update not allowed.", 403
+                req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
+                                    headers = request.headers, params=request.args)
+            print self.db.store.query_endpoint
+            response = make_response(req.text)
+            #response.headers[con(req.headers)
+            return response, req.status_code
+        
+        @self.route('/sparql.html')
+        @login_required
+        def sparql_form():
+            template_args = dict(ns=self.NS,
+                                 g=g,
+                                 current_user=current_user,
+                                 isinstance=isinstance,
+                                 rdflib=rdflib,
+                                 hasattr=hasattr,
+                                 set=set)
+
+            return render_template('sparql.html',endpoint="/sparql", **template_args)
         
         @self.route('/about.<format>')
         @self.route('/about')
@@ -306,6 +355,7 @@ class App(Empty):
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
+
         
 
         views = {}
@@ -403,8 +453,12 @@ class App(Empty):
                 return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
 
             def get(self, ident):
+                ident = ident.split("_")[0]
                 uri = self._get_uri(ident)
-                result = app.nanopub_manager.get(uri)
+                try:
+                    result = app.nanopub_manager.get(uri)
+                except IOError:
+                    return 'Resource not found', 404
                 return result
 
             def delete(self, ident):

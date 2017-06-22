@@ -1,0 +1,58 @@
+<div class="facet-wrapper">
+  <span us-spinner="{radius:30, width:8, length: 40}" ng-if="vm.isLoading()"></span>
+  <div class="facet" ng-if=vm.isFacetEnabled()>
+    <div class="well well-sm">
+      <div class="row">
+        <div class="col-xs-12 text-left">
+          <h5 class="facet-name pull-left">{{ vm.facet.name }}</h5>
+          <button
+            ng-disabled="vm.isLoading()"
+            ng-click="vm.disableFacet()"
+            class="btn btn-danger btn-xs pull-right glyphicon glyphicon-remove">
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12 text-left">
+          <div class="facet-input-container">
+            <p class="input-group">
+            <input type="text" class="form-control"
+            ng-change="vm.changed()"
+            ng-disabled="vm.isLoading()"
+            ng-model="vm.facet.selectedValue"
+            ng-model-options="{ debounce: 1000 }">
+            </input>
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-default"
+                ng-disabled="vm.isDisabled()"
+                ng-click="vm.clear()">
+                <i class="glyphicon glyphicon-remove"></i>
+              </button>
+            </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="facet" ng-if=!vm.isFacetEnabled()>
+    <div class="well well-sm">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="row vertical-align">
+            <div class="col-xs-10 text-left">
+              <h5 class="facet-name">{{ vm.facet.name }}</h5>
+            </div>
+            <div class="facet-enable-btn-container col-xs-2 text-right">
+              <button
+                ng-disabled="vm.isLoading()"
+                ng-click="vm.enableFacet(id)"
+                class="facet-enable-btn btn btn-default btn-xs pull-right glyphicon glyphicon-plus">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

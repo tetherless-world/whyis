@@ -1,0 +1,22 @@
+{
+  "name": "angular-paging-sparql-service",
+  "authors": [
+    "Erkki Heino <erkki.heino@aalto.fi>"
+  ],
+  "description": "Angular service for querying SPARQL endpoints with paging support",
+  "main": "dist/sparql-service.js",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "dependencies": {
+    "angular": "^1.4.8",
+    "lodash": "^4.0.0"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

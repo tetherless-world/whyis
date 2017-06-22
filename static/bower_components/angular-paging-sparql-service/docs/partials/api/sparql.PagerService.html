@@ -1,0 +1,56 @@
+<a href="https://github.com/SemanticComputing/angular-paging-sparql-service/edit/master/src/sparql.pager-service.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L34" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">PagerService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">sparql</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="sparql-pagerservice-page"><p>Service for paging SPARQL results.</p>
+<p><a href="#/api/sparql.AdvancedSparqlService"><code>AdvancedSparqlService</code></a> initializes this service, so manual init is not needed.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">new PagerService(sparqlQry, resultSetQry, itemsPerPage, getResults, pagesPerQuery, [itemCount]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>sparqlQry</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="sparql-pagerservice-page"><p>The SPARQL query.</p>
+</div></td></tr><tr><td>resultSetQry</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="sparql-pagerservice-page"><p>The result set subquery part of the query - i.e. the part which
+defines the distinct objects that are being paged
+(containing <code>&lt;PAGE&gt;</code> as a placeholder for SPARQL limit and offset).</p>
+</div></td></tr><tr><td>itemsPerPage</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="sparql-pagerservice-page"><p>The size of a single page.</p>
+</div></td></tr><tr><td>getResults</td><td><a href="" class="label type-hint type-hint-function">function</a></td><td><div class="sparql-pagerservice-page"><p>A function that returns a promise of results given a
+SPARQL query.</p>
+</div></td></tr><tr><td>pagesPerQuery</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="sparql-pagerservice-page"><p>The number of pages to get per query.</p>
+</div> <p><em>(default: 1)</em></p></td></tr><tr><td>[itemCount]</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="sparql-pagerservice-page"><p>The total number of items that the sparqlQry returns.
+Optional, will be queried based on the resultSetQry if not given.</p>
+</div></td></tr></tbody></table></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L178" class="view-source icon-eye-open"> </a><h3 id="methods_getall">getAll()</h3>
+<div class="getall"><div class="sparql-pagerservice-getall-page"><p>Get all results.</p>
+</div><h5 id="methods_getall_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="sparql-pagerservice-getall-page"><p>A promise of the query results as objects.</p>
+</div></td></tr></table></div>
+</li>
+<li><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L146" class="view-source icon-eye-open"> </a><h3 id="methods_getallsequentially">getAllSequentially(chunkSize)</h3>
+<div class="getallsequentially"><div class="sparql-pagerservice-getallsequentially-page"><p>Get all results sequentially in chunks.</p>
+</div><h5 id="methods_getallsequentially_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>chunkSize</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="sparql-pagerservice-getallsequentially-page"><p>The amount of results to get per query.</p>
+</div></td></tr></tbody></table><h5 id="methods_getallsequentially_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="sparql-pagerservice-getallsequentially-page"><p>A promise of the query results as objects.
+The promise will be notified between receiving chunks.</p>
+</div></td></tr></table></div>
+</li>
+<li><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L217" class="view-source icon-eye-open"> </a><h3 id="methods_getmaxpageno">getMaxPageNo()</h3>
+<div class="getmaxpageno"><div class="sparql-pagerservice-getmaxpageno-page"><p>Get the number of the last page of results.</p>
+</div><h5 id="methods_getmaxpageno_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="sparql-pagerservice-getmaxpageno-page"><p>A promise of the number of the last page.</p>
+</div></td></tr></table></div>
+</li>
+<li><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L84" class="view-source icon-eye-open"> </a><h3 id="methods_getpage">getPage(pageNo, [size])</h3>
+<div class="getpage"><div class="sparql-pagerservice-getpage-page"><p>Get a specific &quot;page&quot; of data.</p>
+</div><h5 id="methods_getpage_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>pageNo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="sparql-pagerservice-getpage-page"><p>The number of the page to get (0-indexed).</p>
+</div></td></tr><tr><td>[size]</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="sparql-pagerservice-getpage-page"><p>The page size. Changes the configured page size.
+Using this parameter is not recommended, and may be removed in the future.</p>
+</div></td></tr></tbody></table><h5 id="methods_getpage_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="sparql-pagerservice-getpage-page"><p>A promise of the page of the query results as objects.</p>
+</div></td></tr></table></div>
+</li>
+<li><a href="https://github.com/SemanticComputing/angular-paging-sparql-service/blob/a672219/src/sparql.pager-service.js#L193" class="view-source icon-eye-open"> </a><h3 id="methods_gettotalcount">getTotalCount()</h3>
+<div class="gettotalcount"><div class="sparql-pagerservice-gettotalcount-page"><p>Get the total count of results.</p>
+</div><h5 id="methods_gettotalcount_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="sparql-pagerservice-gettotalcount-page"><p>A promise of total count of the query results.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>
