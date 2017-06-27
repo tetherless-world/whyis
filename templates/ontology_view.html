@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this)}}{% endblock %}
+{% block style %}
+<link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
+{% endblock %}
 {% macro render_class(concept) %}
 <ul>
   {% for s in sort_by(concept.subjects(ns.RDFS.subClassOf), ns.RDFS.label) %}
@@ -19,47 +22,66 @@
 
 {% block content %}
 {{ summary_panel(this) }}
-<div class="row">
-          
-</div>
-<div class="col-md-6">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2 class="panel-title">Subject Areas</h2>
+<div>
+  <div class="container-fluid" ng-controller="OntologyFacetController as vm">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Ontology Classes</h1>
+        <div ng-if="vm.error">
+          <uib-alert type="danger"><span ng-bind="vm.error"></span></uib-alert>
+        </div>
+      </div>
     </div>
-    <div class="panel-body">These are the subject areas listed for this ontology.</div>
-    <ul class="list-group">
-      {% for question in this[ns.dc.subject] %}
-      <li class="list-group-item">
-        <h4 ><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></h4>
-        <p>{{question.value(ns.prov.value)}}</p>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
-<div class="col-md-6">
-  
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2 class="panel-title">Classes</h2>
+    <div class="row">
+      <div class="col-md-3">
+        <!-- Facets are defined here using the configurations defined in the controller -->
+        <seco-text-facet data-options="vm.facets.name"></seco-text-facet>
+        <seco-text-facet data-options="vm.facets.definition"></seco-text-facet>
+        <seco-hierarchy-facet data-options="vm.facets.subclassof"></seco-hierarchy-facet>
+      </div>
+
+      <!-- Results view -->
+      <div class="col-md-9">
+        <img src="/static/images/loading-lg.gif" ng-show="vm.isLoadingResults" />
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Definition</th>
+              <th>Super Class</th>
+              <th>Ontology</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="class in vm.page">
+              <td style="width:21%">
+                <resource-link uri="class.id" label="class.label"></resource-link>
+              </td>
+              <td>
+                <p ng-bind="class.definition"></p>
+              </td>
+              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="superclass.id" label="superclass.label"></resource-link></div></td>
+              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="ontology.id" label="ontology.label"></resource-link></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <uib-pagination
+          class="pagination-sm"
+          max-size="10"
+          boundary-links="true"
+          rotate="false"
+          total-items="vm.totalCount"
+          ng-model="vm.pageNo"
+          ng-disabled="vm.isLoadingResults"
+          ng-change="vm.getPage()">
+        </uib-pagination>
+      </div>
     </div>
-    <ul class="list-group">
-      {% for (cl,) in this.graph.query('''select ?c where { ?c a owl:Class.}''', initNs={"owl":ns.OWL, "rdfs":ns.RDFS}) %}
-      {% set c = this.resource(cl) %}
-      <li class="list-group-item">
-        <a href="{{c.identifier}}">
-          {{c.value(ns.RDFS.label)}}
-          {% if not c[ns.RDF.type:ns.owl.Class] %}
-          <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
-          {% endif %}
-        </a>
-        <span>{% if c.value(ns.skos.definition) %}{{c.value(ns.skos.definition)}}{% endif %}</span>
-        {{ render_class(c) }}
-      </li>
-      {% endfor %}
-    </ul>
   </div>
 </div>
 
+    <script>
+      var ontology = "{{this.identifier}}";
+    </script>
 {% endblock %}

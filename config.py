@@ -78,6 +78,7 @@ Config = dict(
     knowledge_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
     LOGIN_USER_TEMPLATE = "auth/login.html",
 
+
 )
 
 

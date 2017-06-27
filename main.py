@@ -264,7 +264,11 @@ class App(Empty):
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
             graph ?pubinfo { ?assertion dc:created [].}
-            ?np sio:isAbout ?e.
+
+            {graph ?np { ?np sio:isAbout ?e.}}
+            UNION
+            {graph ?assertion { ?e ?p ?o.}}
+            
             graph ?g {?s ?p ?o.} 
         }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
             result = ConjunctiveGraph()
@@ -299,15 +303,19 @@ class App(Empty):
                 return redirect(url_for('sparql_form'))
             print self.db.store.query_endpoint
             if request.method == 'GET':
+                headers = {}
+                headers.update(request.headers)
+                del headers['Content-Length']
                 req = requests.get(self.db.store.query_endpoint,
-                                   headers = request.headers, params=request.args)
+                                   headers = headers, params=request.args, stream = True)
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
-                                    headers = request.headers, params=request.args)
+                                    headers = request.headers, params=request.args, stream = True)
             print self.db.store.query_endpoint
-            response = make_response(req.text)
+            print req.status_code
+            response = Response(stream_with_context(req.iter_content()), content_type = req.headers['content-type'])
             #response.headers[con(req.headers)
             return response, req.status_code
         
