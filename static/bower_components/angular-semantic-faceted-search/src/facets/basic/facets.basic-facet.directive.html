@@ -1,0 +1,55 @@
+<div class="facet-wrapper">
+  <div class="facet" ng-if=vm.facet.isEnabled()>
+    <div class="well well-sm">
+      <div class="row">
+        <div class="col-xs-12 text-left">
+          <div class="alert alert-danger" ng-if="vm.error">{{ vm.error|limitTo:100 }}</div>
+          <span spinner-key="vm.getSpinnerKey()" spinner-start-active="true"
+            us-spinner="{radius:30, width:8, length: 40}" ng-if="vm.isLoading()"></span>
+          <h5 class="facet-name pull-left">{{ vm.facet.name }}</h5>
+          <button
+            ng-disabled="vm.isLoading()"
+            ng-click="vm.disableFacet()"
+            class="btn btn-danger btn-xs pull-right glyphicon glyphicon-remove">
+          </button>
+          <div class="facet-input-container">
+            <input
+            ng-disabled="vm.isLoading()"
+            type="text"
+            class="form-control"
+            ng-model="textFilter" />
+            <select
+              ng-change="vm.changed()"
+              ng-disabled="vm.isLoading()"
+              ng-attr-size="{{ vm.getFacetSize(vm.facet.getState()) }}"
+              id="{{ ::vm.facet.name + '_select' }}"
+              class="selector form-control"
+              ng-options="value as (value.text + ' (' + value.count + ')') for value in vm.facet.getState() | textWithSelection:textFilter:vm.facet.selectedValue track by value.value"
+              ng-model="vm.facet.selectedValue">
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="facet" ng-if=!vm.facet.isEnabled()>
+    <div class="well well-sm">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="row vertical-align">
+            <div class="col-xs-10 text-left">
+              <h5 class="facet-name">{{ vm.facet.name }}</h5>
+            </div>
+            <div class="facet-enable-btn-container col-xs-2 text-right">
+              <button
+                ng-disabled="vm.isLoading()"
+                ng-click="vm.enableFacet()"
+                class="facet-enable-btn btn btn-default btn-xs pull-right glyphicon glyphicon-plus">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

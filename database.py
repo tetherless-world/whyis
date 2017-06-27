@@ -2,15 +2,28 @@
 
 import flask_ld as ld
 from rdflib import *
+from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore, _node_to_sparql, SPARQL_NS, _node_from_result
 
+def node_to_sparql(node):
+    if isinstance(node, BNode):
+        return '<bnode:b%s>' % node
+    return _node_to_sparql(node)
+
+def node_from_result(node):
+    if node.tag == '{%s}uri' % SPARQL_NS and node.text.startswith("bnode:"):
+        return BNode(node.text.replace("bnode:",""))
+    else:
+        return _node_from_result(node)
+    
 def engine_from_config(config, prefix):
     defaultgraph = None
     if prefix+"defaultGraph" in config:
         defaultgraph = URIRef(config[prefix+"defaultGraph"])
     if prefix+"queryEndpoint" in config:
-        from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
         store = SPARQLUpdateStore(queryEndpoint=config[prefix+"queryEndpoint"],
-                                  update_endpoint=config[prefix+"updateEndpoint"])
+                                  update_endpoint=config[prefix+"updateEndpoint"],
+                                  node_to_sparql=node_to_sparql,
+                                  node_from_result=node_from_result)
         graph = ConjunctiveGraph(store,defaultgraph)
     elif prefix+'store' in config:
         graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)

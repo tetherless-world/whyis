@@ -1,0 +1,33 @@
+{
+  "name": "angular-semantic-faceted-search",
+  "authors": [
+    "Erkki Heino <erkki.heino@aalto.fi>",
+    "Mikko Koho <mikko.koho@aalto.fi>"
+  ],
+  "description": "Semantic faceted search using SPARQL",
+  "main": [
+    "dist/semantic-faceted-search.js",
+    "dist/semantic-faceted-search.css"
+  ],
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "dependencies": {
+    "angular": "^1.4.8",
+    "lodash": "^4.0.1",
+    "angular-paging-sparql-service": ">=0.4.0",
+    "angular-spinner": "^0.8.1",
+    "angular-bootstrap": "^2.2.0",
+    "checklist-model": "^0.10.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.4.8"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

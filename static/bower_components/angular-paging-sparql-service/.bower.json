@@ -1,0 +1,32 @@
+{
+  "name": "angular-paging-sparql-service",
+  "authors": [
+    "Erkki Heino <erkki.heino@aalto.fi>"
+  ],
+  "description": "Angular service for querying SPARQL endpoints with paging support",
+  "main": "dist/sparql-service.js",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "https://github.com/SemanticComputing/angular-paging-sparql-service",
+  "dependencies": {
+    "angular": "^1.4.8",
+    "lodash": "^4.0.0"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "version": "0.7.2",
+  "_release": "0.7.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.7.2",
+    "commit": "62d8ac7c5ab5874722585dc2a6dbc7c25e7e4046"
+  },
+  "_source": "https://github.com/SemanticComputing/angular-paging-sparql-service.git",
+  "_target": ">=0.4.0",
+  "_originalSource": "angular-paging-sparql-service"
+}

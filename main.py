@@ -5,11 +5,12 @@ import config
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context
 import flask_ld as ld
 from flask_ld.utils import lru
 from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
+import requests
 
 from flask_admin import Admin, BaseView, expose
 
@@ -124,25 +125,26 @@ class App(Empty):
         self.NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 
 
-        self.db = database.engine_from_config(self.config, "db_")
+        self.admin_db = database.engine_from_config(self.config, "admin_")
+        self.db = database.engine_from_config(self.config, "knowledge_")
         load_namespaces(self.db,locals())
-        Resource.db = self.db
+        Resource.db = self.admin_db
 
         self.vocab = Graph()
         #print URIRef(self.config['vocab_file'])
         self.vocab.load(open(self.config['vocab_file']), format="turtle")
 
-        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
+        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
         self.Role = self.role_api.alchemy
 
-        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.db.store, self.vocab, self.config['lod_prefix'], UserMixin)
+        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.admin_db.store, self.vocab, self.config['lod_prefix'], UserMixin)
         self.User = self.user_api.alchemy
 
         self.nanopub_api = ld.LocalResource(self.NS.np.Nanopublication,"pub", self.db.store, self.vocab, self.config['lod_prefix'], name="Graph")
         self.Nanopub = self.nanopub_api.alchemy
 
         self.classes = mapper(self.Role, self.User)
-        self.datastore = RDFAlchemyUserDatastore(self.db, self.classes, self.User, self.Role)
+        self.datastore = RDFAlchemyUserDatastore(self.admin_db, self.classes, self.User, self.Role)
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
@@ -185,16 +187,25 @@ class App(Empty):
             print resource.identifier
             label = resource.graph.preferredLabel(resource.identifier, default = None,
                                 labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.dc.title, self.NS.foaf.name))
-            if len(label) == 0:
-                dbres = self.db.resource(resource.identifier)
-                name = [x.value for x in [dbres.value(self.NS.foaf.givenName), dbres.value(self.NS.foaf.familyName)] if x is not None]
-                if len(name) > 0:
-                    label = ' '.join(name)
-                else:
-                    try:
-                        label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
-                    except:
-                        label = str(resource.identifier)
+            if label is None or len(label) < 2:
+                for db in [self.db, self.admin_db]:
+                    label = resource.graph.preferredLabel(resource.identifier, default = None,
+                                                          labelProperties=(self.NS.RDFS.label, self.NS.skos.prefLabel,
+                                                                           self.NS.dc.title, self.NS.foaf.name))
+                    if label is None or len(label) < 2:
+                        dbres = db.resource(resource.identifier)
+                        name = [x.value for x in [dbres.value(self.NS.foaf.givenName),
+                                                  dbres.value(self.NS.foaf.familyName)] if x is not None]
+                        if len(name) > 0:
+                            label = [' '.join(name),None]
+                            return label
+                    else:
+                        return label[0]
+            if label is None or len(label) < 2:
+                try:
+                    label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ").title()
+                except:
+                    label = str(resource.identifier)
             else:
                 label = label[0]
             print label
@@ -261,7 +272,11 @@ class App(Empty):
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
             graph ?pubinfo { ?assertion dc:created [].}
-            ?np sio:isAbout ?e.
+
+            {graph ?np { ?np sio:isAbout ?e.}}
+            UNION
+            {graph ?assertion { ?e ?p ?o.}}
+            
             graph ?g {?s ?p ?o.} 
         }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
             result = ConjunctiveGraph()
@@ -283,6 +298,48 @@ class App(Empty):
 
         self.get_summary = get_summary
 
+        @self.route('/sparql', methods=['GET', 'POST'])
+        @login_required
+        def sparql_view():
+            has_query = False
+            for arg in request.args.keys():
+                if arg.lower() == "update":
+                    return "Update not allowed.", 403
+                if arg.lower() == 'query':
+                    has_query = True
+            if request.method == 'GET' and not has_query:
+                return redirect(url_for('sparql_form'))
+            print self.db.store.query_endpoint
+            if request.method == 'GET':
+                headers = {}
+                headers.update(request.headers)
+                del headers['Content-Length']
+                req = requests.get(self.db.store.query_endpoint,
+                                   headers = headers, params=request.args, stream = True)
+            elif request.method == 'POST':
+                if 'application/sparql-update' in request.headers['content-type']:
+                    return "Update not allowed.", 403
+                req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
+                                    headers = request.headers, params=request.args, stream = True)
+            print self.db.store.query_endpoint
+            print req.status_code
+            response = Response(stream_with_context(req.iter_content()), content_type = req.headers['content-type'])
+            #response.headers[con(req.headers)
+            return response, req.status_code
+        
+        @self.route('/sparql.html')
+        @login_required
+        def sparql_form():
+            template_args = dict(ns=self.NS,
+                                 g=g,
+                                 current_user=current_user,
+                                 isinstance=isinstance,
+                                 rdflib=rdflib,
+                                 hasattr=hasattr,
+                                 set=set)
+
+            return render_template('sparql.html',endpoint="/sparql", **template_args)
+        
         @self.route('/about.<format>')
         @self.route('/about')
         @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key)
@@ -313,6 +370,7 @@ class App(Empty):
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
+
 
         views = {}
         def render_view(resource):
@@ -410,8 +468,12 @@ class App(Empty):
                 return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
 
             def get(self, ident):
+                ident = ident.split("_")[0]
                 uri = self._get_uri(ident)
-                result = app.nanopub_manager.get(uri)
+                try:
+                    result = app.nanopub_manager.get(uri)
+                except IOError:
+                    return 'Resource not found', 404
                 return result
 
             def delete(self, ident):
@@ -466,15 +528,18 @@ class App(Empty):
             def _prep_graph(self, resource, about = None):
                 #print '_prep_graph', resource.identifier, about
                 content_type = resource.value(app.NS.ov.hasContentType)
+                if content_type is not None:
+                    content_type = content_type.value
+                print 'graph content type', resource.identifier, content_type
                 #print resource.graph.serialize(format="nquads")
                 g = Graph(store=resource.graph.store,identifier=resource.identifier)
                 text = resource.value(app.NS.prov.value)
                 if content_type is not None and text is not None:
-                    #print 'Content type:', content_type, resource.identifier
+                    print 'Content type:', content_type, resource.identifier
                     html = None
-                    if content_type.value in ["text/html", "application/xhtml+xml"]:
+                    if content_type in ["text/html", "application/xhtml+xml"]:
                         html = Literal(text.value, datatype=RDF.HTML)
-                    if content_type.value == 'text/markdown':
+                    if content_type == 'text/markdown':
                         #print "Aha, markdown!"
                         #print text.value
                         html = markdown.markdown(text.value, extensions=['rdfa'])
@@ -487,6 +552,7 @@ class App(Empty):
                         html = Literal(html, datatype=RDF.HTML)
                         text = html
                         content_type = "text/html"
+                    print resource.identifier, content_type
                     if html is not None:
                         resource.add(app.NS.sioc.content, html)
                         try:
@@ -494,10 +560,17 @@ class App(Empty):
                         except:
                             pass
                     else:
-                        try:
-                            sadi.deserialize(g, text, content_type)
-                        except:
-                            pass
+                        print "Deserializing", g.identifier, 'as', content_type
+                        print dataFormats
+                        if content_type in dataFormats:
+                            g.parse(data=text, format=dataFormats[content_type])
+                            print len(g)
+                        else:
+                            print "not attempting to deserialize."
+#                            try:
+#                                sadi.deserialize(g, text, content_type)
+#                            except:
+#                                pass
                 #print Graph(store=resource.graph.store).serialize(format="trig")
 
 

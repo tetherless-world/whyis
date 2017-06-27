@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 
 {% macro render_reference(ref) %}
 
@@ -114,6 +115,8 @@
 }
 </style>
         <div class="row" >
+    {{ summary_panel(this) }}
+    {{ content(this) }}
             <div class="col-md-5">
               <h2>Super Classes</h2>
               <p>Super class definitions also apply to this class.</p>
@@ -121,12 +124,7 @@
                     <ul class="list-group">
                       {% for superClass in this[ns.RDFS.subClassOf] %}
                         <li class="list-group-item">
-                          <a style="font-weight:bold" href="{{superClass.identifier}}">
-                            {{superClass.value(ns.RDFS.label)}}
-                            {% if not superClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
-                            <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
-                            {% endif %}
-                          </a>
+                          {{render_resource_link(superClass)}}
                           {% if superClass.value(ns.skos.definition) %}
                           <span>{{superClass.value(ns.skos.definition)}}</span>
                           {% endif %}
@@ -134,22 +132,6 @@
                       {% endfor %}
                     </ul>
                 </div>
-          
-              <h2>Definitions</h2>
-              <div class="PreferredDefinition">
-                {% for def in this[ns.hbgd.hasDefinition] %}
-                {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
-                {{ render_definition(def) }}
-                {% endif %}
-                {% endfor %}
-              </div>
-              <div class="AlternateDefinition">
-                {% for def in this[ns.hbgd.hasDefinition] %}
-                {% if not def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
-                {{ render_definition(def) }}
-                {% endif %}
-                {% endfor %}
-              </div>
              </div>
              <div class="col-md-4">
                <div class="panel panel-default">
@@ -178,12 +160,7 @@
                             <dd>
                               {% for subClass in this.subjects(ns.RDFS.subClassOf) %}
                               <p>
-                                <a style="font-weight:bold" href="{{subClass.identifier}}">
-                                  {{subClass.value(ns.RDFS.label)}}
-                                  {% if not subClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
-                                  <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
-                                  {% endif %}
-                                </a>
+                              {{render_resource_link(subClass)}}
                                 {% if subClass.value(ns.skos.definition) %}
                                 <span>{{subClass.value(ns.skos.definition)}}</span>
                                 {% endif %}
@@ -192,42 +169,22 @@
                             </dd>
                         </dl>
                         {% endif %}
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Prioritized Questions</dt>
-                            <dd>
-                              {% for question in this[ns.hbgd.raisedBy] %}
-                              {% if question[ns.RDF.type:ns.hbgd.PrioritizedQuestion] %}
-                              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
-                              {% endif %}
-                              {% endfor %}
-                            </dd>
-                        </dl>
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Sub-Questions</dt>
-                            <dd>
-                              {% for question in this[ns.hbgd.raisedBy] %}
-                              {% if question[ns.RDF.type:ns.hbgd.SubQuestion] %}
-                              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
-                              {% endif %}
-                              {% endfor %}
-                            </dd>
-                        </dl>
                         {% if this.value(ns.cmo.hasPrimaryConcept) %}  
                         <dl class="dl-horizontal clearfix">
                             <dt>Terminology Reference</dt>
                             <dd>
                               {% for concept in this[ns.cmo.hasPrimaryConcept] %}
-                              <p><a href="{{concept.identifier}}">{{concept.value(ns.skos.prefLabel) or concept.identifier}}</a></p>
+                              <p>{{render_resource_link(concept)}}</p>
                               {% endfor %}
                             </dd>
                         </dl>
                         {% endif %}  
-                        {% if this.value(ns.OWL.equivalentClass) %}  
+                        {% if this.value(ns.owl.equivalentClass) %}  
                         <dl class="dl-horizontal clearfix">
                             <dt>Equivalent To</dt>
                             <dd>
-                              {% for concept in this[ns.OWL.equivalentClass] %}
-                              <p><a href="{{concept.identifier}}">{{concept.value(ns.RDFS.label) or concept.identifier}}</a></p>
+                              {% for concept in this[ns.owl.equivalentClass] %}
+                              <p>{{render_resource_link(concept)}}</p>
                               {% endfor %}
                             </dd>
                         </dl>
@@ -237,16 +194,22 @@
                         <dl class="dl-horizontal clearfix">
                             <dt>Attributed to</dt>
                             <dd>
-                                <a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.value(ns.dc.identifier) or  attrib.identifier}}</a>
+                              {{render_resource_link(concept)}}
                             </dd>
                         </dl>
                         {%endif%}
                     </div>
                 </div>               
             </div>
-            <div class="col-md-3" data-ng-controller="CommentController">
-              <h3>Commentary</h3>
-              <comments resource="{{this.identifier}}"/>
+            <div class="col-md-3">
+            <div class="panel panel-default">
+            <div class="panel-heading">
+              <h2 class="panel-title">Nanopublications</h2>
+            </div>
+            <div class="panel-body">
+              <nanopubs resource="{{this.identifier}}"/>
+            </div>
+            </div>
             </div>
         </div>
 
