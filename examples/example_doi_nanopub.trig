@@ -70,6 +70,7 @@ ns1:MzU4MTQzLjU4ODY2OQ_assertion {
               "James P. McCusker" .
 
 <http://localhost:5000/doi/10.7717/peerj-cs.106>
+      a       ns5:BibliographicResource;
       <http://prismstandard.org/namespaces/basic/2.1/doi>
               "10.7717/peerj-cs.106" ;
       <http://prismstandard.org/namespaces/basic/2.1/startingPage>
@@ -95,7 +96,7 @@ ns1:MzU4MTQzLjU4ODY2OQ_assertion {
       <http://purl.org/ontology/bibo/volume>
               "3" ;
       <http://www.w3.org/2002/07/owl#sameAs>
-              <doi:10.7717/peerj-cs.106> , <info:doi/10.7717/peerj-cs.106> <http://dx.doi.org/10.7717/peerj-cs.106> .
+              <doi:10.7717/peerj-cs.106> , <info:doi/10.7717/peerj-cs.106>, <http://dx.doi.org/10.7717/peerj-cs.106> .
 
 <http://id.crossref.org/contributor/jonathan-s-dordick-65opt3uf6h58>
       a       <http://xmlns.com/foaf/0.1/Person> ;

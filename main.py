@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+import requests
+import config
 
 import os
 import sys, collections
@@ -79,7 +80,7 @@ class ExtendedRegisterForm(RegisterForm):
     identifier = TextField('Identifier', [validators.Required()])
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
-    
+
 # Form for full-text search
 class SearchForm(Form):
     search_query = StringField('search_query', [validators.DataRequired()])
@@ -87,8 +88,15 @@ class SearchForm(Form):
 def to_json(result):
     return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in x.items()]) for x in result.bindings])
 
-        
-class App(Empty): 
+
+def getfullname(name):
+    for key in config.namespaces.keys():
+        if key in name:
+            i = name.find(key)
+            new_url = name[i:]
+            return new_url.replace(key, config.namespaces[key]["source"])
+
+class App(Empty):
 
     def configure_database(self):
         """
@@ -212,7 +220,7 @@ class App(Empty):
             g.get_entity = get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
-                    
+
         @self.login_manager.user_loader
         def load_user(user_id):
             if user_id != None:
@@ -241,7 +249,7 @@ class App(Empty):
             "application/n-triples" : "nt",
             None: "json-ld"
         }
-            
+
         def get_graphs(graphs):
             query = 'select ?s ?p ?o ?g where {graph ?g {?s ?p ?o} } values ?g { %s }'
             query = query % ' '.join([graph.n3() for graph in graphs])
@@ -250,7 +258,7 @@ class App(Empty):
             result = Dataset()
             result.addN(quads)
             return result
-            
+
         def get_entity(entity):
             nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
 #            {
@@ -344,7 +352,6 @@ class App(Empty):
                     content_type = extensions[format]
                 else:
                     name = '.'.join([name, format])
-            
             if name is not None:
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
@@ -356,7 +363,7 @@ class App(Empty):
 
             resource = get_entity(entity)
             print resource.identifier, content_type
-            
+
             htmls = set(['application/xhtml','text/html'])
             if sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 return render_view(resource)
@@ -364,7 +371,6 @@ class App(Empty):
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                 return resource.graph.serialize(format=fmt)
 
-        
 
         views = {}
         def render_view(resource):
@@ -424,6 +430,7 @@ class App(Empty):
             print '\n'.join([str(x.asdict()) for x in views])
             if len(views) == 0:
                 abort(404)
+
             # default view (list of nanopubs)
             # if available, replace with class view
             # if available, replace with instance view
@@ -443,7 +450,7 @@ class App(Empty):
         class NanopublicationResource(ld.LinkedDataResource):
             decorators = [login_required]
 
-            def __init__(self, ):
+            def __init__(self):
                 self.local_resource = app.nanopub_api
 
             def _can_edit(self, uri):
@@ -508,18 +515,16 @@ class App(Empty):
             def post(self, ident=None):
                 if ident is not None:
                     return self.put(ident)
-
                 inputGraph = self._get_graph()
                 for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                     nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
                     nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
-
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
                     app.nanopub_manager.publish(nanopub)
 
                 return '', 201
 
-            
+
             def _prep_graph(self, resource, about = None):
                 #print '_prep_graph', resource.identifier, about
                 content_type = resource.value(app.NS.ov.hasContentType)
@@ -567,11 +572,11 @@ class App(Empty):
 #                            except:
 #                                pass
                 #print Graph(store=resource.graph.store).serialize(format="trig")
-                    
-            
+
+
         self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
 
-        
+
 def config_str_to_obj(cfg):
     if isinstance(cfg, basestring):
         module = __import__('config', fromlist=[cfg])
