@@ -5,11 +5,17 @@ import logging
 from datetime import timedelta
 
 project_name = "hbgd"
+import importer
 
+import autonomic
+import agents.nlp as nlp
+import rdflib
 
 # Set to be custom for your project
-LOD_PREFIX = 'http://graphene.tw.rpi.edu'
+LOD_PREFIX = 'http://localhost:5000'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
+
+skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
 
 # base config class; extend it to your needs.
 Config = dict(
@@ -54,7 +60,7 @@ Config = dict(
     BLUEPRINTS = [],
 
     lod_prefix = LOD_PREFIX,
-    SECURITY_EMAIL_SENDER = "HBGD Admin <no-reply@sandbox1781abbf052f4cfa9e40c3fb7fb57154.mailgun.org>",
+    SECURITY_EMAIL_SENDER = "Name <email@example.com>",
     SECURITY_FLASH_MESSAGES = True,
     SECURITY_CONFIRMABLE = False,
     SECURITY_CHANGEABLE = True,
@@ -78,8 +84,40 @@ Config = dict(
     knowledge_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
 
     LOGIN_USER_TEMPLATE = "auth/login.html",
-
-
+    CELERY_BROKER_URL = 'redis://localhost:6379/0',
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
+    namespaces = [
+        importer.LinkedData(
+            prefix = 'http://localhost:5000/doi/',
+            url = 'http://dx.doi.org/%s',
+            headers={'Accept':'text/turtle'},
+            format='turtle',
+            postprocess_update= '''insert {
+                graph ?g {
+                    ?pub a <http://purl.org/ontology/bibo/AcademicArticle>.
+                }
+            } where {
+                graph ?g {
+                    ?pub <http://purl.org/ontology/bibo/doi> ?doi.
+                }
+            }
+            '''
+        )
+    ],
+    inferencers = {
+        "SETLr": autonomic.SETLr(),
+#        "HTML2Text" : nlp.HTML2Text(),
+#        "EntityExtractor" : nlp.EntityExtractor(),
+#        "EntityResolver" : nlp.EntityResolver(),
+#        "TF-IDF Calculator" : nlp.TFIDFCalculator(),
+#        "SKOS Crawler" : autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related])
+    },
+    inference_tasks = [
+        dict ( name="SKOS Crawler",
+               service=autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
+               schedule=dict(hour="1")
+              )
+    ]
 )
 
 
@@ -89,7 +127,7 @@ Dev.update(dict(
     DEBUG = True,  # we want debug level output
     MAIL_DEBUG = True,
     # Works for the development virtual machine.
-    lod_prefix = "http://localhost:5000",
+#    lod_prefix = "http://localhost:5000",
     DEBUG_TB_INTERCEPT_REDIRECTS = False
 ))
 
@@ -100,65 +138,3 @@ Test.update(dict(
     WTF_CSRF_ENABLED = False
 ))
 
-namespaces = {
-	"doi/":
-	{
-		"type":"LOD",
-		"source":"http://dx.doi.org/"
-	},
-    "author/":
-    {
-		"type":"LOD",
-		"source":"http://nanomine.tw.rpi.edu/author/"
-    },
-    "bibo/":
-    {
-		"type":"LOD",
-        "source":"http://purl.org/ontology/bibo/"
-    },
-    "chear/":
-    {
-		"type":"LOD",
-        "source":"http://hadatac.org/ont/chear#"
-    },
-    "compound/":
-    {
-		"type":"LOD",
-        "source":"http://nanomine.tw.rpi.edu/compound/"
-    },
-    "dataset/":
-    {
-		"type":"LOD",
-        "source":"https://hbgd.tw.rpi.edu/dataset/"
-    },
-    "dcat/":
-    {
-		"type":"LOD",
-        "source":"http://www.w3.org/ns/dcat#"
-    },
-    "dcterms/":
-    {
-		"type":"LOD",
-        "source":"http://purl.org/dc/terms/"
-    },
-    "entry/":
-    {
-        "type":"LOD",
-        "source":"http://nanomine.tw.rpi.edu/entry/"
-    },
-    "foaf/":
-    {
-		"type":"LOD",
-        "source":"http://xmlns.com/foaf/0.1/"
-    },
-    "lang/":
-    {
-		"type":"LOD",
-        "source":"http://nanomine.tw.rpi.edu/language/"
-    },
-    "location/":
-    {
-        "type":"LOD",
-        "source":"http://nanomine.tw.rpi.edu/location/"
-    }
-}
