@@ -29,13 +29,13 @@ class HTML2Text(autonomic.UpdateChangeService):
         text = soup.get_text("\n")
         o.add(URIRef("http://schema.org/text"), Literal(text))
         
-class TFIDFCalculator(autonomic.UpdateChangeService):
+class IDFCalculator(autonomic.UpdateChangeService):
     def getInputClass(self):
         return autonomic.graphene.ResolvedText
 
     def getOutputClass(self):
         return autonomic.graphene.TFIDFText
-
+    
     @property
     def document_count(self):
         return list(self.app.db.query('''select (count(distinct ?node) as ?count) where {
@@ -128,7 +128,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
         return autonomic.graphene.ExtractedText
 
     def get_query(self):
-        return '''select ?resource where { ?resource %s [].}''' % self.property_path
+        return '''select ?resource where { ?resource <http://schema.org/text> [].}'''
 
     def process(self, i, o):
         documents = self.app.db.query('''select ?text where { %s %s ?text.}''' % (i.identifier.n3(), self.property_path))

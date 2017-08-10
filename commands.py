@@ -9,6 +9,9 @@ import flask
 import os
 import datetime
 import rdflib
+from nanopub import Nanopublication
+
+np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
 class LoadNanopub(Command):
     def get_options(self):
@@ -23,11 +26,13 @@ class LoadNanopub(Command):
         '''Add a nanopublication to the knowledge graph.'''
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
         g1 = g.parse(location=input_file, format=file_format)
-        graph = rdflib.ConjunctiveGraph(identifier=g1.identifier, store=g1.store)
-        print list(g.contexts())
-        for np in flask.current_app.nanopub_manager.prepare(graph):
-            flask.current_app.nanopub_manager.publish(np)
-        print graph.serialize(format="trig")
+        if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
+            new_np = Nanopublication(store=g1.store)
+            new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
+            new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
+            new_np.add((g1.identifier, rdflib.RDF.type, np.Assertion))
+        for npub in flask.current_app.nanopub_manager.prepare(g):
+            flask.current_app.nanopub_manager.publish(npub)
 
 class CreateUser(Command):
 
