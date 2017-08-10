@@ -442,8 +442,7 @@ graphene:hasLabel dc:identifier "label";
 rdfs:Resource graphene:hasView "resource_view.html";
   graphene:hasLabel "label_view.html".
 
-dc:BibliographicResource graphene:hasView "article_view.html";
-  graphene:hasDownload "download_view.html".
+bibo:AcademicArticle graphene:hasView "article_view.html".
 
 owl:Class rdfs:label "Class";
     graphene:hasView "class_view.html".

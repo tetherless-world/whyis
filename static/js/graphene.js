@@ -765,8 +765,20 @@ $( function() {
             var nanopubs = [];
             var graphMap = {};
             function nanopubComparator(a,b) {
-                return b.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'] -
-                    a.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'];
+                if (b.resource.pubinfo == null) {
+                    if (a.resource.pubinfo == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    if (a.resource.pubinfo == null) {
+                        return 1;
+                    } else {
+                        return b.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'] -
+                            a.resource.pubinfo.resource.assertion['http://purl.org/dc/terms/created'];
+                    }
+                }
             }
             if (graphs['@graph'])
                 graphs['@graph'].forEach(function(graph) {
@@ -781,16 +793,16 @@ $( function() {
                     }
                 });
             nanopubs.forEach(function(np) {
-                if (graphMap[np.resource.assertion['@id']]) {
+                if (np.resource.assertion != null && graphMap[np.resource.assertion['@id']]) {
                     np.resource.assertion = graphMap[np.resource.assertion['@id']];
                     np.resource.assertion = np.resource(np.resource.assertion['@id'],np.resource.assertion);
                 }
-                if (graphMap[np.resource.provenance['@id']]) {
+                if (np.resource.provenance != null && graphMap[np.resource.provenance['@id']]) {
                     np.resource.provenance = graphMap[np.resource.provenance['@id']];
                     np.resource.provenance = np.resource(np.resource.provenance['@id'],np.resource.provenance);
                     np.resource.provenance.resource.assertion = np.resource.provenance.resource(np.resource.assertion['@id']);
                 }
-                if (graphMap[np.resource.pubinfo['@id']]) {
+                if (np.resource.pubinfo != null && graphMap[np.resource.pubinfo['@id']]) {
                     np.resource.pubinfo = graphMap[np.resource.pubinfo['@id']];
                     np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
                     np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
@@ -805,7 +817,7 @@ $( function() {
                 }
             })
             var topNanopubs = nanopubs.filter(function(nanopub) {
-                return !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
+                return nanopub.resource.pubinfo == null || !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
             });
             topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
                 nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
@@ -816,7 +828,7 @@ $( function() {
             return topNanopubs;
         }
         Nanopub.list = function(about) {
-            return $http.get(about, {headers:{'Accept':"application/ld+json"}, responseType:"json"})
+            return $http.get("/about", {params: {"uri": about}, headers:{'Accept':"application/ld+json"}, responseType:"json"})
                 .then(processNanopubs);
         }
         Nanopub.update = function(nanopub) {

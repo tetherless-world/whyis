@@ -10,3 +10,4 @@ from main import app_factory
 import config
 
 application = app_factory(config.Config, config.project_name)
+celery = application.celery

@@ -1,5 +1,5 @@
 {% macro render_resource_link(resource) %}
-  <a href="{{resource.identifier}}">{{get_label(resource)}}</a>
+  <a href="/about?uri={{resource.identifier | urlencode }}">{{get_label(resource)}}</a>
 {% endmacro %}
 
 {% macro render_rdfa_resource_link(resource, predicate) %}
@@ -12,7 +12,7 @@
     {% for value in resource[g.ns.sioc.content] %}
     <div class="panel panel-default">
       <div class="panel-body" property="{{g.ns.sioc.content}}">
-        {{value | safe}}
+        {{value  | safe}}
       </div>
     </div>
     {% endfor %}  
@@ -38,6 +38,7 @@
       </div>
       <div class="panel-body">
         {% for predicate, objects in resource.predicate_objects() | groupby(0) | sort(attribute=0) %}
+        {% if predicate not in [g.ns.sioc.content] %}
         <dl class="dl-horizontal clearfix">
           <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
           <dd>
@@ -50,6 +51,7 @@
             {% endfor %}
           </dd>
         </dl>
+        {% endif %}
         {% endfor %}
       </div>
     </div>

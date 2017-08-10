@@ -8,6 +8,26 @@ import flask
 
 import os
 import datetime
+import rdflib
+
+class LoadNanopub(Command):
+    def get_options(self):
+        return [
+            Option('--input', '-i', dest='input_file',
+                   type=str),
+            Option('--format', '-f', dest='file_format',
+                    type=str),
+        ]
+    
+    def run(self, input_file, file_format="trig"):
+        '''Add a nanopublication to the knowledge graph.'''
+        g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
+        g1 = g.parse(location=input_file, format=file_format)
+        graph = rdflib.ConjunctiveGraph(identifier=g1.identifier, store=g1.store)
+        print list(g.contexts())
+        for np in flask.current_app.nanopub_manager.prepare(graph):
+            flask.current_app.nanopub_manager.publish(np)
+        print graph.serialize(format="trig")
 
 class CreateUser(Command):
 

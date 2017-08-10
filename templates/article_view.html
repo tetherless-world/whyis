@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
-{% block title %}{{get_label(this)}}{% endblock %}
+{% block title %}{{this.value(ns.dc.title, default=get_label(this))}}{% endblock %}
 {% block subtitle %}
 {% if this.value(ns.RDF.type) %} a
-  {% for superClass in this[ns.RDF.type] %}
-  {% if loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}
-  {% if loop.revindex > 2 %}, {% endif %}
+{% for superClass in this[ns.RDF.type] %}
+{% if loop.index > 1 and loop.last %} and {% endif %}
+    {{ render_resource_link(superClass) }}
+    {% if loop.revindex > 2 %}, {% endif %}
 {% endfor %}
 {% endif %}
 {% endblock %}
