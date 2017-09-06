@@ -167,7 +167,10 @@ class SETLr(UpdateChangeService):
             mappings = {}
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings):
                 self.explain(new_np, i, o)
-                orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier][0]
+                orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
+                if len(orig) == 0:
+                    continue
+                orig = orig[0]
                 if isinstance(orig, rdflib.URIRef):
                     new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
                     if orig in old_np_map:
