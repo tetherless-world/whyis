@@ -418,6 +418,11 @@ construct {
             
         @self.before_request
         def load_forms():
+            if 'API_KEY' in self.config:
+                if 'user_id' not in session and 'API_KEY' in request.args and request.args['API_KEY'] == self.config['API_KEY']:
+                    print 'logging in invited user'
+                    login_user(InvitedAnonymousUser())
+                
             #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
