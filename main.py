@@ -76,6 +76,28 @@ class NamespaceContainer:
                 result[key] = value
         return result
 
+NS = NamespaceContainer()
+NS.RDFS = rdflib.RDFS
+NS.RDF = rdflib.RDF
+NS.rdfs = rdflib.Namespace(rdflib.RDFS)
+NS.rdf = rdflib.Namespace(rdflib.RDF)
+NS.owl = rdflib.OWL
+NS.xsd   = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
+NS.dc    = rdflib.Namespace("http://purl.org/dc/terms/")
+NS.dcelements    = rdflib.Namespace("http://purl.org/dc/elements/1.1/")
+NS.auth  = rdflib.Namespace("http://vocab.rpi.edu/auth/")
+NS.foaf  = rdflib.Namespace("http://xmlns.com/foaf/0.1/")
+NS.prov  = rdflib.Namespace("http://www.w3.org/ns/prov#")
+NS.skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+NS.cmo = rdflib.Namespace("http://purl.org/twc/ontologies/cmo.owl#")
+NS.sio = rdflib.Namespace("http://semanticscience.org/resource/")
+NS.sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
+NS.sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
+NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
+NS.graphene = rdflib.Namespace("http://vocab.rpi.edu/graphene/")
+NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
+
+    
 from rdfalchemy import *
 from flask_ld.datastore import *
 
@@ -164,19 +186,20 @@ class App(Empty):
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
             Performs a breadth-first knowledge expansion of the current change.'''
-            print "Updating on", nanopub_uri
+            #print "Updating on", nanopub_uri
             nanopub = app.nanopub_manager.get(nanopub_uri)
+            nanopub_graph = ConjunctiveGraph(nanopub.store)
             if 'inferencers' in self.config:
                 for name, service in self.config['inferencers'].items():
                     service.app = self
                     if service.query_predicate == self.NS.graphene.globalChangeQuery:
-                        print "checking", name, service.get_query()
+                        #print "checking", name, service.get_query()
                         for uri, in app.db.query(service.get_query()):
                             print "invoking", name, uri
                             process_resource(uri, name)
                     if service.query_predicate == self.NS.graphene.updateChangeQuery:
-                        print "checking", name, nanopub_uri, service.get_query()
-                        if len(list(nanopub.query(service.get_query()))) > 0:
+                        #print "checking", name, nanopub_uri, service.get_query()
+                        if len(list(nanopub_graph.query(service.get_query()))) > 0:
                             print "invoking", name, nanopub_uri
                             process_nanopub(nanopub_uri, name)
 
@@ -188,31 +211,12 @@ class App(Empty):
         """
         Database configuration should be set here
         """
-        self.NS = NamespaceContainer()
-        self.NS.RDFS = rdflib.RDFS
-        self.NS.RDF = rdflib.RDF
-        self.NS.rdfs = rdflib.Namespace(rdflib.RDFS)
-        self.NS.rdf = rdflib.Namespace(rdflib.RDF)
-        self.NS.owl = rdflib.OWL
-        self.NS.xsd   = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
-        self.NS.dc    = rdflib.Namespace("http://purl.org/dc/terms/")
-        self.NS.dcelements    = rdflib.Namespace("http://purl.org/dc/elements/1.1/")
-        self.NS.auth  = rdflib.Namespace("http://vocab.rpi.edu/auth/")
-        self.NS.foaf  = rdflib.Namespace("http://xmlns.com/foaf/0.1/")
-        self.NS.prov  = rdflib.Namespace("http://www.w3.org/ns/prov#")
-        self.NS.skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
-        self.NS.cmo = rdflib.Namespace("http://purl.org/twc/ontologies/cmo.owl#")
-        self.NS.sio = rdflib.Namespace("http://semanticscience.org/resource/")
-        self.NS.sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
-        self.NS.sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
-        self.NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
-        self.NS.graphene = rdflib.Namespace("http://vocab.rpi.edu/graphene/")
+        self.NS = NS
         self.NS.local = rdflib.Namespace(self.config['lod_prefix']+'/')
-        self.NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
-
 
         self.admin_db = database.engine_from_config(self.config, "admin_")
         self.db = database.engine_from_config(self.config, "knowledge_")
+        self.db.app = self
         load_namespaces(self.db,locals())
         Resource.db = self.admin_db
 
@@ -252,7 +256,7 @@ class App(Empty):
         for importer in self.config['namespaces']:
             if importer.matches(name):
                 new_name = importer.map(name)
-                print 'Found mapped URI', new_name
+                #print 'Found mapped URI', new_name
                 return new_name, importer
         return None, None
 
@@ -262,6 +266,60 @@ class App(Empty):
                 return importer
         return None
 
+
+    class Entity (rdflib.resource.Resource):
+        _this = None
+        
+        def this(self):
+            if self._this is None:
+                self._this = self._graph.app.get_entity(self.identifier)
+            return self._this
+
+        _description = None
+        
+        def description(self):
+            if self._description is None:
+#                try:
+                    result = Graph()
+                    result += self._graph.query('''
+construct {
+    ?e ?p ?o.
+    ?o rdfs:label ?label.
+    ?o skos:prefLabel ?prefLabel.
+    ?o dc:title ?title.
+    ?o foaf:name ?name.
+    ?o ?pattr ?oatter.
+    ?oattr rdfs:label ?oattrlabel
+} where {
+    graph ?g {
+      ?e ?p ?o.
+    }
+    ?g a np:Assertion.
+    optional {
+      ?e sio:hasAttribute|sio:hasPart ?o.
+      ?o ?pattr ?oattr.
+      optional {
+        ?oattr rdfs:label ?oattrlabel.
+      }
+    }
+    optional {
+      ?o rdfs:label ?label.
+    }
+    optional {
+      ?o skos:prefLabel ?prefLabel.
+    }
+    optional {
+      ?o dc:title ?title.
+    }
+    optional {
+      ?o foaf:name ?name.
+    }
+}''', initNs=NS.prefixes, initBindings={'e':self.identifier})
+                    self._description = result.resource(self.identifier)
+#                except Exception as e:
+#                    print str(e), self.identifier
+#                    raise e
+            return self._description
         
     def get_resource(self, entity):
         mapped_name, importer = self.map_entity(entity)
@@ -275,7 +333,7 @@ class App(Empty):
         if importer is not None:
             importer.load(entity, self.db, self.nanopub_manager)
             
-        return self.get_entity(entity)
+        return self.Entity(self.db, entity)
 
     def configure_template_filters(self):
         import urllib
@@ -313,32 +371,44 @@ class App(Empty):
         def camel_case_split(identifier):
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
-            
-        def get_label(resource):
-            properties = [self.NS.dc.title, self.NS.RDFS.label, self.NS.skos.prefLabel, self.NS.foaf.name]
-            for property in properties:
-                label = resource.value(property)
-                if label is not None:
-                    return label
+
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name]
+
+        @lru
+        def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
-                for property in properties:
-                    label = self.db.value(resource.identifier, property)
+                g = Graph()
+                g += db.query('''construct { ?s ?p ?o} where { ?s ?p ?o.}''',
+                              initNs=self.NS.prefixes, initBindings=dict(s=uri))
+                resource_entity = g.resource(uri)
+                if len(resource_entity.graph) == 0:
+                    #print "skipping", db
+                    continue
+                for property in label_properties:
+                    label = resource_entity.value(property)
                     if label is not None:
                         return label
                     
                 if label is None or len(label) < 2:
-                    dbres = db.resource(resource.identifier)
-                    name = [x.value for x in [dbres.value(self.NS.foaf.givenName),
-                                              dbres.value(self.NS.foaf.familyName)] if x is not None]
+                    name = [x.value for x in [resource_entity.value(self.NS.foaf.givenName),
+                                              resource_entity.value(self.NS.foaf.familyName)] if x is not None]
                     if len(name) > 0:
                         label = ' '.join(name)
                         return label
             try:
-                label = resource.graph.qname(resource.identifier).split(":")[1].replace("_"," ")
+                label = self.db.qname(uri).split(":")[1].replace("_"," ")
                 return ' '.join(camel_case_split(label)).title()
             except Exception as e:
-                print str(e), resource.identifier
-                return str(resource.identifier)
+                print str(e), uri
+                return str(uri)
+        
+        def get_label(resource):
+            for property in label_properties:
+                label = resource.value(property)
+                #print "mem", property, label
+                if label is not None:
+                    return label
+            return get_remote_label(resource.identifier)
             
         @self.before_request
         def load_forms():
@@ -349,6 +419,7 @@ class App(Empty):
             g.get_entity = self.get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
+            g.db = self.db
 
         @self.login_manager.user_loader
         def load_user(user_id):
@@ -388,19 +459,48 @@ class App(Empty):
             result.addN(quads)
             return result
 
-        def get_entity(entity):
-            try:
-#                nanopubs = self.db.query('''select distinct ?s ?p ?o ?g where {
-#            ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
-#                np:hasPublicationInfo ?pubinfo;
-#                np:hasAssertion ?assertion;
-
-#            {graph ?np { ?np sio:isAbout ?e.}}
-#            UNION
-#            {graph ?assertion { ?e ?p ?o.}}
+        def explain(graph):
+            values = ')\n  ('.join([' '.join([x.n3() for x in triple]) for triple in graph.triples((None,None,None))])
+            values = 'VALUES (?s ?p ?o)\n{\n('+ values + ')\n}'
             
-#            graph ?g {?s ?p ?o.} 
-#        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+            try:
+                nanopubs = self.db.query('''select distinct ?np where {
+    ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+        np:hasPublicationInfo ?pubinfo;
+        np:hasAssertion ?assertion;
+    graph ?assertion { ?s ?p ?o.}
+}''' + values, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+                result = ConjunctiveGraph()
+                for nanopub_uri, in nanopubs:
+                    self.nanopub_manager.get(nanopub_uri, result)
+            except Exception as e:
+                print str(e), entity
+                raise e
+            return result.resource(entity)
+        
+        def get_entity_sparql(entity):
+            try:
+                statements = self.db.query('''select distinct ?s ?p ?o ?g where {
+            ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+                np:hasPublicationInfo ?pubinfo;
+                np:hasAssertion ?assertion;
+
+            {graph ?np { ?np sio:isAbout ?e.}}
+            UNION
+            {graph ?assertion { ?e ?p ?o.}}
+            graph ?g { ?s ?p ?o }
+        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+                result = ConjunctiveGraph()
+                result.addN(statements)
+            except Exception as e:
+                print str(e), entity
+                raise e
+            #print result.serialize(format="trig")
+            return result.resource(entity)
+            
+        
+        def get_entity_disk(entity):
+            try:
                 nanopubs = self.db.query('''select distinct ?np where {
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
                 np:hasPublicationInfo ?pubinfo;
@@ -420,6 +520,8 @@ class App(Empty):
             #print result.serialize(format="trig")
             return result.resource(entity)
 
+        get_entity = get_entity_sparql
+        
         self.get_entity = get_entity
 
         def get_summary(resource):
@@ -496,7 +598,6 @@ class App(Empty):
                 entity = URIRef(request.args['uri'])
             else:
                 entity = self.NS.local.Home
-
             resource = self.get_resource(entity)
             
             content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
@@ -507,7 +608,7 @@ class App(Empty):
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
-                return resource.graph.serialize(format=fmt)
+                return resource.this().graph.serialize(format=fmt)
 
 
         views = {}

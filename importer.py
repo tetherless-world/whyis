@@ -37,8 +37,8 @@ class Importer:
         updated = self.modified(entity_name)
         if updated is None:
             updated = datetime.datetime.now(pytz.utc)
-        print "Local modified:", modified
-        print "Remote modified:", updated
+        #print "Local modified:", modified
+        #print "Remote modified:", updated
         if modified is None or updated > modified:
             for i in range(3):
                 try:

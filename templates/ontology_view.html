@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
-{% block title %}{{get_label(this)}}{% endblock %}
+{% block title %}{{get_label(this.description)}}{% endblock %}
 {% block style %}
 <link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
 {% endblock %}
@@ -21,7 +21,7 @@
 {%- endmacro %}
 
 {% block content %}
-{{ summary_panel(this) }}
+{{ summary_panel(this.description) }}
 <div>
   <div class="container-fluid" ng-controller="OntologyFacetController as vm">
     <div class="row">
@@ -82,6 +82,6 @@
 </div>
 
     <script>
-      var ontology = "{{this.identifier}}";
+      var ontology = "{{this.description.identifier}}";
     </script>
 {% endblock %}

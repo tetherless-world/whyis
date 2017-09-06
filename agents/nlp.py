@@ -89,6 +89,18 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
 		 bds:relevance ?cr ;
          bds:minRelevance 0.4.
   }
+  filter not exists {
+    ?node a <http://www.nanopub.org/nschema#Nanopublication>
+  }
+  filter not exists {
+    ?node a <http://www.nanopub.org/nschema#Assertion>
+  }
+  filter not exists {
+    ?node a <http://www.nanopub.org/nschema#Provenance>
+  }
+  filter not exists {
+    ?node a <http://www.nanopub.org/nschema#PublicationInfo>
+  }
 } order by desc(?score) limit 10""" % (term, context)
         for node, label, score, relevance, cr in self.app.db.query(query):
             return node, label, score
@@ -103,7 +115,7 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
             o_term = o.graph.resource(term.identifier)
             node, score, label = self.resolve(term_label, context)
             if node is not None:
-                o_term.add(RDFS.label, label)
+                #o_term.add(RDFS.label, label)
                 o_term.add(autonomic.prov.specializationOf, node)
                 o.add(dc.subject, node)
     
@@ -133,11 +145,12 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
     def process(self, i, o):
         documents = self.app.db.query('''select ?text where { %s %s ?text.}''' % (i.identifier.n3(), self.property_path))
         tf = self.tf(documents)
-        print tf
+        #print tf
         for t, f in tf.items():
             term = o.graph.resource(URIRef(i.identifier+"-term-"+slugify(t)))
             term.add(RDF.type, sio.Term)
             term.add(sio.hasValue, Literal(t))
+            term.add(RDFS.label, Literal(t))
             term.add(sio.Frequency, Literal(f))
             o.add(sio.hasPart, term)
 

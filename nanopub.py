@@ -150,7 +150,7 @@ class NanopublicationManager:
         for np_uri, in self.db.query('''select ?np where {
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
-            print "Retiring", np_uri, "derived from", nanopub_uri
+            #print "Retiring", np_uri, "derived from", nanopub_uri
             nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
             self.db.remove((None,None,None,nanopub.assertion.identifier))
             self.db.remove((None,None,None,nanopub.provenance.identifier))
@@ -169,7 +169,7 @@ class NanopublicationManager:
         filepath = self.get_path(nanopub.identifier)
         if not os.path.exists('/'.join(filepath[:-1])):
             os.makedirs('/'.join(filepath[:-1]))
-        print "Publishing", nanopub.identifier
+        #print "Publishing", nanopub.identifier
         g = rdflib.ConjunctiveGraph(store=nanopub.store)
         g.serialize(open('/'.join(filepath), 'wb'), format="trig")
         for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):

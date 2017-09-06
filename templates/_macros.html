@@ -38,7 +38,7 @@
       </div>
       <div class="panel-body">
         {% for predicate, objects in resource.predicate_objects() | groupby(0) | sort(attribute=0) %}
-        {% if predicate not in [g.ns.sioc.content] %}
+        {% if predicate != g.ns.sioc.content %}
         <dl class="dl-horizontal clearfix">
           <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
           <dd>

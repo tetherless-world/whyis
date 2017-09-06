@@ -34,6 +34,7 @@ class Service(sadi.Service):
         np_assertions = list(i.graph.subjects(rdflib.RDF.type, np.Assertion))
         activity = nanopub.provenance.resource(rdflib.BNode())
         activity.add(rdflib.RDF.type, self.activity_class)
+        nanopub.pubinfo.add((o.identifier, rdflib.RDF.type, self.getOutputClass()))
         nanopub.provenance.add((nanopub.assertion.identifier, prov.wasGeneratedBy, activity.identifier))
         for assertion in np_assertions:
             nanopub.provenance.add((activity.identifier, prov.used, assertion))
@@ -49,8 +50,8 @@ class Service(sadi.Service):
         instances = self.getInstances(inputGraph)
         for i in instances:
             og = rdflib.Graph(store=outputGraph.store, identifier=rdflib.BNode().skolemize())
-            OutputClass = sadi.OntClass(og,self.getOutputClass())
-            o = OutputClass(i.identifier)
+            #OutputClass = sadi.OntClass(og,self.getOutputClass())
+            o = og.resource(i.identifier) # OutputClass(i.identifier)
             result = self.process(i, o)
             if len(list(og.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
                 new_np = Nanopublication(store=og.store)
@@ -58,6 +59,8 @@ class Service(sadi.Service):
                 new_np.add((new_np.identifier, np.hasAssertion, og.identifier))
                 new_np.add((og.identifier, rdflib.RDF.type, np.Assertion))
             for new_np in self.app.nanopub_manager.prepare(outputGraph):
+                if len(new_np.assertion) == 0:
+                    continue
                 self.explain(new_np, i, o)
                 new_np.add((new_np.identifier, sio.isAbout, i.identifier))
                 self.app.nanopub_manager.publish(new_np)
@@ -74,7 +77,7 @@ class GlobalChangeService(Service):
         return graphene.globalChangeQuery
 
         
-class Crawler(GlobalChangeService):
+class Crawler(UpdateChangeService):
 
     def __init__(self, depth=-1, predicates=[None]):
         self.depth = depth
@@ -97,7 +100,7 @@ class Crawler(GlobalChangeService):
         # this non-recursive form does a BFS of the linked data graph.
         while len(todo) > 0:
             uri, depth = todo.pop()
-            print uri, depth, len(todo)
+            #print uri, depth, len(todo)
             if uri in cache:
                 continue
             node = None
@@ -107,6 +110,16 @@ class Crawler(GlobalChangeService):
                 for p in self.predicates:
                     todo.extend([(x.identifier, depth-1) for x in node[p]])
 
+class OntologyImporter(GlobalChangeService):
+    def getInputClass(self):
+        return OWL.Ontology
+
+    def getOutputClass(self):
+        return graphene.ImportedOntology
+
+    def process(self, i, o):
+        pass
+                    
 class SETLr(UpdateChangeService):
 
     def __init__(self, depth=-1, predicates=[None]):
@@ -146,11 +159,11 @@ class SETLr(UpdateChangeService):
 }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
             old_np_map[orig] = assertion
             self.app.nanopub_manager.retire(new_np)
-            print resources
+            #print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
             out = resources[output_graph]
             out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
-            print "Generated graph", out.identifier, len(out), len(out_conjunctive)
+            #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
             mappings = {}
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings):
                 self.explain(new_np, i, o)
@@ -159,6 +172,6 @@ class SETLr(UpdateChangeService):
                     new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
                     if orig in old_np_map:
                         new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
-                print "Nanopub assertion has", len(new_np.assertion), "statements."
+                #print "Nanopub assertion has", len(new_np.assertion), "statements."
                 self.app.nanopub_manager.publish(new_np)
                 

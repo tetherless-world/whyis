@@ -436,10 +436,18 @@ graphene:hasView dc:identifier "view".
 graphene:hasDownload dc:identifier "download";
   rdfs:subPropertyOf graphene:hasView.
 
+graphene:hasDescribe dc:identifier "describe";
+  rdfs:subPropertyOf graphene:hasView.
+
+graphene:hasRelated dc:identifier "related";
+  rdfs:subPropertyOf graphene:hasView.
+
 graphene:hasLabel dc:identifier "label";
   rdfs:subPropertyOf graphene:hasView.
 
 rdfs:Resource graphene:hasView "resource_view.html";
+  graphene:hasRelated "related_nodes.json";
+  graphene:hasDescribe "describe.json";
   graphene:hasLabel "label_view.html".
 
 bibo:AcademicArticle graphene:hasView "article_view.html".

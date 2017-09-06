@@ -16,9 +16,9 @@
 </ul>
 {%- endmacro %}
 
-{% block title %}{{this.value(ns.RDFS.label)}}{% endblock %}
+{% block title %}{{this.description.value(ns.RDFS.label)}}{% endblock %}
 {% block content %}
-      <p property="dc:description">{{this.value(ns.dc.description)}}</p>
+      <p property="dc:description">{{this.description.value(ns.dc.description)}}</p>
       <div class="row">
           
         </div>
@@ -29,7 +29,7 @@
                     </div>
                     <div class="panel-body">These research questions have been prioritized to as a starting point for developing the HBGD Ontology.</div>
                     <ul class="list-group">
-                      {% for question in this[ns.dc.subject] %}
+                      {% for question in this.description[ns.dc.subject] %}
                         <li class="list-group-item">
                             <h4 ><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></h4>
                             <p>{{question.value(ns.prov.value)}}</p>

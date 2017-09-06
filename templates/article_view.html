@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
-{% block title %}{{this.value(ns.dc.title, default=get_label(this))}}{% endblock %}
+{% block title %}{{this.description.value(ns.dc.title, default=get_label(this.description))}}{% endblock %}
 {% block subtitle %}
-{% if this.value(ns.RDF.type) %} a
-{% for superClass in this[ns.RDF.type] %}
+{% if this.description.value(ns.RDF.type) %} a
+{% for superClass in this.description[ns.RDF.type] %}
 {% if loop.index > 1 and loop.last %} and {% endif %}
     {{ render_resource_link(superClass) }}
     {% if loop.revindex > 2 %}, {% endif %}
@@ -13,22 +13,22 @@
 {% block content %}
 <div class="row" >
   <div class="col-md-8">
-    {{ summary_panel(this) }}
-    {{ content(this) }}
+    {{ summary_panel(this.description) }}
+    {{ content(this.description) }}
     
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h2 class="panel-title">Nanopublications for {{get_label(this)}}</h2>
+        <h2 class="panel-title">Nanopublications for {{get_label(this.description)}}</h2>
       </div>
       <div class="panel-body">
-        <nanopubs resource="{{this.identifier}}"/>
+        <nanopubs resource="{{this.description.identifier}}"/>
       </div>
     </div>
   </div>
   <div class="col-md-4">
-    {{ facts_panel(this) }}
+    {{ facts_panel(this.description) }}
   </div>
-  <p>this is the article_view.html!</p>
+  <p>this.description is the article_view.html!</p>
   <!-- for debugging purposes -->
 
 {% endblock %}
