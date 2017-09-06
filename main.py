@@ -280,7 +280,8 @@ class App(Empty):
         def description(self):
             if self._description is None:
 #                try:
-                    result = Graph()
+                result = Graph()
+                try:
                     result += self._graph.query('''
 construct {
     ?e ?p ?o.
@@ -315,7 +316,9 @@ construct {
       ?o foaf:name ?name.
     }
 }''', initNs=NS.prefixes, initBindings={'e':self.identifier})
-                    self._description = result.resource(self.identifier)
+                except:
+                    pass
+                self._description = result.resource(self.identifier)
 #                except Exception as e:
 #                    print str(e), self.identifier
 #                    raise e
@@ -378,8 +381,11 @@ construct {
         def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
                 g = Graph()
-                g += db.query('''construct { ?s ?p ?o} where { ?s ?p ?o.}''',
-                              initNs=self.NS.prefixes, initBindings=dict(s=uri))
+                try:
+                    g += db.query('''construct { ?s ?p ?o} where { ?s ?p ?o.}''',
+                                  initNs=self.NS.prefixes, initBindings=dict(s=uri))
+                except:
+                    pass
                 resource_entity = g.resource(uri)
                 if len(resource_entity.graph) == 0:
                     #print "skipping", db

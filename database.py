@@ -2,7 +2,8 @@
 
 import flask_ld as ld
 from rdflib import *
-from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore, _node_to_sparql, SPARQL_NS, _node_from_result
+SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
+from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore, _node_to_sparql, _node_from_result
 
 def node_to_sparql(node):
     if isinstance(node, BNode):
