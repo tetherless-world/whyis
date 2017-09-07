@@ -7,6 +7,7 @@ import sys, collections
 from empty import Empty
 from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context
 import flask_ld as ld
+import jinja2
 from flask_ld.utils import lru
 from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
@@ -120,9 +121,16 @@ class App(Empty):
         Empty.configure_extensions(self)
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
         self.celery.conf.update(self.config)
-
+        
         app = self
 
+        if 'SATORU_TEMPLATE_DIR' in self.config:
+            my_loader = jinja2.ChoiceLoader([
+                app.jinja_loader,
+                jinja2.FileSystemLoader(self.config['SATORU_TEMPLATE_DIR']),
+            ])
+            app.jinja_loader = my_loader
+        
         def setup_task(service):
             service.app = app
             print service
@@ -419,7 +427,7 @@ construct {
         @self.before_request
         def load_forms():
             if 'API_KEY' in self.config:
-                if 'user_id' not in session and 'API_KEY' in request.args and request.args['API_KEY'] == self.config['API_KEY']:
+                if 'API_KEY' in request.args and request.args['API_KEY'] == self.config['API_KEY']:
                     print 'logging in invited user'
                     login_user(InvitedAnonymousUser())
                 
@@ -563,7 +571,8 @@ construct {
             if request.method == 'GET':
                 headers = {}
                 headers.update(request.headers)
-                del headers['Content-Length']
+                if 'Content-Length' in headers:
+                    del headers['Content-Length']
                 req = requests.get(self.db.store.query_endpoint,
                                    headers = headers, params=request.args, stream = True)
             elif request.method == 'POST':
@@ -688,10 +697,10 @@ construct {
 
         self.api = ld.LinkedDataApi(self, "", self.db.store, "")
 
-        self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
-        self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
-        self.admin.add_view(ld.ModelView(self.role_api, default_sort=RDFS.label))
-        self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
+        #self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
+        #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
+        #self.admin.add_view(ld.ModelView(self.role_api, default_sort=RDFS.label))
+        #self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
 
         app = self
 
