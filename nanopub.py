@@ -6,6 +6,7 @@ import collections
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
+from uuid import uuid4
 
 class Nanopublication(rdflib.ConjunctiveGraph):
 
@@ -120,8 +121,15 @@ class NanopublicationManager:
                     
         output_graph = rdflib.ConjunctiveGraph()
 
+        bnode_cache = {}
         for s, p, o, g in graph.quads():
-            quad = (mappings.get(s,s), mappings.get(p,p), mappings.get(o,o), mappings.get(g.identifier,g.identifier))
+            def skolemize(x):
+                if isinstance(x, rdflib.BNode):
+                    if x not in bnode_cache:
+                        bnode_cache[x] = rdflib.URIRef('bnode:'+uuid4().hex)
+                    return bnode_cache[x]
+                return x
+            quad = (skolemize(mappings.get(s,s)), mappings.get(p,p), skolemize(mappings.get(o,o)), mappings.get(g.identifier,g.identifier))
             #print s, p, o, g
             #print quad
             output_graph.add(quad)
@@ -150,7 +158,7 @@ class NanopublicationManager:
         for np_uri, in self.db.query('''select ?np where {
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
-            #print "Retiring", np_uri, "derived from", nanopub_uri
+            print "Retiring", np_uri, "derived from", nanopub_uri
             nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
             self.db.remove((None,None,None,nanopub.assertion.identifier))
             self.db.remove((None,None,None,nanopub.provenance.identifier))

@@ -670,6 +670,7 @@ construct {
                 types = [URIRef(request.args['as']), 0]
             else:
                 types = list([(x.identifier, 0) for x in resource[RDF.type]])
+            #print types
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
             #print view, resource.identifier, types

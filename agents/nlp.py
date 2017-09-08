@@ -90,6 +90,9 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
          bds:minRelevance 0.4.
   }
   filter not exists {
+    ?node a <http://semanticscience.org/resource/Term>
+  }
+  filter not exists {
     ?node a <http://www.nanopub.org/nschema#Nanopublication>
   }
   filter not exists {
@@ -150,7 +153,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
             term = o.graph.resource(URIRef(i.identifier+"-term-"+slugify(t)))
             term.add(RDF.type, sio.Term)
             term.add(sio.hasValue, Literal(t))
-            term.add(RDFS.label, Literal(t))
+            #term.add(RDFS.label, Literal(t))
             term.add(sio.Frequency, Literal(f))
             o.add(sio.hasPart, term)
 
