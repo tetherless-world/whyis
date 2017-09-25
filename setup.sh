@@ -31,12 +31,7 @@ echo ""
 curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:9999/blazegraph/namespace
 wait $!
 echo ""
-echo "To run graphene in development mode, run:"
-#echo ""
-#echo "  > java -jar blazegraph.jar &"
-#echo ""
-#echo "to start the RDF database (Blazegraph)."
-#echo "And then run the following to start graphene:"
+echo "To run graphene in development mode, run the following to start graphene:"
 echo ""
 echo "  > source venv/bin/activate"
 echo "  > python manage.py runserver"
