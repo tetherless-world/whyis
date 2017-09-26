@@ -12,8 +12,11 @@ sioc = Namespace("http://rdfs.org/sioc/ns#")
 sio = Namespace("http://semanticscience.org/resource/")
 dc = Namespace("http://purl.org/dc/terms/")
 prov = autonomic.prov
+graphene = autonomic.graphene
 
 class HTML2Text(autonomic.UpdateChangeService):
+    activity_class = graphene.TextFromHTML
+    
     def getInputClass(self):
         return sioc.Post
 
@@ -30,6 +33,8 @@ class HTML2Text(autonomic.UpdateChangeService):
         o.add(URIRef("http://schema.org/text"), Literal(text))
         
 class IDFCalculator(autonomic.UpdateChangeService):
+    activity_class = graphene.InverseDocumentFrequencyCalculation
+    
     def getInputClass(self):
         return autonomic.graphene.ResolvedText
 
@@ -65,6 +70,8 @@ class IDFCalculator(autonomic.UpdateChangeService):
             
         
 class EntityResolver(autonomic.UpdateChangeService):
+    activity_class = graphene.EntityResolution
+    
     def getInputClass(self):
         return autonomic.graphene.ExtractedText
     
@@ -124,6 +131,8 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
     
         
 class EntityExtractor(autonomic.UpdateChangeService):
+    activity_class = graphene.EntityExtraction
+
     grammar = r"""
 NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
     {<NNP>+<NN>*}                # chunk sequences of proper nouns

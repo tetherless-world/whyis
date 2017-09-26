@@ -79,6 +79,8 @@ class GlobalChangeService(Service):
         
 class Crawler(UpdateChangeService):
 
+    activity_class = graphene.GraphCrawl
+
     def __init__(self, depth=-1, predicates=[None]):
         self.depth = depth
         self.predicates = predicates
@@ -111,6 +113,9 @@ class Crawler(UpdateChangeService):
                     todo.extend([(x.identifier, depth-1) for x in node[p]])
 
 class OntologyImporter(GlobalChangeService):
+
+    activity_class = graphene.OntologyImport
+        
     def getInputClass(self):
         return OWL.Ontology
 
@@ -121,6 +126,9 @@ class OntologyImporter(GlobalChangeService):
         pass
                     
 class SETLr(UpdateChangeService):
+
+    activity_class = setl.SemanticETL
+    
 
     def __init__(self, depth=-1, predicates=[None]):
         self.depth = depth

@@ -34,20 +34,20 @@
     <div data-ng-if="nanopub.editing" >
       <newnanopub verb="Edit" nanopub="nanopub" editing="true" on-save="saveNanopub(nanopub)"/>
     </div>
-    <div data-ng-hide="nanopub.editing" data-ng-repeat="content in nanopub.resource.assertion.values('http://rdfs.org/sioc/ns#content')" data-ng-bind-html="trust(content['@value'])"></div>
+    <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.content)"></div>
     <footer>
-      <span data-ng-repeat="contributor in nanopub.resource.pubinfo.resource.assertion.values('http://purl.org/dc/terms/contributor')">
+      <span data-ng-if="nanopub.creator">
         <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
         <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
-        <span data-ng-bind="getLabel(contributor['@id'])"/>
+        <span data-ng-bind="getLabel(nanopub.creator)"/>
       </span>
-          (<span data-ng-show="nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')">
-            Edited <span data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')['@value'] | date"/>
-          </span><span data-ng-hide="nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')" data-ng-bind="nanopub.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/created')['@value'] | date"/>)
+          (<span data-ng-show="nanopub.modified">
+            Edited <span data-ng-bind="nanopub.modified | date"/>
+          </span><span data-ng-hide="nanopub.modified" data-ng-bind="nanopub.created | date"/>)
     </footer>
-    <newnanopub verb="Reply" nanopub="nanopub.resource.newNanopub" on-save="createNanopub(nanopub.resource.newNanopub)"/>
+    <newnanopub verb="Reply" nanopub="nanopub.newNanopub" on-save="createNanopub(nanopub.newNanopub)"/>
     <div>
-      <blockquote style="font-size:0.8em" data-ng-repeat="reply in nanopub.resource.replies">
+      <blockquote style="font-size:0.8em" data-ng-repeat="reply in nanopub.replies">
         <div class="dropdown pull-right" data-ng-hide="reply.editing" data-ng-if="canEdit(reply) && !disableNanopubing">
           <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             <span class="glyphicon glyphicon-chevron-down"></span>
@@ -60,16 +60,16 @@
         <div data-ng-if="reply.editing" >
           <newnanopub verb="Edit" editing="true" nanopub="reply" on-save="saveNanopub(reply)"/>
         </div>
-        <div data-ng-hide="reply.editing" data-ng-repeat="content in reply.resource.assertion.values('http://rdfs.org/sioc/ns#content')" data-ng-bind-html="trust(content['@value'])"></div>
+        <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.content)"></div>
         <footer>
-          <span data-ng-repeat="contributor in reply.resource.pubinfo.resource.assertion.values('http://purl.org/dc/terms/contributor')">
+          <span >
             <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
             <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
-            <span data-ng-bind="getLabel(contributor['@id'])"/>
+            <span data-ng-if="reply.contributor" data-ng-bind="getLabel(reply.contributor)"/>
           </span>
-          (<span data-ng-show="reply.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')">
-            Edited <span data-ng-bind="reply.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/modified')['@value'] | date"/>
-          </span><span data-ng-hide="reply.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/modified')" data-ng-bind="reply.resource.pubinfo.resource.assertion.value('http://purl.org/dc/terms/created')['@value'] | date"/>)
+          (<span data-ng-show="reply.modified">
+            Edited <span data-ng-bind="reply.modified | date"/>
+          </span><span data-ng-hide="reply.modified" data-ng-bind="reply.created | date"/>)
         </footer>
       </blockquote>
     </div>

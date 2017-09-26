@@ -759,7 +759,7 @@ $( function() {
             }
             return graph;
         }
-        function processNanopubs(response) {
+        function processNanopub(response) {
             console.log(response);
             var graphs = Resource(null, {'@graph': response.data});
             var nanopubs = [];
@@ -827,9 +827,64 @@ $( function() {
             console.log(topNanopubs);
             return topNanopubs;
         }
+
+        function processNanopubs(response) {
+            console.log(response);
+            var nanopubs = response.data;
+            var workMap = {};
+            var npMap = {};
+            function nanopubComparator(a,b) {
+                if (b.updated == null) {
+                    if (a.updated == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    if (a.updated == null) {
+                        return 1;
+                    } else {
+                        return b.updated -
+                            a.updated;
+                    }
+                }
+            }
+            nanopubs.forEach(function(nanopub) {
+                if (nanopub.modified) nanopub.modified = new Date(nanopub.modified);
+                if (nanopub.created) nanopub.created = new Date(nanopub.created);
+                if (nanopub.updated) nanopub.updated = new Date(nanopub.updated);
+                workMap[nanopub.work] = nanopub;
+                npMap[nanopub.np] = nanopub;
+                nanopub.replies = [];
+                nanopub.derivations = [];
+            });
+            nanopubs.forEach(function(nanopub) {
+                nanopub.top = true;
+                if (nanopub.derived_from && npMap[nanopub.derived_from]) {
+                    npMap[nanopub.derived_from].derivations.push(nanopub);
+                    nanopub.top = false;
+                }
+                if (nanopub.reply_of && workMap[nanopub.reply_of]) {
+                    workMap[nanopub.reply_of].replies.push(nanopub);
+                    nanopub.top = false;
+                }
+            });
+            var topNanopubs = nanopubs.filter(function(nanopub) {
+                return nanopub.top;
+            });
+            topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
+                nanopub.newNanopub = Nanopub(nanopub.about, nanopub.work);
+                return nanopub;
+            });
+            console.log(topNanopubs);
+            return topNanopubs;
+        }
         Nanopub.list = function(about) {
-            return $http.get("/about", {params: {"uri": about}, headers:{'Accept':"application/ld+json"}, responseType:"json"})
-                .then(processNanopubs);
+            return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
+                .then(processNanopubs, function (response, error) {
+                    console.log(response);
+                    console.log(error);
+                });
         }
         Nanopub.update = function(nanopub) {
             return $http.put(nanopub['@id'], nanopub,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});

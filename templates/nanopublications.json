@@ -1,0 +1,46 @@
+{% set qr = this.graph.query('''
+select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?modified, ?created) as ?updated) ?derived_from ?generation_type ?content ?reply_of ?work where {
+  { graph ?np { ?np sio:isAbout ?e.}}
+  UNION
+  {graph ?assertion { ?e ?p ?o.}}
+  ?np a np:Nanopublication;
+        np:hasProvenance ?provenance;
+        np:hasPublicationInfo ?pubinfo;
+        np:hasAssertion ?assertion.
+    graph ?pubinfo {
+      ?np frbr:realizationOf ?work.
+    }
+  optional {
+    ?np sio:isAbout ?about
+  }
+  optional {
+    ?assertion prov:wasQuotedFrom ?quoted
+  }
+  optional {
+    ?assertion dc:contributor ?contributor
+  }
+  optional {
+    ?assertion dc:created ?created.
+  }
+  optional {
+    ?assertion dc:modified ?modified.
+  }
+  optional {
+    ?assertion prov:wasDerivedFrom ?derived_from.
+  }
+  optional {
+    ?assertion prov:wasGeneratedBy ?generating_event.
+    ?generating_event a ?generation_type.
+  }
+  optional {
+    ?assertion sioc:content ?content.
+  }
+  optional {
+    ?assertion sioc:reply_of ?reply_of.
+  }
+}''', initNs=dict(sio=ns.sio, prov=ns.prov, dc=ns.dc, frbr=ns.frbr, sioc=ns.sioc), initBindings={"e":this.identifier}) %}
+[
+    {% for row in qr %}
+    {{row.asdict()|tojson}}{% if not loop.last %},{% endif %}
+    {% endfor %}
+]

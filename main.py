@@ -97,7 +97,7 @@ NS.sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
 NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 NS.graphene = rdflib.Namespace("http://vocab.rpi.edu/graphene/")
 NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
-
+NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -230,6 +230,7 @@ class App(Empty):
 
         self.vocab = Graph()
         #print URIRef(self.config['vocab_file'])
+        self.vocab.load(open("default_vocab.ttl"), format="turtle")
         self.vocab.load(open(self.config['vocab_file']), format="turtle")
 
         self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
@@ -284,7 +285,7 @@ class App(Empty):
             return self._this
 
         _description = None
-        
+
         def description(self):
             if self._description is None:
 #                try:
@@ -449,7 +450,8 @@ construct {
             
         extensions = {
             "rdf": "application/rdf+xml",
-            "json": "application/ld+json",
+            "jsonld": "application/ld+json",
+            "json": "application/json",
             "ttl": "text/turtle",
             "trig": "application/trig",
             "turtle": "text/turtle",
@@ -624,7 +626,7 @@ construct {
             #print entity
 
             htmls = set(['application/xhtml','text/html'])
-            if sadi.mimeparse.best_match(htmls, content_type) in htmls:
+            if 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 return render_view(resource)
             else:
                 fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
@@ -653,10 +655,10 @@ construct {
             value = resource.value(self.NS.prov.value)
             if value is not None and view is None:
                 headers = {}
-                headers['ContentType'] = 'text/plain'
+                headers['Content-Type'] = 'text/plain'
                 content_type = resource.value(self.NS.ov.hasContentType)
                 if content_type is not None:
-                    headers['ContentType'] = content_type
+                    headers['Content-Type'] = content_type
                 if value.datatype == XSD.base64Binary:
                     return base64.b64decode(value.value), 200, headers
                 if value.datatype == XSD.hexBinary:
@@ -691,10 +693,15 @@ construct {
             if len(views) == 0:
                 abort(404)
 
+            headers = {'Content-Type': "text/html"}
+            extension = views[0]['view'].value.split(".")[-1]
+            if extension in extensions:
+                headers['Content-Type'] = extensions[extension]
+                
             # default view (list of nanopubs)
             # if available, replace with class view
             # if available, replace with instance view
-            return render_template(views[0]['view'].value, **template_args)
+            return render_template(views[0]['view'].value, **template_args), 200, headers
 
         self.api = ld.LinkedDataApi(self, "", self.db.store, "")
 

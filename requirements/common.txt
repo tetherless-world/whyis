@@ -1,6 +1,6 @@
 requests
 fabric
-rdflib
+rdflib>=4.2.2
 virtualenv
 Cython
 numpy

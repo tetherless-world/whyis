@@ -6,6 +6,7 @@ import collections
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
+frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 from uuid import uuid4
 
 class Nanopublication(rdflib.ConjunctiveGraph):
@@ -70,7 +71,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 self.nanopub_resource.add(np.hasProvenance, provenance)
             self._provenance = rdflib.Graph(store=self.store, identifier=provenance)
         return self._provenance
-
+    
     @property
     def modified(self):
         modified = self.pubinfo.value(self.assertion.identifier, dc.modified)
@@ -117,6 +118,7 @@ class NanopublicationManager:
                     mappings[pubinfo] = rdflib.URIRef(new_uri+"_pubinfo")
                 for provenance in graph.objects(nanopub, np.hasProvenance):
                     mappings[provenance] = rdflib.URIRef(new_uri+"_provenance")
+                
         #print mappings
                     
         output_graph = rdflib.ConjunctiveGraph()
@@ -150,6 +152,11 @@ class NanopublicationManager:
                 p = nanopub.provenance
                 p += output_graph.get_context(identifier=provenance)
                 #print "Provenance", len(p), len(output_graph.get_context(identifier=provenance))
+            if nanopub.pubinfo.value(nanopub.identifier, frbr.realizationOf) is None:
+                work = self.prefix[ld.create_id()]
+                nanopub.pubinfo.add((nanopub.identifier, frbr.realizationOf, work))
+                nanopub.pubinfo.add((work, rdflib.RDF.type, frbr.Work))
+                nanopub.pubinfo.add((nanopub.identifier, rdflib.RDF.type, frbr.Expression))
             #print "Total", len(output_graph)
             #print "Contexts", [g.identifier for g in output_graph.contexts()]
             yield nanopub
