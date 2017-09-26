@@ -1,8 +1,8 @@
 # coding:utf-8
 
 import sys
-#site.addsitedir('/apps/ontology_browser/venv')
-app_dir = '/home/hbgd/hbgdki_ontology/hbgd'
+#site.addsitedir('/apps/satoru/venv')
+app_dir = '/apps/satoru'
 if not app_dir in sys.path:
     sys.path.insert(0, app_dir)
 
