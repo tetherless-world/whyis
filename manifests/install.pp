@@ -1,7 +1,7 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
 
-package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "python-dev", "python-pip", "python-pip-whl", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server"]:
+package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "python-pip", "python-pip-whl", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":

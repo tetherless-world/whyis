@@ -27,7 +27,7 @@ Vagrant.configure(2) do |config|
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   config.vm.provider "virtualbox" do |vb|
-       vb.name = "graphene-dev"
+       vb.name = "satoru-dev"
        # VM HARDWARE SPECS
 
        vb.customize ["modifyvm", :id, "--memory", "4096"]
@@ -36,7 +36,7 @@ Vagrant.configure(2) do |config|
        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
        vb.customize ["modifyvm", :id, "--vram", "256"]       
   end
-  config.vm.network "private_network", ip: "192.168.33.30"
+  config.vm.network "private_network", ip: "192.168.33.36"
   config.ssh.forward_agent = true
 
   # Create a public network, which generally matched to bridged network.
@@ -71,13 +71,13 @@ Vagrant.configure(2) do |config|
   # config.push.define "atlas" do |push|
   #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
   # end
-  config.vm.provision "shell", path: "bootstrap.sh"
+  config.vm.provision "shell", path: "install.sh"
 
-  config.vm.provision "puppet" do |puppet|
-     puppet.manifests_path = "manifests"
-     puppet.manifest_file  = "default.pp"
-     puppet.options = "--verbose --debug"
-  end
+#  config.vm.provision "puppet" do |puppet|
+#     puppet.manifests_path = "manifests"
+#     puppet.manifest_file  = "default.pp"
+#     puppet.options = "--verbose --debug"
+#  end
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
