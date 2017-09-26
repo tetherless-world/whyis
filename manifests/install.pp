@@ -1,7 +1,14 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
+class { 'python' :
+  version    => 'system',
+  pip        => 'present',
+  dev        => 'present',
+  virtualenv => 'present',
+  gunicorn   => 'absent',
+}
 
-package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server"]:
+package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
@@ -23,7 +30,7 @@ file_line { "configure_java_home":
   path  => '/etc/default/jetty8',
   line  => 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "http://downloads.sourceforge.net/project/bigdata/bigdata/2.1.4/blazegraph.war":
+} -> wget::fetch { "https://github.com/tetherless-world/satoru/raw/master/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
   timeout => 0
 } ->
@@ -124,6 +131,9 @@ python::requirements { '/apps/satoru/requirements/dev.txt' :
   virtualenv => '/apps/satoru/venv',
   owner      => 'satoru',
 } ->
+file { "/etc/default/celeryd":
+  ensure => present
+} ->
 file_line { "configure_celeryd_start":
   path  => '/etc/default/celeryd',
   line  => 'ENABLED=',
@@ -179,6 +189,17 @@ file_line { "configure_CELERYBEAT_GROUP":
   line  => 'CELERYBEAT_GROUP=',
   match => 'CELERYBEAT_GROUP=$CELERYD_GROUP',
 } ->
+exec { "a2enmod wsgi":
+  command => "a2enmod wsgi",
+} -> 
+exec { "a2enmod headers":
+  command => "a2enmod headers",
+} -> 
+file { "/apps/satoru/config.py":
+  ensure => present,
+  source => "/apps/satoru/config-defaults.py",
+  owner => "satoru"
+} ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
   source => "/apps/satoru/apache.conf",
@@ -194,12 +215,12 @@ service { apache2:
 
 service { celeryd:
     ensure => running,
-    subscribe => [File["/etc/default/celeryd"]],
+    subscribe => [File_Line["configure_CELERYBEAT_GROUP"]],
 }
 
 service { celerybeat:
     ensure => running,
-    subscribe => [File["/etc/default/celerybeat"]],
+    subscribe => [File_Line["configure_CELERYBEAT_GROUP"]],
 }
 
 service { jetty8:
@@ -207,11 +228,15 @@ service { jetty8:
     subscribe => [File["/usr/share/jetty8/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
 exec { "create_admin_namespace":
-  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:9999/blazegraph/namespace",
+  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > admin_namespace.log",
+  creates => "/apps/satoru/admin_namespace.log",
+  user => "satoru",
   cwd => "/apps/satoru",
 } -> 
 exec { "create_knowledge_namespace":
-  command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:9999/blazegraph/namespace",
+  command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/satoru/knowledge_namespace.log",
+  creates => "/apps/satoru/knowledge_namespace.log",
+  user => "satoru",
   cwd => "/apps/satoru",
 }
 

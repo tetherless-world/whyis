@@ -22,7 +22,7 @@ Config = dict(
     # use DEBUG mode?
     DEBUG = False,
 
-    site_name = "Graphene Knowledge Graph",
+    site_name = "Satoru Knowledge Graph",
 
     # use TESTING mode?
     TESTING = False,
@@ -77,18 +77,18 @@ Config = dict(
     db_defaultGraph = LOD_PREFIX + '/',
 
 
-    admin_queryEndpoint = 'http://localhost:9999/blazegraph/namespace/admin/sparql',
-    admin_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/admin/sparql',
+    admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
+    admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     
-    knowledge_queryEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
-    knowledge_updateEndpoint = 'http://localhost:9999/blazegraph/namespace/knowledge/sparql',
+    knowledge_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
+    knowledge_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
 
     LOGIN_USER_TEMPLATE = "auth/login.html",
     CELERY_BROKER_URL = 'redis://localhost:6379/0',
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
     namespaces = [
         importer.LinkedData(
-            prefix = 'http://localhost:5000/doi/',
+            prefix = LOD_PREFIX+'/doi/',
             url = 'http://dx.doi.org/%s',
             headers={'Accept':'text/turtle'},
             format='turtle',
@@ -113,10 +113,10 @@ Config = dict(
 #        "SKOS Crawler" : autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related])
     },
     inference_tasks = [
-        dict ( name="SKOS Crawler",
-               service=autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
-               schedule=dict(hour="1")
-              )
+#        dict ( name="SKOS Crawler",
+#               service=autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
+#               schedule=dict(hour="1")
+#              )
     ]
 )
 

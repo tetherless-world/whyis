@@ -1,33 +1,35 @@
 #!/bin/bash
 
+sudo apt-get update
+
 echo "Installing puppet..."
-apt-get install puppet
-wait $!
+sudo apt-get install -y puppet 
+
+#echo "Installing virtualenv..."
+#sudo apt-get install -y python-virtualenv
+
 
 echo "Installing puppetlabs-stdlib --version 4.14.0..."
-puppet module install puppetlabs-stdlib --version 4.14.0
-wait $!
+sudo puppet module install puppetlabs-stdlib --version 4.14.0
 
 echo "Installing puppetlabs-vcsrepo --version 4.14.0..."
-puppet module install puppetlabs-vcsrepo --version 2.0.0
-wait $!
+sudo puppet module install puppetlabs-vcsrepo --version 2.0.0
 
 echo "Installing maestrodev-wget --version 1.7.3..."
-puppet module install maestrodev-wget --version 1.7.3
-wait $!
+sudo puppet module install maestrodev-wget --version 1.7.3
 
-puppet module install stankevich-python --version 1.18.2
-wait $!
+sudo puppet module install stankevich-python --version 1.18.2
 
-if [ ! -f /tmp/install_satoru.pp ]; then
-    curl -skL 'https://raw.githubusercontent.com/tetherless-world/satoru/master/manifests/install.pp' > /tmp/install_satoru.pp
+curl -skL 'https://raw.githubusercontent.com/tetherless-world/satoru/master/manifests/install.pp' > /tmp/install_satoru.pp
+
+if [ -f /vagrant/manifests/install.pp ]; then
+     cp /vagrant/manifests/install.pp /tmp/install_satoru.pp
 fi
 
-echo "Installing blazegraph using puppet..."
-puppet apply /tmp/install_satoru.pp
-wait $!
+sudo puppet apply /tmp/install_satoru.pp
 
 echo ""
+echo "Please configure Satoru at /apps/satoru/config.py to ensure correct customization."
 echo "Satoru is now running at http://localhost/."
 echo "Visit http://localhost/register to add a new user."
 echo ""
