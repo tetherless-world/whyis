@@ -40,6 +40,7 @@ file { "/usr/share/jetty8/webapps/blazegraph":
 exec { "unzip_blazegraph":
   command => "unzip -u /tmp/blazegraph.war",
   cwd => "/usr/share/jetty8/webapps/blazegraph",
+  creates => "/usr/share/jetty8/webapps/blazegraph/WEB-INF/web.xml",
 } -> 
 file { "/data":
   ensure => directory,
@@ -131,6 +132,12 @@ python::requirements { '/apps/satoru/requirements/dev.txt' :
   virtualenv => '/apps/satoru/venv',
   owner      => 'satoru',
 } ->
+file { "/var/log/celery":
+    owner => "satoru",
+    ensure => directory,
+    recurse => true,
+    group => "satoru",
+} ->
 file { "/etc/default/celeryd":
   source => "/apps/satoru/resources/celeryd",
   ensure => present
@@ -158,15 +165,19 @@ service { apache2:
     subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
 }
 
+service { redis-server:
+    ensure => running,
+    subscribe => [File["/etc/default/celeryd"]],
+}
 
 service { celeryd:
     ensure => running,
-    subscribe => [File_Line["configure_CELERYBEAT_GROUP"]],
+    subscribe => [File["/etc/default/celeryd"]],
 }
 
 service { celerybeat:
     ensure => running,
-    subscribe => [File_Line["configure_CELERYBEAT_GROUP"]],
+    subscribe => [File["/etc/default/celeryd"]],
 }
 
 service { jetty8:
