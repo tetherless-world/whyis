@@ -132,62 +132,8 @@ python::requirements { '/apps/satoru/requirements/dev.txt' :
   owner      => 'satoru',
 } ->
 file { "/etc/default/celeryd":
+  source => "/apps/satoru/resources/celeryd",
   ensure => present
-} ->
-file_line { "configure_celeryd_start":
-  path  => '/etc/default/celeryd',
-  line  => 'ENABLED=',
-  match => 'ENABLED="true"',
-} ->
-file_line { "configure_celeryd_chdir":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYD_CHDIR=',
-  match => 'CELERYD_CHDIR="/apps/satoru"',
-} ->
-file_line { "configure_celeryd_CHDIR":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYBEAT_CHDIR=',
-  match => 'CELERYBEAT_CHDIR=$CELERYD_CHDIR',
-} ->
-file_line { "configure_celeryd_ENV_PYTHON":
-  path  => '/etc/default/celeryd',
-  line  => 'ENV_PYTHON=',
-  match => 'ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"',
-} ->
-file_line { "configure_CELERYD_OPTS":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYD_OPTS=',
-  match => 'CELERYD_OPTS="-A wsgi.celery --concurrency=8"',
-} ->
-file_line { "configure_CELERYBEAT_OPTS":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYBEAT_OPTS=',
-  match => 'CELERYBEAT_OPTS="-A wsgi.celery"',
-} ->
-file_line { "configure_CELERY_BIN":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERY_BIN=',
-  match => 'CELERY_BIN=$CELERYD_CHDIR"/venv/bin/celery"',
-} ->
-file_line { "configure_CELERYD_USER":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYD_USER=',
-  match => 'CELERYD_USER="satoru"',
-} ->
-file_line { "configure_CELERYD_GROUP":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYD_GROUP=',
-  match => 'CELERYD_GROUP="satoru"',
-} ->
-file_line { "configure_CELERYBEAT_USER":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYBEAT_USER=',
-  match => 'CELERYBEAT_USER=$CELERYD_USER',
-} ->
-file_line { "configure_CELERYBEAT_GROUP":
-  path  => '/etc/default/celeryd',
-  line  => 'CELERYBEAT_GROUP=',
-  match => 'CELERYBEAT_GROUP=$CELERYD_GROUP',
 } ->
 exec { "a2enmod wsgi":
   command => "a2enmod wsgi",
