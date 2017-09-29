@@ -444,7 +444,10 @@ construct {
         @self.login_manager.user_loader
         def load_user(user_id):
             if user_id != None:
-                return self.datastore.find_user(id=user_id)
+                try:
+                    return self.datastore.find_user(id=user_id)
+                except:
+                    return None
             else:
                 return None
             

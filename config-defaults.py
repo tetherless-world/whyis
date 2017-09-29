@@ -4,7 +4,7 @@ import os
 import logging
 from datetime import timedelta
 
-project_name = "hbgd"
+project_name = "satoru"
 import importer
 
 import autonomic
@@ -33,12 +33,12 @@ Config = dict(
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
 
-    nanopub_archive_path = "nanopublications",
+    nanopub_archive_path = "/data/nanopublications",
     vocab_file = "vocab.ttl",
 
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
-    LOG_FILENAME = "/var/tmp/app.%s.log" % project_name,
+    LOG_FILENAME = "/var/log/%s/%s.log" % project_name,
     LOG_LEVEL = logging.INFO,
     LOG_FORMAT = "%(asctime)s %(levelname)s\t: %(message)s", # used by logging.Formatter
 

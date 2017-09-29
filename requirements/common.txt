@@ -1,5 +1,5 @@
 cryptography
-requests
+requests[security]
 fabric
 rdflib>=4.2.2
 virtualenv

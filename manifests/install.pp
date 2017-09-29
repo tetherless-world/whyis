@@ -8,7 +8,7 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2"]:
+package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
@@ -105,6 +105,10 @@ file { "/apps":
   ensure => "directory",
   owner => "satoru"
 } ->
+file { "/data/nanopublications":
+  ensure => directory,
+  owner => "satoru"
+} ->
 vcsrepo { '/apps/satoru':
   ensure   => present,
   provider => git,
@@ -148,6 +152,11 @@ exec { "a2enmod wsgi":
 exec { "a2enmod headers":
   command => "a2enmod headers",
 } -> 
+file { "/var/log/satoru":
+  ensure => directory,
+  owner => "satoru"
+  group => "satoru",
+} ->
 file { "/apps/satoru/config.py":
   ensure => present,
   source => "/apps/satoru/config-defaults.py",
@@ -167,17 +176,17 @@ service { apache2:
 
 service { redis-server:
     ensure => running,
-    subscribe => [File["/etc/default/celeryd"]],
+    subscribe => [File["/apps/satoru/config.py"]],
 }
 
 service { celeryd:
     ensure => running,
-    subscribe => [File["/etc/default/celeryd"]],
+    subscribe => [File["/apps/satoru/config.py"]],
 }
 
 service { celerybeat:
     ensure => running,
-    subscribe => [File["/etc/default/celeryd"]],
+    subscribe => [File["/apps/satoru/config.py"]],
 }
 
 service { jetty8:
