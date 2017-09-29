@@ -38,7 +38,7 @@ select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?mo
   optional {
     ?assertion sioc:reply_of ?reply_of.
   }
-}''', initNs=dict(sio=ns.sio, prov=ns.prov, dc=ns.dc, frbr=ns.frbr, sioc=ns.sioc), initBindings={"e":this.identifier}) %}
+}''', initNs=dict(np=ns.np, sio=ns.sio, prov=ns.prov, dc=ns.dc, frbr=ns.frbr, sioc=ns.sioc), initBindings={"e":this.identifier}) %}
 [
     {% for row in qr %}
     {{row.asdict()|tojson}}{% if not loop.last %},{% endif %}
