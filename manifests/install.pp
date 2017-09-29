@@ -154,7 +154,7 @@ exec { "a2enmod headers":
 } -> 
 file { "/var/log/satoru":
   ensure => directory,
-  owner => "satoru"
+  owner => "satoru",
   group => "satoru",
 } ->
 file { "/apps/satoru/config.py":
