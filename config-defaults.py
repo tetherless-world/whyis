@@ -38,7 +38,7 @@ Config = dict(
 
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
-    LOG_FILENAME = "/var/log/%s/%s.log" % (project_name,project_name)
+    LOG_FILENAME = "/var/log/%s/%s.log" % (project_name,project_name),
     LOG_LEVEL = logging.INFO,
     LOG_FORMAT = "%(asctime)s %(levelname)s\t: %(message)s", # used by logging.Formatter
 
