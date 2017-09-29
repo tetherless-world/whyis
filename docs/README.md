@@ -10,3 +10,11 @@ Every entity in the resource is visible through its own Uniform Resource Identif
 # Nano-scale?
 
 Nano-scale knowledge graphs are built of many *[nanopublications](http://nanopub.org)*, where each nanopublication is tracked individually, with the ability to provide provenance-based justifications and publication credit for each tiny bit of knowledge in the graph.
+
+> "A nanopublication is the smallest unit of publishable information: an assertion about anything that can be uniquely identified and attributed to its author."
+
+**Assertion:** a minimal unit of thought
+
+**Provenance:** the evidence and history of the assertion
+
+**Publication Info:** metadata about how the nanopublication came to be
