@@ -81,4 +81,8 @@ If the RDF format supports named graphs, and the graphs are nanopublications, th
 If there are no explicit nanopublications, or if the RDF format is triples-only, each graph (including the default one), is treated as a separate nanopublication assertion.
 The PublicationInfo will contain some minimal provenance about the load, and each assertion will be the graphs contained in the file.
 
+```
+python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
+```
+
 ## [Next: Customizing Satoru](configuration)
