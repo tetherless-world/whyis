@@ -27,6 +27,13 @@ It should be set from a value generated using a command like:
 import os; os.urandom(24)
 ```
 
+Finally, set a password salt secret that will prevent hackers from being able to guess passwords if they get access to them.
+This can be generated using `os.urandom(24)` as well.
+
+```
+SECURITY_PASSWORD_SALT = 'changeme__',
+```
+
 ## Advanced Configuration
 
 If you are developing a custom knowledge graph, you will probably want to manage your code in a module that you can version control separately from the Satoru installation.
@@ -46,6 +53,51 @@ pip install -e .
 ```
 
 That should set up an initial project directory and let you check your configuration in there and create templates and a local vocabulary.
+Edit `/apps/satoru/config.py` to set `vocab_file='/apps/myknowledgegraph/vocab.ttl'` (or whatever you're calling your project).
+You will also need to set `SATORU_TEMPLATE_DIR` in order to create custom views:
+
+```
+    SATORU_TEMPLATE_DIR = "/apps/myknowledgegraph/templates",
+```
+
+## Views and Interaction
+
+Nodes in Satoru knowledge graphs can be customized to look like just about anything based on their `rdf:type`.
+Nodes can also have multiple views, which can be selected using the `view=` URL parameter. 
+The default type in the graph is `rdfs:Resource`, and the default view is `view`.
+If you want to create a default view for a class you are defining, add the following to your vocab.ttl file:
+
+```
+<http://example.com/my_ontology/MyClass> rdfs:label "My Class";
+    graphene:hasView "my_class_view.html".
+```
+
+`graphene:hasView` is the top-level property for creating views in Satoru.
+If you want to create a new kind of view, create a subproperty of `graphene:hasView` and give it an identifier:
+
+```
+<http://example.com/my_ontology/hasScatterPlot> dc:identifier "scatter_plot";
+  rdfs:subPropertyOf graphene:hasView.
+```
+
+You can now configure `scatter_plot` views for your class too:
+
+```
+<http://example.com/my_ontology/MyClass> graphene:hasScatterPlot "my_scatterplot_view.html".
+```
+
+Create a file called `/apps/myknowledgegraph/templates/my_scatterplot_view.html` and populate it with your code.
+The file `/apps/satoru/templates/resource_view.html` is a good first example.
+
+Pre-configured templates include:
+
+| Class | hasView (view=view) | hasNanopublication (view=nanopublications) | hasRelated (view=related_nodes) |
+| ----- | ---- | ---------------- | ------------- |
+|rdfs:Resource | resource_view.html | nanopublications.json | related.json|
+|owl:Class | class_view.html |||
+|bibo:BibliographicResource | article_view.html |||
+
+
 
 
 ## Security
