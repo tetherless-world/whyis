@@ -194,7 +194,7 @@ service { jetty8:
     subscribe => [File["/usr/share/jetty8/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
 exec { "create_admin_namespace":
-  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > admin_namespace.log",
+  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/satoru/admin_namespace.log",
   creates => "/apps/satoru/admin_namespace.log",
   user => "satoru",
   cwd => "/apps/satoru",
