@@ -144,6 +144,8 @@ file { "/var/log/celery":
 } ->
 file { "/etc/default/celeryd":
   source => "/apps/satoru/resources/celeryd",
+  owner => "root",
+  group => "root",
   ensure => present
 } ->
 exec { "a2enmod wsgi":
