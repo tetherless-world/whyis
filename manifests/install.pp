@@ -8,7 +8,7 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
+package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
