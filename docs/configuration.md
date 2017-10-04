@@ -27,15 +27,33 @@ It should be set from a value generated using a command like:
 import os; os.urandom(24)
 ```
 
-### Security
+## Advanced Configuration
+
+If you are developing a custom knowledge graph, you will probably want to manage your code in a module that you can version control separately from the Satoru installation.
+First, create a project directory.
+Ideally, it should be owned by the `satoru` user and be in apps. 
+You should also create a requirements.txt file, with all of your python dependencies, and install them and the package itself:
+
+```
+cd /apps
+mkdir myknowledgegraph
+cd myknowledgegraph
+touch requirements.txt
+mkdir templates
+mv /apps/satoru/config.py .
+cp /apps/satoru/vocab.ttl .
+pip install -e .
+```
+
+That should set up an initial project directory and let you check your configuration in there and create templates and a local vocabulary.
+
+
+## Security
 Satoru uses flask-security for authentication and authorization. 
 The default configuration is to require an authenticated user for all access.
 We are happy to accept pull requests that make this configurable. 
 A guide to [configuring flask-security](https://pythonhosted.org/Flask-Security/configuration.html) is available on the flask-security site.
 
-### Email
+## Email
 Satoru uses flask-mail for sending email. Please refer to the [flask-mail configuration guide](https://pythonhosted.org/Flask-Mail/).
 
-## Advanced Configuration
-
-If you are developing a custom knowledge graph, you will probably want to manage your code in a module that you can version control separately from the Satoru installation.
