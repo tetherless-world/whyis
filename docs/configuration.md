@@ -89,16 +89,20 @@ You can now configure `scatter_plot` views for your class too:
 Create a file called `/apps/myknowledgegraph/templates/my_scatterplot_view.html` and populate it with your code.
 The file `/apps/satoru/templates/resource_view.html` is a good first example.
 
-Pre-configured templates include:
+You will need to restart apache after reconfiguring views in Satoru.
 
-| Class | hasView (view=view) | hasNanopublication (view=nanopublications) | hasRelated (view=related_nodes) |
-| ----- | ---- | ---------------- | ------------- |
-|rdfs:Resource | resource_view.html | nanopublications.json | related.json|
-|owl:Class | class_view.html |||
-|bibo:BibliographicResource | article_view.html |||
+The pre-configured template and views are:
 
+| Class | view | describe | label | nanopublications | related |
+| ----- | ---- | -------- | ----- | ---------------- | ------- |
+|rdfs:Resource | resource_view.html | describe.json | label_view.html | nanopublications.json | related.json |
+|owl:Class | class_view.html |
+|owl:Ontology | ontology_view.html |
+|bibo:AcademicArticle | article_view.html |
 
-
+The view selector will choose the template for the view that is most specific to an instance.
+Subclasses with custom views will override their transitive superclasses.
+Instances do not need to have a type directly asserted, but can use the knowledge graph and vocab files to find relevant superclasses to the asserted types.
 
 ## Security
 Satoru uses flask-security for authentication and authorization. 
