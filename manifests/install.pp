@@ -28,7 +28,7 @@ file_line { "configure_jetty_host_options":
 } ->
 file_line { "configure_java_home":
   path  => '/etc/default/jetty8',
-  line  => 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64',
+  line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
 } -> wget::fetch { "https://github.com/tetherless-world/satoru/raw/master/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
