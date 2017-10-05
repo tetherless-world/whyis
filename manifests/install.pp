@@ -8,7 +8,7 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-package { ["unzip", "zip", "openjdk-7-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
+package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
@@ -28,7 +28,7 @@ file_line { "configure_jetty_host_options":
 } ->
 file_line { "configure_java_home":
   path  => '/etc/default/jetty8',
-  line  => 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64',
+  line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
 } -> wget::fetch { "https://github.com/tetherless-world/satoru/raw/master/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
@@ -145,6 +145,8 @@ file { "/var/log/celery":
 } ->
 file { "/etc/default/celeryd":
   source => "/apps/satoru/resources/celeryd",
+  owner => "root",
+  group => "root",
   ensure => present
 } ->
 exec { "a2enmod wsgi":
@@ -195,7 +197,7 @@ service { jetty8:
     subscribe => [File["/usr/share/jetty8/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
 exec { "create_admin_namespace":
-  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > admin_namespace.log",
+  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/satoru/admin_namespace.log",
   creates => "/apps/satoru/admin_namespace.log",
   user => "satoru",
   cwd => "/apps/satoru",

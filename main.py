@@ -5,7 +5,7 @@ import config
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory
 import flask_ld as ld
 import jinja2
 from flask_ld.utils import lru
@@ -607,10 +607,10 @@ construct {
             return render_template('sparql.html',endpoint="/sparql", **template_args)
 
         
-        if 'SATORU_CDN_DIR' in app.config and app.config['SATORU_CDN_DIR'] is not None:
+        if 'SATORU_CDN_DIR' in self.config and self.config['SATORU_CDN_DIR'] is not None:
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
-                return send_from_directory(app.config['SATORU_CDN_DIR'], werkzeug.utils.secure_filename(filename))
+                return send_from_directory(self.config['SATORU_CDN_DIR'], werkzeug.utils.secure_filename(filename))
             
         @self.route('/about.<format>')
         @self.route('/about')
