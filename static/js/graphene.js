@@ -894,7 +894,7 @@ $( function() {
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
-            return $http.delete(nanopub['@id']);
+            return $http.delete(nanopub.np);
         }
         return Nanopub;
     }]);
@@ -990,7 +990,7 @@ $( function() {
                     Nanopub.update(nanopub)
                         .then(function() {
                             //location.reload();
-                            return Nanopub.list($scope.resource)
+                            return Nanopub.list($scope.resource).then($scope.update);
                         })
                     //.then($scope.update);
                 };
@@ -998,7 +998,7 @@ $( function() {
                     Nanopub.save(nanopub).then(function() {
                         //location.reload();
                         $scope.newNanopub = Nanopub($scope.resource);
-                        return Nanopub.list($scope.resource)
+                        return Nanopub.list($scope.resource).then($scope.update);
                     });
                 };
                 $scope.delete = function(nanopub) {

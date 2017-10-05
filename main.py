@@ -32,6 +32,8 @@ import sadi
 import json
 import sadi.mimeparse
 
+import werkzeug.utils
+
 from flask_mail import Mail, Message
 
 from celery import Celery
@@ -124,7 +126,7 @@ class App(Empty):
         
         app = self
 
-        if 'SATORU_TEMPLATE_DIR' in self.config:
+        if 'SATORU_TEMPLATE_DIR' in self.config and app.config['SATORU_TEMPLATE_DIR'] is not None:
             my_loader = jinja2.ChoiceLoader([
                 app.jinja_loader,
                 jinja2.FileSystemLoader(self.config['SATORU_TEMPLATE_DIR']),
@@ -603,7 +605,12 @@ construct {
                                  set=set)
 
             return render_template('sparql.html',endpoint="/sparql", **template_args)
+
         
+        if 'SATORU_CDN_DIR' in app.config and app.config['SATORU_CDN_DIR'] is not None:
+            @self.route('/cdn/<path:filename>')
+            def cdn(filename):
+                return send_from_directory(app.config['SATORU_CDN_DIR'], werkzeug.utils.secure_filename(filename))
             
         @self.route('/about.<format>')
         @self.route('/about')

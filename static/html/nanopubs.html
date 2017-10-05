@@ -36,14 +36,23 @@
     </div>
     <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.content)"></div>
     <footer>
-      <span data-ng-if="nanopub.creator">
+      <span data-ng-if="nanopub.contributor">
         <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
         <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
-        <span data-ng-bind="getLabel(nanopub.creator)"/>
+        <span data-ng-bind="getLabel(nanopub.contributor)"/>
       </span>
-          (<span data-ng-show="nanopub.modified">
-            Edited <span data-ng-bind="nanopub.modified | date"/>
+      <span data-ng-if="nanopub.generation_type">
+        <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
+        <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
+        created using <span data-ng-bind="getLabel(nanopub.generation_type)"/>
+      </span>
+          (<span data-ng-show="nanopub.modified">Edited <span data-ng-bind="nanopub.modified | date"/>
           </span><span data-ng-hide="nanopub.modified" data-ng-bind="nanopub.created | date"/>)
+      <span data-ng-if="nanopub.generation_type">
+        <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
+        <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
+        created using <span data-ng-bind="getLabel(nanopub.generation_type)"/>
+      </span>
     </footer>
     <newnanopub verb="Reply" nanopub="nanopub.newNanopub" on-save="createNanopub(nanopub.newNanopub)"/>
     <div>
@@ -67,8 +76,7 @@
             <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
             <span data-ng-if="reply.contributor" data-ng-bind="getLabel(reply.contributor)"/>
           </span>
-          (<span data-ng-show="reply.modified">
-            Edited <span data-ng-bind="reply.modified | date"/>
+          (<span data-ng-show="reply.modified">Edited <span data-ng-bind="reply.modified | date"/>
           </span><span data-ng-hide="reply.modified" data-ng-bind="reply.created | date"/>)
         </footer>
       </blockquote>

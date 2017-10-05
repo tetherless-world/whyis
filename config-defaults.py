@@ -36,6 +36,8 @@ Config = dict(
 
     nanopub_archive_path = "/data/nanopublications",
     vocab_file = "vocab.ttl",
+    SATORU_TEMPLATE_DIR = None,
+    SATORU_CDN_DIR = None,
 
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,

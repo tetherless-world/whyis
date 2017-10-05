@@ -99,6 +99,7 @@ user { 'satoru':
   ensure => present,
   password => '*',
   home => '/apps',
+  shell => '/bin/bash',
   gid => 'satoru'
 } ->
 file { "/apps":
