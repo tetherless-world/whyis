@@ -16,6 +16,10 @@
 theme: jekyll-theme-minimal
 name: Satoru Knowledge Graph Framework
 
+# Dependencies
+markdown:    kramdown
+highlighter: pygments
+
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
 # to override the default setting.
