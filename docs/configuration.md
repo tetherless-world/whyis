@@ -47,6 +47,7 @@ mkdir myknowledgegraph
 cd myknowledgegraph
 touch requirements.txt
 mkdir templates
+mkdir cdn
 mv /apps/satoru/config.py .
 cp /apps/satoru/vocab.ttl .
 pip install -e .
@@ -58,6 +59,7 @@ You will also need to set `SATORU_TEMPLATE_DIR` in order to create custom views:
 
 ```
     SATORU_TEMPLATE_DIR = "/apps/myknowledgegraph/templates",
+    SATORU_CDN_DIR = "/apps/myknowledgegraph/cdn",
 ```
 
 ## Views and Interaction
