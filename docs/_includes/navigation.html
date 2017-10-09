@@ -1,7 +1,4 @@
-<!-- Belongs at: /_includes/navigation.html -->
-
 <!-- This finds the current page so it can be highlighted. -->
-
 {% for entry in site.data.navigation %}
 {% capture fullurl %}{{ site.baseurl }}{{ entry.url }}{% endcapture %}
     {% if fullurl == page.url %}
@@ -12,30 +9,62 @@
     {% endif %}
 {% endfor %}
 
+<nav class="navbar navbar-default navbar-static-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <img alt="{{ site.title | default: site.github.repository_name }}" src="logo.png">
+    </a>
+      <ul class="nav navbar-nav">
+        {% for entry in site.data.navigation %}
+            {% if entry.url == current_page %}
+                {% assign current = ' active' %}
+            {% else %}
+                <!-- We have to declare it 'null' to ensure it doesn't propagate. -->
+                {% assign current = null %}
+            {% endif %}
+            {% assign sublinks = entry.sublinks %}
+            {% if sublinks %}
+            <li class="dropdown{{ current }}">
+                <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
+                <a href="#" class="dropdown-toggle" 
+                   data-toggle="dropdown" 
+                   role="button" 
+                   aria-haspopup="true" 
+                   aria-expanded="false">
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    {% for sublink in sublinks %}
+                    <li><a href="{{ site.baseurl }}{{ sublink.url }}">{{ sublink.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% else %}
+            <li class="list-group-item{{ current }}">
+                <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+</nav>
 <div class="panel panel-default">
   <!-- List group -->
   <ul class="list-group">
-    {% for entry in site.data.navigation %}
-        {% if entry.url == current_page %}
-            {% assign current = ' class="current"' %}
-        {% else %}
-            <!-- We have to declare it 'null' to ensure it doesn't propagate. -->
-            {% assign current = null %}
-        {% endif %}
-        {% assign sublinks = entry.sublinks %}
-        {% if sublinks %}
-        <li{{ current }} class="list-group-item">
-            <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
-            <ul>
-                {% for sublink in sublinks %}
-                <li><a href="{{ site.baseurl }}{{ sublink.url }}">{{ sublink.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </li>
-        {% else %}
-        <li{{ current }}><a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a></li>
-        {% endif %}
-    {% endfor %}
   </ul>
 </div>
 
