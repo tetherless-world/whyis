@@ -1,0 +1,26 @@
+# Belongs at: /_data/navigation.yml
+
+- title: Home
+  url: /
+
+- title: Installing Satoru
+  url: /install
+
+- title: Configuring Satoru
+  url: /configuration
+
+#- title: Satoru Templates
+#  url: /templates
+
+#- title: Inference Agents
+#  url: /inference
+
+#- title: Curation
+#  sublinks:
+#    - title: Importers
+#      url: /importers
+#    - title: Semantic ETL
+#      url: /setl
+
+#- title: Satoru Architecture
+#  url: /architecture
