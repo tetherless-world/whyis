@@ -18,3 +18,9 @@ Nano-scale knowledge graphs are built of many *[nanopublications](http://nanopub
 **Provenance:** the evidence and history of the assertion
 
 **Publication Info:** metadata about how the nanopublication came to be
+
+In Satoru, we do not require users to attempt to minimize a unit of thought.
+Any set of assertions can bet taken together if they have the same provenance and publication information.
+If, for instance, a knowledge graph needs to quote an ontology, it can do it in one nanopublication, even though they can be very large.
+If the provenance of those assertions are held in common, it is reasonable to keep those as a single assertion.
+However, if it is possible to break up assertions into smaller units, that will make them easier to manage and version.
