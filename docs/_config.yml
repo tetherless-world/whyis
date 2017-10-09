@@ -27,3 +27,7 @@ name: Satoru Knowledge Graph Framework
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
