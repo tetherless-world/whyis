@@ -9,10 +9,9 @@
     {% endif %}
 {% endfor %}
 
-<nav class="navbar navbar-default navbar-static-top">
-  <div class="container-fluid">
+<nav class="navbar navbar-default">
     <a class="navbar-brand" href="#">
-      <img alt="{{ site.title | default: site.github.repository_name }}" width="1em" src="logo.png">
+      <img alt="{{ site.title | default: site.github.repository_name }}" height="50px" src="logo.png">
     </a>
       <ul class="nav navbar-nav">
         {% for entry in site.data.navigation %}
@@ -45,14 +44,5 @@
             {% endif %}
         {% endfor %}
       </ul>
-    </div>
 </nav>
-<div class="panel panel-default">
-  <!-- List group -->
-  <ul class="list-group">
-  </ul>
-</div>
 
-<!-- Then we build the nav bar. -->
-    <ul>
-    </ul>
