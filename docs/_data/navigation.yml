@@ -9,8 +9,8 @@
 - title: Configuring Satoru
   url: /configuration
 
-#- title: Satoru Templates
-#  url: /templates
+- title: Satoru Views
+  url: /views
 
 #- title: Inference Agents
 #  url: /inference
