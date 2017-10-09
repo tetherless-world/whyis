@@ -1,5 +1,5 @@
 {% include header.html %}
-{% include navbar.html %}
+{% include navigation.html %}
 
     <h1>{{ page.title }}</h1>
 
