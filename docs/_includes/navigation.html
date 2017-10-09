@@ -12,8 +12,9 @@
     {% endif %}
 {% endfor %}
 
-<!-- Then we build the nav bar. -->
-    <ul>
+<div class="panel panel-default">
+  <!-- List group -->
+  <ul class="list-group">
     {% for entry in site.data.navigation %}
         {% if entry.url == current_page %}
             {% assign current = ' class="current"' %}
@@ -23,7 +24,7 @@
         {% endif %}
         {% assign sublinks = entry.sublinks %}
         {% if sublinks %}
-        <li{{ current }}>
+        <li{{ current }} class="list-group-item">
             <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
             <ul>
                 {% for sublink in sublinks %}
@@ -35,4 +36,9 @@
         <li{{ current }}><a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a></li>
         {% endif %}
     {% endfor %}
+  </ul>
+</div>
+
+<!-- Then we build the nav bar. -->
+    <ul>
     </ul>
