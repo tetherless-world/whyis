@@ -11,6 +11,11 @@ Every URL in Satoru, except for some special ones like under `/static` (Javascri
 The URL naming scheme for your knowledge graph is up to you.
 You can organize nodes by their source, by topic, or just have an infinitely flat space.
 
+We have pre-configured two importer namespaces in Satoru by default, DOI and DBpedia.
+These can be removed or added to, but it makes it easy to quickly build example applications by having their knowledge loaded automatically.
+DOI is an identifier system for academic papers, and DBpedia is a structured data representation of Wikipedia.
+Both serve Linked Data when it is asked for using content negotiation.
+
 ## Every node has a Type
 
 When you visit a URL in Satoru, you will almost never get a 404.
@@ -19,15 +24,13 @@ When there are no known types for a node, or the types given aren't given custom
 This default view provides room to show statements about the node, the type, summary descriptions, and a list of nanopublications about the node.
 There is also a UI for adding new nanopublications.
 This template, resource_view.html, is a useful starting point when creating custom node views in Satoru.
+Visit the page `/dbpedia/John_Lennon` to visit the node for John Lennon, which will automatically import data from DBpedia.
+Internally, the URI is mapped to the originating URI of `http://dbpedia.org/resource/John_Lennon`, so all statements are imported as-is.
 
 We are also able to reference nodes outside of the Satoru namespace.
 This makes it easier to import external knowledge from linked data and ontologies.
 All URIs can be referenced using the `/about` URL, with a URL-encoded parameter of `uri`.
-For instance, visit the page `/about?uri=https%3A%2F%2Fwww.w3.org%2FPeople%2FBerners-Lee%2Fcard%23i` to visit Tim-Berners Lee's URI for himself.
-
-![Empty node for Tim-Berners Lee](images/tbl_blank.png)
-
-
+For instance, the page for John Lennon can also be visited at `/about?uri=http://dbpedia.org/resource/John_Lennon`.
 
 ## Creating a Custom Default View
 
@@ -42,10 +45,12 @@ We can start by modifying your extension's `vocab.ttl` file to add the following
 Next, create a file in you extension called `templates/person_view.html` and add the following:
 
 ```html
-{% extends "base.html" %}
+{{'{% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}
-
+{% if this.description().value(ns.foaf.depiction) %}
+  <img src="{{this.description().value(ns.foaf.depiction)}}" height="100px"/>
+{% endif %}
 {{get_label(this.description())}}
 {% endblock %}
 <div class="row" >
@@ -53,7 +58,8 @@ Next, create a file in you extension called `templates/person_view.html` and add
     {{ summary_panel(this.description()) }}
   </div>
 </div>
-{% endblock %}
+{% endblock %}'}}
 ```
 
-This a very simplified page 
+This a very simplified page that takes out a lot of details from the original page and adds a picture of the person that the node represents.
+
