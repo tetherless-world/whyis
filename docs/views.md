@@ -45,20 +45,22 @@ We can start by modifying your extension's `vocab.ttl` file to add the following
 Next, create a file in you extension called `templates/person_view.html` and add the following:
 
 ```html
-{{'{% extends "base.html" %}'}}
-{{'{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}'}}
-{{'{% block title %}'}}
-{{'{% if this.description().value(ns.foaf.depiction) %}'}}
-{{'  <img src="{{this.description().value(ns.foaf.depiction)}}" height="100px"/>'}}
-{{'{% endif %}'}}
-{{'{{get_label(this.description())}}'}}
-{{'{% endblock %}'}}
+{% raw %}
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}
+{% if this.description().value(ns.foaf.depiction) %}
+  <img src="{{this.description().value(ns.foaf.depiction)}}" height="100px"/>
+{% endif %}
+{{get_label(this.description())}}
+{% endblock %}
 <div class="row" >
   <div class="col-md-8">
-{{'    {{ summary_panel(this.description()) }}'}}
+    {{ summary_panel(this.description()) }}
   </div>
 </div>
-{{'{% endblock %}'}}
+{% endblock %}
+{% endraw %}
 ```
 
 This a very simplified page that takes out a lot of details from the original page and adds a picture of the person that the node represents.
