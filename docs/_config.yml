@@ -18,7 +18,7 @@ name: Satoru Knowledge Graph Framework
 
 # Dependencies
 markdown:    kramdown
-highlighter: pygments
+highlighter: rouge
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
