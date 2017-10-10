@@ -41,7 +41,7 @@ We can start by modifying your extension's `vocab.ttl` file to add the following
 
 Next, create a file in you extension called `templates/person_view.html` and add the following:
 
-```
+```html
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}
