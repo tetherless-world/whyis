@@ -4,7 +4,7 @@ import os
 import logging
 from datetime import timedelta
 
-project_name = "satoru"
+project_name = "{{cookiecutter.project_slug}}"
 import importer
 
 import autonomic
@@ -13,17 +13,19 @@ import rdflib
 from datetime import datetime
 
 # Set to be custom for your project
-LOD_PREFIX = 'http://localhost:5000'
+LOD_PREFIX = '{{cookiecutter.linked_data_prefix}}'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
 
 skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+
+from {{cookiecutter.project_slug}}.agents import *
 
 # base config class; extend it to your needs.
 Config = dict(
     # use DEBUG mode?
     DEBUG = False,
 
-    site_name = "Satoru Knowledge Graph",
+    site_name = "{{cookiecutter.project_name}}",
 
     # use TESTING mode?
     TESTING = False,
@@ -32,12 +34,12 @@ Config = dict(
     USE_X_SENDFILE = False,
 
     WTF_CSRF_ENABLED = True,
-    SECRET_KEY = "secret",  # import os; os.urandom(24)
+    SECRET_KEY = "{{cookiecutter.SECRET_KEY}}",
 
     nanopub_archive_path = "/data/nanopublications",
-    vocab_file = "vocab.ttl",
-    SATORU_TEMPLATE_DIR = None,
-    SATORU_CDN_DIR = None,
+    vocab_file = "{{cookiecutter.location}}/vocab.ttl",
+    SATORU_TEMPLATE_DIR = "{{cookiecutter.location}}/templates",
+    SATORU_CDN_DIR = "{{cookiecutter.location}}/static",
 
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
@@ -63,7 +65,7 @@ Config = dict(
     BLUEPRINTS = [],
 
     lod_prefix = LOD_PREFIX,
-    SECURITY_EMAIL_SENDER = "Name <email@example.com>",
+    SECURITY_EMAIL_SENDER = "{{cookiecutter.author}} <{{cookiecutter.email}}>",
     SECURITY_FLASH_MESSAGES = True,
     SECURITY_CONFIRMABLE = False,
     SECURITY_CHANGEABLE = True,
@@ -71,7 +73,7 @@ Config = dict(
     SECURITY_RECOVERABLE = True,
     SECURITY_REGISTERABLE = True,
     SECURITY_PASSWORD_HASH = 'sha512_crypt',
-    SECURITY_PASSWORD_SALT = 'changeme__',
+    SECURITY_PASSWORD_SALT = '{{cookiecutter.SECURITY_PASSWORD_SALT}}',
     SECURITY_SEND_REGISTER_EMAIL = False,
     SECURITY_POST_LOGIN_VIEW = "/",
     SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False,
@@ -105,6 +107,22 @@ Config = dict(
                 }
             }
             '''
+        ),
+        importer.LinkedData(
+            prefix = LOD_PREFIX+'/dbpedia/',
+            url = 'http://dbpedia.org/resource/%s',
+            headers={'Accept':'text/turtle'},
+            format='turtle',
+            postprocess_update= '''insert {
+                graph ?g {
+                    ?article <http://purl.org/dc/terms/abstract> ?abstract.
+                }
+            } where {
+                graph ?g {
+                    ?article <http://dbpedia.org/ontology/abstract> ?abstract.
+                }
+            }
+            '''
         )
     ],
     inferencers = {
@@ -129,8 +147,6 @@ Dev = dict(Config)
 Dev.update(dict(
     DEBUG = True,  # we want debug level output
     MAIL_DEBUG = True,
-    # Works for the development virtual machine.
-#    lod_prefix = "http://localhost:5000",
     DEBUG_TB_INTERCEPT_REDIRECTS = False
 ))
 

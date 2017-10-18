@@ -6,14 +6,33 @@ from flask_security.utils import encrypt_password, verify_password, get_hmac
 
 import flask
 
+
+from base64 import b64encode
 import os
 import datetime
 import rdflib
 from nanopub import Nanopublication
+from cookiecutter.main import cookiecutter
 
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
+def rando():
+    return b64encode(os.urandom(24)).decode('utf-8')
+
+    
+class Configure(Command):
+    '''Create a Satoru configuration and customization directory.'''
+    def get_options(self):
+        return [
+        ]
+    
+    def run(self, extension_directory=None, extension_name=None):
+        # Create project from the cookiecutter-pypackage/ template
+        extra_context = { 'SECRET_KEY':rando(), 'SECURITY_PASSWORD_SALT': rando() }
+        cookiecutter('config-template/', extra_context=extra_context)
+
 class LoadNanopub(Command):
+    '''Add a nanopublication to the knowledge graph.'''
     def get_options(self):
         return [
             Option('--input', '-i', dest='input_file',
@@ -23,7 +42,6 @@ class LoadNanopub(Command):
         ]
     
     def run(self, input_file, file_format="trig"):
-        '''Add a nanopublication to the knowledge graph.'''
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
         g1 = g.parse(location=input_file, format=file_format)
         if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
@@ -35,6 +53,7 @@ class LoadNanopub(Command):
             flask.current_app.nanopub_manager.publish(npub)
 
 class UpdateUser(Command):
+    """Update a user in Satoru"""
 
     def get_options(self):
         return [
@@ -52,7 +71,6 @@ class UpdateUser(Command):
         ]
 
     def run(self, identifier, email, password, fn, ln, add_roles, remove_roles):
-        """Update a user in the database"""
         user = flask.current_app.datastore.get_user(identifier)
         print "Modifying user", user.resUri
         if password is not None:
@@ -81,6 +99,7 @@ class UpdateUser(Command):
         print "Updated user: %s" % (user, )
 
 class CreateUser(Command):
+    """Add a user to Satoru"""
 
     def get_options(self):
         return [
@@ -97,7 +116,6 @@ class CreateUser(Command):
         ]
 
     def run(self, email, password, fn, ln, identifier, roles=[]):
-        """Add a user to your database"""
         print 'Password verified:', verify_password(password,encrypt_password(password))
         role_objects = []
         if roles is not None:

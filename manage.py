@@ -5,7 +5,12 @@ import flask_script as script
 import commands
 
 from main import app_factory
-import config
+try:
+    import config
+except:
+    print "WARNING: missing config, using defaults file"
+    import config_defaults as config
+
 manager = script.Manager(app_factory)
 
 @manager.command
@@ -33,6 +38,7 @@ if __name__ == "__main__":
     manager.add_command("createuser", commands.CreateUser())
     manager.add_command("updateuser", commands.UpdateUser())
     manager.add_command("test", commands.Test())
+    manager.add_command("configure", commands.Configure())
     manager.add_command("load", commands.LoadNanopub())
 
     manager.run()

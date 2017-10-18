@@ -104,7 +104,8 @@ user { 'satoru':
 } ->
 file { "/apps":
   ensure => "directory",
-  owner => "satoru"
+  owner => "satoru",
+  group => "satoru"
 } ->
 file { "/data/nanopublications":
   ensure => directory,
@@ -159,11 +160,6 @@ file { "/var/log/satoru":
   ensure => directory,
   owner => "satoru",
   group => "satoru",
-} ->
-file { "/apps/satoru/config.py":
-  ensure => present,
-  source => "/apps/satoru/config-defaults.py",
-  owner => "satoru"
 } ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
