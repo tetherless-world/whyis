@@ -175,17 +175,17 @@ service { apache2:
 
 service { redis-server:
     ensure => running,
-    subscribe => [File["/apps/satoru/config_defaults.py"]],
+    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
 }
 
 service { celeryd:
     ensure => running,
-    subscribe => [File["/apps/satoru/config_defaults.py"]],
+    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
 }
 
 service { celerybeat:
     ensure => running,
-    subscribe => [File["/apps/satoru/config_defaults.py"]],
+    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
 }
 
 service { jetty8:
