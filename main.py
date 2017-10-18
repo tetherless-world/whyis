@@ -1,6 +1,10 @@
 # -*- coding:utf-8 -*-
 import requests
-import config
+try:
+    import config
+except:
+    print "WARNING: missing config, using defaults file"
+    import config_defaults as config
 
 import os
 import sys, collections

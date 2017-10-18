@@ -58,16 +58,19 @@ class Empty(Flask):
         self.configure_views()
 
     def configure_logger(self):
-        log_filename = self.config['LOG_FILENAME']
+        try:
+            log_filename = self.config['LOG_FILENAME']
 
-        # Create a file logger since we got a logdir
-        log_file = logging.FileHandler(filename=log_filename)
-        formatter = logging.Formatter(self.config['LOG_FORMAT'])
-        log_file.setFormatter(formatter)
-        log_file.setLevel(self.config['LOG_LEVEL'])
-        self.logger.addHandler(log_file)
-        self.logger.info("Logger started")
-
+            # Create a file logger since we got a logdir
+            log_file = logging.FileHandler(filename=log_filename)
+            formatter = logging.Formatter(self.config['LOG_FORMAT'])
+            log_file.setFormatter(formatter)
+            log_file.setLevel(self.config['LOG_LEVEL'])
+            self.logger.addHandler(log_file)
+            self.logger.info("Logger started")
+        except:
+            print "Could not configure logger, using defaults."
+            
     def configure_error_handlers(app):
         @app.errorhandler(403)
         def forbidden_page(error):
