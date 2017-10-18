@@ -40,17 +40,64 @@ cd /apps/satoru
 source venv/bin/activate
 ```
 
+### Configure Satoru
+
+Satoru is built on the Flask web framework, and most of the Flask authentication options are available to configure in Satoru.
+A configuration script will walk you through the configuration process and make a project directory for you. 
+Change the default values as needed. The SECRET_KEY and SECURITY_PASSWORD_SALT are randomly generated at runtime, so you shouldn't need to change those.
+
+```
+$ python manage.py configure
+project_name [My Knowledge Graph]: 
+project_short_description [An example knowledge graph configuration.]: 
+project_slug [my_knowledge_graph]: 
+location [/apps/my_knowledge_graph]: 
+author [J. Doe]: 
+email [j.doe@example.com]: 
+linked_data_prefix [http://localhost]: 
+version [0.1]: 
+packages []: 
+SECRET_KEY [J00F5f80rGSbvpUo9oBFAtksmrd7ef8u]: 
+SECURITY_PASSWORD_SALT [JDyCyPu0KEu/fdJr4CbG65VhCtGugwCu]: 
+$ 
+```
+
+This will create a project skeleton for you at `location` (here, `/apps/my_knowledge_graph`). The files are:
+
+* **config.py** - Main configuration file for Satoru.
+* **vocab.ttl** - Vocabulary file for configuring custom Satoru views.
+* **templates/** - Directory for storing Satoru view templates.
+* **my_knowledge_graph/** - Project source directory. Put any python code in here.
+  * **agent.py** - An empty inference agent module.
+* **static/** - Files that are served up at `{linked_data_prefix}/cdn/` as static files.
+  * **css/** - Project-specific CSS files.
+    * **my_knowledge_graph.css** - Default empty project-specific CSS file.
+  * **html/** - Project-specific static HTML files, like for Angular.js templates.
+  * **js/** - Project-specific javascript files.
+    * **my_knowledge_graph.js** - Default empty project-specific javascript file.
+* **setup.py** - File for installation using pip.
+
+Change directories into the project dir and install it into your virtualenv. Be sure your virtualenv is activated first:
+
+```
+$ cd /apps/my_knowledge_graph
+$ pip install -e .
+```
+
+Restart apache and celeryd as a privileged user (not satoru) to have the configuration take effect:
+
+```
+$ sudo service apache2 restart
+$ sudo service celeryd restart
+```
+
 ### Add a User
 
 Registration is available on the website for users, but it's easy to add a user to the knowledge graph from the command line. 
 Use `--roles=admin` to make the user an administrator.
 
 ```
-python manage.py createuser -e <email> \
-    -p <password (can change later)> \
-    -f <First Name> \
-    -l <Last Name -u <user handle> \
-    --roles=admin
+$ python manage.py createuser -e <email> -p <password (can change later)> -f <First Name> -l <Last Name -u <user handle> --roles=admin
 ```
 
 ### Modify a User
@@ -59,19 +106,27 @@ You can change the roles a user has from the command line as well, but you'll ne
 For instance, you can add a user to a role like this:
 
 ```
-python manage.py updateuser -u <user handle> --add_roles=admin
+$ python manage.py updateuser -u <user handle> --add_roles=admin
 ```
 
 You can remove them from a role like this:
 
 ```
-python manage.py updateuser -u <user handle> --remove_roles=admin
+$ python manage.py updateuser -u <user handle> --remove_roles=admin
 ```
 
 Changing a password is also simple:
 
 ```
-python manage.py updateuser -u <user handle> -p <new password>
+$ python manage.py updateuser -u <user handle> -p <new password>
+```
+
+### Run in development mode
+
+Satoru can be run on a different port to enable debugging. You will see output from the log in the console and will be able to examine stack traces inside the browser.
+
+```
+$ python manage.py runserver -h 0.0.0.0
 ```
 
 ### Loading Knowledge
@@ -82,7 +137,7 @@ If there are no explicit nanopublications, or if the RDF format is triples-only,
 The PublicationInfo will contain some minimal provenance about the load, and each assertion will be the graphs contained in the file.
 
 ```
-python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
+$ python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
 ```
 
 ## [Next: Customizing Satoru](configuration)

@@ -1,10 +1,8 @@
 # Configure Satoru
 
 Satoru is built on the Flask web framework, and most of the Flask authentication options are available to configure in Satoru.
-The main configuration components are `/apps/satoru/config.py` and the turtle vocabulary file, at `/apps/satoru/vocab.ttl`.
+The main configuration components are `config.py` and the turtle vocabulary file, at `vocab.ttl`.
 `config.py` is a python-based configuration file, where the main configurations are set in a dict object.
-
-## Basic Configuration
 
 Any knowledge graph needs to have a default URI namespace.
 This namespace is the prefix for all users, nanopublications, and is the default prefix for entities in the knowledge graph.
@@ -32,34 +30,6 @@ This can be generated using `os.urandom(24)` as well.
 
 ```
 SECURITY_PASSWORD_SALT = 'changeme__',
-```
-
-## Advanced Configuration
-
-If you are developing a custom knowledge graph, you will probably want to manage your code in a module that you can version control separately from the Satoru installation.
-First, create a project directory.
-Ideally, it should be owned by the `satoru` user and be in apps. 
-You should also create a requirements.txt file, with all of your python dependencies, and install them and the package itself:
-
-```
-cd /apps
-mkdir myknowledgegraph
-cd myknowledgegraph
-touch requirements.txt
-mkdir templates
-mkdir cdn
-mv /apps/satoru/config.py .
-cp /apps/satoru/vocab.ttl .
-pip install -e .
-```
-
-That should set up an initial project directory and let you check your configuration in there and create templates and a local vocabulary.
-Edit `/apps/satoru/config.py` to set `vocab_file='/apps/myknowledgegraph/vocab.ttl'` (or whatever you're calling your project).
-You will also need to set `SATORU_TEMPLATE_DIR` in order to create custom views:
-
-```
-    SATORU_TEMPLATE_DIR = "/apps/myknowledgegraph/templates",
-    SATORU_CDN_DIR = "/apps/myknowledgegraph/cdn",
 ```
 
 ## Views and Interaction
