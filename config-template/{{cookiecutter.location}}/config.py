@@ -18,7 +18,7 @@ LOD_PREFIX = '{{cookiecutter.linked_data_prefix}}'
 
 skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
 
-from {{cookiecutter.project_slug}}.agents import *
+from {{cookiecutter.project_slug}}.agent import *
 
 # base config class; extend it to your needs.
 Config = dict(
