@@ -27,6 +27,8 @@ Config = dict(
 
     site_name = "{{cookiecutter.project_name}}",
 
+    root_path = '/apps/satoru',
+
     # use TESTING mode?
     TESTING = False,
 
@@ -38,7 +40,9 @@ Config = dict(
 
     nanopub_archive_path = "/data/nanopublications",
     vocab_file = "{{cookiecutter.location}}/vocab.ttl",
-    SATORU_TEMPLATE_DIR = "{{cookiecutter.location}}/templates",
+    SATORU_TEMPLATE_DIR = [
+        "{{cookiecutter.location}}/templates",
+    ],
     SATORU_CDN_DIR = "{{cookiecutter.location}}/static",
 
     # LOGGING
@@ -50,14 +54,14 @@ Config = dict(
     PERMANENT_SESSION_LIFETIME = timedelta(days=7),
 
     # EMAIL CONFIGURATION
-    ## MAIL_SERVER = "smtp.mailgun.org",
+    ## MAIL_SERVER = "",
     ## MAIL_PORT = 587,
     ## MAIL_USE_TLS = True,
     ## MAIL_USE_SSL = False,
     ## MAIL_DEBUG = False,
     ## MAIL_USERNAME = '',
     ## MAIL_PASSWORD = '',
-    ## DEFAULT_MAIL_SENDER = "Graphene Admin <admin@graphene.example.com>",
+    ## DEFAULT_MAIL_SENDER = "{{cookiecutter.author}} <{{cookiecutter.email}}>",
 
     # see example/ for reference
     # ex: BLUEPRINTS = ['blog']  # where app is a Blueprint instance
@@ -147,6 +151,7 @@ Dev = dict(Config)
 Dev.update(dict(
     DEBUG = True,  # we want debug level output
     MAIL_DEBUG = True,
+    EXPLAIN_TEMPLATE_LOADING = True,
     DEBUG_TB_INTERCEPT_REDIRECTS = False
 ))
 

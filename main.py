@@ -2,6 +2,7 @@
 import requests
 try:
     import config
+    print config.__package__
 except:
     print "WARNING: missing config, using defaults file"
     import config_defaults as config
@@ -130,11 +131,14 @@ class App(Empty):
         
         app = self
 
+        if 'root_path' in self.config:
+            self.root_path = self.config['root_path']
+        
         if 'SATORU_TEMPLATE_DIR' in self.config and app.config['SATORU_TEMPLATE_DIR'] is not None:
-            my_loader = jinja2.ChoiceLoader([
-                app.jinja_loader,
-                jinja2.FileSystemLoader(self.config['SATORU_TEMPLATE_DIR']),
-            ])
+            my_loader = jinja2.ChoiceLoader(
+                [jinja2.FileSystemLoader(p) for p in self.config['SATORU_TEMPLATE_DIR']] + 
+                [app.jinja_loader]
+            )
             app.jinja_loader = my_loader
         
         def setup_task(service):

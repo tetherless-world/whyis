@@ -127,6 +127,12 @@ python::virtualenv { '/apps/satoru/venv' :
   cwd          => '/apps/satoru',
   timeout      => 0,
 } ->
+file { "/apps/.bash_profile" :
+  user => 'satoru',
+  content => '
+  source /apps/satoru/venv/bin/activate
+  ',
+}
 python::pip { 'pip-upgrade' :
   pkgname       => 'pip',
   ensure        => 'latest',
