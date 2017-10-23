@@ -1,6 +1,6 @@
 # Satoru Users Group
 
-The Satoru Users Group meets on Mondays at 2 pm ET on Google Hangouts. Feel free to join!
+The Satoru Users Group meets on Mondays at 2 pm ET on [Google Hangouts](https://hangouts.google.com/call/4rcvTC_JIDA2UTkHeiBkAAEE). Feel free to join!
 
 ## October 23, 2017
 
