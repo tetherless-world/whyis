@@ -1,9 +1,17 @@
 # Install Satoru
 
-Satoru installations are currently supported on Ubuntu >= 14.04. 
-Satoru is installed using Puppet, which means that the install.pp script can be customized for advanced Puppet users, and for enterprise configurations.
+The Satoru installer is layered, which allows for maximum flexibility. Each layer is runnable by itself, resulting in a functional Satoru.
 
-## Install into an Ubuntu system
+- **Layer 3: Vagrant** [Vagrant](https://www.vagrantup.com/) is a tool for automatically creating virtual machines either on developer computers or in virtual environments. The `Vagrantfile` that is included in Satoru is set up to use [VirtualBox](https://www.virtualbox.org/) to create an Ubuntu 14.04 virtual machine automatically. This script creates a virtual machine and then calls the Layer 2 shell script.
+- **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Satoru onto an Ubuntu server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
+- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Satoru deployment into their existing Puppet infrastructure.
+
+Choose a layer to install. Most developers working with Satoru for the first time will want to install into a virtual machine, and should choose Layer 1.
+Users who are willing to configure a machine directly for use by Satoru should choose Layer 2.
+Satoru installations are currently supported on Ubuntu >= 14.04. 
+
+
+## Layer 2: Install into an Ubuntu system
 
 This is useful for deploying production knowledge graphs, or for developers who already have a machine (virtual or otherwise) that is ready to run Satoru.
 
@@ -11,7 +19,7 @@ This is useful for deploying production knowledge graphs, or for developers who 
 bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/satoru/master/install.sh)
 ```
 
-## Install into a vagrant virtual machine 
+## Layer 3: Install into a vagrant virtual machine 
 
 This is useful for developers who want to isolate their development environment so that builds are repeatable, and for developers of multiple knowledge graphs.
 
@@ -24,7 +32,7 @@ curl -skL https://raw.githubusercontent.com/tetherless-world/satoru/master/insta
 vagrant up
 ```
 
-## Administrative Tasks
+# Administrative Tasks
 
 To peform the following administrative tasks, you need to connect to the VM (if you're not running directly):
 
