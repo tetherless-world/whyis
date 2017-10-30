@@ -132,7 +132,7 @@ file { "/apps/.bash_profile" :
   content => '
   source /apps/satoru/venv/bin/activate
   ',
-}
+} ->
 python::pip { 'pip-upgrade' :
   pkgname       => 'pip',
   ensure        => 'latest',
