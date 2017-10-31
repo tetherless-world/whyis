@@ -128,7 +128,7 @@ python::virtualenv { '/apps/satoru/venv' :
   timeout      => 0,
 } ->
 file { "/apps/.bash_profile" :
-  user => 'satoru',
+  owner => 'satoru',
   content => '
   source /apps/satoru/venv/bin/activate
   ',

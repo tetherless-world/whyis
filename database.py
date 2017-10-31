@@ -23,6 +23,7 @@ def engine_from_config(config, prefix):
     if prefix+"queryEndpoint" in config:
         store = SPARQLUpdateStore(queryEndpoint=config[prefix+"queryEndpoint"],
                                   update_endpoint=config[prefix+"updateEndpoint"],
+                                  default_query_method="POST",
                                   node_to_sparql=node_to_sparql,
                                   node_from_result=node_from_result)
         graph = ConjunctiveGraph(store,defaultgraph)
