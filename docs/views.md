@@ -24,13 +24,13 @@ When there are no known types for a node, or the types given aren't given custom
 This default view provides room to show statements about the node, the type, summary descriptions, and a list of nanopublications about the node.
 There is also a UI for adding new nanopublications.
 This template, resource_view.html, is a useful starting point when creating custom node views in Satoru.
-Visit the page `/dbpedia/John_Lennon` to visit the node for John Lennon, which will automatically import data from DBpedia.
-Internally, the URI is mapped to the originating URI of `http://dbpedia.org/resource/John_Lennon`, so all statements are imported as-is.
+Visit the page `/dbpedia/Tim_Berners-Lee` to visit the node for Tim Berners-Lee, which will automatically import data from DBpedia.
+Internally, the URI is mapped to the originating URI of `http://dbpedia.org/resource/Tim_Berners-Lee`, so all statements are imported as-is.
 
 We are also able to reference nodes outside of the Satoru namespace.
 This makes it easier to import external knowledge from linked data and ontologies.
 All URIs can be referenced using the `/about` URL, with a URL-encoded parameter of `uri`.
-For instance, the page for John Lennon can also be visited at `/about?uri=http://dbpedia.org/resource/John_Lennon`.
+For instance, the page for Tim Berners-Lee can also be visited at `/about?uri=http://dbpedia.org/resource/Tim_Berners-Lee`.
 
 ## Creating a Custom Default View
 
@@ -49,14 +49,17 @@ Next, create a file in you extension called `templates/person_view.html` and add
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}
-{% if this.description().value(ns.foaf.depiction) %}
-  <img src="{{this.description().value(ns.foaf.depiction)}}" height="100px"/>
-{% endif %}
 {{get_label(this.description())}}
 {% endblock %}
+{% block content %}
 <div class="row" >
   <div class="col-md-8">
     {{ summary_panel(this.description()) }}
+  </div>
+  <div class="col-md-4">
+{% if this.description().value(ns.foaf.depiction) %}
+  <img class="img-responsive img-thumbnail" src="{{this.description().value(ns.foaf.depiction)}}" alt="{{get_label(this.description())}}" />
+{% endif %}
   </div>
 </div>
 {% endblock %}
@@ -65,3 +68,14 @@ Next, create a file in you extension called `templates/person_view.html` and add
 
 This a very simplified page that takes out a lot of details from the original page and adds a picture of the person that the node represents.
 
+Restart apache or `python manage.py runserver` and reload the page. You will now see the new template being used.
+
+Templates are written in the [Jinja2 templating language](http://jinja.pocoo.org/docs/latest/templates/).
+
+## Templating Variables
+
+There are several variables available in the template for you to use.
+
+## this
+
+`this` is the 
