@@ -70,3 +70,12 @@ This a very simplified page that takes out a lot of details from the original pa
 
 Restart apache or `python manage.py runserver` and reload the page. You will now see the new template being used.
 
+Templates are written in the [Jinja2 templating language](http://jinja.pocoo.org/docs/latest/templates/).
+
+## Templating Variables
+
+There are several variables available in the template for you to use.
+
+## this
+
+`this` is the 
