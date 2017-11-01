@@ -21,58 +21,65 @@ def repair(brokenjson):
     return invalid_escape.sub(replace_with_byte, brokenjson.replace('\u000',''))
 
 class Importer:
-    def load(self, entity_name, db, nanopubs):
+
+    min_modified = 0
+    
+    def last_modified(self, entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
 }''',initNs=dict(np=np, prov=prov), initBindings=dict(mapped_uri=rdflib.URIRef(entity_name)))]
         modified = None
         for old_np in old_nps:
-            m = pytz.utc.localize(old_np.modified)
+            m = old_np.modified
+            if m is not None:
+                m = m
+                m = pytz.utc.localize(m)
             if m is None:
                 continue
             if modified is None or m > modified:
                 print m, modified, old_np.modified
                 modified = m
+        return modified
+        
+    def load(self, entity_name, db, nanopubs):
+        print "Fetching", entity_name
+        old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
+    ?np np:hasAssertion ?assertion.
+    ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
+}''',initNs=dict(np=np, prov=prov), initBindings=dict(mapped_uri=rdflib.URIRef(entity_name)))]
         updated = self.modified(entity_name)
         if updated is None:
             updated = datetime.datetime.now(pytz.utc)
-        #print "Local modified:", modified
-        #print "Remote modified:", updated
-        if modified is None or updated > modified:
-            for i in range(3):
-                try:
-                    print "Fetching", entity_name, "try", i+1
-                    g = self.fetch(entity_name)
-                    for new_np in nanopubs.prepare(g):
-                        #print "Adding new nanopub:", new_np.identifier
-                        self.explain(new_np, entity_name)
-                        new_np.add((new_np.identifier, sio.isAbout, rdflib.URIRef(entity_name)))
-                        if updated != None:
-                            new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
-                        for old_np in old_nps:
-                            new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
-                        #print new_np.serialize(format="trig")
-                        nanopubs.publish(new_np)
+        g = self.fetch(entity_name)
+        for new_np in nanopubs.prepare(g):
+            #print "Adding new nanopub:", new_np.identifier
+            self.explain(new_np, entity_name)
+            new_np.add((new_np.identifier, sio.isAbout, rdflib.URIRef(entity_name)))
+            if updated != None:
+                new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
+            for old_np in old_nps:
+                new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
+            #print new_np.serialize(format="trig")
+            nanopubs.publish(new_np)
 
-                    for old_np in old_nps:
-                        nanopubs.retire(old_np.identifier)
-                    break
-                except Exception as e:
-                    print "Error fetching", entity_name, str(e)
+        for old_np in old_nps:
+            print "retiring", old_np.identifier
+            nanopubs.retire(old_np.identifier)
 
     def explain(self, new_np, entity_name):
         new_np.provenance.add((new_np.assertion.identifier, prov.wasQuotedFrom, rdflib.URIRef(entity_name)))
         
 
 class LinkedData (Importer):
-    def __init__(self, prefix, url, headers=None, access_url=None, format=None, modified_headers=None, postprocess_update=None):
+    def __init__(self, prefix, url, headers=None, access_url=None, format=None, modified_headers=None, postprocess_update=None, min_modified=0):
         self.prefix = prefix
         self.url = url
         self.detect_url = url.split("%s")[0]
         self.headers = headers
         self.modified_headers = modified_headers
         self.format = format
+        self.min_modified = min_modified
         if access_url is not None:
             self.access_url = access_url
         else:

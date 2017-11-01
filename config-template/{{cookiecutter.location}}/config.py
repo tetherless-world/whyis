@@ -95,6 +95,7 @@ Config = dict(
     LOGIN_USER_TEMPLATE = "auth/login.html",
     CELERY_BROKER_URL = 'redis://localhost:6379/0',
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
+    default_language = 'en',
     namespaces = [
         importer.LinkedData(
             prefix = LOD_PREFIX+'/doi/',

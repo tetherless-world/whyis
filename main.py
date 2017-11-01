@@ -18,6 +18,7 @@ from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
+import pytz
 
 from flask_admin import Admin, BaseView, expose
 
@@ -225,6 +226,19 @@ class App(Empty):
             update.delay(nanopub_uri)
         self.nanopub_update_listener = run_update
 
+        @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4)
+        def run_importer(entity_name):
+            importer = self.find_importer(entity_name)
+            modified = importer.last_modified(entity_name, self.db, self.nanopub_manager)
+            updated = importer.modified(entity_name)
+            if updated is None:
+                updated = datetime.now(pytz.utc)
+            print "Remote modified:", updated, type(updated), "Local modified:", modified, type(modified)
+            if modified is None or (updated - modified).total_seconds() > importer.min_modified:
+                importer.load(entity_name, self.db, self.nanopub_manager)
+        self.run_importer = run_importer
+        
+
     def configure_database(self):
         """
         Database configuration should be set here
@@ -300,8 +314,8 @@ class App(Empty):
             if self._description is None:
 #                try:
                 result = Graph()
-                try:
-                    result += self._graph.query('''
+#                try:
+                for s,p,o,c in self._graph.query('''
 construct {
     ?e ?p ?o.
     ?o rdfs:label ?label.
@@ -334,9 +348,10 @@ construct {
     optional {
       ?o foaf:name ?name.
     }
-}''', initNs=NS.prefixes, initBindings={'e':self.identifier})
-                except:
-                    pass
+}''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+                    result.add((s,p,o))
+#                except:
+#                    pass
                 self._description = result.resource(self.identifier)
 #                except Exception as e:
 #                    print str(e), self.identifier
@@ -353,10 +368,14 @@ construct {
             importer = self.find_importer(entity)
 
         if importer is not None:
-            importer.load(entity, self.db, self.nanopub_manager)
-            
+            modified = importer.last_modified(entity, self.db, self.nanopub_manager)
+            if modified is None:
+                self.run_importer(entity)
+            else:
+                print "Type of modified is",type(modified)
+                self.run_importer.delay(entity)
         return self.Entity(self.db, entity)
-
+    
     def configure_template_filters(self):
         import urllib
         from markupsafe import Markup
@@ -368,6 +387,23 @@ construct {
             s = s.encode('utf8')
             s = urllib.quote_plus(s)
             return Markup(s)
+
+        @self.template_filter('lang')
+        def lang_filter(terms):
+            terms = list(terms)
+            if terms is None or len(terms) == 0:
+                return []
+            resources = [x for x in terms if not isinstance(x, rdflib.Literal)]
+            literals = [x for x in terms if isinstance(x, rdflib.Literal)]
+            languages = set([x.language for x in literals if x.language is not None])
+            best_lang = request.accept_languages.best_match(list(languages))
+            best_terms = [x for x in literals if x.language == best_lang]
+            if len(best_terms) == 0:
+                best_terms = [x for x in literals if x.language == self.config['default_language']]
+            if len(best_terms) > 0:
+                return resources + best_terms
+            return resources
+        self.lang_filter = lang_filter
     
     def configure_views(self):
 
@@ -401,7 +437,7 @@ construct {
             for db in [self.db, self.admin_db]:
                 g = Graph()
                 try:
-                    g += db.query('''construct { ?s ?p ?o} where { ?s ?p ?o.}''',
+                    g += db.query('''select ?s ?p ?o where { ?s ?p ?o.}''',
                                   initNs=self.NS.prefixes, initBindings=dict(s=uri))
                 except:
                     pass
@@ -410,11 +446,11 @@ construct {
                     #print "skipping", db
                     continue
                 for property in label_properties:
-                    label = resource_entity.value(property)
-                    if label is not None:
-                        return label
+                    labels = self.lang_filter(resource_entity[property])
+                    if len(labels) > 0:
+                        return labels[0]
                     
-                if label is None or len(label) < 2:
+                if len(labels) == 0:
                     name = [x.value for x in [resource_entity.value(self.NS.foaf.givenName),
                                               resource_entity.value(self.NS.foaf.familyName)] if x is not None]
                     if len(name) > 0:
@@ -429,10 +465,10 @@ construct {
         
         def get_label(resource):
             for property in label_properties:
-                label = resource.value(property)
+                labels = self.lang_filter(resource[property])
                 #print "mem", property, label
-                if label is not None:
-                    return label
+                if len(labels) > 0:
+                    return labels[0]
             return get_remote_label(resource.identifier)
             
         @self.before_request
@@ -454,10 +490,10 @@ construct {
         @self.login_manager.user_loader
         def load_user(user_id):
             if user_id != None:
-                try:
+                #try:
                     return self.datastore.find_user(id=user_id)
-                except:
-                    return None
+                #except:
+                #    return None
             else:
                 return None
             
@@ -567,7 +603,10 @@ construct {
                 self.NS.RDFS.comment,
                 self.NS.dcelements.description
             ]
-            return resource.graph.preferredLabel(resource.identifier, default=[], labelProperties=summary_properties)
+            for property in summary_properties:
+                terms = self.lang_filter(resource[property])
+                for term in terms:
+                    yield (property, term)
 
         self.get_summary = get_summary
 

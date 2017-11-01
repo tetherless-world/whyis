@@ -42,7 +42,7 @@
         <dl class="dl-horizontal clearfix">
           <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
           <dd>
-            {% for p, object in objects %}
+            {% for object in objects | map('last') | lang %}
             {% if g.isinstance(object, g.rdflib.Literal) %}
             <p property="{{predicate}}">{{object}}</p>
             {% else %}

@@ -1,7 +1,8 @@
 cryptography
 requests[security]
 fabric
-rdflib>=4.2.2
+git+git://github.com/RDFLib/rdflib.git#egg=rdflib
+#rdflib>=4.2.2
 virtualenv
 Cython
 numpy

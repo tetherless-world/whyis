@@ -4,7 +4,6 @@ import setlr
 from datetime import datetime
 from nanopub import Nanopublication
 
-
 graphene = rdflib.Namespace('http://vocab.rpi.edu/graphene/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
@@ -153,7 +152,7 @@ class SETLr(UpdateChangeService):
             nanopub.provenance.add((nanopub.assertion.identifier, prov.wasDerivedFrom, assertion))
             nanopub.pubinfo.add((nanopub.assertion.identifier, prov.wasAttributedTo, i.identifier))
             nanopub.pubinfo.add((nanopub.assertion.identifier, prov.wasAttributedTo, i.identifier))
-    
+
     def process(self, i, o):
         setl_graph = i.graph
         resources = setlr._setl(setl_graph)
@@ -175,14 +174,17 @@ class SETLr(UpdateChangeService):
             mappings = {}
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings):
                 self.explain(new_np, i, o)
+                print "Publishing", new_np.identifier
                 orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
                 if len(orig) == 0:
                     continue
                 orig = orig[0]
+                print orig
                 if isinstance(orig, rdflib.URIRef):
                     new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
                     if orig in old_np_map:
                         new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
-                #print "Nanopub assertion has", len(new_np.assertion), "statements."
+                print "Nanopub assertion has", len(new_np.assertion), "statements."
                 self.app.nanopub_manager.publish(new_np)
+                print 'Published'
                 
