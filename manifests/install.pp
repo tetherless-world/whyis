@@ -184,16 +184,6 @@ service { redis-server:
     subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
 }
 
-service { celeryd:
-    ensure => running,
-    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
-}
-
-service { celerybeat:
-    ensure => running,
-    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
-}
-
 service { jetty8:
     ensure => running,
     subscribe => [File["/usr/share/jetty8/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
