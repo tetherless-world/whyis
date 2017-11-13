@@ -628,15 +628,15 @@ construct {
                 if 'Content-Length' in headers:
                     del headers['Content-Length']
                 req = requests.get(self.db.store.query_endpoint,
-                                   headers = headers, params=request.args, stream = True)
+                                   headers = headers, params=request.args)
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
-                                    headers = request.headers, params=request.args, stream = True)
+                                    headers = request.headers, params=request.args)
             #print self.db.store.query_endpoint
             #print req.status_code
-            response = Response(stream_with_context(req.iter_content()), content_type = req.headers['content-type'])
+            response = Response(req.content, content_type = req.headers['content-type'])
             #response.headers[con(req.headers)
             return response, req.status_code
         
