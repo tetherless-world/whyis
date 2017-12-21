@@ -12,11 +12,11 @@
 - title: Satoru Views
   url: /views
 
+- title: Inference Agents
+  url: /inference
+
 - title: Community
   url: /community
-
-#- title: Inference Agents
-#  url: /inference
 
 #- title: Curation
 #  sublinks:
