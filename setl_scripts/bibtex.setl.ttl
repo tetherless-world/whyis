@@ -1,0 +1,339 @@
+@prefix rdf:           <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:          <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:           <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:           <http://www.w3.org/2002/07/owl#> .
+@prefix skos:          <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov:          <http://www.w3.org/ns/prov#> .
+@prefix sio:           <http://semanticscience.org/resource/> .
+@prefix dcat:          <http://www.w3.org/ns/dcat#> .
+@prefix dcterms:       <http://purl.org/dc/terms/> .
+@prefix void:          <http://rdfs.org/ns/void#> .
+@prefix foaf:          <http://xmlns.com/foaf/0.1/> .
+@prefix ov:            <http://open.vocab.org/terms/> .
+@prefix setl:          <http://purl.org/twc/vocab/setl/> .
+@prefix csvw:          <http://www.w3.org/ns/csvw#> .
+@prefix pv:            <http://purl.org/net/provenance/ns#>.
+
+@prefix :              <http://vocab.rpi.edu/graphene/setl/bibtex/> .
+
+@prefix graphene: <http://vocab.rpi.edu/graphene/>
+
+:bibtex_input a <https://www.iana.org/assignments/media-types/text/plain>;
+  prov:wasGeneratedBy [
+    a setl:Extract;
+    prov:used  [ a <https://www.iana.org/assignments/media-types/application/x-bibtex>]
+  ].
+
+:bibtex_entries a owl:Class, prov:SoftwareAgent, setl:PythonScript;
+  rdfs:subClassOf prov:Activity;
+  prov:qualifiedDerivation [
+    a prov:Derivation;
+    prov:entity :bibtex_input;
+    prov:hadRole [ dcterms:identifier "bibtex_file"]
+  ];
+  prov:value '''
+import bibtexparser
+
+bib_database = bibtexparser.load(bibtex_file)
+
+result = bib_database.entries
+'''.
+
+:create_article_uri a owl:Class, prov:SoftwareAgent, setl:PythonScript;
+  rdfs:subClassOf prov:Activity;
+  prov:value '''
+import rdflib
+global rdflib
+
+base_uri = rdflib.Namespace(setl_graph.value(predicate=rdflib.RDF.type,
+                            object=rdflib.URIRef("https://www.iana.org/assignments/media-types/application/x-bibtex")))
+global base_uri
+doi = rdflib.Namespace("http://dx.doi.org/")
+
+def result(entry):
+    if 'doi' in entry:
+        return doi[entry['doi']
+    else:
+        return base_uri[entry['ID']]
+result.base_uri = base_uri
+
+'''.
+
+:author_fn_ln a owl:Class, prov:SoftwareAgent, setl:PythonScript;
+  rdfs:subClassOf prov:Activity;
+  prov:value '''
+import re
+global re
+
+def result(author):
+    if ',' in author:
+        ln, fn = re.split('\\\\s*,\\\\s*', author)
+    else:
+        names = re.split('\\\\s+', author)
+        fn = names[0]
+        ln = ' '.join(names[1:])
+    return fn, ln
+'''.
+
+
+:bib_resource_types a owl:Class, prov:SoftwareAgent, setl:PythonScript;
+  rdfs:subClassOf prov:Activity;
+  prov:value '''
+result = {
+    'article' : ["dcterms:BibliographicResource",'bibo:AcademicArticle'],
+    'book' : ["dcterms:BibliographicResource",'bibo:Book'],
+    'booklet' : ["dcterms:BibliographicResource",'http://purl.org/net/nknouf/ns/bibtex#Booklet'],
+    'inbook' : ["dcterms:BibliographicResource",'bibo:Chapter'],
+    'incollection' : ["dcterms:BibliographicResource",'bibo:BookSection'],
+    'inproceedings' : ["dcterms:BibliographicResource","http://vivoweb.org/ontology/core#ConferencePaper"],
+    'manual' : ["dcterms:BibliographicResource","bibo:Manual"],
+    'mastersthesis' : ["dcterms:BibliographicResource",'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis', 'bibo:Thesis'],
+    'misc' : ["dcterms:BibliographicResource"],
+    'phdthesis' :  ["dcterms:BibliographicResource",'http://purl.org/net/nknouf/ns/bibtex#Phdthesis', 'bibo:Thesis'],
+    'proceedings' :  ["dcterms:BibliographicResource",'bibo:Proceedings'],
+    'techreport' :  ["dcterms:BibliographicResource",'http://purl.org/spar/fabio/TechnicalReport','bibo:Report'],
+    'unpublished' :  ["dcterms:BibliographicResource",'bibo:Manuscript'],
+}
+'''.
+
+:BibTeXSETL rdfs:subClassOf setl:SemanticETLScript;
+  rdfs:subClassOf [ a owl:Restriction;
+    owl:onProperty prov:used;
+    owl:someValuesFrom <https://www.iana.org/assignments/media-types/application/x-bibtex>
+  ].
+
+:bibtex_collection a void:Dataset, dcat:Dataset;
+  prov:wasGeneratedBy [a :BibTeXSETL], [
+    a setl:Transform, setl:JSLDT;
+    prov:used :bibtex_entries;
+    prov:qualifiedUsage [ a prov:Usage; prov:entity :create_article_uri; prov:hadRole [ dcterms:identifier "create_article_uri"]];
+    prov:qualifiedUsage [ a prov:Usage; prov:entity :bib_resource_types; prov:hadRole [ dcterms:identifier "bib_resource_types"]];
+    prov:qualifiedUsage [ a prov:Usage; prov:entity :bib_resource_types; prov:hadRole [ dcterms:identifier "author_fn_ln"]];
+    setl:hasContext '''{
+  "@vocab" :  "http://hadatac.org/ont/chear#",
+  "dataset" : "https://hbgd.tw.rpi.edu/dataset/",
+  "sio" :     "http://semanticscience.org/resource/",
+  "skos" :    "http://www.w3.org/2004/02/skos/core#",
+  "dcterms" :    "http://purl.org/dc/terms/",
+  "prov" :    "http://www.w3.org/ns/prov#",
+  "bibo" :    "http://purl.org/ontology/bibo/",
+  "rdfs" :    "http://www.w3.org/2000/01/rdf-schema#",
+  "foaf" :    "http://xmlns.com/foaf/0.1/",
+
+  "void" :    "http://rdfs.org/ns/void#"
+}''';
+  prov:value '''[{
+  "@context" : {
+    "authorList" : {"@id" : "bibo:authorList", "@type": "@list"}
+  },
+  "@id" : "{{create_article_uri(row)}}",
+  "@type" : [ { "@for" : "t in bib_resource_types[row['ENTRYTYPE']]", "@do" : "{{t}}"}],
+  "dcterms:creator" : [
+    {
+        "@if" : "'author' in row",
+        "@for" : "author in re.split('\\\\s*and\\\\s*', row['author'])",
+        "@do" : {
+          "@with" : "ln, fn in author_fn_ln(author)",
+          "@do" : {
+            "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+            "@type" : "foaf:Person",
+            "foaf:familyName" : "{{ln}}",
+            "foaf:givenName" : "{{fn}}",
+            "foaf:name" : "{{fn}} {{ln}}"
+          }
+        }
+    }
+  ],
+  "authorList" : [
+    {
+        "@if" : "'author' in row",
+        "@for" : "author in re.split('\\\\s*and\\\\s*', row['author'])",
+        "@do" : {
+          "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join(author_fn_ln(author)))}}",
+        }
+    }
+  ],
+  "dcterms:abstract" [
+    {
+      "@if" : "'abstract' in row",
+      "@value" : "{{row['abstract']}}",
+    }
+  ],
+  "skos:editorialNote" [
+    {
+      "@if" : "'annote' in row",
+      "@value" : "{{row['annote']}}",
+    },
+    {
+      "@if" : "'note' in row",
+      "@value" : "{{row['note']}}",
+    }
+  ],
+  "dcterms:title" [
+    {
+      "@if" : "'title' in row",
+      "@value" : "{{row['title']}}",
+    }
+  ],
+  "dcterms:publisher" [
+    {
+      "@if" : "'publisher' in row",
+      "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+      "rdfs:label" : "{{row['publisher']}}",
+      "http://schemas.talis.com/2005/address/schema#localityName" : [
+        {
+          "@if" : "'address' in row",
+          "@value" : "{{row['address']}}",
+        }
+      ],
+    },
+    {
+      "@if" : "'institution' in row",
+      "@id" : "{{create_article_uri.base_uri}}/institution/{{slugify(row['institution'])}}",
+      "rdfs:label" : "{{row['institution']}}",
+      "http://schemas.talis.com/2005/address/schema#localityName" : [
+        {
+          "@if" : "'address' in row",
+          "@value" : "{{row['address']}}",
+        }
+      ],
+    },
+    {
+      "@if" : "'school' in row",
+      "@id" : "{{create_article_uri.base_uri}}/institution/{{slugify(row['school'])}}",
+      "rdfs:label" : "{{row['school']}}",
+      "http://schemas.talis.com/2005/address/schema#localityName" : [
+        {
+          "@if" : "'address' in row",
+          "@value" : "{{row['address']}}",
+        }
+      ],
+    }
+  ],
+  "dcterms:date" [
+    {
+      "@if" : "'year' in row",
+      "@value" : "{{row['year']}} {% if 'month' in row %}-{{['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].index(row['month'])+1}}{%endif%}",
+    }
+  ],
+  "http://prismstandard.org/namespaces/basic/2.1/doi" [
+    {
+      "@if" : "'doi' in row",
+      "@value" : "{{row['doi']}}",
+    }
+  ],
+  "dcterms:identifier" [
+    {
+      "@if" : "'doi' in row",
+      "@value" : "{{row['doi']}}",
+    }
+  ],
+  "http://prismstandard.org/namespaces/basic/2.1/startingPage" [
+    {
+      "@if" : "'pages' in row",
+      "@value" : "{{row['pages'].split('-')[0]}}",
+    }
+  ],
+  "bibo:pageStart" [
+    {
+      "@if" : "'pages' in row",
+      "@value" : "{{row['pages'].split('-')[0]}}",
+    }
+  ],
+  "http://prismstandard.org/namespaces/basic/2.1/endingPage" [
+    {
+      "@if" : "'pages' in row",
+      "@value" : "{{row['pages'].split('-')[-1]}}",
+    }
+  ],
+  "bibo:pageEnd" [
+    {
+      "@if" : "'pages' in row",
+      "@value" : "{{row['pages'].split('-')[-1]}}",
+    }
+  ],
+  "http://prismstandard.org/namespaces/basic/2.1/volume" [
+    {
+      "@if" : "'volume' in row",
+      "@value" : "{{row['volume']}}",
+    }
+  ],
+  "bibo:chapter" [
+    {
+      "@if" : "'chapter' in row",
+      "@value" : "{{row['chapter']}}",
+    }
+  ],
+  "dcterms:isPartOf" [
+    {
+      "@if" : "'journal' in row",
+      "@id" : "{{create_article_uri.base_uri}}/journal/{{slugify(row['journal'])}}",
+      "@type" : "bibo:Journal",
+      "dcterms:title" : "{{row['journal']}}",
+      "dcterms:publisher" : [
+        {
+          "@if" : "'publisher' in row",
+          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+        }
+      ]
+    },
+    {
+      "@if" : "'booktitle' in row",
+      "@id" : "{{create_article_uri.base_uri}}/book/{{slugify(row['booktitle'])}}",
+      "@type" : "bibo:Book",
+      "dcterms:title" : "{{row['booktitle']}}",
+      "bibo:edition" [
+        {
+          "@if" : "'edition' in row",
+          "@value" : "{{row['edition']}}",
+        }
+      ],
+      "dcterms:isPartOf" [
+        {
+          "@if" : "'series' in row",
+          "@id" : "{{create_article_uri.base_uri}}/series/{{slugify(row['series'])}}",
+          "@type" : "bibo:Series",
+          "dcterms:title" : "{{row['series']}}"
+        }
+      ],
+      "dcterms:contributor" : [
+        {
+            "@if" : "'editor' in row",
+            "@for" : "editor in re.split('\\\\s*and\\\\s*', row['editor'])",
+            "@do" : {
+              "@with" : "ln, fn in author_fn_ln(editor)",
+              "@do" : {
+                "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+                "@type" : "foaf:Person",
+                "foaf:familyName" : "{{ln}}",
+                "foaf:givenName" : "{{fn}}",
+                "foaf:name" : "{{fn}} {{ln}}"
+              }
+            }
+        }
+      ],
+      "prov:wasAttributedTo" : [
+        {
+          "@if" : "'organization' in row",
+          "@id" : "{{create_article_uri.base_uri}}/organization/{{slugify(row['organization'])}}",
+          "rdfs:label" : "{{row['organization']}}",
+          "@type" : ["skos:Organization", "prov:Organization"]
+        }
+      ],
+      "dcterms:publisher" : [
+        {
+          "@if" : "'publisher' in row",
+          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+        }
+      ]
+    }
+  ]
+}]'''
+  ].
+
+<summary-num.trig> a pv:File;
+    dcterms:format "application/trig";
+    prov:wasGeneratedBy [
+      a setl:Load;
+      prov:used :summary ;
+    ].

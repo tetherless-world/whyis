@@ -3,6 +3,10 @@ import os
 import flask_ld as ld
 import collections
 
+
+from depot.io.utils import FileIntent
+from depot.manager import DepotManager
+
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
@@ -80,13 +84,11 @@ class Nanopublication(rdflib.ConjunctiveGraph):
 
 
 class NanopublicationManager:
-    def __init__(self, store, archive_path, prefix, update_listener=None):
+    def __init__(self, store, prefix, update_listener=None):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store
-        self.archive_path = archive_path
+        self.depot = DepotManager.get('nanopublications')
         self.prefix = rdflib.Namespace(prefix)
-        if not os.path.exists(self.archive_path):
-            os.makedirs(self.archive_path)
         self.update_listener = update_listener
 
     def new(self):
@@ -181,22 +183,36 @@ class NanopublicationManager:
         return [self.archive_path] + path[:-1] + [ident]
         
     def publish(self, nanopub):
-        filepath = self.get_path(nanopub.identifier)
-        if not os.path.exists('/'.join(filepath[:-1])):
-            os.makedirs('/'.join(filepath[:-1]))
-        #print "Publishing", nanopub.identifier
+        ident = nanopub.identifier.replace(self.prefix, "")
         g = rdflib.ConjunctiveGraph(store=nanopub.store)
-        g.serialize(open('/'.join(filepath), 'wb'), format="trig")
+
+        # This needs to be a two-step write, since we need to store
+        # the identifier in the nanopub for consistency, and we don't
+        # get the identifier until we write the file!
+        fileid = self.depot.create(FileIntent('', ident, 'application/trig'))
+        nanopub.add((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
+        self._idmap[nanopub.identifier] = fileid
+        
+        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
         for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
             for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
                 self.retire(nanopub_uri)
         self.db.addN(nanopub.quads())
         self.update_listener(nanopub.identifier)
 
+    _idmap = {}
+        
     def get(self, nanopub_uri, graph = None):
-        filepath = self.get_path(nanopub_uri)
+        nanopub_uri = rdflib.URIRef(nanopub_uri)
+        if nanopub_uri in self._idmap:
+            fileid = self._idmap[nanopub_uri]
+        else:
+            fileid = self.db.value(nanopub_uri, dc.identifier)
+            if fileid is not None:
+                self._idmap[nanopub_uri] = fileid
+        f = self.depot.get(fileid)
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-        nanopub.parse(open('/'.join(filepath)), format="trig")
+        nanopub.parse(f, format="trig")
         return nanopub

@@ -10,7 +10,7 @@ except:
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response
 import flask_ld as ld
 import jinja2
 from flask_ld.utils import lru
@@ -20,7 +20,14 @@ import requests
 from re import finditer
 import pytz
 
+from werkzeug.exceptions import Unauthorized
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
+
 from flask_admin import Admin, BaseView, expose
+
+from depot.manager import DepotManager
+from depot.middleware import FileServeApp
 
 import rdflib
 from flask_security import Security, \
@@ -39,6 +46,8 @@ import json
 import sadi.mimeparse
 
 import werkzeug.utils
+
+from urllib import urlencode
 
 from flask_mail import Mail, Message
 
@@ -106,6 +115,9 @@ NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 NS.graphene = rdflib.Namespace("http://vocab.rpi.edu/graphene/")
 NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
+NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
+NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
+NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -272,6 +284,10 @@ class App(Empty):
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
 
+        DepotManager.configure('nanopublications', self.config['nanopub_archive'])
+        DepotManager.configure('files', self.config['file_archive'])
+        self.file_depot = DepotManager.get('files')
+
     def weighted_route(self, *args, **kwargs):
         def decorator(view_func):
             compare_key = kwargs.pop('compare_key', None)
@@ -404,7 +420,84 @@ construct {
                 return resources + best_terms
             return resources
         self.lang_filter = lang_filter
-    
+
+    def add_file(self, f, entity, nanopub):
+        old_nanopubs = []
+        for np_uri, np_assertion, in self.db.query('''select distinct ?np ?assertion where {
+    graph ?assertion {?e graphene:hasFileID ?fileid}
+    ?np np:hasAssertion ?assertion.
+}''', initNs=NS.prefixes, initBindings=dict(e=entity)):
+            if not _can_edit(np_uri):
+                raise Unauthorized()
+            old_nanopubs.append((np_uri, np_assertion))
+        fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
+        nanopub.assertion.add((entity, NS.graphene.hasFileID, Literal(fileid)))
+        nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
+        nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
+        nanopub.assertion.add((entity, NS.ov.hasContentType, Literal(f.mimetype)))
+        nanopub.assertion.add((entity, NS.RDF.type, NS.mediaTypes[f.mimetype]))
+        nanopub.assertion.add((NS.mediaTypes[f.mimetype], NS.RDF.type, NS.dc.FileFormat))
+        nanopub.assertion.add((entity, NS.RDF.type, NS.mediaTypes[f.mimetype.split('/')[0]]))
+        nanopub.assertion.add((NS.mediaTypes[f.mimetype.split('/')[0]], NS.RDF.type, NS.dc.FileFormat))
+        nanopub.assertion.add((entity, NS.RDF.type, NS.pv.File))
+                
+        nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
+        nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.created, Literal(datetime.utcnow())))
+
+        return old_nanopubs
+
+    def delete_file(self, entity):
+        for np_uri, in self.db.query('''select distinct ?np where {
+    graph ?np_assertion {?e graphene:hasFileID ?fileid}
+    ?np np:hasAssertion ?np_assertion.
+}''', initNs=NS.prefixes, initBindings=dict(e=entity)):
+            if not _can_edit(np_uri):
+                raise Unauthorized()
+        self.nanopub_manager.retire(np_uri)
+        
+                
+    def add_files(self, uri, files, upload_type=NS.pv.File):
+        nanopub = self.nanopub_manager.new()
+
+        added_files = False
+
+        old_nanopubs = []
+        
+        nanopub.assertion.add((uri, self.NS.RDF.type, upload_type))
+        if upload_type == NS.pv.File:
+            for f in files:
+                if f.filename != '':
+                    old_nanopubs.extend(self.add_file(f, uri, nanopub))
+                    added_files = True
+                    break
+        elif upload_type == NS.dc.Collection:
+            for f in files:
+                filename = secure_filename(f.filename)
+                if filename != '':
+                    file_uri = URIRef(uri+"/"+filename)
+                    old_nanopubs.extend(self.add_file(f, file_uri, nanopub))
+                    nanopub.assertion.add((uri, NS.dc.hasPart, file_uri))
+                    added_files = True
+                    
+        elif upload_type == NS.dcat.Dataset:
+            for f in files:
+                filename = secure_filename(f.filename)
+                if filename != '':
+                    file_uri = URIRef(uri+"/"+filename)
+                    old_nanopubs.extend(self.add_file(f, file_uri, nanopub))
+                    nanopub.assertion.add((uri, NS.dcat.distribution, file_uri))
+                    nanopub.assertion.add((file_uri, NS.RDF.type, NS.dcat.Distribution))
+                    nanopub.assertion.add((file_uri, NS.dcat.downloadURL, file_uri))
+                    added_files = True
+
+        if added_files:
+            for old_np, old_np_assertion in old_nanopubs:
+                nanopub.pubinfo.add((nanopub.assertion.identifier, NS.prov.wasRevisionOf, old_np_assertion))
+                self.nanopub_manager.retire(old_np)
+            
+            for n in self.nanopub_manager.prepare(nanopub):
+                self.nanopub_manager.publish(n)
+                    
     def configure_views(self):
 
         def sort_by(resources, property):
@@ -517,6 +610,7 @@ construct {
             "application/trig" : "trig",
             "application/n-quads" : "nquads",
             "application/n-triples" : "nt",
+            "application/rdf+json" : "json",
             None: "json-ld"
         }
 
@@ -658,12 +752,12 @@ construct {
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
                 return send_from_directory(self.config['SATORU_CDN_DIR'], werkzeug.utils.secure_filename(filename))
-            
-        @self.route('/about.<format>')
-        @self.route('/about')
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key)
-        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key)
-        @self.route('/')
+                        
+        @self.route('/about.<format>', methods=['GET','POST','DELETE'])
+        @self.route('/about', methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.route('/', methods=['GET','POST','DELETE'])
         @login_required
         def view(name=None, format=None, view=None):
             if format is not None:
@@ -677,18 +771,31 @@ construct {
                 entity = URIRef(request.args['uri'])
             else:
                 entity = self.NS.local.Home
-            resource = self.get_resource(entity)
+
+            if request.method == 'POST':
+                if len(request.files) == 0:
+                    flash('No file uploaded')
+                    return redirect(request.url)
+                upload_type = rdflib.URIRef(request.form['upload_type'])
+                self.add_files(entity, [y for x, y in request.files.iteritems(multi=True)],
+                               upload_type=upload_type)
+                url = "/about?%s" % urlencode(dict(uri=unicode(entity), view="view"))
+                return redirect(url)
+            elif request.method == 'DELETE':
+                self.delete_file(entity)
+                return '', 204
+            elif request.method == 'GET':
+                resource = self.get_resource(entity)
             
-            content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
-            #print entity
+                content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
+                #print entity
 
-            htmls = set(['application/xhtml','text/html'])
-            if 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
-                return render_view(resource)
-            else:
-                fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
-                return resource.this().graph.serialize(format=fmt)
-
+                htmls = set(['application/xhtml','text/html'])
+                if 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                    return render_view(resource)
+                else:
+                    fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
+                    return resource.this().graph.serialize(format=fmt)
 
         views = {}
         def render_view(resource):
@@ -709,18 +816,11 @@ construct {
             #if (view == 'view' or view is None) and content is not None:
             #    if content is not None:
             #        return render_template('content_view.html',content=content, **template_args)
-            value = resource.value(self.NS.prov.value)
-            if value is not None and view is None:
-                headers = {}
-                headers['Content-Type'] = 'text/plain'
-                content_type = resource.value(self.NS.ov.hasContentType)
-                if content_type is not None:
-                    headers['Content-Type'] = content_type
-                if value.datatype == XSD.base64Binary:
-                    return base64.b64decode(value.value), 200, headers
-                if value.datatype == XSD.hexBinary:
-                    return binascii.unhexlify(value.value), 200, headers
-                return value.value, 200, headers
+            fileid = resource.value(self.NS.graphene.hasFileID)
+            if fileid is not None and view is None:
+                f = self.file_depot.get(fileid)
+                fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
+                return fsa
 
             if view is None:
                 view = 'view'
@@ -760,7 +860,16 @@ construct {
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
 
+        def render_nanopub(data, code, headers=None):
+            entity = app.Entity(ConjunctiveGraph(data.store), data.identifier)
+            entity.nanopub = data
+            data, code, headers = render_view(entity)
+            resp = make_response(data, code)
+            resp.headers.extend(headers or {})
+            return resp
+        
         self.api = ld.LinkedDataApi(self, "", self.db.store, "")
+        self.api.representations['text/html'] = render_nanopub
 
         #self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
         #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
@@ -769,25 +878,28 @@ construct {
 
         app = self
 
-        self.nanopub_manager = NanopublicationManager(app.db.store, app.config['nanopub_archive_path'],
+        self.nanopub_manager = NanopublicationManager(app.db.store,
                                                       Namespace('%s/pub/'%(app.config['lod_prefix'])),
                                                       update_listener=self.nanopub_update_listener)
+
+        def _can_edit(uri):
+            if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
+                return True
+            if app.db.query('''ask {
+    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
+    graph ?info { ?assertion dc:contributor ?user. }
+}''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=app.NS.np, dc=app.NS.dc)):
+                #print "Is owner."
+                return True
+            return False
+
+        
         class NanopublicationResource(ld.LinkedDataResource):
             decorators = [login_required]
 
             def __init__(self):
                 self.local_resource = app.nanopub_api
 
-            def _can_edit(self, uri):
-                if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
-                    return True
-                if app.db.query('''ask {
-                    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
-                    graph ?info { ?assertion dc:contributor ?user. }
-                    }''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=app.NS.np, dc=app.NS.dc)):
-                    #print "Is owner."
-                    return True
-                return False
 
             def _get_uri(self, ident):
                 return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
@@ -803,7 +915,7 @@ construct {
 
             def delete(self, ident):
                 uri = self._get_uri(ident)
-                if not self._can_edit(uri):
+                if not _can_edit(uri):
                     return '<h1>Not Authorized</h1>', 401
                 app.nanopub_manager.retire(uri)
                 #self.local_resource.delete(uri)

@@ -38,7 +38,14 @@ Config = dict(
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "{{cookiecutter.SECRET_KEY}}",
 
-    nanopub_archive_path = "/data/nanopublications",
+    nanopub_archive = {
+        'depot.storage_path' : "/data/nanopublications",
+    },
+
+    file_archive = {
+        'depot.storage_path' : '/data/files',
+        'cache_max_age' : 3600*24*7,
+    },
     vocab_file = "{{cookiecutter.location}}/vocab.ttl",
     SATORU_TEMPLATE_DIR = [
         "{{cookiecutter.location}}/templates",

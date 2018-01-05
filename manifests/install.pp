@@ -111,6 +111,10 @@ file { "/data/nanopublications":
   ensure => directory,
   owner => "satoru"
 } ->
+file { "/data/files":
+  ensure => directory,
+  owner => "satoru"
+} ->
 vcsrepo { '/apps/satoru':
   ensure   => present,
   provider => git,

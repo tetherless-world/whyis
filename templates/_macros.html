@@ -30,13 +30,8 @@
     </div>
     {% endfor %}  
 {% endmacro %}
-    
-{% macro facts_panel(resource) %}
-    <div resource="{{resource.identifier}}" class="panel panel-default">
-      <div class="panel-heading">
-        <h2 class="panel-title">Facts</h2>
-      </div>
-      <div class="panel-body">
+
+{% macro facts_list(resource) %}
         {% for predicate, objects in resource.predicate_objects() | groupby(0) | sort(attribute=0) %}
         {% if predicate != g.ns.sioc.content %}
         <dl class="dl-horizontal clearfix">
@@ -53,6 +48,15 @@
         </dl>
         {% endif %}
         {% endfor %}
+{% endmacro%}
+        
+{% macro facts_panel(resource) %}
+    <div resource="{{resource.identifier}}" class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Facts</h2>
+      </div>
+      <div class="panel-body">
+        {{facts_list(resource)}}
       </div>
     </div>
 {% endmacro %}

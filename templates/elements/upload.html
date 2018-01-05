@@ -1,0 +1,35 @@
+{% from "_macros.html" import get_label %}
+{% macro upload_button_modal(resource) %}
+<button class="btn btn-default" type="button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
+  <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
+</button>
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" action="" method="post" enctype="multipart/form-data">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadModalLabel">Upload File for {{get_label(resource)}}</h4>
+      </div>
+      <div class="modal-body">
+        <p>
+          <div class="form-group">
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" value="http://purl.org/net/provenance/ns#File">Single File
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" value="http://purl.org/dc/terms/Collection"> File Collection
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" value="http://www.w3.org/ns/dcat#Dataset"> Dataset
+            </label>
+          </div>
+          <div class="form-group">
+            <input name="file" type="file" class="file" multiple>
+          </div>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+

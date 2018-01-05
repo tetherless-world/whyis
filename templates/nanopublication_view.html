@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, facts_list, summary_panel, content %}
+{% block title %}By
+{% for contributor in this.graph[this.nanopub.assertion.identifier:ns.dc.contributor] %}
+{{get_label(g.db.resource(contributor))}}
+{% endfor %}
+{% if this.graph.value(this.nanopub.assertion.identifier, ns.dc.created) %}
+on {{this.graph.value(this.nanopub.assertion.identifier, ns.dc.created).value.strftime('%d-%m-%Y') }}
+{% endif %}
+{% endblock %}
+{% block subtitle %}
+{% if this.value(ns.RDF.type) %} a
+{% for superClass in this[ns.RDF.type] %}
+  {% if loop.index > 1 and loop.last %} and {% endif %}
+  {{ render_resource_link(superClass) }}
+  {% if loop.revindex > 2 %}, {% endif %}
+{% endfor %}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+ <script type="text/javascript" src="http://cpettitt.github.io/project/dagre/latest/dagre.js"></script>
+<script src="/static/js/rdfviewer.js"></script>
+<script>
+$( function() {
+
+    assertion = {{this.nanopub.assertion.serialize(format="json-ld") | safe}};
+    assertion_graph = new Graph();
+    assertion_graph.load(assertion).await(function(error) {
+        d3.select("#assertion_graph").datum(assertion_graph).each(rdfview());
+    });
+
+
+    provenance = {{this.nanopub.provenance.serialize(format="json-ld") | safe}};
+    provenance_graph = new Graph();
+    provenance_graph.load(provenance).await(function(error) {
+      d3.select("#provenance_graph").datum(provenance_graph).each(rdfview());
+    });
+
+    pubinfo = {{this.nanopub.pubinfo.serialize(format="json-ld") | safe}};
+    pubinfo_graph = new Graph();
+    pubinfo_graph.load(pubinfo).await(function(error) {
+      d3.select("#pubinfo_graph").datum(pubinfo_graph).each(rdfview());
+    });
+
+});
+</script>
+{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/rdfviewer.css"></link>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="row">
+  <div class="col-md-12" >
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Assertion</h2>
+      </div>
+      <svg class="panel-body"  id="assertion_graph" style="width: 100%; height:600px"></svg>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6" >
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Provenance</h2>
+      </div>
+      <svg class="panel-body" id="provenance_graph" style="width: 100%; height:600px"></svg>
+    </div>
+  </div>
+
+  <div class="col-md-6" >
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Publication Information</h2>
+      </div>
+      <svg class="panel-body" id="pubinfo_graph" style="width:100%; height:600px"></svg>
+    </div>
+  </div>
+</div>
+
+
+<div class="row" >
+  <div class="col-md-8">
+    {{ content(this.graph.resource(this.nanopub.assertion.identifier)) }}
+  </div>
+  <div class="col-md-4">
+    {{ facts_panel(this) }}
+  </div>
+</div>
+{% endblock %}

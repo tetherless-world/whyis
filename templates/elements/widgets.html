@@ -1,0 +1,21 @@
+{% from "_macros.html" import get_label %}
+{% macro add_type_modal() %}
+<div ng-controller="AddTypeController">
+<button class="btn btn-default" type="button" aria-label="Add Node Type" title="Add Node Type" data-toggle="modal" data-target="#uploadModal">
+  <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+</button>
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" action="" method="post" enctype="multipart/form-data">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadModalLabel">Upload File for {{get_label(resource)}}</h4>
+      </div>
+      <div class="modal-body">
+        <input name="file" type="file" class="file">
+      </div>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+

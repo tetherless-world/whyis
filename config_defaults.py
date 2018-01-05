@@ -35,6 +35,11 @@ Config = dict(
     SECRET_KEY = "secret",  # import os; os.urandom(24)
 
     nanopub_archive_path = "/data/nanopublications",
+
+    file_archive = {
+        'cache_max_age' : 3600*24*7,
+        'depot.storage_path' : '/data/files'
+    },
     vocab_file = "vocab.ttl",
     SATORU_TEMPLATE_DIR = None,
     SATORU_CDN_DIR = None,
