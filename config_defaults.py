@@ -34,7 +34,9 @@ Config = dict(
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
 
-    nanopub_archive_path = "/data/nanopublications",
+    nanopub_archive = {
+        'depot.storage_path' : "/data/nanopublications",
+    },
 
     file_archive = {
         'cache_max_age' : 3600*24*7,
