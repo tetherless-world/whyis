@@ -97,6 +97,7 @@ result = {
 '''.
 
 :BibTeXSETL rdfs:subClassOf setl:SemanticETLScript;
+  setl:hasTemplatePrefix "http://vocab.rpi.edu/graphene/setl/bibtex/";
   rdfs:subClassOf [ a owl:Restriction;
     owl:onProperty prov:used;
     owl:someValuesFrom <https://www.iana.org/assignments/media-types/application/x-bibtex>

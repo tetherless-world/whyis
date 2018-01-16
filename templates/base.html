@@ -94,10 +94,12 @@
     </div>
     {% block pageheader %}
     <div class="container">
-      <div class="page-header">
+    <div class="page-header">
+       {% if this is defined %}
         <div class="btn-group pull-right" role="group" aria-label="...">
           {{ upload_button_modal(this) }}
         </div>
+        {% endif %}
         <h1 property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
         </h1>
       </div>

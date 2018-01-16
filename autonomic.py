@@ -10,6 +10,7 @@ prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
 sio = rdflib.Namespace("http://semanticscience.org/resource/")
 setl = rdflib.Namespace("http://purl.org/twc/vocab/setl/")
+pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
 
 class Service(sadi.Service):
 
@@ -123,7 +124,51 @@ class OntologyImporter(GlobalChangeService):
 
     def process(self, i, o):
         pass
-                    
+
+class SETLMaker(GlobalChangeService):
+    activity_class = setl.Planner
+
+    def getInputClass(self):
+        return pv.File
+
+    def getOuputClass(self):
+        return setl.SETLedFile
+
+    def get_query(self):
+        return '''select ?resource where {
+    ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
+    ?setl_script rdfs:subClassOf setl:SemanticETLScript;
+        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
+            owl:onProperty prov:used;
+            owl:someValuesFrom ?parameterized_type
+    ].
+    filter not exists {
+        ?setl_run a ?setl_script;
+            prov:used ?resource.
+    }
+}'''
+
+    def process(self, i, o):
+        for script, np, parameterized_type in self.app.db.query('''select distinct ?setl_script ?np ?parameterized_type where {
+    ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
+    graph ?assertion {
+      ?setl_script rdfs:subClassOf setl:SemanticETLScript;
+        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
+            owl:onProperty prov:used;
+            owl:someValuesFrom ?parameterized_type
+      ].
+    }
+    ?np a np:Nanopublication; np:hasAssertion ?assertion.
+    filter not exists {
+        ?setl_run a ?setl_script;
+            prov:used ?resource.
+    }
+}''', initBindings=dict(resource=i.identifier), initNs=self.app.NS.prefixes):
+            nanopub = self.app.nanopub_manager.get(np)
+            template_prefix = nanopub.assertion
+            
+        
+                        
 class SETLr(UpdateChangeService):
 
     activity_class = setl.SemanticETL
