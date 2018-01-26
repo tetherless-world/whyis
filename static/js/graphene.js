@@ -894,7 +894,8 @@ $( function() {
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
-            return $http.delete(nanopub.np);
+            var npID = nanopub.np.split("/").slice(-1)[0]
+            return $http.delete('/pub/'+npID);
         }
         return Nanopub;
     }]);

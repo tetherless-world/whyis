@@ -16,7 +16,7 @@
 
 @prefix :              <http://vocab.rpi.edu/graphene/setl/bibtex/> .
 
-@prefix graphene: <http://vocab.rpi.edu/graphene/>
+@prefix graphene: <http://vocab.rpi.edu/graphene/>.
 
 :bibtex_input a <https://www.iana.org/assignments/media-types/text/plain>;
   prov:wasGeneratedBy [
@@ -36,7 +36,7 @@ import bibtexparser
 
 bib_database = bibtexparser.load(bibtex_file)
 
-result = bib_database.entries
+result = enumerate(bib_database.entries)
 '''.
 
 :create_article_uri a owl:Class, prov:SoftwareAgent, setl:PythonScript;
@@ -45,14 +45,15 @@ result = bib_database.entries
 import rdflib
 global rdflib
 
-base_uri = rdflib.Namespace(setl_graph.value(predicate=rdflib.RDF.type,
-                            object=rdflib.URIRef("https://www.iana.org/assignments/media-types/application/x-bibtex")))
 global base_uri
+base_uri = rdflib.Namespace(this.graph.value(predicate=rdflib.RDF.type,
+                            object=rdflib.URIRef("https://www.iana.org/assignments/media-types/application/x-bibtex"))+'/')
+global doi
 doi = rdflib.Namespace("http://dx.doi.org/")
 
 def result(entry):
     if 'doi' in entry:
-        return doi[entry['doi']
+        return doi[entry['doi']]
     else:
         return base_uri[entry['ID']]
 result.base_uri = base_uri
@@ -73,6 +74,22 @@ def result(author):
         fn = names[0]
         ln = ' '.join(names[1:])
     return fn, ln
+'''.
+
+:create_date a owl:Class, prov:SoftwareAgent, setl:PythonScript;
+  rdfs:subClassOf prov:Activity;
+  prov:value '''
+import re
+global re
+
+def result(row):
+    date = row['year']
+    months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
+    if 'month' in row:
+        for i, m in enumerate(months):
+            if m in row['month'].lower():
+                return date + '-'+str(i+1)
+    return date
 '''.
 
 
@@ -109,7 +126,8 @@ result = {
     prov:used :bibtex_entries;
     prov:qualifiedUsage [ a prov:Usage; prov:entity :create_article_uri; prov:hadRole [ dcterms:identifier "create_article_uri"]];
     prov:qualifiedUsage [ a prov:Usage; prov:entity :bib_resource_types; prov:hadRole [ dcterms:identifier "bib_resource_types"]];
-    prov:qualifiedUsage [ a prov:Usage; prov:entity :bib_resource_types; prov:hadRole [ dcterms:identifier "author_fn_ln"]];
+    prov:qualifiedUsage [ a prov:Usage; prov:entity :author_fn_ln; prov:hadRole [ dcterms:identifier "author_fn_ln"]];
+    prov:qualifiedUsage [ a prov:Usage; prov:entity :create_date; prov:hadRole [ dcterms:identifier "create_date"]];
     setl:hasContext '''{
   "@vocab" :  "http://hadatac.org/ont/chear#",
   "dataset" : "https://hbgd.tw.rpi.edu/dataset/",
@@ -134,7 +152,7 @@ result = {
         "@if" : "'author' in row",
         "@for" : "author in re.split('\\\\s*and\\\\s*', row['author'])",
         "@do" : {
-          "@with" : "ln, fn in author_fn_ln(author)",
+          "@with" : "author_fn_ln(author) as fn, ln",
           "@do" : {
             "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
             "@type" : "foaf:Person",
@@ -150,33 +168,36 @@ result = {
         "@if" : "'author' in row",
         "@for" : "author in re.split('\\\\s*and\\\\s*', row['author'])",
         "@do" : {
-          "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join(author_fn_ln(author)))}}",
+          "@with" : "author_fn_ln(author) as fn, ln",
+          "@do" : {
+            "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+          }
         }
     }
   ],
-  "dcterms:abstract" [
+  "dcterms:abstract" : [
     {
       "@if" : "'abstract' in row",
-      "@value" : "{{row['abstract']}}",
+      "@value" : "{{row['abstract']}}"
     }
   ],
-  "skos:editorialNote" [
+  "skos:editorialNote" : [
     {
       "@if" : "'annote' in row",
-      "@value" : "{{row['annote']}}",
+      "@value" : "{{row['annote']}}"
     },
     {
       "@if" : "'note' in row",
-      "@value" : "{{row['note']}}",
+      "@value" : "{{row['note']}}"
     }
   ],
-  "dcterms:title" [
+  "dcterms:title" : [
     {
       "@if" : "'title' in row",
-      "@value" : "{{row['title']}}",
+      "@value" : "{{row['title']}}"
     }
   ],
-  "dcterms:publisher" [
+  "dcterms:publisher" : [
     {
       "@if" : "'publisher' in row",
       "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
@@ -184,9 +205,9 @@ result = {
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
           "@if" : "'address' in row",
-          "@value" : "{{row['address']}}",
+          "@value" : "{{row['address']}}"
         }
-      ],
+      ]
     },
     {
       "@if" : "'institution' in row",
@@ -195,9 +216,9 @@ result = {
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
           "@if" : "'address' in row",
-          "@value" : "{{row['address']}}",
+          "@value" : "{{row['address']}}"
         }
-      ],
+      ]
     },
     {
       "@if" : "'school' in row",
@@ -206,66 +227,88 @@ result = {
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
           "@if" : "'address' in row",
-          "@value" : "{{row['address']}}",
+          "@value" : "{{row['address']}}"
         }
-      ],
+      ]
     }
   ],
-  "dcterms:date" [
+  "dcterms:date" : [
     {
       "@if" : "'year' in row",
-      "@value" : "{{row['year']}} {% if 'month' in row %}-{{['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].index(row['month'])+1}}{%endif%}",
+      "@value" : "{{create_date(row)}}",
+      "@type" : "xsd:dateTime"
     }
   ],
-  "http://prismstandard.org/namespaces/basic/2.1/doi" [
+  "http://prismstandard.org/namespaces/basic/2.1/doi" : [
     {
       "@if" : "'doi' in row",
-      "@value" : "{{row['doi']}}",
+      "@value" : "{{row['doi']}}"
     }
   ],
-  "dcterms:identifier" [
+  "dcterms:identifier" : [
     {
       "@if" : "'doi' in row",
-      "@value" : "{{row['doi']}}",
+      "@value" : "{{row['doi']}}"
     }
   ],
-  "http://prismstandard.org/namespaces/basic/2.1/startingPage" [
+  "http://prismstandard.org/namespaces/basic/2.1/startingPage" : [
     {
       "@if" : "'pages' in row",
-      "@value" : "{{row['pages'].split('-')[0]}}",
+      "@value" : "{{row['pages'].split('-')[0]}}"
     }
   ],
-  "bibo:pageStart" [
+  "bibo:pageStart" : [
     {
       "@if" : "'pages' in row",
-      "@value" : "{{row['pages'].split('-')[0]}}",
+      "@value" : "{{row['pages'].split('-')[0]}}"
     }
   ],
-  "http://prismstandard.org/namespaces/basic/2.1/endingPage" [
+  "http://prismstandard.org/namespaces/basic/2.1/endingPage" : [
     {
       "@if" : "'pages' in row",
-      "@value" : "{{row['pages'].split('-')[-1]}}",
+      "@value" : "{{row['pages'].split('-')[-1]}}"
     }
   ],
-  "bibo:pageEnd" [
+  "bibo:pageEnd" : [
     {
       "@if" : "'pages' in row",
-      "@value" : "{{row['pages'].split('-')[-1]}}",
+      "@value" : "{{row['pages'].split('-')[-1]}}"
     }
   ],
-  "http://prismstandard.org/namespaces/basic/2.1/volume" [
+  "http://prismstandard.org/namespaces/basic/2.1/volume" : [
     {
       "@if" : "'volume' in row",
-      "@value" : "{{row['volume']}}",
+      "@value" : "{{row['volume']}}"
     }
   ],
-  "bibo:chapter" [
+  "bibo:chapter" : [
     {
       "@if" : "'chapter' in row",
-      "@value" : "{{row['chapter']}}",
+      "@value" : "{{row['chapter']}}"
     }
   ],
-  "dcterms:isPartOf" [
+  "@reverse" : {
+    "dcterms:hasPart" : {
+      "@id" : "{{create_article_uri.base_uri}}"
+    }
+  },
+  "rdfs:seeAlso" : [
+    {
+      "@if" : "'url' in row",
+      "@id" : "{{row['url']}}"
+    }
+  ],
+  "http://www.w3.org/ns/dcat#downloadURL" : [
+    {
+      "@if" : "'url' in row",
+      "@id" : "{{row['url']}}"
+    }
+  ],
+  "dcterms:isPartOf" : [
+    {
+      "@id" : "{{create_article_uri.base_uri}}",
+      "@type" : "http://purl.org/dc/dcmitype/Collection"
+    },
     {
       "@if" : "'journal' in row",
       "@id" : "{{create_article_uri.base_uri}}/journal/{{slugify(row['journal'])}}",
@@ -274,7 +317,7 @@ result = {
       "dcterms:publisher" : [
         {
           "@if" : "'publisher' in row",
-          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}"
         }
       ]
     },
@@ -283,13 +326,13 @@ result = {
       "@id" : "{{create_article_uri.base_uri}}/book/{{slugify(row['booktitle'])}}",
       "@type" : "bibo:Book",
       "dcterms:title" : "{{row['booktitle']}}",
-      "bibo:edition" [
+      "bibo:edition" : [
         {
           "@if" : "'edition' in row",
-          "@value" : "{{row['edition']}}",
+          "@value" : "{{row['edition']}}"
         }
       ],
-      "dcterms:isPartOf" [
+      "dcterms:isPartOf" : [
         {
           "@if" : "'series' in row",
           "@id" : "{{create_article_uri.base_uri}}/series/{{slugify(row['series'])}}",
@@ -302,7 +345,7 @@ result = {
             "@if" : "'editor' in row",
             "@for" : "editor in re.split('\\\\s*and\\\\s*', row['editor'])",
             "@do" : {
-              "@with" : "ln, fn in author_fn_ln(editor)",
+              "@with" : "author_fn_ln(editor) as ln, fn",
               "@do" : {
                 "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
                 "@type" : "foaf:Person",
@@ -324,17 +367,10 @@ result = {
       "dcterms:publisher" : [
         {
           "@if" : "'publisher' in row",
-          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}"
         }
       ]
     }
   ]
 }]'''
   ].
-
-<summary-num.trig> a pv:File;
-    dcterms:format "application/trig";
-    prov:wasGeneratedBy [
-      a setl:Load;
-      prov:used :summary ;
-    ].

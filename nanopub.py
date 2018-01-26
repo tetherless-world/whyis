@@ -196,6 +196,7 @@ class NanopublicationManager:
         self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
         for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
             for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                print "Retiring", nanopub_uri
                 self.retire(nanopub_uri)
         self.db.addN(nanopub.quads())
         self.update_listener(nanopub.identifier)

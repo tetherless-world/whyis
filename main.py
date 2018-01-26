@@ -166,11 +166,10 @@ class App(Empty):
             return result
 
         @self.celery.task
-        def process_resource(uri, service_name):
+        def process_resource(service_name):
             service = self.config['inferencers'][service_name]
-            print service, uri
-            resource = app.get_resource(uri)
-            service.process_graph(resource.graph)
+            print service
+            service.process_graph(app.db)
 
         @self.celery.task
         def process_nanopub(nanopub_uri, service_name):
@@ -225,9 +224,7 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.graphene.globalChangeQuery:
                         #print "checking", name, service.get_query()
-                        for uri, in app.db.query(service.get_query()):
-                            print "invoking", name, uri
-                            process_resource(uri, name)
+                        process_resource(name)
                     if service.query_predicate == self.NS.graphene.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(list(nanopub_graph.query(service.get_query()))) > 0:
@@ -427,7 +424,7 @@ construct {
     graph ?assertion {?e graphene:hasFileID ?fileid}
     ?np np:hasAssertion ?assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
-            if not _can_edit(np_uri):
+            if not self._can_edit(np_uri):
                 raise Unauthorized()
             old_nanopubs.append((np_uri, np_assertion))
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
@@ -451,7 +448,7 @@ construct {
     graph ?np_assertion {?e graphene:hasFileID ?fileid}
     ?np np:hasAssertion ?np_assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
-            if not _can_edit(np_uri):
+            if not self._can_edit(np_uri):
                 raise Unauthorized()
         self.nanopub_manager.retire(np_uri)
         
@@ -464,13 +461,7 @@ construct {
         old_nanopubs = []
         
         nanopub.assertion.add((uri, self.NS.RDF.type, upload_type))
-        if upload_type == NS.pv.File:
-            for f in files:
-                if f.filename != '':
-                    old_nanopubs.extend(self.add_file(f, uri, nanopub))
-                    added_files = True
-                    break
-        elif upload_type == NS.dc.Collection:
+        if upload_type == URIRef("http://purl.org/dc/dcmitype/Collection"):
             for f in files:
                 filename = secure_filename(f.filename)
                 if filename != '':
@@ -478,7 +469,6 @@ construct {
                     old_nanopubs.extend(self.add_file(f, file_uri, nanopub))
                     nanopub.assertion.add((uri, NS.dc.hasPart, file_uri))
                     added_files = True
-                    
         elif upload_type == NS.dcat.Dataset:
             for f in files:
                 filename = secure_filename(f.filename)
@@ -489,6 +479,13 @@ construct {
                     nanopub.assertion.add((file_uri, NS.RDF.type, NS.dcat.Distribution))
                     nanopub.assertion.add((file_uri, NS.dcat.downloadURL, file_uri))
                     added_files = True
+        else:
+            for f in files:
+                if f.filename != '':
+                    old_nanopubs.extend(self.add_file(f, uri, nanopub))
+                    nanopub.assertion.add((uri, ns.RDF.type, NS.pv.File))
+                    added_files = True
+                    break
 
         if added_files:
             for old_np, old_np_assertion in old_nanopubs:
@@ -497,7 +494,18 @@ construct {
             
             for n in self.nanopub_manager.prepare(nanopub):
                 self.nanopub_manager.publish(n)
-                    
+
+    def _can_edit(self, uri):
+        if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
+            return True
+        if self.db.query('''ask {
+    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
+    graph ?info { ?assertion dc:contributor ?user. }
+}''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=self.NS.np, dc=self.NS.dc)):
+            #print "Is owner."
+            return True
+        return False
+
     def configure_views(self):
 
         def sort_by(resources, property):
@@ -812,10 +820,6 @@ construct {
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
-            content = resource.value(self.NS.sioc.content)
-            #if (view == 'view' or view is None) and content is not None:
-            #    if content is not None:
-            #        return render_template('content_view.html',content=content, **template_args)
             fileid = resource.value(self.NS.graphene.hasFileID)
             if fileid is not None and view is None:
                 f = self.file_depot.get(fileid)
@@ -882,16 +886,6 @@ construct {
                                                       Namespace('%s/pub/'%(app.config['lod_prefix'])),
                                                       update_listener=self.nanopub_update_listener)
 
-        def _can_edit(uri):
-            if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
-                return True
-            if app.db.query('''ask {
-    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
-    graph ?info { ?assertion dc:contributor ?user. }
-}''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=app.NS.np, dc=app.NS.dc)):
-                #print "Is owner."
-                return True
-            return False
 
         
         class NanopublicationResource(ld.LinkedDataResource):
@@ -915,7 +909,7 @@ construct {
 
             def delete(self, ident):
                 uri = self._get_uri(ident)
-                if not _can_edit(uri):
+                if not app._can_edit(uri):
                     return '<h1>Not Authorized</h1>', 401
                 app.nanopub_manager.retire(uri)
                 #self.local_resource.delete(uri)

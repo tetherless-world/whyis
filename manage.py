@@ -39,6 +39,8 @@ if __name__ == "__main__":
     manager.add_command("updateuser", commands.UpdateUser())
     manager.add_command("test", commands.Test())
     manager.add_command("configure", commands.Configure())
+    manager.add_command("test_agent", commands.TestAgent())
     manager.add_command("load", commands.LoadNanopub())
+    manager.add_command("retire", commands.RetireNanopub())
 
     manager.run()

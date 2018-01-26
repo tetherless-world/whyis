@@ -39,9 +39,18 @@ class LoadNanopub(Command):
                    type=str),
             Option('--format', '-f', dest='file_format',
                     type=str),
+            Option('--revises', '-r', dest='was_revision_of',
+                    type=str),
         ]
     
-    def run(self, input_file, file_format="trig"):
+    def run(self, input_file, file_format="trig", was_revision_of=None):
+        if was_revision_of is not None:
+            wasRevisionOf = set(flask.current_app.db.objects(predicate=np.hasAssertion,
+                                                               subject=rdflib.URIRef(was_revision_of)))
+            if len(wasRevisionOf) == 0:
+                print "Could not find active nanopublication to revise:", was_revision_of
+                return
+            was_revision_of = wasRevisionOf
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
         g1 = g.parse(location=input_file, format=file_format)
         if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
@@ -50,8 +59,58 @@ class LoadNanopub(Command):
             new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
             new_np.add((g1.identifier, rdflib.RDF.type, np.Assertion))
         for npub in flask.current_app.nanopub_manager.prepare(g):
+            if was_revision_of is not None:
+                for r in was_revision_of:
+                    print "Marking as revision of", r
+                    npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
             flask.current_app.nanopub_manager.publish(npub)
+            print "Published", npub.identifier
 
+class RetireNanopub(Command):
+    '''Retire a nanopublication from the knowledge graph.'''
+    def get_options(self):
+        return [
+            Option('--nanopub_uri', '-n', dest='nanopub_uri',
+                   type=str),
+        ]
+    
+    def run(self, nanopub_uri):
+        flask.current_app.nanopub_manager.retire(nanopub_uri)
+        
+class TestAgent(Command):
+    '''Add a nanopublication to the knowledge graph.'''
+    def get_options(self):
+        return [
+            Option('--agent', '-a', dest='agent_path',
+                   type=str),
+            Option('--dry-run', '-d', action="store_true", dest='dry_run'),
+        ]
+    
+    def run(self, agent_path, dry_run=False):
+        app = flask.current_app
+        from pydoc import locate
+        agent_class = locate(agent_path)
+        agent = agent_class()
+        agent.dry_run = dry_run
+        if agent.dry_run:
+            print "Dry run, not storing agent output."
+        agent.app = app
+        print agent.get_query()
+        results = []
+        if agent.query_predicate == app.NS.graphene.globalChangeQuery:
+            results.extend(agent.process_graph(app.db))
+        else:
+            for resource in agent.getInstances(app.db):
+                for np_uri, in app.db.query('''select ?np where {
+    graph ?assertion { ?e ?p ?o.}
+    ?np a np:Nanopublication;
+        np:hasAssertion ?assertion.
+}''', initBindings={'e': resource.identifier}, initNs=app.NS.prefixes):
+                    np = app.nanopub_manager.get(np_uri)
+                    results.extend(agent.process_graph(np))
+        for np in results:
+            print np.serialize(format="trig")
+            
 class UpdateUser(Command):
     """Update a user in Satoru"""
 
