@@ -215,13 +215,7 @@ select distinct ?setl_script ?np ?parameterized_type ?p ?type_assertion where {
             print "Instance NP", new_np.identifier, len(new_np)
 #            print new_np.serialize(format="trig")
                         
-def _satoru_content_handler(location):
-    resource = flask.current_app.get_resource(location)
-    fileid = resource.value(flask.current_app.NS.graphene.hasFileID)
-    if fileid is not None:
-        return flask.current_app.file_depot.get(fileid)
-
-setlr.content_handlers.insert(0,_satoru_content_handler)
+setlr_handlers_added = False
 
 class SETLr(UpdateChangeService):
 
@@ -231,6 +225,15 @@ class SETLr(UpdateChangeService):
     def __init__(self, depth=-1, predicates=[None]):
         self.depth = depth
         self.predicates = predicates
+
+        if not setlr_handlers_added:
+            def _satoru_content_handler(location):
+                resource = self.app.get_resource(location)
+                fileid = resource.value(self.NS.graphene.hasFileID)
+                if fileid is not None:
+                    return self.file_depot.get(fileid)
+            setlr.content_handlers.insert(0,_satoru_content_handler)
+            setlr_handlers_added = True
     
     def getInputClass(self):
         return setl.SemanticETLScript
