@@ -745,8 +745,10 @@ construct {
         @self.route('/sparql.html')
         @login_required
         def sparql_form():
+            
             template_args = dict(ns=self.NS,
                                  g=g,
+                                 config=self.config,
                                  current_user=current_user,
                                  isinstance=isinstance,
                                  rdflib=rdflib,
@@ -759,7 +761,7 @@ construct {
         if 'SATORU_CDN_DIR' in self.config and self.config['SATORU_CDN_DIR'] is not None:
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
-                return send_from_directory(self.config['SATORU_CDN_DIR'], werkzeug.utils.secure_filename(filename))
+                return send_from_directory(self.config['SATORU_CDN_DIR'], filename)
                         
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
