@@ -10,7 +10,7 @@ except:
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
 import flask_ld as ld
 import jinja2
 from flask_ld.utils import lru
@@ -867,6 +867,9 @@ construct {
             return render_template(views[0]['view'].value, **template_args), 200, headers
 
         def render_nanopub(data, code, headers=None):
+            if data is None:
+                return make_response("<h1>Not Found</h1>", 404)
+
             entity = app.Entity(ConjunctiveGraph(data.store), data.identifier)
             entity.nanopub = data
             data, code, headers = render_view(entity)
@@ -903,10 +906,10 @@ construct {
             def get(self, ident):
                 ident = ident.split("_")[0]
                 uri = self._get_uri(ident)
-                try:
-                    result = app.nanopub_manager.get(uri)
-                except IOError:
-                    return 'Resource not found', 404
+                result = app.nanopub_manager.get(uri)
+                if result is None:
+                    print "cannot find", uri
+                    return None
                 return result
 
             def delete(self, ident):
