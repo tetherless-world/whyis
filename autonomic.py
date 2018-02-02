@@ -214,7 +214,7 @@ select distinct ?setl_script ?np ?parameterized_type ?p ?type_assertion where {
             new_np.provenance.add((new_np.assertion.identifier, prov.wasDerivedFrom, type_assertion))
             print "Instance NP", new_np.identifier, len(new_np)
 #            print new_np.serialize(format="trig")
-                        
+
 setlr_handlers_added = False
 
 class SETLr(UpdateChangeService):
@@ -226,6 +226,7 @@ class SETLr(UpdateChangeService):
         self.depth = depth
         self.predicates = predicates
 
+        global setlr_handlers_added                       
         if not setlr_handlers_added:
             def _satoru_content_handler(location):
                 resource = self.app.get_resource(location)
