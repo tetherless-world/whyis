@@ -770,6 +770,7 @@ construct {
         @self.route('/', methods=['GET','POST','DELETE'])
         @login_required
         def view(name=None, format=None, view=None):
+            self.db.store.nsBindings = {}
             if format is not None:
                 if format in extensions:
                     content_type = extensions[format]

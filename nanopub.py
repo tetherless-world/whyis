@@ -173,6 +173,7 @@ class NanopublicationManager:
             yield nanopub
             
     def retire(self, nanopub_uri):
+        self.db.store.nsBindings = {}
         for np_uri, in self.db.query('''select ?np where {
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
@@ -192,6 +193,7 @@ class NanopublicationManager:
         return [self.archive_path] + path[:-1] + [ident]
         
     def publish(self, nanopub):
+        self.db.store.nsBindings = {}
         fileid = nanopub.identifier.replace(self.prefix, "")
         g = rdflib.ConjunctiveGraph(store=nanopub.store)
         
