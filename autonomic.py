@@ -230,9 +230,9 @@ class SETLr(UpdateChangeService):
         if not setlr_handlers_added:
             def _satoru_content_handler(location):
                 resource = self.app.get_resource(location)
-                fileid = resource.value(self.NS.graphene.hasFileID)
+                fileid = resource.value(self.app.NS.graphene.hasFileID)
                 if fileid is not None:
-                    return self.file_depot.get(fileid)
+                    return self.app.file_depot.get(fileid)
             setlr.content_handlers.insert(0,_satoru_content_handler)
             setlr_handlers_added = True
     
