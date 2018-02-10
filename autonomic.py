@@ -148,36 +148,59 @@ prefix owl:  <''' + rdflib.OWL + '''>
 prefix prov: <''' + prov + '''>
 select distinct ?resource where {
     ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
-    ?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
+    graph ?assertion {
+      ?setl_script rdfs:subClassOf setl:SemanticETLScript;
+        rdfs:subClassOf [ a owl:Restriction;
             owl:onProperty prov:used;
             owl:someValuesFrom ?parameterized_type
-    ].
+        ].
+    }
     filter not exists {
-        ?setl_run a ?setl_script;
-            prov:used ?resource.
+        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
+    }
+    filter not exists {
+        ?assertion prov:wasGeneratedBy [ a setl:Planner].
+    }
+    filter not exists {
+        ?planned_assertion prov:wasDerivedFrom* ?assertion;
+           prov:wasGeneratedBy [ a setl:Planner].
+        graph ?planned_assertion {
+            ?setl_run a ?setl_script;
+                prov:used ?resource.
+        }
     }
   filter (!regex(str(?resource), "^bnode:"))
 }'''
 
     def process_nanopub(self, i, o, new_np):
         print i.identifier
-        for script, np, parameterized_type, p, type_assertion in self.app.db.query('''
+        p = self.app.NS.prov.used
+        for script, np, parameterized_type, type_assertion in self.app.db.query('''
 prefix setl: <http://purl.org/twc/vocab/setl/>
-select distinct ?setl_script ?np ?parameterized_type ?p ?type_assertion where {
-    graph ?type_assertion { ?resource rdf:type/rdfs:subClassOf* ?parameterized_type. }
-    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
+select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
-            owl:onProperty ?p;
+        rdfs:subClassOf [ a owl:Restriction;
+            owl:onProperty prov:used;
             owl:someValuesFrom ?parameterized_type
       ].
     }
+    graph ?type_assertion { ?resource rdf:type/rdfs:subClassOf* ?parameterized_type. }
+    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
     ?np a np:Nanopublication; np:hasAssertion ?assertion.
     filter not exists {
-        ?setl_run a ?setl_script;
-            prov:used ?resource.
+        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
+    }
+    filter not exists {
+        ?assertion prov:wasGeneratedBy [ a setl:Planner].
+    }
+    filter not exists {
+        ?planned_assertion prov:wasDerivedFrom* ?assertion;
+           prov:wasGeneratedBy [ a setl:Planner].
+        graph ?planned_assertion {
+            ?setl_run a ?setl_script;
+                prov:used ?resource.
+        }
     }
 }''', initBindings=dict(resource=i.identifier), initNs=self.app.NS.prefixes):
             nanopub = self.app.nanopub_manager.get(np)
