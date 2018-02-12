@@ -816,15 +816,6 @@ $( function() {
                     }
                 }
             })
-            // var topNanopubs = nanopubs.filter(function(nanopub) {
-            //     return nanopub.resource.pubinfo == null || !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
-            // });
-            // topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
-            //     nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
-            //                                  nanopub['@id']);
-            //     return nanopub;
-            // });
-            // console.log(topNanopubs);
             return nanopubs[0];
         }
 
@@ -898,9 +889,6 @@ $( function() {
             var npID = nanopub.np.split("/").slice(-1)[0];
             return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
-        // Nanopub.update = function(nanopub) {
-        //     return $http.put(nanopub['@id'], nanopub,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
-        // };
         Nanopub.save = function(nanopub) {
             return $http.post('/pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
@@ -1002,15 +990,6 @@ $( function() {
                         nanopub.editing = true;
                     });
                 };
-                // $scope.editNanopub = function(nanopub) {
-                //     console.log("nanopub.np: " + nanopub.np);
-                //     $http.get(nanopub.np).then(function(response){
-                //         console.log('inside editNanopub' + response);
-                //         nanopub.graph = Resource(nanopub.np, response);
-                //         console.log(nanopub.graph);
-                //         nanopub.editing = true;
-                //     });
-                // };
                 $scope.saveNanopub = function(nanopub) {
                     Nanopub.update(nanopub)
                         .then(function() {
