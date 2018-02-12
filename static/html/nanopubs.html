@@ -32,7 +32,7 @@
     </div>
 
     <div data-ng-if="nanopub.editing" >
-      <newnanopub verb="Edit" nanopub="nanopub" editing="true" on-save="saveNanopub(nanopub)"/>
+      <newnanopub verb="Edit" nanopub="nanopub.graph" editing="true" on-save="saveNanopub(nanopub)"/>
     </div>
     <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.content)"></div>
     <footer>

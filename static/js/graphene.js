@@ -816,16 +816,16 @@ $( function() {
                     }
                 }
             })
-            var topNanopubs = nanopubs.filter(function(nanopub) {
-                return nanopub.resource.pubinfo == null || !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
-            });
-            topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
-                nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
-                                             nanopub['@id']);
-                return nanopub;
-            });
-            console.log(topNanopubs);
-            return topNanopubs;
+            // var topNanopubs = nanopubs.filter(function(nanopub) {
+            //     return nanopub.resource.pubinfo == null || !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
+            // });
+            // topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
+            //     nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
+            //                                  nanopub['@id']);
+            //     return nanopub;
+            // });
+            // console.log(topNanopubs);
+            return nanopubs[0];
         }
 
         function processNanopubs(response) {
@@ -879,6 +879,14 @@ $( function() {
             console.log(topNanopubs);
             return topNanopubs;
         }
+        Nanopub.get = function(nanopub) {
+            var npID = nanopub.np.split("/").slice(-1)[0]
+            return $http.get('/pub/'+npID, 
+                                        {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
+                .then(function(response, error) {
+                    nanopub.graph = processNanopub(response);
+                })
+        };
         Nanopub.list = function(about) {
             return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
                 .then(processNanopubs, function (response, error) {
@@ -887,14 +895,19 @@ $( function() {
                 });
         }
         Nanopub.update = function(nanopub) {
-            return $http.put(nanopub['@id'], nanopub,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
+            var npID = nanopub.np.split("/").slice(-1)[0];
+            return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
+        // Nanopub.update = function(nanopub) {
+        //     return $http.put(nanopub['@id'], nanopub,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
+        // };
         Nanopub.save = function(nanopub) {
             return $http.post('/pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
-            var npID = nanopub.np.split("/").slice(-1)[0]
+            var npID = nanopub.np.split("/").slice(-1)[0];
+            console.log("Nanopub.delete: " + npID);
             return $http.delete('/pub/'+npID);
         }
         return Nanopub;
@@ -953,7 +966,7 @@ $( function() {
         };
     }]);
     
-    app.directive("nanopubs", ["Nanopub", "$sce", "getLabel", function(Nanopub, $sce, getLabel) {
+    app.directive("nanopubs", ["Resource","$http", "Nanopub", "$sce", "getLabel", function(Resource, $http, Nanopub, $sce, getLabel) {
         return {
             restrict: "E",
             scope: {
@@ -961,7 +974,7 @@ $( function() {
                 disableNanopubing: "="
             },
             templateUrl: '/static/html/nanopubs.html',
-            controller: ['$scope', function ($scope) {
+            controller: ['Resource','$scope', '$http', function (Resource, $scope, $http) {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
                 $scope.getLabel = getLabel;
@@ -985,8 +998,19 @@ $( function() {
                     $("#deleteNanopubModal").modal("show");
                 };
                 $scope.editNanopub = function(nanopub) {
-                    nanopub.editing = true;
+                    Nanopub.get(nanopub).then(function() {
+                        nanopub.editing = true;
+                    });
                 };
+                // $scope.editNanopub = function(nanopub) {
+                //     console.log("nanopub.np: " + nanopub.np);
+                //     $http.get(nanopub.np).then(function(response){
+                //         console.log('inside editNanopub' + response);
+                //         nanopub.graph = Resource(nanopub.np, response);
+                //         console.log(nanopub.graph);
+                //         nanopub.editing = true;
+                //     });
+                // };
                 $scope.saveNanopub = function(nanopub) {
                     Nanopub.update(nanopub)
                         .then(function() {
