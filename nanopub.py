@@ -190,7 +190,7 @@ class NanopublicationManager:
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
         fileid = self.depot.create(FileIntent('', ident, 'application/trig'))
-        nanopub.add((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
+        nanopub.set((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
         self._idmap[nanopub.identifier] = fileid
         
         self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
