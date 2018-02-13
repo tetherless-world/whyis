@@ -46,8 +46,9 @@ import rdflib
 global rdflib
 
 global base_uri
-base_uri = rdflib.Namespace(this.graph.value(predicate=rdflib.RDF.type,
-                            object=rdflib.URIRef("https://www.iana.org/assignments/media-types/application/x-bibtex"))+'/')
+collection = this.graph.value(predicate=rdflib.RDF.type,
+                            object=rdflib.URIRef("https://www.iana.org/assignments/media-types/application/x-bibtex"))
+base_uri = rdflib.Namespace(collection+'/')
 global doi
 doi = rdflib.Namespace("http://dx.doi.org/")
 
@@ -57,6 +58,7 @@ def result(entry):
     else:
         return base_uri[entry['ID']]
 result.base_uri = base_uri
+result.collection = collection
 
 '''.
 
@@ -154,7 +156,7 @@ result = {
         "@do" : {
           "@with" : "author_fn_ln(author) as fn, ln",
           "@do" : {
-            "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+            "@id" : "{{create_article_uri.base_uri}}author/{{slugify(' '.join([fn, ln]))}}",
             "@type" : "foaf:Person",
             "foaf:familyName" : "{{ln}}",
             "foaf:givenName" : "{{fn}}",
@@ -170,7 +172,7 @@ result = {
         "@do" : {
           "@with" : "author_fn_ln(author) as fn, ln",
           "@do" : {
-            "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+            "@id" : "{{create_article_uri.base_uri}}author/{{slugify(' '.join([fn, ln]))}}"
           }
         }
     }
@@ -200,7 +202,7 @@ result = {
   "dcterms:publisher" : [
     {
       "@if" : "'publisher' in row",
-      "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}",
+      "@id" : "{{create_article_uri.base_uri}}publisher/{{slugify(row['publisher'])}}",
       "rdfs:label" : "{{row['publisher']}}",
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
@@ -211,7 +213,7 @@ result = {
     },
     {
       "@if" : "'institution' in row",
-      "@id" : "{{create_article_uri.base_uri}}/institution/{{slugify(row['institution'])}}",
+      "@id" : "{{create_article_uri.base_uri}}institution/{{slugify(row['institution'])}}",
       "rdfs:label" : "{{row['institution']}}",
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
@@ -222,7 +224,7 @@ result = {
     },
     {
       "@if" : "'school' in row",
-      "@id" : "{{create_article_uri.base_uri}}/institution/{{slugify(row['school'])}}",
+      "@id" : "{{create_article_uri.base_uri}}institution/{{slugify(row['school'])}}",
       "rdfs:label" : "{{row['school']}}",
       "http://schemas.talis.com/2005/address/schema#localityName" : [
         {
@@ -289,7 +291,7 @@ result = {
   ],
   "@reverse" : {
     "dcterms:hasPart" : {
-      "@id" : "{{create_article_uri.base_uri}}"
+      "@id" : "{{create_article_uri.collection}}"
     }
   },
   "rdfs:seeAlso" : [
@@ -306,24 +308,24 @@ result = {
   ],
   "dcterms:isPartOf" : [
     {
-      "@id" : "{{create_article_uri.base_uri}}",
+      "@id" : "{{create_article_uri.collection}}",
       "@type" : "http://purl.org/dc/dcmitype/Collection"
     },
     {
       "@if" : "'journal' in row",
-      "@id" : "{{create_article_uri.base_uri}}/journal/{{slugify(row['journal'])}}",
+      "@id" : "{{create_article_uri.base_uri}}journal/{{slugify(row['journal'])}}",
       "@type" : "bibo:Journal",
       "dcterms:title" : "{{row['journal']}}",
       "dcterms:publisher" : [
         {
           "@if" : "'publisher' in row",
-          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}"
+          "@id" : "{{create_article_uri.base_uri}}publisher/{{slugify(row['publisher'])}}"
         }
       ]
     },
     {
       "@if" : "'booktitle' in row",
-      "@id" : "{{create_article_uri.base_uri}}/book/{{slugify(row['booktitle'])}}",
+      "@id" : "{{create_article_uri.base_uri}}book/{{slugify(row['booktitle'])}}",
       "@type" : "bibo:Book",
       "dcterms:title" : "{{row['booktitle']}}",
       "bibo:edition" : [
@@ -335,7 +337,7 @@ result = {
       "dcterms:isPartOf" : [
         {
           "@if" : "'series' in row",
-          "@id" : "{{create_article_uri.base_uri}}/series/{{slugify(row['series'])}}",
+          "@id" : "{{create_article_uri.base_uri}}series/{{slugify(row['series'])}}",
           "@type" : "bibo:Series",
           "dcterms:title" : "{{row['series']}}"
         }
@@ -347,7 +349,7 @@ result = {
             "@do" : {
               "@with" : "author_fn_ln(editor) as ln, fn",
               "@do" : {
-                "@id" : "{{create_article_uri.base_uri}}/author/{{slugify(' '.join([fn, ln]))}}",
+                "@id" : "{{create_article_uri.base_uri}}author/{{slugify(' '.join([fn, ln]))}}",
                 "@type" : "foaf:Person",
                 "foaf:familyName" : "{{ln}}",
                 "foaf:givenName" : "{{fn}}",
@@ -359,7 +361,7 @@ result = {
       "prov:wasAttributedTo" : [
         {
           "@if" : "'organization' in row",
-          "@id" : "{{create_article_uri.base_uri}}/organization/{{slugify(row['organization'])}}",
+          "@id" : "{{create_article_uri.base_uri}}organization/{{slugify(row['organization'])}}",
           "rdfs:label" : "{{row['organization']}}",
           "@type" : ["skos:Organization", "prov:Organization"]
         }
@@ -367,7 +369,7 @@ result = {
       "dcterms:publisher" : [
         {
           "@if" : "'publisher' in row",
-          "@id" : "{{create_article_uri.base_uri}}/publisher/{{slugify(row['publisher'])}}"
+          "@id" : "{{create_article_uri.base_uri}}publisher/{{slugify(row['publisher'])}}"
         }
       ]
     }

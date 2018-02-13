@@ -30,8 +30,8 @@ sudo puppet apply /tmp/install_satoru.pp
 
 echo ""
 echo "Please configure Satoru at /apps/satoru/config.py to ensure correct customization."
-echo "Satoru is now running at http://localhost/."
-echo "Visit http://localhost/register to add a new user."
+echo "Satoru is now running at http://localhost/ if you installed locally, and on http://192.168.33.36 if you are using Vagrant."
+echo "Follow the instructions for 'Configure Satoru' at http://tetherless-world.github.io/satoru/install."
 echo ""
 echo "To run satoru in development mode, run the following to start it:"
 echo ""
@@ -40,7 +40,7 @@ echo "  > cd /apps/satoru"
 echo "  > source venv/bin/activate"
 echo "  > python manage.py runserver"
 echo ""
-echo "Visit http://localhost:5000/register to add a new user."
+echo "Follow the instructions for 'Configure Satoru' at http://tetherless-world.github.io/satoru/install."
 
 
 

@@ -10,7 +10,7 @@ except:
 import os
 import sys, collections
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response
+from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
 import flask_ld as ld
 import jinja2
 from flask_ld.utils import lru
@@ -53,6 +53,7 @@ from flask_mail import Mail, Message
 
 from celery import Celery
 from celery.schedules import crontab
+from celery.task.control import inspect
 
 import database
 
@@ -201,6 +202,9 @@ class App(Empty):
         if 'inference_tasks' in self.config:
             app.inference_tasks = [setup_periodic_task(task) for task in self.config['inference_tasks']]
 
+        for name, task in self.config['inferencers'].items():
+            task.app = app
+            
         for task in app.inference_tasks:
             if 'schedule' in task:
                 #print "Scheduling task", task['name'], task['schedule']
@@ -211,7 +215,20 @@ class App(Empty):
                 )
             else:
                 task['find_instances'].delay()
-        
+                
+        def is_running_waiting(service_name):
+            """
+            Check if a task is running or waiting.
+            """
+            scheduled_tasks = inspect().scheduled().values()[0]
+            for task in scheduled_tasks:
+                if service_name in task['args']:
+                    return True
+            running_tasks = inspect().active().values()[0]
+            for task in running_tasks:
+                if service_name in task['args']:
+                    return True
+                        
         @self.celery.task()
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
@@ -222,14 +239,16 @@ class App(Empty):
             if 'inferencers' in self.config:
                 for name, service in self.config['inferencers'].items():
                     service.app = self
-                    if service.query_predicate == self.NS.graphene.globalChangeQuery:
-                        #print "checking", name, service.get_query()
-                        process_resource(name)
                     if service.query_predicate == self.NS.graphene.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(list(nanopub_graph.query(service.get_query()))) > 0:
                             print "invoking", name, nanopub_uri
-                            process_nanopub(nanopub_uri, name)
+                            process_nanopub.delay(nanopub_uri, name)
+                for name, service in self.config['inferencers'].items():
+                    service.app = self
+                    if service.query_predicate == self.NS.graphene.globalChangeQuery and not is_running_waiting(name):
+                        #print "checking", name, service.get_query()
+                        process_resource.apply_async(args=[name], priority=0)
 
         def run_update(nanopub_uri):
             update.delay(nanopub_uri)
@@ -483,7 +502,7 @@ construct {
             for f in files:
                 if f.filename != '':
                     old_nanopubs.extend(self.add_file(f, uri, nanopub))
-                    nanopub.assertion.add((uri, ns.RDF.type, NS.pv.File))
+                    nanopub.assertion.add((uri, NS.RDF.type, NS.pv.File))
                     added_files = True
                     break
 
@@ -770,6 +789,7 @@ construct {
         @self.route('/', methods=['GET','POST','DELETE'])
         @login_required
         def view(name=None, format=None, view=None):
+            self.db.store.nsBindings = {}
             if format is not None:
                 if format in extensions:
                     content_type = extensions[format]
@@ -867,6 +887,9 @@ construct {
             return render_template(views[0]['view'].value, **template_args), 200, headers
 
         def render_nanopub(data, code, headers=None):
+            if data is None:
+                return make_response("<h1>Not Found</h1>", 404)
+
             entity = app.Entity(ConjunctiveGraph(data.store), data.identifier)
             entity.nanopub = data
             data, code, headers = render_view(entity)
@@ -903,10 +926,10 @@ construct {
             def get(self, ident):
                 ident = ident.split("_")[0]
                 uri = self._get_uri(ident)
-                try:
-                    result = app.nanopub_manager.get(uri)
-                except IOError:
-                    return 'Resource not found', 404
+                result = app.nanopub_manager.get(uri)
+                if result is None:
+                    print "cannot find", uri
+                    return None
                 return result
 
             def delete(self, ident):

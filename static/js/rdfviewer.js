@@ -428,15 +428,18 @@ Graph.prototype.load = function(d) {
             listify(pred.value).forEach(function(obj) {
                 var resource = g.getResource(subj);
                 resource.display = true;
-                var predicate = g.getResource(pred.key);
-                predicate.isPredicate = true;
                 if (pred.key == RDF_TYPE) {
                     resource.types.push(g.getResource(obj['@id']));
+                    return;
                 }
                 else if (pred.key == '@type') {
                     if (obj['@id']) obj = obj['@id'];
                     resource.types.push(g.getResource(obj));
-                } else if (obj["@value"] || !obj['@id']) {
+                    return;
+                }
+                var predicate = g.getResource(pred.key);
+                predicate.isPredicate = true;
+                if (obj["@value"] || !obj['@id']) {
                     // if (obj['@lang'] != null) {
                     //     if (locale.lastIndexOf(obj.lang, 0) === 0) {
                     //     } else {

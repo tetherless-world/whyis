@@ -92,14 +92,22 @@ class NanopublicationManager:
         self.update_listener = update_listener
 
     def new(self):
-        nanopub = Nanopublication(identifier=self.prefix[ld.create_id()])
+        fileid = self._reserve_id()
+        nanopub = Nanopublication(identifier=self.prefix[fileid])
         nanopub.nanopub_resource
         nanopub.assertion
         nanopub.provenance
         nanopub.pubinfo
 
         return nanopub
-                
+
+    def _reserve_id(self):
+        # This needs to be a two-step write, since we need to store
+        # the identifier in the nanopub for consistency, and we don't
+        # get the identifier until we write the file!
+        fileid = self.depot.create(FileIntent('', ld.create_id(), 'application/trig'))
+        return fileid
+                    
     def prepare(self, graph, mappings = None):
         if mappings is None:
             mappings = {}
@@ -112,7 +120,8 @@ class NanopublicationManager:
             new_nps = [new_np.identifier]
         for nanopub in new_nps:
             if self.prefix not in nanopub:
-                new_uri = self.prefix[ld.create_id()]
+                fileid = self._reserve_id()
+                new_uri = self.prefix[fileid]
                 mappings[nanopub] = new_uri
                 for assertion in graph.objects(nanopub, np.hasAssertion):
                     mappings[assertion] = rdflib.URIRef(new_uri+"_assertion")
@@ -164,6 +173,7 @@ class NanopublicationManager:
             yield nanopub
             
     def retire(self, nanopub_uri):
+        self.db.store.nsBindings = {}
         for np_uri, in self.db.query('''select ?np where {
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
@@ -183,7 +193,8 @@ class NanopublicationManager:
         return [self.archive_path] + path[:-1] + [ident]
         
     def publish(self, nanopub):
-        ident = nanopub.identifier.replace(self.prefix, "")
+        self.db.store.nsBindings = {}
+        fileid = nanopub.identifier.replace(self.prefix, "")
         g = rdflib.ConjunctiveGraph(store=nanopub.store)
 
         # This needs to be a two-step write, since we need to store
@@ -193,7 +204,7 @@ class NanopublicationManager:
         nanopub.set((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
         self._idmap[nanopub.identifier] = fileid
         
-        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
+        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), fileid, 'application/trig'))
         for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
             for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
                 print "Retiring", nanopub_uri
@@ -205,13 +216,21 @@ class NanopublicationManager:
         
     def get(self, nanopub_uri, graph = None):
         nanopub_uri = rdflib.URIRef(nanopub_uri)
+        f = None
         if nanopub_uri in self._idmap:
-            fileid = self._idmap[nanopub_uri]
+            f = self.depot.get(self._idmap[nanopub_uri])
         else:
-            fileid = self.db.value(nanopub_uri, dc.identifier)
-            if fileid is not None:
-                self._idmap[nanopub_uri] = fileid
-        f = self.depot.get(fileid)
+            try:
+                fileid = nanopub_uri.replace(self.prefix, "", 1)
+                f = self.depot.get(fileid)
+            except:
+                try:
+                    fileid = self.db.value(nanopub_uri, dc.identifier)
+                    if fileid is not None:
+                        self._idmap[nanopub_uri] = fileid
+                    f = self.depot.get(fileid)
+                except:
+                    return None
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
