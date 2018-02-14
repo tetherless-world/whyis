@@ -193,8 +193,7 @@ class NanopublicationManager:
         return [self.archive_path] + path[:-1] + [ident]
         
     def publish(self, nanopub):
-        self.db.store.nsBindings = {}
-        fileid = nanopub.identifier.replace(self.prefix, "")
+        ident = nanopub.identifier.replace(self.prefix, "")
         g = rdflib.ConjunctiveGraph(store=nanopub.store)
 
         # This needs to be a two-step write, since we need to store
@@ -204,7 +203,7 @@ class NanopublicationManager:
         nanopub.set((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
         self._idmap[nanopub.identifier] = fileid
         
-        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), fileid, 'application/trig'))
+        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
         for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
             for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
                 print "Retiring", nanopub_uri

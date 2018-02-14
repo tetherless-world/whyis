@@ -731,7 +731,7 @@ $( function() {
             graph.resource.assertion = graph.resource( 'urn:nanopub_assertion', {
                 '@type' : 'http://www.nanopub.org/nschema#Assertion',
                 'http://www.w3.org/ns/prov#value': [{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
+                'http://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasAssertion'] = graph.resource.assertion;
@@ -739,17 +739,14 @@ $( function() {
             graph.resource.provenance = graph.resource( 'urn:nanopub_provenance', {
                 '@type' : 'http://www.nanopub.org/nschema#Provenance',
                 'http://www.w3.org/ns/prov#value':[{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
+                'http://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}]
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasProvenance'] = graph.resource.provenance;
             graph.resource.provenance.resource.assertion = graph.resource.provenance.resource('urn:nanopub_assertion');
 
             graph.resource.pubinfo = graph.resource( 'urn:nanopub_publication_info', {
-                '@type' : 'http://www.nanopub.org/nschema#PublicationInfo',
-                'http://www.w3.org/ns/prov#value': [{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
-                'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
+                '@type' : 'http://www.nanopub.org/nschema#PublicationInfo'
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasPublicationInfo'] = graph.resource.pubinfo;
             graph.resource.pubinfo.resource.assertion = graph.resource.pubinfo.resource('urn:nanopub_assertion');
@@ -886,10 +883,24 @@ $( function() {
                 });
         }
         Nanopub.update = function(nanopub) {
+            console.log("nanopub inside Nanopub.update: ",nanopub);
             var npID = nanopub.np.split("/").slice(-1)[0];
             return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
         Nanopub.save = function(nanopub) {
+            //remove null values from nanopub.resource.provenance and assertion
+            function notNull (value) {
+                var trueFalse = value["@value"] === null ? false : ( value["@id"] === null ? false : true );
+                console.log("returned value: " + trueFalse + " Value inside notNull: ", value);
+                return trueFalse;
+            }
+            nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
+            nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
+            nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            console.log("Nanopub.save, prov: ", nanopub.resource.provenance);
+            console.log("Nanopub.save assertion", nanopub.resource.assertion);
+
             return $http.post('/pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
