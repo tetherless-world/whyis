@@ -873,7 +873,20 @@ $( function() {
                                         {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
                 .then(function(response, error) {
                     nanopub.graph = processNanopub(response);
-                })
+                    //add [{@value: null}] and [{@id: null}] back in
+                    if ( nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#value'] === undefined ){
+                        nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#value'] = [{'@value':null}];
+                    }
+                    if (nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#wasQuotedFrom'] === undefined) {
+                        nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#wasQuotedFrom'] = [{'@id':null}];
+                    }
+                    if ( nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#value'] === undefined ){
+                        nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#value'] = [{'@value':null}];
+                    }
+                    if ( nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#wasQuotedFrom'] === undefined ) {
+                        nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#wasQuotedFrom'] = [{'@id':null}];
+                    }
+                });
         };
         Nanopub.list = function(about) {
             return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
@@ -883,30 +896,26 @@ $( function() {
                 });
         }
         Nanopub.update = function(nanopub) {
-            console.log("nanopub inside Nanopub.update: ",nanopub);
+            // console.log("nanopub inside Nanopub.update: ",nanopub);
             var npID = nanopub.np.split("/").slice(-1)[0];
             return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
         Nanopub.save = function(nanopub) {
             //remove null values from nanopub.resource.provenance and assertion
             function notNull (value) {
-                var trueFalse = value["@value"] === null ? false : ( value["@id"] === null ? false : true );
-                console.log("returned value: " + trueFalse + " Value inside notNull: ", value);
-                return trueFalse;
+                return value["@value"] === null ? false : ( value["@id"] === null ? false : true );
             }
             nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
             nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
             nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
             nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
-            console.log("Nanopub.save, prov: ", nanopub.resource.provenance);
-            console.log("Nanopub.save assertion", nanopub.resource.assertion);
 
             return $http.post('/pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0];
-            console.log("Nanopub.delete: " + npID);
+            // console.log("Nanopub.delete: " + npID);
             return $http.delete('/pub/'+npID);
         }
         return Nanopub;
