@@ -5,6 +5,7 @@ from datetime import datetime
 from nanopub import Nanopublication
 import flask_ld as ld
 import flask
+from flask import render_template
 
 graphene = rdflib.Namespace('http://vocab.rpi.edu/graphene/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
@@ -13,6 +14,7 @@ dc = rdflib.Namespace("http://purl.org/dc/terms/")
 sio = rdflib.Namespace("http://semanticscience.org/resource/")
 setl = rdflib.Namespace("http://purl.org/twc/vocab/setl/")
 pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
+skos = rdflib.Namespace("http://www.w3.org/2008/05/skos#")
 
 class Service(sadi.Service):
 
@@ -74,6 +76,7 @@ class UpdateChangeService(Service):
     def explain(self, nanopub, i, o):
         Service.explain(self, nanopub, i, o)
         np_assertions = list(i.graph.subjects(rdflib.RDF.type, np.Assertion))
+        activity = nanopub.provenance.resource(rdflib.BNode())
         for assertion in np_assertions:
             nanopub.provenance.add((activity.identifier, prov.used, assertion))
             nanopub.provenance.add((nanopub.assertion.identifier, prov.wasDerivedFrom, assertion))
@@ -148,59 +151,36 @@ prefix owl:  <''' + rdflib.OWL + '''>
 prefix prov: <''' + prov + '''>
 select distinct ?resource where {
     ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
-    graph ?assertion {
-      ?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        rdfs:subClassOf [ a owl:Restriction;
+    ?setl_script rdfs:subClassOf setl:SemanticETLScript;
+        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
             owl:onProperty prov:used;
             owl:someValuesFrom ?parameterized_type
-        ].
-    }
+    ].
     filter not exists {
-        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
-        ?assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
-        ?planned_assertion prov:wasDerivedFrom* ?assertion;
-           prov:wasGeneratedBy [ a setl:Planner].
-        graph ?planned_assertion {
-            ?setl_run a ?setl_script;
-                prov:used ?resource.
-        }
+        ?setl_run a ?setl_script;
+            prov:used ?resource.
     }
   filter (!regex(str(?resource), "^bnode:"))
 }'''
 
     def process_nanopub(self, i, o, new_np):
         print i.identifier
-        p = self.app.NS.prov.used
-        for script, np, parameterized_type, type_assertion in self.app.db.query('''
+        for script, np, parameterized_type, p, type_assertion in self.app.db.query('''
 prefix setl: <http://purl.org/twc/vocab/setl/>
-select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
+select distinct ?setl_script ?np ?parameterized_type ?p ?type_assertion where {
+    graph ?type_assertion { ?resource rdf:type/rdfs:subClassOf* ?parameterized_type. }
+    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        rdfs:subClassOf [ a owl:Restriction;
-            owl:onProperty prov:used;
+        rdfs:subClassOf*/owl:equivalentClass* [ a owl:Restriction;
+            owl:onProperty ?p;
             owl:someValuesFrom ?parameterized_type
       ].
     }
-    graph ?type_assertion { ?resource rdf:type/rdfs:subClassOf* ?parameterized_type. }
-    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
     ?np a np:Nanopublication; np:hasAssertion ?assertion.
     filter not exists {
-        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
-        ?assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
-        ?planned_assertion prov:wasDerivedFrom* ?assertion;
-           prov:wasGeneratedBy [ a setl:Planner].
-        graph ?planned_assertion {
-            ?setl_run a ?setl_script;
-                prov:used ?resource.
-        }
+        ?setl_run a ?setl_script;
+            prov:used ?resource.
     }
 }''', initBindings=dict(resource=i.identifier), initNs=self.app.NS.prefixes):
             nanopub = self.app.nanopub_manager.get(np)
@@ -313,4 +293,46 @@ class SETLr(UpdateChangeService):
                 print "Nanopub assertion has", len(new_np.assertion), "statements."
                 self.app.nanopub_manager.publish(new_np)
                 print 'Published'
-                
+
+class Deductor(UpdateChangeService):
+    def __init__(self,resource="?resource",prefixes="",where="", construct="", explanation="" ): # prefixes should be 
+        if resource is not None:
+            self.resource = resource
+        if prefixes is not None:
+            self.prefixes = prefixes
+        if where is not None:
+            self.where = where
+        if construct is not None:
+            self.construct = construct
+        if explanation is not None:
+            self.explanation = explanation
+
+    def getInputClass(self):
+        return pv.File # input and output class should be customized for the specific inference
+
+    def getOutputClass(self):
+        return setl.SETLedFile
+
+    def get_query(self):
+        self.app.db.store.nsBindings={}
+        return '''%s SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.prefixes, self.resource, self.where, self.construct )
+    
+    def get_context(self, i):
+        context = {}
+        context_vars = self.app.db.query('''%s SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes, self.where, self.resource, i.identifier) )
+        for key in context_vars.json["results"]["bindings"][0].keys():
+            context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
+        return context
+    
+    def process(self, i, o):
+        self.app.db.store.nsBindings={}
+        npub = Nanopublication(store=o.graph.store)
+        triples = self.app.db.query('''%s CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes,self.construct, self.where, self.construct, self.resource, i.identifier) ) # init.bindings = prefix, dict for identifier (see graph.query in rdflib)
+        for s, p, o, c in triples:
+            print "Deductor Adding ", s, p, o
+            npub.assertion.add((s, p, o))
+        npub.provenance.add((npub.assertion.identifier, prov.value, rdflib.Literal(flask.render_template_string(self.explanation,**self.get_context(i)))))
+
+    def __str__(self):
+        return "Deductor Instance: " + str(self.__dict__)
+
