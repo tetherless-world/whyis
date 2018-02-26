@@ -41,6 +41,8 @@ class Service(sadi.Service):
         nanopub.provenance.add((nanopub.assertion.identifier, prov.wasGeneratedBy, activity.identifier))
 
     def getInstances(self, graph):
+        if hasattr(graph.store, "nsBindings"):
+            graph.store.nsBindings = {}
         return [graph.resource(i) for i, in graph.query(self.get_query())]
     
     def process_graph(self, inputGraph):
@@ -147,7 +149,9 @@ prefix setl: <http://purl.org/twc/vocab/setl/>
 prefix owl:  <''' + rdflib.OWL + '''>
 prefix prov: <''' + prov + '''>
 select distinct ?resource where {
-    ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
+    graph ?type_assertion {
+      ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
+    }
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;
         rdfs:subClassOf [ a owl:Restriction;

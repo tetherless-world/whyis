@@ -159,7 +159,18 @@ Dev.update(dict(
 
 # config class used during tests
 Test = dict(Config)
+del Test['admin_queryEndpoint']
+del Test['admin_updateEndpoint']
+del Test['knowledge_queryEndpoint']
+del Test['knowledge_updateEndpoint']
 Test.update(dict(
+    nanopub_archive = {
+        'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+    },
+
+    file_archive = {
+        'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+    },
     TESTING = True,
     WTF_CSRF_ENABLED = False
 ))

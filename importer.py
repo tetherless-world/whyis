@@ -5,6 +5,15 @@ import datetime
 import email.utils as eut
 import pytz
 import dateutil.parser
+from dateutil.tz import tzlocal
+from werkzeug.http import http_date
+from setlr import FileLikeFromIter
+from werkzeug.datastructures import FileStorage
+import re
+import os
+from requests_testadapter import Resp
+import magic
+import mimetypes
 
 np = rdflib.Namespace('http://www.nanopub.org/nschema#')
 prov = rdflib.Namespace('http://www.w3.org/ns/prov#')
@@ -84,6 +93,10 @@ class LinkedData (Importer):
             self.access_url = access_url
         else:
             self.access_url = "%s"
+        if callable(self.access_url):
+            self._get_access_url = self.access_url
+        else:
+            self._get_access_url = lambda entity_name: self.access_url % entity_name
         self.postprocess_update = postprocess_update
 
     def resource_matches(self, entity):
@@ -102,8 +115,11 @@ class LinkedData (Importer):
         return fragment
 
     def modified(self, entity_name):
-        u = self.access_url % entity_name
-        r = requests.head(u, headers=self.modified_headers, allow_redirects=True)
+        u = self._get_access_url(entity_name)
+        requests_session = requests.session()
+        requests_session.mount('file://', LocalFileAdapter())
+        requests_session.mount('file:///', LocalFileAdapter())
+        r = requests_session.head(u, headers=self.modified_headers, allow_redirects=True)
         #print "Modified Headers", r.headers
         if 'Last-Modified' in r.headers:
             result = dateutil.parser.parse(r.headers['Last-Modified'])
@@ -114,9 +130,9 @@ class LinkedData (Importer):
 
 
     def fetch(self, entity_name):
-        u = self.access_url % entity_name
+        u = self._get_access_url(entity_name)
         #print u
-        r = requests.get(u, headers = self.headers)
+        r = requests.get(u, headers = self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.URIRef("urn:default_assertion"))
         local.parse(data=repair(r.text), format=self.format)
@@ -126,5 +142,58 @@ class LinkedData (Importer):
             g.update(self.postprocess_update)
         #print g.serialize(format="trig")
         return rdflib.ConjunctiveGraph(identifier=local.identifier, store=g.store)
+        
+        
+class LocalFileAdapter(requests.adapters.HTTPAdapter):
+    def build_response_from_file(self, request):
+        file_path = request.url[7:]
+        mtime = os.path.getmtime(file_path)
+        dt = datetime.datetime.fromtimestamp(mtime, tzlocal())
+        mimetype = mimetypes.guess_type(file_path)[0]
+        if mimetype is None:
+            mimetype = magic.from_file(file_path, mime=True)
+        headers = {"Last-Modified": http_date(dt)}
+        if mimetype is not None:
+            headers['Content-Type'] = mimetype
+        with open(file_path, 'rb') as file:
+            buff = bytearray(os.path.getsize(file_path))
+            file.readinto(buff)
+            resp = Resp(buff, headers=headers)
+            r = self.build_response(request, resp)
+            return r
+    def send(self, request, stream=False, timeout=None,
+             verify=True, cert=None, proxies=None):
+        return self.build_response_from_file(request)
+
+class FileImporter (LinkedData):
+
+    def __init__(self, prefix, url, file_types=None, **kwargs):
+        LinkedData.__init__(self, prefix, url, **kwargs)
+        self.file_types = file_types
+    
+    def fetch(self, entity_name):
+        u = self._get_access_url(entity_name)
+        requests_session = requests.session()
+        requests_session.mount('file://', LocalFileAdapter())
+        requests_session.mount('file:///', LocalFileAdapter())
+        r = requests_session.get(u, headers = self.headers, allow_redirects=True, stream=True)
+        np = nanopub.Nanopublication()
+        if 'content-disposition' in r.headers:
+            d = r.headers['content-disposition']
+            fname = re.findall("filename=(.+)", d)
+        else:
+            fname = entity_name.split('/')[-1]
+        content_type = r.headers.get('content-type')
+
+        if self.file_types is not None:
+            for file_type in file_types:
+                np.assertion.add((entity_name, rdflib.RDF.type, file_type))
+        f = FileStorage(FileLikeFromIter(r.iter_content()), fname, content_type=content_type)
+        old_nanopubs = self.app.add_file(f, entity_name, np)
+        np.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
+        for old_np, old_np_assertion in old_nanopubs:
+            np.pubinfo.add((np.assertion.identifier, NS.prov.wasRevisionOf, old_np_assertion))
+
+        return np
         
         
