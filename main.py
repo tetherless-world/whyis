@@ -303,6 +303,11 @@ class App(Empty):
         DepotManager.configure('nanopublications', self.config['nanopub_archive'])
         DepotManager.configure('files', self.config['file_archive'])
         self.file_depot = DepotManager.get('files')
+        if self.file_depot is None:
+            DepotManager.configure('files', self.config['file_archive'])
+            self.file_depot = DepotManager.get('files')
+        if DepotManager.get('nanopublications') is None:
+            DepotManager.configure('nanopublications', self.config['nanopub archive'])
 
     def weighted_route(self, *args, **kwargs):
         def decorator(view_func):

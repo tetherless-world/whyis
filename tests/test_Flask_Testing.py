@@ -20,12 +20,12 @@ class MyTest(LiveServerTestCase):
         config_defaults.Config['LIVESERVER_TIMEOUT'] = 10
 
         #try to solve filedepot problems
-        self.file_depot = DepotManager.get('files')
-        if self.file_depot is None:
-            DepotManager.configure('files', self.config['file_archive'])
-            self.file_depot = DepotManager.get('files')
-        if DepotManager.get('nanopublications') is None:
-            DepotManager.configure('nanopublications', self.config['nanopub_archive'])
+        # self.file_depot = DepotManager.get('files')
+        # if self.file_depot is None:
+        #     DepotManager.configure('files', self.config['file_archive'])
+        #     self.file_depot = DepotManager.get('files')
+        # if DepotManager.get('nanopublications') is None:
+        #     DepotManager.configure('nanopublications', self.config['nanopub_archive'])
         
         application = app_factory(config_defaults.Config, config_defaults.project_name)
         
