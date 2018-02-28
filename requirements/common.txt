@@ -30,3 +30,4 @@ cookiecutter
 keepalive
 filedepot
 bibtexparser
+python-magic
