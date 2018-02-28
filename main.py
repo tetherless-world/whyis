@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 import requests
-try:
-    import config
-    print config.__package__
-except:
-    print "WARNING: missing config, using defaults file"
-    import config_defaults as config
+#try:
+import config
+print "Using config from", config.__package__
+#except:
+#    print "WARNING: missing config, using defaults file"
+#    import config_defaults as config
 
 import os
 import sys, collections
@@ -257,6 +257,7 @@ class App(Empty):
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4)
         def run_importer(entity_name):
             importer = self.find_importer(entity_name)
+            importer.app = self
             modified = importer.last_modified(entity_name, self.db, self.nanopub_manager)
             updated = importer.modified(entity_name)
             if updated is None:
@@ -300,14 +301,12 @@ class App(Empty):
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
 
-        DepotManager.configure('nanopublications', self.config['nanopub_archive'])
-        DepotManager.configure('files', self.config['file_archive'])
         self.file_depot = DepotManager.get('files')
         if self.file_depot is None:
             DepotManager.configure('files', self.config['file_archive'])
             self.file_depot = DepotManager.get('files')
         if DepotManager.get('nanopublications') is None:
-            DepotManager.configure('nanopublications', self.config['nanopub archive'])
+            DepotManager.configure('nanopublications', self.config['nanopub_archive'])
 
     def weighted_route(self, *args, **kwargs):
         def decorator(view_func):
@@ -452,6 +451,7 @@ construct {
                 raise Unauthorized()
             old_nanopubs.append((np_uri, np_assertion))
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
+        nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.graphene.hasFileID, Literal(fileid)))
         nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
@@ -800,7 +800,10 @@ construct {
                     content_type = extensions[format]
                 else:
                     name = '.'.join([name, format])
+            argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
             if name is not None:
+                if len(argstring) > 0:
+                    name = name + "?" + argstring
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
                 entity = URIRef(request.args['uri'])
@@ -838,6 +841,7 @@ construct {
                                  this=resource, g=g,
                                  current_user=current_user,
                                  isinstance=isinstance,
+                                 args=request.args,
                                  get_entity=get_entity,
                                  get_summary=get_summary,
                                  rdflib=rdflib,
