@@ -7,7 +7,10 @@ import flask_ld as ld
 import flask
 from flask import render_template
 
+import database
+
 graphene = rdflib.Namespace('http://vocab.rpi.edu/graphene/')
+whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
@@ -172,8 +175,8 @@ select distinct ?resource where {
         ?planned_assertion prov:wasDerivedFrom* ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {
-            ?setl_run a ?setl_script;
-                prov:used ?resource.
+            ?setl_run a ?setl_script.
+            ?extract prov:used ?resource.
         }
     }
   filter (!regex(str(?resource), "^bnode:"))
@@ -205,8 +208,8 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
         ?planned_assertion prov:wasDerivedFrom* ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {
-            ?setl_run a ?setl_script;
-                prov:used ?resource.
+            ?setl_run a ?setl_script.
+            ?extract prov:used ?resource.
         }
     }
 }''', initBindings=dict(resource=i.identifier), initNs=self.app.NS.prefixes):
@@ -287,6 +290,10 @@ class SETLr(UpdateChangeService):
             nanopub.pubinfo.add((nanopub.assertion.identifier, prov.wasAttributedTo, i.identifier))
 
     def process(self, i, o):
+        query_store = database.create_query_store(self.app.db.store)
+        db_graph = rdflib.ConjunctiveGraph(store=query_store)
+        db_graph.NS = self.app.NS
+        setlr.actions[whyis.sparql] = db_graph
         setl_graph = i.graph
         resources = setlr._setl(setl_graph)
         # retire old copies
@@ -305,6 +312,7 @@ class SETLr(UpdateChangeService):
             out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
             #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
             mappings = {}
+
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings):
                 self.explain(new_np, i, o)
                 print "Publishing", new_np.identifier
@@ -322,17 +330,14 @@ class SETLr(UpdateChangeService):
                 print 'Published'
 
 class Deductor(UpdateChangeService):
-    def __init__(self,resource="?resource",prefixes="",where="", construct="", explanation="" ): # prefixes should be 
+    def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
         if resource is not None:
             self.resource = resource
         if prefixes is not None:
             self.prefixes = prefixes
-        if where is not None:
-            self.where = where
-        if construct is not None:
-            self.construct = construct
-        if explanation is not None:
-            self.explanation = explanation
+        self.where = where
+        self.construct = construct
+        self.explanation = explanation
 
     def getInputClass(self):
         return pv.File # input and output class should be customized for the specific inference

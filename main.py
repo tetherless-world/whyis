@@ -167,17 +167,23 @@ class App(Empty):
             return result
 
         @self.celery.task
-        def process_resource(service_name):
+        def process_resource(service_name, taskid=None):
             service = self.config['inferencers'][service_name]
-            print service
+            if is_waiting(service_name):
+                print "Deferring to a later invocation.", service_name
+                return
+            print service_name
             service.process_graph(app.db)
 
         @self.celery.task
-        def process_nanopub(nanopub_uri, service_name):
+        def process_nanopub(nanopub_uri, service_name, taskid=None):
             service = self.config['inferencers'][service_name]
             print service, nanopub_uri
-            nanopub = app.nanopub_manager.get(nanopub_uri)
-            service.process_graph(nanopub)
+            if app.nanopub_manager.is_current(nanopub_uri):
+                nanopub = app.nanopub_manager.get(nanopub_uri)
+                service.process_graph(nanopub)
+            else:
+                print "Skipping retired nanopub", nanopub_uri
 
         def setup_periodic_task(task):
             @self.celery.task
@@ -215,25 +221,41 @@ class App(Empty):
                 )
             else:
                 task['find_instances'].delay()
+
+        def is_waiting(service_name):
+            """
+            Check if a task is waiting.
+            """
+            scheduled_tasks = inspect().scheduled().values()[0]
+            for task in scheduled_tasks:
+                if 'kwargs' in task:
+                    args = eval(task['kwargs'])
+                    if service_name == args.get('service_name',None):
+                        return True
+            return False
                 
         def is_running_waiting(service_name):
             """
             Check if a task is running or waiting.
             """
-            scheduled_tasks = inspect().scheduled().values()[0]
-            for task in scheduled_tasks:
-                if service_name in task['args']:
-                    return True
+            if is_waiting(service_name):
+                return True
             running_tasks = inspect().active().values()[0]
             for task in running_tasks:
-                if service_name in task['args']:
-                    return True
+                if 'kwargs' in task:
+                    args = eval(task['kwargs'])
+                    if service_name == args.get('service_name',None):
+                        return True
+            return False
                         
         @self.celery.task()
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
             Performs a breadth-first knowledge expansion of the current change.'''
             #print "Updating on", nanopub_uri
+            if not app.nanopub_manager.is_current(nanopub_uri):
+                print "Skipping retired nanopub", nanopub_uri
+                return
             nanopub = app.nanopub_manager.get(nanopub_uri)
             nanopub_graph = ConjunctiveGraph(nanopub.store)
             if 'inferencers' in self.config:
@@ -243,15 +265,15 @@ class App(Empty):
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(list(nanopub_graph.query(service.get_query()))) > 0:
                             print "invoking", name, nanopub_uri
-                            process_nanopub.delay(nanopub_uri, name)
+                            process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in self.config['inferencers'].items():
                     service.app = self
                     if service.query_predicate == self.NS.graphene.globalChangeQuery and not is_running_waiting(name):
                         #print "checking", name, service.get_query()
-                        process_resource.apply_async(args=[name], priority=0)
+                        process_resource.apply_async(kwargs={'service_name':name}, priority=5)
 
         def run_update(nanopub_uri):
-            update.delay(nanopub_uri)
+            update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
 
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4)
@@ -452,7 +474,8 @@ construct {
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.graphene.hasFileID, Literal(fileid)))
-        nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
+        if current_user._get_current_object() is not None:
+            nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
         nanopub.assertion.add((entity, NS.ov.hasContentType, Literal(f.mimetype)))
         nanopub.assertion.add((entity, NS.RDF.type, NS.mediaTypes[f.mimetype]))
@@ -460,8 +483,9 @@ construct {
         nanopub.assertion.add((entity, NS.RDF.type, NS.mediaTypes[f.mimetype.split('/')[0]]))
         nanopub.assertion.add((NS.mediaTypes[f.mimetype.split('/')[0]], NS.RDF.type, NS.dc.FileFormat))
         nanopub.assertion.add((entity, NS.RDF.type, NS.pv.File))
-                
-        nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
+
+        if current_user._get_current_object() is not None:
+            nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
         nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.created, Literal(datetime.utcnow())))
 
         return old_nanopubs
@@ -482,8 +506,9 @@ construct {
         added_files = False
 
         old_nanopubs = []
-        
+        print 1
         nanopub.assertion.add((uri, self.NS.RDF.type, upload_type))
+        print 2
         if upload_type == URIRef("http://purl.org/dc/dcmitype/Collection"):
             for f in files:
                 filename = secure_filename(f.filename)

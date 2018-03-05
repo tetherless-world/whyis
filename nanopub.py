@@ -2,7 +2,7 @@ import rdflib
 import os
 import flask_ld as ld
 import collections
-
+import requests
 
 from depot.io.utils import FileIntent
 from depot.manager import DepotManager
@@ -172,19 +172,35 @@ class NanopublicationManager:
             #print "Contexts", [g.identifier for g in output_graph.contexts()]
             yield nanopub
             
-    def retire(self, nanopub_uri):
+    def retire(self, session=None, *nanopub_uris):
         self.db.store.nsBindings = {}
-        for np_uri, in self.db.query('''select ?np where {
-    ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree
+        graphs = []
+        for nanopub_uri in nanopub_uris:
+            for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
+    ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
+    ?np np:hasAssertion ?assertion;
+        np:hasPublicationInfo ?pubinfo;
+        np:hasProvenance ?provenance.
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
-            print "Retiring", np_uri, "derived from", nanopub_uri
-            nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-            self.db.remove((None,None,None,nanopub.assertion.identifier))
-            self.db.remove((None,None,None,nanopub.provenance.identifier))
-            self.db.remove((None,None,None,nanopub.pubinfo.identifier))
-            self.db.remove((None,None,None,nanopub.identifier))
-            self.db.commit()
+                print "Retiring", np_uri, "derived from", nanopub_uri
+                graphs.extend([np_uri, assertion, provenance, pubinfo])
+            #nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
+            #self.db.remove((None,None,None,nanopub.assertion.identifier))
+            #self.db.remove((None,None,None,nanopub.provenance.identifier))
+            #self.db.remove((None,None,None,nanopub.pubinfo.identifier))
+            #self.db.remove((None,None,None,nanopub.identifier))
+            #self.db.commit()
+        data = [('c', c.n3()) for c in graphs]
+        if session is None:
+            session = requests.session()
+            s.keep_alive = False
+        session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
+        print "Retired %s graphs total." % len(graphs)
 
+    def is_current(self, nanopub_uri):
+        work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
+        return work is not None
+            
     def get_path(self, nanopub_uri):
         #print self.prefix, nanopub_uri
         ident = nanopub_uri.replace(self.prefix, "")
@@ -192,18 +208,29 @@ class NanopublicationManager:
         path = [ident[i:i+dir_name_length] for i in range(0, len(ident), dir_name_length)]
         return [self.archive_path] + path[:-1] + [ident]
         
-    def publish(self, nanopub):
-        self.db.store.nsBindings = {}
-        fileid = nanopub.identifier.replace(self.prefix, "")
-        g = rdflib.ConjunctiveGraph(store=nanopub.store)
-        
-        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), fileid, 'application/trig'))
-        for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
-            for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
-                print "Retiring", nanopub_uri
-                self.retire(nanopub_uri)
-        self.db.addN(nanopub.quads())
-        self.update_listener(nanopub.identifier)
+    def publish(self, *nanopubs):
+        #self.db.store.nsBindings = {}
+        to_retire = []
+        s = requests.session()
+        s.keep_alive = False
+        for nanopub in nanopubs:
+            fileid = nanopub.identifier.replace(self.prefix, "")
+            g = rdflib.ConjunctiveGraph(store=nanopub.store)
+            for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
+                for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                    to_retire.append(nanopub_uri)
+                    print "Retiring", nanopub_uri
+                    self.retire(*to_retire, session=s)
+            serialized = g.serialize(format="trig")
+            self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
+            result = s.post(self.db.store.endpoint,
+                            data=serialized,
+                            params={"context-uri":nanopub.identifier},
+                            headers={'Content-Type':'application/x-trig'})
+            print self.db.store.endpoint, result, result.content
+        #self.db.addN(nanopub.quads())
+        for nanopub in nanopubs:
+            self.update_listener(nanopub.identifier)
 
     _idmap = {}
         
