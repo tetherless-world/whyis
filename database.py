@@ -3,7 +3,7 @@
 import flask_ld as ld
 from rdflib import *
 SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
-from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore, _node_to_sparql, POST
+from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql, POST
 from SPARQLWrapper import *
 
 def node_to_sparql(node):
@@ -17,6 +17,14 @@ def node_to_sparql(node):
 #    else:
 #        return _node_from_result(node)
 
+def create_query_store(store):
+    new_store = SPARQLStore(endpoint=store.endpoint,
+                            default_query_method=POST,
+                            returnFormat=JSON,
+                            node_to_sparql=node_to_sparql)
+    new_store._defaultReturnFormat=JSON
+    new_store.setReturnFormat(JSON)
+    return new_store
         
 def engine_from_config(config, prefix):
     defaultgraph = None
