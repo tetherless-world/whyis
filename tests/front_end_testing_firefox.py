@@ -2,7 +2,7 @@ import urllib2
 from flask import Flask
 from flask_testing import LiveServerTestCase
 from selenium import webdriver
-import chromedriver_binary  # Adds chromedriver binary to path
+# import chromedriver_binary  # Adds chromedriver binary to path
 
 class MyTest(LiveServerTestCase):
 
@@ -26,7 +26,7 @@ class MyTest(LiveServerTestCase):
         response = urllib2.urlopen(self.get_server_url())
         self.assertEqual(response.code, 200)
 
-    def test_openChrome(self):
+    def test_openFirefoxs(self):
         import commands
         import time
         from flask_security.utils import encrypt_password, verify_password, get_hmac
@@ -38,7 +38,7 @@ class MyTest(LiveServerTestCase):
         #create random passord
         pw = str(uuid4())
 
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Firefox()
         self.driver.get("http://localhost:8943")
         creator = commands.CreateUser()
         creator.run('user@example.com', pw, 'First', 'Last', 'identifier', '--roles=admin')
@@ -52,9 +52,9 @@ class MyTest(LiveServerTestCase):
 
         #find Add... button
         self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > newnanopub > button').click()
-        self.driver.implicitly_wait(5) # seconds
+        self.driver.implicitly_wait(10) # seconds
         assertionTextArea = self.driver.find_element_by_css_selector('#input_1')
-        assertionTextArea.send_keys('This is an assertion test')
+        assertionTextArea.send_keys('This is a test')
         self.driver.save_screenshot('/apps/Downloads/assert-screenshot.png')
         provButton = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > newnanopub > md-card > md-card-title > md-nav-bar > div > nav > ul > li:nth-child(2) > button')
         provButton.click()
@@ -68,35 +68,20 @@ class MyTest(LiveServerTestCase):
         addButton.click()
         self.driver.maximize_window()
         time.sleep(5)
-        #find reply button
         replyButton = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote:nth-child(1) > newnanopub > button')
         replyButton.click()
         self.driver.implicitly_wait(5)
-        #find reply assertion text area
         replyAssertionTextArea = self.driver.find_element_by_css_selector('#input_30')
-        replyAssertionTextArea.send_keys('Reply assertion test')
-        time.sleep(4)
-        #find provenance text area
+        replyAssertionTextArea.send_keys('Reply test')
+        time.sleep(5)
         replyProvButton = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote > newnanopub > md-card > md-card-title > md-nav-bar > div > nav > ul > li:nth-child(2) > button')
         replyProvButton.click()
-        #add text to reply provenance text area
+
         self.driver.find_element_by_css_selector('#input_38').send_keys('Prov reply test')
-        time.sleep(2)
-        #find reply button that adds reply to original nanopub
         replyButtonAdd = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote > newnanopub > md-card > md-card-actions > button')
         replyButtonAdd.click()
-        time.sleep(4)
+        time.sleep(5)
         optionsReply = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote > div:nth-child(5) > blockquote > div.dropdown.pull-right.ng-scope > button')
-        optionsReply.click()
-        time.sleep(10)
-        editReply = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote > div:nth-child(5) > blockquote > div.dropdown.pull-right.ng-scope.open > ul > li:nth-child(1) > a')
-        editReply.click()
-
-
-        time.sleep(111111111111111)
-
-
-        #delete everything!
         optionsReply.click()
         self.driver.implicitly_wait(5)
         deleteReply = self.driver.find_element_by_css_selector('body > div:nth-child(4) > div > div.col-md-8 > div > div.panel-body > nanopubs > div:nth-child(4) > blockquote > div:nth-child(5) > blockquote > div.dropdown.pull-right.ng-scope.open > ul > li:nth-child(2) > a')
