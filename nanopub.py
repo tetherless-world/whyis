@@ -172,7 +172,7 @@ class NanopublicationManager:
             #print "Contexts", [g.identifier for g in output_graph.contexts()]
             yield nanopub
             
-    def retire(self, session=None, *nanopub_uris):
+    def retire(self, *nanopub_uris):
         self.db.store.nsBindings = {}
         graphs = []
         for nanopub_uri in nanopub_uris:
@@ -191,9 +191,8 @@ class NanopublicationManager:
             #self.db.remove((None,None,None,nanopub.identifier))
             #self.db.commit()
         data = [('c', c.n3()) for c in graphs]
-        if session is None:
-            session = requests.session()
-            s.keep_alive = False
+        session = requests.session()
+        session.keep_alive = False
         session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
         print "Retired %s graphs total." % len(graphs)
 
@@ -220,7 +219,7 @@ class NanopublicationManager:
                 for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
                     to_retire.append(nanopub_uri)
                     print "Retiring", nanopub_uri
-                    self.retire(*to_retire, session=s)
+                    self.retire(*to_retire)
             serialized = g.serialize(format="trig")
             self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
             result = s.post(self.db.store.endpoint,
