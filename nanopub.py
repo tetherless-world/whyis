@@ -208,26 +208,6 @@ class NanopublicationManager:
         path = [ident[i:i+dir_name_length] for i in range(0, len(ident), dir_name_length)]
         return [self.archive_path] + path[:-1] + [ident]
         
-<<<<<<< HEAD
-    def publish(self, nanopub):
-        ident = nanopub.identifier.replace(self.prefix, "")
-        g = rdflib.ConjunctiveGraph(store=nanopub.store)
-
-        # This needs to be a two-step write, since we need to store
-        # the identifier in the nanopub for consistency, and we don't
-        # get the identifier until we write the file!
-        fileid = self.depot.create(FileIntent('', ident, 'application/trig'))
-        nanopub.set((nanopub.identifier, dc.identifier, rdflib.Literal(fileid)))
-        self._idmap[nanopub.identifier] = fileid
-        
-        self.depot.replace(fileid, FileIntent(g.serialize(format="trig"), ident, 'application/trig'))
-        for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
-            for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
-                print "Retiring", nanopub_uri
-                self.retire(nanopub_uri)
-        self.db.addN(nanopub.quads())
-        self.update_listener(nanopub.identifier)
-=======
     def publish(self, *nanopubs):
         #self.db.store.nsBindings = {}
         to_retire = []
@@ -251,7 +231,6 @@ class NanopublicationManager:
         #self.db.addN(nanopub.quads())
         for nanopub in nanopubs:
             self.update_listener(nanopub.identifier)
->>>>>>> 7e49f7f3f0f6a905b09f16a657933e004602a3e6
 
     _idmap = {}
         
