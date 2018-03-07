@@ -119,6 +119,7 @@ NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
 NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
+NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -465,6 +466,7 @@ construct {
     def add_file(self, f, entity, nanopub):
         old_nanopubs = []
         for np_uri, np_assertion, in self.db.query('''select distinct ?np ?assertion where {
+    hint:Query hint:optimizer "Runtime" .
     graph ?assertion {?e graphene:hasFileID ?fileid}
     ?np np:hasAssertion ?assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
@@ -492,6 +494,7 @@ construct {
 
     def delete_file(self, entity):
         for np_uri, in self.db.query('''select distinct ?np where {
+    hint:Query hint:optimizer "Runtime" .
     graph ?np_assertion {?e graphene:hasFileID ?fileid}
     ?np np:hasAssertion ?np_assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
@@ -586,7 +589,10 @@ construct {
             for db in [self.db, self.admin_db]:
                 g = Graph()
                 try:
-                    g += db.query('''select ?s ?p ?o where { ?s ?p ?o.}''',
+                    g += db.query('''select ?s ?p ?o where {
+                        hint:Query hint:optimizer "Runtime" .
+
+                         ?s ?p ?o.}''',
                                   initNs=self.NS.prefixes, initBindings=dict(s=uri))
                 except:
                     pass
@@ -671,10 +677,14 @@ construct {
         }
 
         def get_graphs(graphs):
-            query = 'select ?s ?p ?o ?g where {graph ?g {?s ?p ?o} } values ?g { %s }'
+            query = '''select ?s ?p ?o ?g where {
+                hint:Query hint:optimizer "Runtime" .
+
+                graph ?g {?s ?p ?o}
+                } values ?g { %s }'''
             query = query % ' '.join([graph.n3() for graph in graphs])
             #print query
-            quads = self.db.store.query(query)
+            quads = self.db.store.query(query, initNs=self.NS.prefixes)
             result = Dataset()
             result.addN(quads)
             return result
@@ -685,11 +695,12 @@ construct {
             
             try:
                 nanopubs = self.db.query('''select distinct ?np where {
+    hint:Query hint:optimizer "Runtime" .
     ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
         np:hasPublicationInfo ?pubinfo;
         np:hasAssertion ?assertion;
     graph ?assertion { ?s ?p ?o.}
-}''' + values, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+}''' + values, initNs=self.NS.prefixes)
                 result = ConjunctiveGraph()
                 for nanopub_uri, in nanopubs:
                     self.nanopub_manager.get(nanopub_uri, result)
@@ -701,6 +712,7 @@ construct {
         def get_entity_sparql(entity):
             try:
                 statements = self.db.query('''select distinct ?s ?p ?o ?g where {
+    hint:Query hint:optimizer "Runtime" .
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
@@ -709,7 +721,7 @@ construct {
             UNION
             {graph ?assertion { ?e ?p ?o.}}
             graph ?g { ?s ?p ?o }
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+        }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
                 result = ConjunctiveGraph()
                 result.addN(statements)
             except Exception as e:
@@ -722,6 +734,7 @@ construct {
         def get_entity_disk(entity):
             try:
                 nanopubs = self.db.query('''select distinct ?np where {
+    hint:Query hint:optimizer "Runtime" .
             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
@@ -729,7 +742,7 @@ construct {
             {graph ?np { ?np sio:isAbout ?e.}}
             UNION
             {graph ?assertion { ?e ?p ?o.}}
-        }''',initBindings={'e':entity}, initNs={'np':self.NS.np, 'sio':self.NS.sio, 'dc':self.NS.dc, 'foaf':self.NS.foaf})
+        }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
                 result = ConjunctiveGraph()
                 for nanopub_uri, in nanopubs:
                     self.nanopub_manager.get(nanopub_uri, result)

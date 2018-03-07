@@ -177,6 +177,7 @@ class NanopublicationManager:
         graphs = []
         for nanopub_uri in nanopub_uris:
             for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
+    hint:Query hint:optimizer "Runtime" .
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
     ?np np:hasAssertion ?assertion;
         np:hasPublicationInfo ?pubinfo;
@@ -184,16 +185,16 @@ class NanopublicationManager:
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
                 print "Retiring", np_uri, "derived from", nanopub_uri
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
-            #nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-            #self.db.remove((None,None,None,nanopub.assertion.identifier))
-            #self.db.remove((None,None,None,nanopub.provenance.identifier))
-            #self.db.remove((None,None,None,nanopub.pubinfo.identifier))
-            #self.db.remove((None,None,None,nanopub.identifier))
-            #self.db.commit()
-        data = [('c', c.n3()) for c in graphs]
-        session = requests.session()
-        session.keep_alive = False
-        session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
+            nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
+            self.db.remove((None,None,None,nanopub.assertion.identifier))
+            self.db.remove((None,None,None,nanopub.provenance.identifier))
+            self.db.remove((None,None,None,nanopub.pubinfo.identifier))
+            self.db.remove((None,None,None,nanopub.identifier))
+        self.db.commit()
+        #data = [('c', c.n3()) for c in graphs]
+        #session = requests.session()
+        #session.keep_alive = False
+        #session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
         print "Retired %s graphs total." % len(graphs)
 
     def is_current(self, nanopub_uri):
@@ -210,8 +211,6 @@ class NanopublicationManager:
     def publish(self, *nanopubs):
         #self.db.store.nsBindings = {}
         to_retire = []
-        s = requests.session()
-        s.keep_alive = False
         for nanopub in nanopubs:
             fileid = nanopub.identifier.replace(self.prefix, "")
             g = rdflib.ConjunctiveGraph(store=nanopub.store)
@@ -222,12 +221,7 @@ class NanopublicationManager:
                     self.retire(*to_retire)
             serialized = g.serialize(format="trig")
             self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-            result = s.post(self.db.store.endpoint,
-                            data=serialized,
-                            params={"context-uri":nanopub.identifier},
-                            headers={'Content-Type':'application/x-trig'})
-            print self.db.store.endpoint, result, result.content
-        #self.db.addN(nanopub.quads())
+            self.db.store.publish(nanopub, serialized)
         for nanopub in nanopubs:
             self.update_listener(nanopub.identifier)
 

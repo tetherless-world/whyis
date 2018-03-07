@@ -6,6 +6,9 @@ SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql, POST
 from SPARQLWrapper import *
 
+import requests
+
+
 def node_to_sparql(node):
     if isinstance(node, BNode):
         return '<bnode:b%s>' % node
@@ -36,6 +39,17 @@ def engine_from_config(config, prefix):
                                   default_query_method=POST,
                                   returnFormat=JSON,
                                   node_to_sparql=node_to_sparql)
+        def publish(graph, data):
+            s = requests.session()
+            s.keep_alive = False
+            result = s.post(store.endpoint,
+                            data=data,
+                            params={"context-uri":graph.identifier},
+                            headers={'Content-Type':'application/x-trig'})
+            print store.endpoint, result.content
+
+        store.publish = publish
+
         store._defaultReturnFormat=JSON
         store.setReturnFormat(JSON)
         graph = ConjunctiveGraph(store,defaultgraph)
@@ -45,5 +59,9 @@ def engine_from_config(config, prefix):
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph(identifier=defaultgraph)
+        def publish(graph, data):
+            graph.addN(nanopub.quads())
+        graph.store.publish = publish
+
     return graph
 
