@@ -804,13 +804,6 @@ $( function() {
                     np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
                     np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
                     console.log(np, np.resource.pubinfo.resource.assertion);
-
-                    if (np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']) {
-                        var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of'][0]['@id']];
-                        if (parent.resource.replies === undefined) parent.resource.replies = [];
-                        parent.resource.replies.push(np);
-                        parent.resource.replies = parent.resource.replies.sort(nanopubComparator);
-                    }
                 }
             })
             return nanopubs[0];
