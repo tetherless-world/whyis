@@ -185,11 +185,11 @@ class NanopublicationManager:
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
                 print "Retiring", np_uri, "derived from", nanopub_uri
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
-            nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-            self.db.remove((None,None,None,nanopub.assertion.identifier))
-            self.db.remove((None,None,None,nanopub.provenance.identifier))
-            self.db.remove((None,None,None,nanopub.pubinfo.identifier))
-            self.db.remove((None,None,None,nanopub.identifier))
+                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
+                self.db.remove((None,None,None,nanopub.assertion.identifier))
+                self.db.remove((None,None,None,nanopub.provenance.identifier))
+                self.db.remove((None,None,None,nanopub.pubinfo.identifier))
+                self.db.remove((None,None,None,nanopub.identifier))
         self.db.commit()
         #data = [('c', c.n3()) for c in graphs]
         #session = requests.session()
