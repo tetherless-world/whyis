@@ -48,7 +48,7 @@ class Service(sadi.Service):
     def getInstances(self, graph):
         if hasattr(graph.store, "nsBindings"):
             graph.store.nsBindings = {}
-        return [graph.resource(i) for i, in graph.query(self.get_query())]
+        return [graph.resource(i) for i, in graph.query(self.get_query(), initNs=self.app.NS.prefixes)]
     
     def process_graph(self, inputGraph):
         instances = self.getInstances(inputGraph)
@@ -79,9 +79,10 @@ class UpdateChangeService(Service):
         return graphene.updateChangeQuery
     
     def explain(self, nanopub, i, o):
-        Service.explain(self, nanopub, i, o)
         np_assertions = list(i.graph.subjects(rdflib.RDF.type, np.Assertion))
         activity = nanopub.provenance.resource(rdflib.BNode())
+        nanopub.pubinfo.add((o.identifier, rdflib.RDF.type, self.getOutputClass()))
+        nanopub.provenance.add((nanopub.assertion.identifier, prov.wasGeneratedBy, activity.identifier))
         for assertion in np_assertions:
             nanopub.provenance.add((activity.identifier, prov.used, assertion))
             nanopub.provenance.add((nanopub.assertion.identifier, prov.wasDerivedFrom, assertion))
@@ -96,15 +97,17 @@ class Crawler(UpdateChangeService):
 
     activity_class = graphene.GraphCrawl
 
-    def __init__(self, depth=-1, predicates=[None]):
+    def __init__(self, depth=-1, predicates=[None], node_type=graphene.CrawlerStart, output_node_type=graphene.Crawled):
         self.depth = depth
+        self.node_type = node_type
+        self.output_node_type = output_node_type
         self.predicates = predicates
     
     def getInputClass(self):
-        return graphene.CrawlerStart
+        return self.node_type
 
     def getOutputClass(self):
-        return graphene.Crawled
+        return self.output_node_type
     
     def get_query(self):
         return '''select ?resource where {
@@ -121,12 +124,71 @@ class Crawler(UpdateChangeService):
             if uri in cache:
                 continue
             node = None
-            node = self.app.get_resource(uri)
+            node = self.app.get_resource(uri, async=False)
             cache.add(uri)
             if depth != 0:
                 for p in self.predicates:
                     todo.extend([(x.identifier, depth-1) for x in node[p]])
 
+class ImporterCrawler(UpdateChangeService):
+    activity_class = graphene.ImporterGraphCrawl
+
+    def getInputClass(self):
+        return graphene.ImporterResource
+
+    def getOutputClass(self):
+        return graphene.ImportedResource
+
+    _query = None
+    
+    def get_query(self):
+        if self._query is None:
+            prefixes = [x.detect_url for x in self.app.config['namespaces']]
+            self._query = '''select distinct ?resource where {
+  graph ?assertion {
+    {?s ?p ?resource . } union {?resource ?p ?o}
+  }
+  FILTER (regex(str(?resource), "^(%s)")) .
+  filter not exists {
+    ?assertion prov:wasGeneratedBy [ a graphene:KnowledgeImport].
+  }
+} ''' % '|'.join(prefixes)
+            print self._query
+
+        return self._query
+
+    def process(self, i, o):
+        node = self.app.run_importer(i.identifier)
+
+class DatasetImporter(UpdateChangeService):
+    activity_class = graphene.ImportDatasetEntities
+
+    def getInputClass(self):
+        return graphene.DatasetEntity
+
+    def getOutputClass(self):
+        return graphene.ImportedDatasetEntity
+
+    _query = None
+    
+    def get_query(self):
+        if self._query is None:
+            prefixes = [x.detect_url for x in self.app.config['namespaces']]
+            self._query = '''select distinct ?resource where {
+  ?resource void:inDataset ?dataset.
+  FILTER (regex(str(?resource), "^(%s)")) .
+  filter not exists {
+    ?assertion prov:wasQuotedFrom ?resource.
+  }
+} ''' % '|'.join(prefixes)
+            print self._query
+
+        return self._query
+
+    def process(self, i, o):
+        node = self.app.run_importer(i.identifier)
+                    
+                            
 class OntologyImporter(GlobalChangeService):
 
     activity_class = graphene.OntologyImport
@@ -152,8 +214,6 @@ class SETLMaker(GlobalChangeService):
     def get_query(self):
         return '''
 prefix setl: <http://purl.org/twc/vocab/setl/>
-prefix owl:  <''' + rdflib.OWL + '''>
-prefix prov: <''' + prov + '''>
 select distinct ?resource where {
     graph ?type_assertion {
       ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.

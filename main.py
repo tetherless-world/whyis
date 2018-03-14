@@ -120,6 +120,7 @@ NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/"
 NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
+NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -190,7 +191,7 @@ class App(Empty):
             @self.celery.task
             def find_instances():
                 print "Triggered task", task['name']
-                for x, in app.db.query(task['service'].get_query()):
+                for x, in app.db.query(task['service'].get_query(), initPrefixes=self.NS.prefixes):
                     task['do'](x)
             
             @self.celery.task
@@ -264,7 +265,7 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.graphene.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
-                        if len(list(nanopub_graph.query(service.get_query()))) > 0:
+                        if len(list(nanopub_graph.query(service.get_query(),initNs=self.NS.prefixes))) > 0:
                             print "invoking", name, nanopub_uri
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in self.config['inferencers'].items():
@@ -277,17 +278,32 @@ class App(Empty):
             update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
 
-        @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4)
-        def run_importer(entity_name):
-            importer = self.find_importer(entity_name)
-            importer.app = self
-            modified = importer.last_modified(entity_name, self.db, self.nanopub_manager)
+        def is_waiting_importer(entity_name, exclude=None):
+            """
+            Check if a task is running or waiting.
+            """
+            tasks = inspect().scheduled().values()[0]
+            for task in tasks:
+                if 'args' in task and entity_name in task['args']:
+                    return True
+            return False
+
+        app = self
+        @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
+        def run_importer(self, entity_name):
+            if is_waiting_importer(entity_name, self.request.id):
+                return
+            importer = app.find_importer(entity_name)
+            if importer is None:
+                return
+            importer.app = app
+            modified = importer.last_modified(entity_name, app.db, app.nanopub_manager)
             updated = importer.modified(entity_name)
             if updated is None:
                 updated = datetime.now(pytz.utc)
             print "Remote modified:", updated, type(updated), "Local modified:", modified, type(modified)
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
-                importer.load(entity_name, self.db, self.nanopub_manager)
+                importer.load(entity_name, app.db, app.nanopub_manager)
         self.run_importer = run_importer
         
 
@@ -304,10 +320,12 @@ class App(Empty):
         load_namespaces(self.db,locals())
         Resource.db = self.admin_db
 
-        self.vocab = Graph()
+        self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
-        self.vocab.load(open("default_vocab.ttl"), format="turtle")
-        self.vocab.load(open(self.config['vocab_file']), format="turtle")
+        default_vocab = Graph(store=self.vocab.store)
+        default_vocab.parse("default_vocab.ttl", format="turtle", publicID=str(self.NS.local))
+        custom_vocab = Graph(store=self.vocab.store)
+        custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
 
         self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
         self.Role = self.role_api.alchemy
@@ -416,7 +434,7 @@ construct {
 #                    raise e
             return self._description
         
-    def get_resource(self, entity):
+    def get_resource(self, entity, async=True):
         mapped_name, importer = self.map_entity(entity)
     
         if mapped_name is not None:
@@ -427,7 +445,7 @@ construct {
 
         if importer is not None:
             modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-            if modified is None:
+            if modified is None or async is False:
                 self.run_importer(entity)
             else:
                 print "Type of modified is",type(modified)
@@ -469,7 +487,7 @@ construct {
     hint:Query hint:optimizer "Runtime" .
     graph ?assertion {?e graphene:hasFileID ?fileid}
     ?np np:hasAssertion ?assertion.
-}''', initNs=NS.prefixes, initBindings=dict(e=entity)):
+}''', initNs=NS.prefixes, initBindings=dict(e=rdflib.URIRef(entity))):
             if not self._can_edit(np_uri):
                 raise Unauthorized()
             old_nanopubs.append((np_uri, np_assertion))
@@ -509,9 +527,7 @@ construct {
         added_files = False
 
         old_nanopubs = []
-        print 1
         nanopub.assertion.add((uri, self.NS.RDF.type, upload_type))
-        print 2
         if upload_type == URIRef("http://purl.org/dc/dcmitype/Collection"):
             for f in files:
                 filename = secure_filename(f.filename)
@@ -547,6 +563,9 @@ construct {
                 self.nanopub_manager.publish(n)
 
     def _can_edit(self, uri):
+        if current_user._get_current_object() is None:
+            # This isn't null even when not authenticated, unless we are an autonomic agent.
+            return True
         if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
             return True
         if self.db.query('''ask {
@@ -589,11 +608,13 @@ construct {
             for db in [self.db, self.admin_db]:
                 g = Graph()
                 try:
+                    db.nsBindings = {}
                     g += db.query('''select ?s ?p ?o where {
                         hint:Query hint:optimizer "Runtime" .
 
                          ?s ?p ?o.}''',
                                   initNs=self.NS.prefixes, initBindings=dict(s=uri))
+                    db.nsBindings = {}
                 except:
                     pass
                 resource_entity = g.resource(uri)
@@ -897,14 +918,16 @@ construct {
             if view is None:
                 view = 'view'
 
+            types = []
             if 'as' in request.args:
                 types = [URIRef(request.args['as']), 0]
-            else:
-                types = list([(x.identifier, 0) for x in resource[RDF.type]])
-            #print types
+
+            types.extend([(x, 1) for x in self.vocab[resource.identifier : RDF.type]])
+            if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
+                types.extend([(x.identifier, 1) for x in resource[RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
-            #print view, resource.identifier, types
+            print types
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
             view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
     values (?c ?priority ?id) { %s }
@@ -918,7 +941,7 @@ construct {
 
             #print view_query
             views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc)))
-            #print '\n'.join([str(x.asdict()) for x in views])
+            print views
             if len(views) == 0:
                 abort(404)
 
@@ -1058,14 +1081,14 @@ construct {
                     if html is not None:
                         resource.add(app.NS.sioc.content, html)
                         try:
-                            g.parse(data=text, format='rdfa')
+                            g.parse(data=text, format='rdfa', publicID=app.NS.local)
                         except:
                             pass
                     else:
                         #print "Deserializing", g.identifier, 'as', content_type
                         #print dataFormats
                         if content_type in dataFormats:
-                            g.parse(data=text, format=dataFormats[content_type])
+                            g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
                             #print len(g)
                         else:
                             print "not attempting to deserialize."
