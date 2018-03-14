@@ -731,7 +731,7 @@ $( function() {
             graph.resource.assertion = graph.resource( 'urn:nanopub_assertion', {
                 '@type' : 'http://www.nanopub.org/nschema#Assertion',
                 'http://www.w3.org/ns/prov#value': [{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
+                'http://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasAssertion'] = graph.resource.assertion;
@@ -739,17 +739,14 @@ $( function() {
             graph.resource.provenance = graph.resource( 'urn:nanopub_provenance', {
                 '@type' : 'http://www.nanopub.org/nschema#Provenance',
                 'http://www.w3.org/ns/prov#value':[{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
+                'http://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
                 'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}]
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasProvenance'] = graph.resource.provenance;
             graph.resource.provenance.resource.assertion = graph.resource.provenance.resource('urn:nanopub_assertion');
 
             graph.resource.pubinfo = graph.resource( 'urn:nanopub_publication_info', {
-                '@type' : 'http://www.nanopub.org/nschema#PublicationInfo',
-                'http://www.w3.org/ns/prov#value': [{"@value":null}],
-                'htth://www.w3.org/ns/prov#wasQuotedFrom':[{"@id":null}],
-                'http://open.vocab.org/terms/hasContentType':[{"@value":"text/markdown"}],
+                '@type' : 'http://www.nanopub.org/nschema#PublicationInfo'
             });
             graph.resource.np['http://www.nanopub.org/nschema#hasPublicationInfo'] = graph.resource.pubinfo;
             graph.resource.pubinfo.resource.assertion = graph.resource.pubinfo.resource('urn:nanopub_assertion');
@@ -807,25 +804,9 @@ $( function() {
                     np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
                     np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
                     console.log(np, np.resource.pubinfo.resource.assertion);
-
-                    if (np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of']) {
-                        var parent = graphMap[np.resource.pubinfo.resource.assertion['http://rdfs.org/sioc/ns#reply_of'][0]['@id']];
-                        if (parent.resource.replies === undefined) parent.resource.replies = [];
-                        parent.resource.replies.push(np);
-                        parent.resource.replies = parent.resource.replies.sort(nanopubComparator);
-                    }
                 }
             })
-            var topNanopubs = nanopubs.filter(function(nanopub) {
-                return nanopub.resource.pubinfo == null || !nanopub.resource.pubinfo.resource || !nanopub.resource.pubinfo.resource.assertion.has('http://rdfs.org/sioc/ns#reply_of');
-            });
-            topNanopubs = topNanopubs.sort(nanopubComparator).map(function(nanopub) {
-                nanopub.resource.newNanopub = Nanopub(nanopub.resource.self.value('http://semanticscience.org/resource/isAbout')['@id'],
-                                             nanopub['@id']);
-                return nanopub;
-            });
-            console.log(topNanopubs);
-            return topNanopubs;
+            return nanopubs[0];
         }
 
         function processNanopubs(response) {
@@ -879,6 +860,27 @@ $( function() {
             console.log(topNanopubs);
             return topNanopubs;
         }
+        Nanopub.get = function(nanopub) {
+            var npID = nanopub.np.split("/").slice(-1)[0]
+            return $http.get('/pub/'+npID, 
+                                        {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
+                .then(function(response, error) {
+                    nanopub.graph = processNanopub(response);
+                    //add [{@value: null}] and [{@id: null}] back in
+                    if ( nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#value'] === undefined ){
+                        nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#value'] = [{'@value':null}];
+                    }
+                    if (nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#wasQuotedFrom'] === undefined) {
+                        nanopub.graph.resource.assertion['http://www.w3.org/ns/prov#wasQuotedFrom'] = [{'@id':null}];
+                    }
+                    if ( nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#value'] === undefined ){
+                        nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#value'] = [{'@value':null}];
+                    }
+                    if ( nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#wasQuotedFrom'] === undefined ) {
+                        nanopub.graph.resource.provenance['http://www.w3.org/ns/prov#wasQuotedFrom'] = [{'@id':null}];
+                    }
+                });
+        };
         Nanopub.list = function(about) {
             return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
                 .then(processNanopubs, function (response, error) {
@@ -887,14 +889,26 @@ $( function() {
                 });
         }
         Nanopub.update = function(nanopub) {
-            return $http.put(nanopub['@id'], nanopub,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
+            // console.log("nanopub inside Nanopub.update: ",nanopub);
+            var npID = nanopub.np.split("/").slice(-1)[0];
+            return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
         Nanopub.save = function(nanopub) {
+            //remove null values from nanopub.resource.provenance and assertion
+            function notNull (value) {
+                return value["@value"] === null ? false : ( value["@id"] === null ? false : true );
+            }
+            nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
+            nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
+            nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+
             return $http.post('/pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
-            var npID = nanopub.np.split("/").slice(-1)[0]
+            var npID = nanopub.np.split("/").slice(-1)[0];
+            // console.log("Nanopub.delete: " + npID);
             return $http.delete('/pub/'+npID);
         }
         return Nanopub;
@@ -953,7 +967,7 @@ $( function() {
         };
     }]);
     
-    app.directive("nanopubs", ["Nanopub", "$sce", "getLabel", function(Nanopub, $sce, getLabel) {
+    app.directive("nanopubs", ["Resource","$http", "Nanopub", "$sce", "getLabel", function(Resource, $http, Nanopub, $sce, getLabel) {
         return {
             restrict: "E",
             scope: {
@@ -961,7 +975,7 @@ $( function() {
                 disableNanopubing: "="
             },
             templateUrl: '/static/html/nanopubs.html',
-            controller: ['$scope', function ($scope) {
+            controller: ['Resource','$scope', '$http', function (Resource, $scope, $http) {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
                 $scope.getLabel = getLabel;
@@ -985,7 +999,9 @@ $( function() {
                     $("#deleteNanopubModal").modal("show");
                 };
                 $scope.editNanopub = function(nanopub) {
-                    nanopub.editing = true;
+                    Nanopub.get(nanopub).then(function() {
+                        nanopub.editing = true;
+                    });
                 };
                 $scope.saveNanopub = function(nanopub) {
                     Nanopub.update(nanopub)

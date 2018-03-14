@@ -4,13 +4,12 @@
       <md-nav-bar md-selected-nav-item="currentGraph" md-no-ink-bar="true" nav-bar-aria-label="navigation links">
         <md-nav-item md-nav-click="goto('assertion')" name="assertion">Assertion</md-nav-item>
         <md-nav-item md-nav-click="goto('provenance')" name="provenance">Provenance</md-nav-item>
-        <md-nav-item md-nav-click="goto('publinfo')" name="pubinfo">Publication Information</md-nav-item>
       </md-nav-bar>
       <div flex="grow"></div>
       <div class="btn-group" flex="none" ><md-button  aria-label="Cancel" data-ng-click="editing = false">&times;</md-button></div>
   </md-card-title>
   <md-card-content>
-  <section data-ng-repeat="graph in ['assertion','provenance','pubinfo']" layout="column" data-ng-show="currentGraph === graph">
+  <section data-ng-repeat="graph in ['assertion','provenance']" layout="column" data-ng-show="currentGraph === graph">
     <md-input-container md-no-float data-ng-hide="nanopub.resource[graph]['http://www.w3.org/ns/prov#value'][0]['@type'] == 'xsd:base64Binary'" >
       <textarea placeholder="Content" max-rows="10" rows="1" data-ng-model="nanopub.resource[graph]['http://www.w3.org/ns/prov#value'][0]['@value']"></textarea>
     </md-input-container>

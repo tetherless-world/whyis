@@ -20,10 +20,14 @@ select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?mo
     ?assertion dc:contributor ?contributor
   }
   optional {
-    ?assertion dc:created ?created.
+    graph ?pubinfo {
+        ?assertion dc:created ?created.
+    }
   }
   optional {
-    ?assertion dc:modified ?modified.
+    graph ?pubinfo {
+        ?assertion dc:modified ?modified.
+    }
   }
   optional {
     ?assertion prov:wasDerivedFrom ?derived_from.

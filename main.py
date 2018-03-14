@@ -344,9 +344,10 @@ class App(Empty):
 
         self.file_depot = DepotManager.get('files')
         if self.file_depot is None:
-            DepotManager.configure('nanopublications', self.config['nanopub_archive'])
             DepotManager.configure('files', self.config['file_archive'])
             self.file_depot = DepotManager.get('files')
+        if DepotManager.get('nanopublications') is None:
+            DepotManager.configure('nanopublications', self.config['nanopub_archive'])
 
     def weighted_route(self, *args, **kwargs):
         def decorator(view_func):
@@ -1021,9 +1022,9 @@ construct {
                 old_nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
                     modified = Literal(datetime.utcnow())
-                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
-                    nanopub.pubinfo.add((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
-                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.modified, modified))
+                    nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
+                    nanopub.pubinfo.set((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
+                    nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.dc.modified, modified))
                     app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
@@ -1032,7 +1033,7 @@ construct {
                 about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
                 #print nanopub.assertion_resource.identifier, about
                 self._prep_graph(nanopub.assertion_resource, about.identifier)
-                self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
+                #self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
                 self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
                 nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
                 return nanopub
@@ -1079,8 +1080,9 @@ construct {
                         content_type = "text/html"
                     #print resource.identifier, content_type
                     if html is not None:
-                        resource.add(app.NS.sioc.content, html)
+                        resource.set(app.NS.sioc.content, html)
                         try:
+                            g.remove((None,None,None))
                             g.parse(data=text, format='rdfa', publicID=app.NS.local)
                         except:
                             pass
