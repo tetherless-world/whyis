@@ -7,8 +7,8 @@ import commands
 from main import app_factory
 try:
     import config
-except:
-    print "WARNING: missing config, using defaults file"
+except ImportError, e:
+    print "WARNING: %s, using defaults file" % str(e)
     import config_defaults as config
 
 manager = script.Manager(app_factory)

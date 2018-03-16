@@ -6,6 +6,7 @@ from nanopub import Nanopublication
 import flask_ld as ld
 import flask
 from flask import render_template
+import logging
 
 import database
 
@@ -57,7 +58,11 @@ class Service(sadi.Service):
             print "Processing", i.identifier, self
             output_nanopub = Nanopublication()
             o = output_nanopub.assertion.resource(i.identifier) # OutputClass(i.identifier)
-            result = self.process_nanopub(i, o, output_nanopub)
+            try:
+                result = self.process_nanopub(i, o, output_nanopub)
+            except Exception as e:
+                output_nanopub.add((output_nanopub.assertion.identifier,self.app.NS.sioc.content, rdflib.Literal(str(e))))
+                logging.exception("Error processing resource %s in nanopub %s"%(i.identifier, inputGraph.identifier))
             print "Output Graph", output_nanopub.identifier, len(output_nanopub)
             for new_np in self.app.nanopub_manager.prepare(rdflib.ConjunctiveGraph(store=output_nanopub.store)):
                 if len(new_np.assertion) == 0:
@@ -192,15 +197,46 @@ class DatasetImporter(UpdateChangeService):
 class OntologyImporter(GlobalChangeService):
 
     activity_class = graphene.OntologyImport
-        
+    
+    def get_query(self):
+        return '''select ?resource where {
+    ?ontology owl:imports ?resource.
+    filter not exists {
+      ?resource a graphene:ImportedOntology.
+    }
+}'''
+            
     def getInputClass(self):
-        return OWL.Ontology
+        return rdflib.OWL.Ontology
 
     def getOutputClass(self):
         return graphene.ImportedOntology
 
-    def process(self, i, o):
-        pass
+    def process_nanopub(self, i, o, new_np):
+        file_format = rdflib.util.guess_format(i.identifier)
+        try: # Try the best guess at a format.
+            new_np.assertion.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+            logging.debug("%s was parsed as %s"%(i.identifier,file_format))
+        except Exception: # If that doesn't work, brute force it with all possible RDF formats, most likely first.
+            parsed = False
+            for f in ['xml', 'turtle', 'trig', # Most likely
+                      'n3','nquads','nt', # rarely used for ontologies, but sometimes
+                      'json-ld', # occasionally used
+                      'hturtle', 'trix', # uncommon
+                      'rdfa1.1','rdfa1.0','rdfa', # rare, but I've seen them.
+                      'mdata','microdata','html']: # wow, there are a lot of RDF formats...
+                try:
+                    new_np.assertion.parse(location=i.identifier, format=f, publicID=self.app.NS.local)
+                    logging.debug("%s was parsed as %s"%(i.identifier, f))
+                    parsed = True
+                    break
+                except Exception:
+                    pass
+            if not parsed: # probably the best guess anyways, retry to throw the best possible exception.
+                new_np.assertion.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+        
+        new_np.pubinfo.add((new_np.assertion.identifier, self.app.NS.prov.wasQuotedFrom, i.identifier))
+        new_np.add((new_np.identifier, self.app.NS.sio.isAbout, i.identifier))
 
 class SETLMaker(GlobalChangeService):
     activity_class = setl.Planner

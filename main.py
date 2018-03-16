@@ -1,11 +1,6 @@
 # -*- coding:utf-8 -*-
 import requests
-#try:
-import config
-print "Using config from", config.__package__
-#except:
-#    print "WARNING: missing config, using defaults file"
-#    import config_defaults as config
+import importlib
 
 import os
 import sys, collections
@@ -305,6 +300,16 @@ class App(Empty):
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
         self.run_importer = run_importer
+
+        self.template_imports = {}
+        if 'template_imports' in self.config:
+            for name, imp in self.config['template_imports'].items():
+                try:
+                    m = importlib.import_module(imp)
+                    self.template_imports[name] = m
+                except Exception as e:
+                    print "Error importing module %s into template variable %s." % (imp, name)
+                    raise
         
 
     def configure_database(self):
@@ -896,16 +901,19 @@ construct {
 
         views = {}
         def render_view(resource):
-            template_args = dict(ns=self.NS,
-                                 this=resource, g=g,
-                                 current_user=current_user,
-                                 isinstance=isinstance,
-                                 args=request.args,
-                                 get_entity=get_entity,
-                                 get_summary=get_summary,
-                                 rdflib=rdflib,
-                                 hasattr=hasattr,
-                                 set=set)
+            template_args = dict()
+            template_args.update(self.template_imports)
+            template_args.update(dict(
+                ns=self.NS,
+                this=resource, g=g,
+                current_user=current_user,
+                isinstance=isinstance,
+                args=request.args,
+                get_entity=get_entity,
+                get_summary=get_summary,
+                rdflib=rdflib,
+                hasattr=hasattr,
+                set=set))
             view = None
             if 'view' in request.args:
                 view = request.args['view']
