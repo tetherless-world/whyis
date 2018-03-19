@@ -864,10 +864,10 @@ construct {
                     content_type = extensions[format]
                 else:
                     name = '.'.join([name, format])
-            argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
+            #argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
             if name is not None:
-                if len(argstring) > 0:
-                    name = name + "?" + argstring
+                #if len(argstring) > 0:
+                #    name = name + "?" + argstring
                 entity = self.NS.local[name]
             elif 'uri' in request.args:
                 entity = URIRef(request.args['uri'])

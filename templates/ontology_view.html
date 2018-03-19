@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
-{% block title %}{{get_label(this.description)}}{% endblock %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
 {% block style %}
 <link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
 {% endblock %}
@@ -21,9 +21,9 @@
 {%- endmacro %}
 
 {% block content %}
-{{ summary_panel(this.description) }}
-<div>
-  <div class="container-fluid" ng-controller="OntologyFacetController as vm">
+{{ summary_panel(this.description()) }}
+<div class="row">
+  <div class="container-fluid col-md-8" ng-controller="OntologyFacetController as vm">
     <div class="row">
       <div class="col-md-12">
         <h1>Ontology Classes</h1>
@@ -55,13 +55,13 @@
           <tbody>
             <tr ng-repeat="class in vm.page">
               <td style="width:21%">
-                <resource-link uri="class.id" label="class.label"></resource-link>
+                <resource-link uri="'/about?uri='+class.id" label="class.label"></resource-link>
               </td>
               <td>
                 <p ng-bind="class.definition"></p>
               </td>
-              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="superclass.id" label="superclass.label"></resource-link></div></td>
-              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="ontology.id" label="ontology.label"></resource-link></div></td>
+              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="'/about?uri='+superclass.id" label="superclass.label"></resource-link></div></td>
+              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="'/about?uri='+ontology.id" label="ontology.label"></resource-link></div></td>
             </tr>
           </tbody>
         </table>
@@ -79,9 +79,12 @@
       </div>
     </div>
   </div>
+  <div class="col-md-4">
+    {{ facts_panel(this.description()) }}
+  </div>
 </div>
 
     <script>
-      var ontology = "{{this.description.identifier}}";
+      var ontology = "{{this.description().identifier}}";
     </script>
 {% endblock %}
