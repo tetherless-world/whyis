@@ -415,6 +415,11 @@ $( function() {
 
     });
 
+    app.filter('urlencode', function() {
+        return window.encodeURIComponent;
+    });
+
+    
     app.factory('Service', ['$http', 'Graph', function($http, Graph) {
         function Service(endpoint) {
             

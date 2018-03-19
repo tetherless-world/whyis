@@ -39,12 +39,12 @@ def engine_from_config(config, prefix):
                                   default_query_method=POST,
                                   returnFormat=JSON,
                                   node_to_sparql=node_to_sparql)
-        def publish(graph, data):
+        def publish(data, graphs):
             s = requests.session()
             s.keep_alive = False
             result = s.post(store.endpoint,
                             data=data,
-                            params={"context-uri":graph.identifier},
+#                            params={"context-uri":graph.identifier},
                             headers={'Content-Type':'application/x-trig'})
             print store.endpoint, result.content
 
@@ -59,7 +59,7 @@ def engine_from_config(config, prefix):
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph(identifier=defaultgraph)
-        def publish(graph, data):
+        def publish(data, graphs):
             graph.addN(nanopub.quads())
         graph.store.publish = publish
 

@@ -52,19 +52,22 @@ class LoadNanopub(Command):
                 return
             was_revision_of = wasRevisionOf
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
-        g1 = g.parse(location=input_file, format=file_format)
+
+        g1 = g.parse(location=input_file, format=file_format, publicID=flask.current_app.NS.local)
         if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
             new_np = Nanopublication(store=g1.store)
             new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
             new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
             new_np.add((g1.identifier, rdflib.RDF.type, np.Assertion))
+        nanopubs = []
         for npub in flask.current_app.nanopub_manager.prepare(g):
             if was_revision_of is not None:
                 for r in was_revision_of:
                     print "Marking as revision of", r
                     npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
-            flask.current_app.nanopub_manager.publish(npub)
-            print "Published", npub.identifier
+            nanopubs.append(npub)
+        flask.current_app.nanopub_manager.publish(npub)
+        print "Published", npub.identifier
 
 class RetireNanopub(Command):
     '''Retire a nanopublication from the knowledge graph.'''

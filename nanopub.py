@@ -4,6 +4,8 @@ import flask_ld as ld
 import collections
 import requests
 
+import tempfile
+
 from depot.io.utils import FileIntent
 from depot.manager import DepotManager
 
@@ -108,7 +110,7 @@ class NanopublicationManager:
         fileid = self.depot.create(FileIntent('', ld.create_id(), 'application/trig'))
         return fileid
                     
-    def prepare(self, graph, mappings = None):
+    def prepare(self, graph, mappings = None, store=None):
         if mappings is None:
             mappings = {}
         new_nps = list(graph.subjects(rdflib.RDF.type, np.Nanopublication))
@@ -131,8 +133,11 @@ class NanopublicationManager:
                     mappings[provenance] = rdflib.URIRef(new_uri+"_provenance")
                 
         #print mappings
-                    
-        output_graph = rdflib.ConjunctiveGraph()
+
+        if store is None:
+            output_graph = rdflib.ConjunctiveGraph()
+        else:
+            output_graph = rdflib.ConjunctiveGraph(store=store)
 
         bnode_cache = {}
         for s, p, o, g in graph.quads():
@@ -195,7 +200,7 @@ class NanopublicationManager:
         #session = requests.session()
         #session.keep_alive = False
         #session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
-        print "Retired %s graphs total." % len(graphs)
+        print "Retired %s nanopubs." % len(nanopub_uris)
 
     def is_current(self, nanopub_uri):
         work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
@@ -210,18 +215,23 @@ class NanopublicationManager:
         
     def publish(self, *nanopubs):
         #self.db.store.nsBindings = {}
-        to_retire = []
-        for nanopub in nanopubs:
-            fileid = nanopub.identifier.replace(self.prefix, "")
-            g = rdflib.ConjunctiveGraph(store=nanopub.store)
-            for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
-                for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
-                    to_retire.append(nanopub_uri)
-                    print "Retiring", nanopub_uri
-                    self.retire(*to_retire)
-            serialized = g.serialize(format="trig")
-            self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-            self.db.store.publish(nanopub, serialized)
+        with tempfile.TemporaryFile() as data:
+            to_retire = []
+            for nanopub in nanopubs:
+                fileid = nanopub.identifier.replace(self.prefix, "")
+                g = rdflib.ConjunctiveGraph(store=nanopub.store)
+                for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
+                    for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                        to_retire.append(nanopub_uri)
+                        print "Retiring", nanopub_uri
+                serialized = g.serialize(format="trig")
+                self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
+                data.write(serialized)
+                data.write('\n')
+                data.flush()
+            self.retire(*to_retire)
+            data.seek(0)
+            self.db.store.publish(data, *nanopubs)
         for nanopub in nanopubs:
             self.update_listener(nanopub.identifier)
 
