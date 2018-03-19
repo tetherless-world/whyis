@@ -466,6 +466,9 @@ owl:Ontology rdfs:label "Ontology";
 np:Nanopublication a owl:Class;
     graphene:hasView "nanopublication_view.html".
 
+<search> a graphene:searchView.
+
+graphene:searchView graphene:hasView "search_view.html".
 
 #################################################################
 #
