@@ -30,7 +30,7 @@ file_line { "configure_java_home":
   path  => '/etc/default/jetty8',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "https://github.com/tetherless-world/satoru/raw/master/resources/blazegraph.war":
+} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/master/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
   timeout => 0
 } ->
