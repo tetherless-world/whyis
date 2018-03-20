@@ -1,33 +1,33 @@
-# Creating Satoru Views
+# Creating Whyis Views
 
-**Before starting this tutorial, please make sure that you have created a Satoru extension using the instructions in [Advanced Configuration](https://tetherless-world.github.io/satoru/configuration).**
+**Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Advanced Configuration](https://tetherless-world.github.io/whyis/configuration).**
 
-Satoru creates knowledge graphs like a wiki - every possible URL in your Satoru knowledge graph is a node waiting to be created.
-We will walk through creating custom views in Satoru, and how to use them to display nodes based on their type.
+Whyis creates knowledge graphs like a wiki - every possible URL in your Whyis knowledge graph is a node waiting to be created.
+We will walk through creating custom views in Whyis, and how to use them to display nodes based on their type.
 
 ## Every Page is a Node
 
-Every URL in Satoru, except for some special ones like under `/static` (Javascript, CSS, images and such for Satoru), `/cdn` (custom Javascript, CSS, images and such), and `/sparql` are Resources, or nodes in the knowledge graph.
+Every URL in Whyis, except for some special ones like under `/static` (Javascript, CSS, images and such for Whyis), `/cdn` (custom Javascript, CSS, images and such), and `/sparql` are Resources, or nodes in the knowledge graph.
 The URL naming scheme for your knowledge graph is up to you.
 You can organize nodes by their source, by topic, or just have an infinitely flat space.
 
-We have pre-configured two importer namespaces in Satoru by default, DOI and DBpedia.
+We have pre-configured two importer namespaces in Whyis by default, DOI and DBpedia.
 These can be removed or added to, but it makes it easy to quickly build example applications by having their knowledge loaded automatically.
 DOI is an identifier system for academic papers, and DBpedia is a structured data representation of Wikipedia.
 Both serve Linked Data when it is asked for using content negotiation.
 
 ## Every node has a Type
 
-When you visit a URL in Satoru, you will almost never get a 404.
+When you visit a URL in Whyis, you will almost never get a 404.
 Instead, you'll get a page about a node where nothing is known of it.
-When there are no known types for a node, or the types given aren't given custom views, they are assumed to have the rdfs:Resource type, and are given the [rdfs:Resource default view](https://github.com/tetherless-world/satoru/blob/master/templates/resource_view.html).
+When there are no known types for a node, or the types given aren't given custom views, they are assumed to have the rdfs:Resource type, and are given the [rdfs:Resource default view](https://github.com/tetherless-world/whyis/blob/master/templates/resource_view.html).
 This default view provides room to show statements about the node, the type, summary descriptions, and a list of nanopublications about the node.
 There is also a UI for adding new nanopublications.
-This template, resource_view.html, is a useful starting point when creating custom node views in Satoru.
+This template, resource_view.html, is a useful starting point when creating custom node views in Whyis.
 Visit the page `/dbpedia/Tim_Berners-Lee` to visit the node for Tim Berners-Lee, which will automatically import data from DBpedia.
 Internally, the URI is mapped to the originating URI of `http://dbpedia.org/resource/Tim_Berners-Lee`, so all statements are imported as-is.
 
-We are also able to reference nodes outside of the Satoru namespace.
+We are also able to reference nodes outside of the Whyis namespace.
 This makes it easier to import external knowledge from linked data and ontologies.
 All URIs can be referenced using the `/about` URL, with a URL-encoded parameter of `uri`.
 For instance, the page for Tim Berners-Lee can also be visited at `/about?uri=http://dbpedia.org/resource/Tim_Berners-Lee`.
@@ -39,7 +39,7 @@ We can start by modifying your extension's `vocab.ttl` file to add the following
 
 ```turtle
 <http://xmlns.com/foaf/0.1/Person> a owl:Class;
-    graphene:hasView "person_view.html".
+    whyis:hasView "person_view.html".
 ```
 
 Next, create a file in you extension called `templates/person_view.html` and add the following:
@@ -72,10 +72,17 @@ Restart apache or `python manage.py runserver` and reload the page. You will now
 
 Templates are written in the [Jinja2 templating language](http://jinja.pocoo.org/docs/latest/templates/).
 
-## Templating Variables
 
-There are several variables available in the template for you to use.
+The pre-configured template and views are:
 
-## this
+| Class | view | describe | label | nanopublications | related |
+| ----- | ---- | -------- | ----- | ---------------- | ------- |
+|rdfs:Resource | resource_view.html | describe.json | label_view.html | nanopublications.json | related.json |
+|owl:Class | class_view.html |
+|owl:Ontology | ontology_view.html |
+|bibo:AcademicArticle | article_view.html |
 
-`this` is the 
+The view selector will choose the template for the view that is most specific to an instance.
+Subclasses with custom views will override their transitive superclasses.
+Instances do not need to have a type directly asserted, but can use the knowledge graph and vocab files to find relevant superclasses to the asserted types.
+

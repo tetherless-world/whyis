@@ -27,7 +27,7 @@ Config = dict(
 
     site_name = "{{cookiecutter.project_name}}",
 
-    root_path = '/apps/satoru',
+    root_path = '/apps/whyis',
 
     # use TESTING mode?
     TESTING = False,
@@ -47,10 +47,10 @@ Config = dict(
         'cache_max_age' : 3600*24*7,
     },
     vocab_file = "{{cookiecutter.location}}/vocab.ttl",
-    SATORU_TEMPLATE_DIR = [
+    WHYIS_TEMPLATE_DIR = [
         "{{cookiecutter.location}}/templates",
     ],
-    SATORU_CDN_DIR = "{{cookiecutter.location}}/static",
+    WHYIS_CDN_DIR = "{{cookiecutter.location}}/static",
 
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,

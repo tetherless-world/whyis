@@ -1,22 +1,22 @@
-# Install Satoru
+# Install Whyis
 
-The Satoru installer is layered, which allows for maximum flexibility. Each layer is runnable by itself, resulting in a functional Satoru.
+The Whyis installer is layered, which allows for maximum flexibility. Each layer is runnable by itself, resulting in a functional Whyis.
 
-- **Layer 3: Vagrant** [Vagrant](https://www.vagrantup.com/) is a tool for automatically creating virtual machines either on developer computers or in virtual environments. The `Vagrantfile` that is included in Satoru is set up to use [VirtualBox](https://www.virtualbox.org/) to create an Ubuntu 14.04 virtual machine automatically. This script creates a virtual machine and then calls the Layer 2 shell script.
-- **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Satoru onto an Ubuntu server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
-- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Satoru deployment into their existing Puppet infrastructure.
+- **Layer 3: Vagrant** [Vagrant](https://www.vagrantup.com/) is a tool for automatically creating virtual machines either on developer computers or in virtual environments. The `Vagrantfile` that is included in Whyis is set up to use [VirtualBox](https://www.virtualbox.org/) to create an Ubuntu 14.04 virtual machine automatically. This script creates a virtual machine and then calls the Layer 2 shell script.
+- **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Whyis onto an Ubuntu server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
+- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
 
-Choose a layer to install. Most developers working with Satoru for the first time will want to install into a virtual machine, and should choose Layer 1.
-Users who are willing to configure a machine directly for use by Satoru should choose Layer 2.
-Satoru installations are currently supported on Ubuntu >= 14.04. 
+Choose a layer to install. Most developers working with Whyis for the first time will want to install into a virtual machine, and should choose Layer 1.
+Users who are willing to configure a machine directly for use by Whyis should choose Layer 2.
+Whyis installations are currently supported on Ubuntu >= 14.04. 
 
 
 ## Layer 2: Install into an Ubuntu system
 
-This is useful for deploying production knowledge graphs, or for developers who already have a machine (virtual or otherwise) that is ready to run Satoru.
+This is useful for deploying production knowledge graphs, or for developers who already have a machine (virtual or otherwise) that is ready to run Whyis.
 
 ```
-bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/satoru/master/install.sh)
+bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh)
 ```
 
 ## Layer 3: Install into a vagrant virtual machine 
@@ -26,9 +26,9 @@ This is useful for developers who want to isolate their development environment 
 You will need to install vagrant and virtualbox.
 
 ```
-mkdir satoru-vm && cd satoru-vm
-curl -skL https://raw.githubusercontent.com/tetherless-world/satoru/master/Vagrantfile > Vagrantfile
-curl -skL https://raw.githubusercontent.com/tetherless-world/satoru/master/install.sh > install.sh
+mkdir whyis-vm && cd whyis-vm
+curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/Vagrantfile > Vagrantfile
+curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh > install.sh
 vagrant up
 ```
 
@@ -40,17 +40,17 @@ To peform the following administrative tasks, you need to connect to the VM (if 
 vagrant ssh
 ```
 
-Once you are in the server, you need to change to the satoru user, go to the satoru app directory, and activate the python virtual environment:
+Once you are in the server, you need to change to the whyis user, go to the whyis app directory, and activate the python virtual environment:
 
 ```
-sudo su - satoru
-cd /apps/satoru
+sudo su - whyis
+cd /apps/whyis
 source venv/bin/activate
 ```
 
-### Configure Satoru
+### Configure Whyis
 
-Satoru is built on the Flask web framework, and most of the Flask authentication options are available to configure in Satoru.
+Whyis is built on the Flask web framework, and most of the Flask authentication options are available to configure in Whyis.
 A configuration script will walk you through the configuration process and make a project directory for you. 
 Change the default values as needed. The SECRET_KEY and SECURITY_PASSWORD_SALT are randomly generated at runtime, so you shouldn't need to change those.
 
@@ -72,9 +72,9 @@ $
 
 This will create a project skeleton for you at `location` (here, `/apps/my_knowledge_graph`). The files are:
 
-* **config.py** - Main configuration file for Satoru.
-* **vocab.ttl** - Vocabulary file for configuring custom Satoru views.
-* **templates/** - Directory for storing Satoru view templates.
+* **config.py** - Main configuration file for Whyis.
+* **vocab.ttl** - Vocabulary file for configuring custom Whyis views.
+* **templates/** - Directory for storing Whyis view templates.
 * **my_knowledge_graph/** - Project source directory. Put any python code in here.
   * **agent.py** - An empty inference agent module.
 * **static/** - Files that are served up at `{linked_data_prefix}/cdn/` as static files.
@@ -92,7 +92,7 @@ $ cd /apps/my_knowledge_graph
 $ pip install -e .
 ```
 
-Restart apache and celeryd as a privileged user (not satoru) to have the configuration take effect:
+Restart apache and celeryd as a privileged user (not whyis) to have the configuration take effect:
 
 ```
 $ sudo service apache2 restart
@@ -131,7 +131,7 @@ $ python manage.py updateuser -u <user handle> -p <new password>
 
 ### Run in development mode
 
-Satoru can be run on a different port to enable debugging. You will see output from the log in the console and will be able to examine stack traces inside the browser.
+Whyis can be run on a different port to enable debugging. You will see output from the log in the console and will be able to examine stack traces inside the browser.
 
 ```
 $ python manage.py runserver -h 0.0.0.0
@@ -139,7 +139,7 @@ $ python manage.py runserver -h 0.0.0.0
 
 ### Loading Knowledge
 
-Knowledge can be added to Satoru using a command as well. This can be used to inject states that trigger larger-scale knowledge ingestion using [SETLr](https://github.com/tetherless-world/setlr/wiki/SETLr-Tutorial), or can simply add manually curated knowledge. 
+Knowledge can be added to Whyis using a command as well. This can be used to inject states that trigger larger-scale knowledge ingestion using [SETLr](https://github.com/tetherless-world/setlr/wiki/SETLr-Tutorial), or can simply add manually curated knowledge. 
 If the RDF format supports named graphs, and the graphs are nanopublications, the nanopublications will be added as-is.
 If there are no explicit nanopublications, or if the RDF format is triples-only, each graph (including the default one), is treated as a separate nanopublication assertion.
 The PublicationInfo will contain some minimal provenance about the load, and each assertion will be the graphs contained in the file.
@@ -148,4 +148,4 @@ The PublicationInfo will contain some minimal provenance about the load, and eac
 $ python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
 ```
 
-## [Next: Customizing Satoru](configuration)
+## [Next: Creating Whyis Views](views)

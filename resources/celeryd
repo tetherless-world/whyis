@@ -18,7 +18,7 @@ CELERYD_NODES="w1"
 #CELERYD_NODES="w1 w2 w3"
 
 # Where to chdir at start.
-CELERYD_CHDIR="/apps/satoru"
+CELERYD_CHDIR="/apps/whyis"
 CELERYBEAT_CHDIR=$CELERYD_CHDIR
 
 ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"
@@ -35,7 +35,7 @@ CELERY_BIN=$CELERYD_CHDIR"/venv/bin/celery"
 CELERYD_LOG_FILE="/var/log/celery/%n.log"
 
 # Workers should run as an unprivileged user.
-CELERYD_USER="satoru"
-CELERYD_GROUP="satoru"
+CELERYD_USER="whyis"
+CELERYD_GROUP="whyis"
 CELERYBEAT_USER=$CELERYD_USER
 CELERYBEAT_GROUP=$CELERYD_GROUP

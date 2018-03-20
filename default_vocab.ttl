@@ -1,4 +1,4 @@
-@prefix : <http://vocab.rpi.edu/graphene/> .
+@prefix : <http://vocab.rpi.edu/whyis/> .
 @prefix dc: <http://purl.org/dc/terms/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -13,80 +13,9 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
-@prefix graphene: <http://vocab.rpi.edu/graphene/> .
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 
-<http://vocab.rpi.edu/graphene/> rdf:type owl:Ontology .
-
-
-#################################################################
-#
-#    Annotation properties
-#
-#################################################################
-
-
-###  http://purl.org/dc/terms/description
-
-dc:description rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/fieldName
-
-flaskld:fieldName rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/hasField
-
-flaskld:hasField rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/hideField
-
-flaskld:hideField rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/key
-
-flaskld:key rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/owner
-
-flaskld:owner rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/prefix
-
-flaskld:prefix rdf:type owl:AnnotationProperty .
-
-
-
-###  http://vocab.rpi.edu/flaskld/visibleTo
-
-flaskld:visibleTo rdf:type owl:AnnotationProperty .
-
-
-
-###  http://www.w3.org/2004/02/skos/core#prefLabel
-
-skos:prefLabel rdf:type owl:AnnotationProperty .
-
-
-
-
-
-#################################################################
-#
-#    Object Properties
-#
-#################################################################
 
 
 ###  http://vocab.rpi.edu/flaskld/hasOwner
@@ -153,22 +82,6 @@ rdfs:seeAlso rdf:type owl:ObjectProperty ;
 
 
 
-
-#################################################################
-#
-#    Data properties
-#
-#################################################################
-
-
-###  http://purl.org/dc/terms/description
-
-dc:description rdf:type owl:DatatypeProperty ,
-                        owl:FunctionalProperty .
-
-
-
-###  http://purl.org/dc/terms/identifier
 
 dc:identifier rdf:type owl:DatatypeProperty ,
                        owl:FunctionalProperty ;
@@ -286,13 +199,6 @@ auth:passwd rdf:type owl:DatatypeProperty ,
 
 
 
-###  http://www.w3.org/2000/01/rdf-schema#label
-
-rdfs:label rdf:type owl:DatatypeProperty ,
-                    owl:FunctionalProperty .
-
-
-
 ###  http://xmlns.com/foaf/0.1/familyName
 
 foaf:familyName rdf:type owl:DatatypeProperty ,
@@ -315,14 +221,6 @@ foaf:givenName rdf:type owl:DatatypeProperty ,
 
 
 
-###  http://xmlns.com/foaf/0.1/mbox
-
-foaf:mbox rdf:type owl:DatatypeProperty ,
-                   owl:FunctionalProperty .
-
-
-
-
 
 #################################################################
 #
@@ -331,7 +229,7 @@ foaf:mbox rdf:type owl:DatatypeProperty ,
 #################################################################
 
 
-###  http://vocab.rpi.edu/graphene/Graph
+###  http://vocab.rpi.edu/whyis/Graph
 
 :Graph rdf:type owl:Class ;
        
@@ -430,56 +328,45 @@ prov:Role rdf:type owl:Class ;
           
           flaskld:hasField rdfs:label .
 
-graphene:hasView dc:identifier "view".
+whyis:hasView dc:identifier "view".
 
-graphene:hasDownload dc:identifier "download";
-  rdfs:subPropertyOf graphene:hasView.
+whyis:hasDownload dc:identifier "download";
+  rdfs:subPropertyOf whyis:hasView.
 
-graphene:hasDescribe dc:identifier "describe";
-  rdfs:subPropertyOf graphene:hasView.
+whyis:hasDescribe dc:identifier "describe";
+  rdfs:subPropertyOf whyis:hasView.
 
-graphene:hasNanopublications dc:identifier "nanopublications";
-  rdfs:subPropertyOf graphene:hasView.
+whyis:hasNanopublications dc:identifier "nanopublications";
+  rdfs:subPropertyOf whyis:hasView.
 
-graphene:hasRelated dc:identifier "related";
-  rdfs:subPropertyOf graphene:hasView.
+whyis:hasRelated dc:identifier "related";
+  rdfs:subPropertyOf whyis:hasView.
 
-graphene:hasLabel dc:identifier "label";
-  rdfs:subPropertyOf graphene:hasView.
+whyis:hasLabel dc:identifier "label";
+  rdfs:subPropertyOf whyis:hasView.
 
-rdfs:Resource graphene:hasView "resource_view.html";
-  graphene:hasRelated "related_nodes.json";
-  graphene:hasDescribe "describe.json";
-  graphene:hasNanopublications "nanopublications.json";
-  graphene:hasLabel "label_view.html".
+rdfs:Resource whyis:hasView "resource_view.html";
+  whyis:hasRelated "related_nodes.json";
+  whyis:hasDescribe "describe.json";
+  whyis:hasNanopublications "nanopublications.json";
+  whyis:hasLabel "label_view.html".
 
-bibo:AcademicArticle graphene:hasView "article_view.html".
+bibo:AcademicArticle whyis:hasView "article_view.html".
 
 owl:Class rdfs:label "Class";
-    graphene:hasView "class_view.html".
+    whyis:hasView "class_view.html".
 
 
 owl:Ontology rdfs:label "Ontology";
-    graphene:hasView "ontology_view.html".
+    whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;
-    graphene:hasView "nanopublication_view.html".
-
-
-#################################################################
-#
-#    Annotations
-#
-#################################################################
+    whyis:hasView "nanopublication_view.html".
 
 
 rdfs:label flaskld:fieldName "name" .
 
-<Home> a graphene:HomePage.
+<Home> a whyis:HomePage.
 
-graphene:HomePage a owl:Class;
-  graphene:hasView "home_view.html".
-
-
-###  Generated by the OWL API (version 3.5.1) http://owlapi.sourceforge.net
-
+whyis:HomePage a owl:Class;
+  whyis:hasView "home_view.html".

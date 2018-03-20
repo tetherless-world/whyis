@@ -92,70 +92,70 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
 } ->
-group { 'satoru':
+group { 'whyis':
     ensure => 'present',
 }
-user { 'satoru':
+user { 'whyis':
   ensure => present,
   password => '*',
   home => '/apps',
   shell => '/bin/bash',
-  gid => 'satoru'
+  gid => 'whyis'
 } ->
 file { "/apps":
   ensure => "directory",
-  owner => "satoru",
-  group => "satoru"
+  owner => "whyis",
+  group => "whyis"
 } ->
 file { "/data/nanopublications":
   ensure => directory,
-  owner => "satoru"
+  owner => "whyis"
 } ->
 file { "/data/files":
   ensure => directory,
-  owner => "satoru"
+  owner => "whyis"
 } ->
-vcsrepo { '/apps/satoru':
+vcsrepo { '/apps/whyis':
   ensure   => present,
   provider => git,
-  source   => 'https://github.com/tetherless-world/satoru.git',
-  user     => 'satoru'
+  source   => 'https://github.com/tetherless-world/whyis.git',
+  user     => 'whyis'
 } ->
-python::virtualenv { '/apps/satoru/venv' :
+python::virtualenv { '/apps/whyis/venv' :
   ensure       => present,
   version      => 'system',
   systempkgs   => false,
   distribute   => false,
-  venv_dir     => '/apps/satoru/venv',
-  owner        => 'satoru',
-  cwd          => '/apps/satoru',
+  venv_dir     => '/apps/whyis/venv',
+  owner        => 'whyis',
+  cwd          => '/apps/whyis',
   timeout      => 0,
 } ->
 file { "/apps/.bash_profile" :
-  owner => 'satoru',
+  owner => 'whyis',
   content => '
-  source /apps/satoru/venv/bin/activate
+  source /apps/whyis/venv/bin/activate
   ',
 } ->
 python::pip { 'pip-upgrade' :
   pkgname       => 'pip',
   ensure        => 'latest',
-  virtualenv    => '/apps/satoru/venv',
-  owner         => 'satoru',
+  virtualenv    => '/apps/whyis/venv',
+  owner         => 'whyis',
   timeout       => 0,
 } ->
-python::requirements { '/apps/satoru/requirements/dev.txt' :
-  virtualenv => '/apps/satoru/venv',
-  owner      => 'satoru',
+python::requirements { '/apps/whyis/requirements/dev.txt' :
+  virtualenv => '/apps/whyis/venv',
+  owner      => 'whyis',
 } ->
 file { "/var/log/celery":
-    owner => "satoru",
+    owner => "whyis",
     ensure => directory,
     recurse => true,
-    group => "satoru",
+    group => "whyis",
 } ->
 file { "/etc/default/celeryd":
-  source => "/apps/satoru/resources/celeryd",
+  source => "/apps/whyis/resources/celeryd",
   owner => "root",
   group => "root",
   ensure => present
@@ -166,14 +166,14 @@ exec { "a2enmod wsgi":
 exec { "a2enmod headers":
   command => "a2enmod headers",
 } -> 
-file { "/var/log/satoru":
+file { "/var/log/whyis":
   ensure => directory,
-  owner => "satoru",
-  group => "satoru",
+  owner => "whyis",
+  group => "whyis",
 } ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
-  source => "/apps/satoru/apache.conf",
+  source => "/apps/whyis/apache.conf",
   owner => "root"
 }
 
@@ -193,15 +193,15 @@ service { jetty8:
     subscribe => [File["/usr/share/jetty8/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
 exec { "create_admin_namespace":
-  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/satoru/admin_namespace.log",
-  creates => "/apps/satoru/admin_namespace.log",
-  user => "satoru",
-  cwd => "/apps/satoru",
+  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/admin_namespace.log",
+  creates => "/apps/whyis/admin_namespace.log",
+  user => "whyis",
+  cwd => "/apps/whyis",
 } -> 
 exec { "create_knowledge_namespace":
-  command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/satoru/knowledge_namespace.log",
-  creates => "/apps/satoru/knowledge_namespace.log",
-  user => "satoru",
-  cwd => "/apps/satoru",
+  command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/knowledge_namespace.log",
+  creates => "/apps/whyis/knowledge_namespace.log",
+  user => "whyis",
+  cwd => "/apps/whyis",
 }
 

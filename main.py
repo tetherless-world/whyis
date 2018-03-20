@@ -108,7 +108,7 @@ NS.sio = rdflib.Namespace("http://semanticscience.org/resource/")
 NS.sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
 NS.sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
 NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
-NS.graphene = rdflib.Namespace("http://vocab.rpi.edu/graphene/")
+NS.whyis = rdflib.Namespace("http://vocab.rpi.edu/whyis/")
 NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
@@ -145,9 +145,9 @@ class App(Empty):
         if 'root_path' in self.config:
             self.root_path = self.config['root_path']
         
-        if 'SATORU_TEMPLATE_DIR' in self.config and app.config['SATORU_TEMPLATE_DIR'] is not None:
+        if 'WHYIS_TEMPLATE_DIR' in self.config and app.config['WHYIS_TEMPLATE_DIR'] is not None:
             my_loader = jinja2.ChoiceLoader(
-                [jinja2.FileSystemLoader(p) for p in self.config['SATORU_TEMPLATE_DIR']] + 
+                [jinja2.FileSystemLoader(p) for p in self.config['WHYIS_TEMPLATE_DIR']] + 
                 [app.jinja_loader]
             )
             app.jinja_loader = my_loader
@@ -156,7 +156,7 @@ class App(Empty):
             service.app = app
             print service
             result = None
-            if service.query_predicate == self.NS.graphene.globalChangeQuery:
+            if service.query_predicate == self.NS.whyis.globalChangeQuery:
                 result = process_resource
             else:
                 result = process_nanopub
@@ -258,14 +258,14 @@ class App(Empty):
             if 'inferencers' in self.config:
                 for name, service in self.config['inferencers'].items():
                     service.app = self
-                    if service.query_predicate == self.NS.graphene.updateChangeQuery:
+                    if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(list(nanopub_graph.query(service.get_query(),initNs=self.NS.prefixes))) > 0:
                             print "invoking", name, nanopub_uri
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in self.config['inferencers'].items():
                     service.app = self
-                    if service.query_predicate == self.NS.graphene.globalChangeQuery and not is_running_waiting(name):
+                    if service.query_predicate == self.NS.whyis.globalChangeQuery and not is_running_waiting(name):
                         #print "checking", name, service.get_query()
                         process_resource.apply_async(kwargs={'service_name':name}, priority=5)
 
@@ -491,7 +491,7 @@ construct {
         old_nanopubs = []
         for np_uri, np_assertion, in self.db.query('''select distinct ?np ?assertion where {
     hint:Query hint:optimizer "Runtime" .
-    graph ?assertion {?e graphene:hasFileID ?fileid}
+    graph ?assertion {?e whyis:hasFileID ?fileid}
     ?np np:hasAssertion ?assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=rdflib.URIRef(entity))):
             if not self._can_edit(np_uri):
@@ -499,7 +499,7 @@ construct {
             old_nanopubs.append((np_uri, np_assertion))
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
-        nanopub.assertion.add((entity, NS.graphene.hasFileID, Literal(fileid)))
+        nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))
         if current_user._get_current_object() is not None:
             nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
@@ -519,7 +519,7 @@ construct {
     def delete_file(self, entity):
         for np_uri, in self.db.query('''select distinct ?np where {
     hint:Query hint:optimizer "Runtime" .
-    graph ?np_assertion {?e graphene:hasFileID ?fileid}
+    graph ?np_assertion {?e whyis:hasFileID ?fileid}
     ?np np:hasAssertion ?np_assertion.
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
             if not self._can_edit(np_uri):
@@ -846,10 +846,10 @@ construct {
             return render_template('sparql.html',endpoint="/sparql", **template_args)
 
         
-        if 'SATORU_CDN_DIR' in self.config and self.config['SATORU_CDN_DIR'] is not None:
+        if 'WHYIS_CDN_DIR' in self.config and self.config['WHYIS_CDN_DIR'] is not None:
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
-                return send_from_directory(self.config['SATORU_CDN_DIR'], filename)
+                return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
                         
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
@@ -918,7 +918,7 @@ construct {
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
-            fileid = resource.value(self.NS.graphene.hasFileID)
+            fileid = resource.value(self.NS.whyis.hasFileID)
             if fileid is not None and view is None:
                 f = self.file_depot.get(fileid)
                 fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
@@ -943,13 +943,13 @@ construct {
     ?c rdfs:subClassOf* ?mid.
     ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
-    ?viewProperty rdfs:subPropertyOf* graphene:hasView.
+    ?viewProperty rdfs:subPropertyOf* whyis:hasView.
     ?viewProperty dc:identifier ?id.
 } group by ?c ?class order by ?rank
 ''' % type_string
 
             #print view_query
-            views = list(self.vocab.query(view_query, initNs=dict(graphene=self.NS.graphene, dc=self.NS.dc)))
+            views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
             print views
             if len(views) == 0:
                 abort(404)
@@ -978,7 +978,7 @@ construct {
         self.api = ld.LinkedDataApi(self, "", self.db.store, "")
         self.api.representations['text/html'] = render_nanopub
 
-        #self.admin = Admin(self, name="graphene", template_mode='bootstrap3')
+        #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
         #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
         #self.admin.add_view(ld.ModelView(self.role_api, default_sort=RDFS.label))
         #self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
