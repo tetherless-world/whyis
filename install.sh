@@ -20,7 +20,7 @@ sudo puppet module install maestrodev-wget --version 1.7.3
 
 sudo puppet module install stankevich-python --version 1.18.2
 
-curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
+curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/release/manifests/install.pp' > /tmp/install_whyis.pp
 
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
