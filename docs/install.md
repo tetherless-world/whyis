@@ -49,6 +49,11 @@ curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/instal
 vagrant up
 ```
 
+If you are setting up more than one whyis vm (maybe for multiple projects), be sure to change the IP address in the Vagrantfile after you downloaded but before running `vagrant up`:
+
+```
+  config.vm.network "private_network", ip: "192.168.33.36"
+```
 
 # Administrative Tasks
 
