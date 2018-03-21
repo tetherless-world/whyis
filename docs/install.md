@@ -16,8 +16,16 @@ Whyis installations are currently supported on Ubuntu >= 14.04.
 This is useful for deploying production knowledge graphs, or for developers who already have a machine (virtual or otherwise) that is ready to run Whyis.
 
 ```
+bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/install.sh)
+```
+
+To install using the development branch of Whyis, use the master install script:
+
+```
 bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh)
 ```
+
+
 
 ## Layer 3: Install into a vagrant virtual machine 
 
@@ -27,9 +35,24 @@ You will need to install vagrant and virtualbox.
 
 ```
 mkdir whyis-vm && cd whyis-vm
+curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/Vagrantfile > Vagrantfile
+curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/install.sh > install.sh
+vagrant up
+```
+
+To install using the development branch of Whyis, use the master install script:
+
+```
+mkdir whyis-vm && cd whyis-vm
 curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/Vagrantfile > Vagrantfile
 curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh > install.sh
 vagrant up
+```
+
+If you are setting up more than one whyis vm (maybe for multiple projects), be sure to change the IP address in the Vagrantfile after you downloaded but before running `vagrant up`:
+
+```
+  config.vm.network "private_network", ip: "192.168.33.36"
 ```
 
 # Administrative Tasks

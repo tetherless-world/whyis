@@ -18,6 +18,17 @@
 
 
 
+dc:description rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty .
+
+rdfs:label rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty .
+
+foaf:mbox rdf:type owl:DatatypeProperty ,
+                   owl:FunctionalProperty .
+
+
+
 ###  http://vocab.rpi.edu/flaskld/hasOwner
 
 flaskld:hasOwner rdf:type owl:ObjectProperty ;
