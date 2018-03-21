@@ -12,10 +12,10 @@ sioc = Namespace("http://rdfs.org/sioc/ns#")
 sio = Namespace("http://semanticscience.org/resource/")
 dc = Namespace("http://purl.org/dc/terms/")
 prov = autonomic.prov
-graphene = autonomic.graphene
+whyis = autonomic.whyis
 
 class HTML2Text(autonomic.UpdateChangeService):
-    activity_class = graphene.TextFromHTML
+    activity_class = whyis.TextFromHTML
     
     def getInputClass(self):
         return sioc.Post
@@ -33,13 +33,13 @@ class HTML2Text(autonomic.UpdateChangeService):
         o.add(URIRef("http://schema.org/text"), Literal(text))
         
 class IDFCalculator(autonomic.UpdateChangeService):
-    activity_class = graphene.InverseDocumentFrequencyCalculation
+    activity_class = whyis.InverseDocumentFrequencyCalculation
     
     def getInputClass(self):
-        return autonomic.graphene.ResolvedText
+        return autonomic.whyis.ResolvedText
 
     def getOutputClass(self):
-        return autonomic.graphene.TFIDFText
+        return autonomic.whyis.TFIDFText
     
     @property
     def document_count(self):
@@ -70,13 +70,13 @@ class IDFCalculator(autonomic.UpdateChangeService):
             
         
 class EntityResolver(autonomic.UpdateChangeService):
-    activity_class = graphene.EntityResolution
+    activity_class = whyis.EntityResolution
     
     def getInputClass(self):
-        return autonomic.graphene.ExtractedText
+        return autonomic.whyis.ExtractedText
     
     def getOutputClass(self):
-        return autonomic.graphene.ResolvedText
+        return autonomic.whyis.ResolvedText
 
     def resolve(self, term, context):
         query = """prefix skos: <http://www.w3.org/2004/02/skos/core#>
@@ -131,7 +131,7 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
     
         
 class EntityExtractor(autonomic.UpdateChangeService):
-    activity_class = graphene.EntityExtraction
+    activity_class = whyis.EntityExtraction
 
     grammar = r"""
 NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
@@ -149,7 +149,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
         return URIRef("http://purl.org/dc/dcmitype/Text")
 
     def getOutputClass(self):
-        return autonomic.graphene.ExtractedText
+        return autonomic.whyis.ExtractedText
 
     def get_query(self):
         return '''select ?resource where { ?resource <http://schema.org/text> [].}'''

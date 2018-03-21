@@ -62,7 +62,7 @@ Config = dict(
     ## MAIL_DEBUG = False,
     ## MAIL_USERNAME = '',
     ## MAIL_PASSWORD = '',
-    ## DEFAULT_MAIL_SENDER = "Graphene Admin <admin@graphene.example.com>",
+    ## DEFAULT_MAIL_SENDER = "Whyis Admin <admin@whyis.example.com>",
 
     # see example/ for reference
     # ex: BLUEPRINTS = ['blog']  # where app is a Blueprint instance

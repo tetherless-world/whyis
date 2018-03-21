@@ -21,7 +21,7 @@ def rando():
 
     
 class Configure(Command):
-    '''Create a Satoru configuration and customization directory.'''
+    '''Create a Whyis configuration and customization directory.'''
     def get_options(self):
         return [
         ]
@@ -100,7 +100,7 @@ class TestAgent(Command):
         agent.app = app
         print agent.get_query()
         results = []
-        if agent.query_predicate == app.NS.graphene.globalChangeQuery:
+        if agent.query_predicate == app.NS.whyis.globalChangeQuery:
             results.extend(agent.process_graph(app.db))
         else:
             for resource in agent.getInstances(app.db):
@@ -115,7 +115,7 @@ class TestAgent(Command):
             print np.serialize(format="trig")
             
 class UpdateUser(Command):
-    """Update a user in Satoru"""
+    """Update a user in Whyis"""
 
     def get_options(self):
         return [
@@ -161,7 +161,7 @@ class UpdateUser(Command):
         print "Updated user: %s" % (user, )
 
 class CreateUser(Command):
-    """Add a user to Satoru"""
+    """Add a user to Whyis"""
 
     def get_options(self):
         return [

@@ -10,7 +10,7 @@ import logging
 
 import database
 
-graphene = rdflib.Namespace('http://vocab.rpi.edu/graphene/')
+whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
@@ -24,7 +24,7 @@ class Service(sadi.Service):
 
     dry_run = False
     
-    activity_class = graphene.Agent
+    activity_class = whyis.Agent
     
     def get_query(self):
         return '''select ?resource where {
@@ -81,7 +81,7 @@ class Service(sadi.Service):
 class UpdateChangeService(Service):
     @property
     def query_predicate(self):
-        return graphene.updateChangeQuery
+        return whyis.updateChangeQuery
     
     def explain(self, nanopub, i, o):
         np_assertions = list(i.graph.subjects(rdflib.RDF.type, np.Assertion))
@@ -96,13 +96,13 @@ class UpdateChangeService(Service):
 class GlobalChangeService(Service):
     @property
     def query_predicate(self):
-        return graphene.globalChangeQuery
+        return whyis.globalChangeQuery
 
 class Crawler(UpdateChangeService):
 
-    activity_class = graphene.GraphCrawl
+    activity_class = whyis.GraphCrawl
 
-    def __init__(self, depth=-1, predicates=[None], node_type=graphene.CrawlerStart, output_node_type=graphene.Crawled):
+    def __init__(self, depth=-1, predicates=[None], node_type=whyis.CrawlerStart, output_node_type=whyis.Crawled):
         self.depth = depth
         self.node_type = node_type
         self.output_node_type = output_node_type
@@ -136,13 +136,13 @@ class Crawler(UpdateChangeService):
                     todo.extend([(x.identifier, depth-1) for x in node[p]])
 
 class ImporterCrawler(UpdateChangeService):
-    activity_class = graphene.ImporterGraphCrawl
+    activity_class = whyis.ImporterGraphCrawl
 
     def getInputClass(self):
-        return graphene.ImporterResource
+        return whyis.ImporterResource
 
     def getOutputClass(self):
-        return graphene.ImportedResource
+        return whyis.ImportedResource
 
     _query = None
     
@@ -155,7 +155,7 @@ class ImporterCrawler(UpdateChangeService):
   }
   FILTER (regex(str(?resource), "^(%s)")) .
   filter not exists {
-    ?assertion prov:wasGeneratedBy [ a graphene:KnowledgeImport].
+    ?assertion prov:wasGeneratedBy [ a whyis:KnowledgeImport].
   }
 } ''' % '|'.join(prefixes)
             print self._query
@@ -166,13 +166,13 @@ class ImporterCrawler(UpdateChangeService):
         node = self.app.run_importer(i.identifier)
 
 class DatasetImporter(UpdateChangeService):
-    activity_class = graphene.ImportDatasetEntities
+    activity_class = whyis.ImportDatasetEntities
 
     def getInputClass(self):
-        return graphene.DatasetEntity
+        return whyis.DatasetEntity
 
     def getOutputClass(self):
-        return graphene.ImportedDatasetEntity
+        return whyis.ImportedDatasetEntity
 
     _query = None
     
@@ -196,13 +196,13 @@ class DatasetImporter(UpdateChangeService):
                             
 class OntologyImporter(GlobalChangeService):
 
-    activity_class = graphene.OntologyImport
+    activity_class = whyis.OntologyImport
     
     def get_query(self):
         return '''select ?resource where {
     ?ontology owl:imports ?resource.
     filter not exists {
-      ?resource a graphene:ImportedOntology.
+      ?resource a whyis:ImportedOntology.
     }
 }'''
             
@@ -210,7 +210,7 @@ class OntologyImporter(GlobalChangeService):
         return rdflib.OWL.Ontology
 
     def getOutputClass(self):
-        return graphene.ImportedOntology
+        return whyis.ImportedOntology
 
     def process_nanopub(self, i, o, new_np):
         file_format = rdflib.util.guess_format(i.identifier)
@@ -357,19 +357,19 @@ class SETLr(UpdateChangeService):
 
         global setlr_handlers_added                       
         if not setlr_handlers_added:
-            def _satoru_content_handler(location):
+            def _whyis_content_handler(location):
                 resource = self.app.get_resource(location)
-                fileid = resource.value(self.app.NS.graphene.hasFileID)
+                fileid = resource.value(self.app.NS.whyis.hasFileID)
                 if fileid is not None:
                     return self.app.file_depot.get(fileid)
-            setlr.content_handlers.insert(0,_satoru_content_handler)
+            setlr.content_handlers.insert(0,_whyis_content_handler)
             setlr_handlers_added = True
     
     def getInputClass(self):
         return setl.SemanticETLScript
 
     def getOutputClass(self):
-        return graphene.ProcessedSemanticETLScript
+        return whyis.ProcessedSemanticETLScript
     
     def get_query(self):
         return '''select distinct ?resource where { ?resource a %s.}''' % self.getInputClass().n3()

@@ -14,9 +14,9 @@
 @prefix csvw:          <http://www.w3.org/ns/csvw#> .
 @prefix pv:            <http://purl.org/net/provenance/ns#>.
 
-@prefix :              <http://vocab.rpi.edu/graphene/setl/bibtex/> .
+@prefix :              <http://vocab.rpi.edu/whyis/setl/bibtex/> .
 
-@prefix graphene: <http://vocab.rpi.edu/graphene/>.
+@prefix whyis: <http://vocab.rpi.edu/whyis/>.
 
 :bibtex_input a <https://www.iana.org/assignments/media-types/text/plain>;
   prov:wasGeneratedBy [
@@ -116,7 +116,7 @@ result = {
 '''.
 
 :BibTeXSETL rdfs:subClassOf setl:SemanticETLScript;
-  setl:hasTemplatePrefix "http://vocab.rpi.edu/graphene/setl/bibtex/";
+  setl:hasTemplatePrefix "http://vocab.rpi.edu/whyis/setl/bibtex/";
   rdfs:subClassOf [ a owl:Restriction;
     owl:onProperty prov:used;
     owl:someValuesFrom <https://www.iana.org/assignments/media-types/application/x-bibtex>

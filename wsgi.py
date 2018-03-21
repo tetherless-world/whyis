@@ -1,8 +1,7 @@
 # coding:utf-8
 
 import sys
-#site.addsitedir('/apps/satoru/venv')
-app_dir = '/apps/satoru'
+app_dir = '/apps/whyis'
 if not app_dir in sys.path:
     sys.path.insert(0, app_dir)
 

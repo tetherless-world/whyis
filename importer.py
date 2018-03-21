@@ -78,7 +78,7 @@ class Importer:
 
     def explain(self, new_np, entity_name):
         activity = rdflib.BNode()
-        new_np.provenance.add((activity, rdflib.RDF.type, self.app.NS.graphene.KnowledgeImport))
+        new_np.provenance.add((activity, rdflib.RDF.type, self.app.NS.whyis.KnowledgeImport))
         new_np.provenance.add((new_np.assertion.identifier, prov.wasGeneratedBy, activity))
         new_np.provenance.add((activity, prov.used, rdflib.URIRef(entity_name)))
         new_np.provenance.add((new_np.assertion.identifier, prov.wasQuotedFrom, rdflib.URIRef(entity_name)))

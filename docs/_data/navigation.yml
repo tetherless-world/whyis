@@ -3,13 +3,10 @@
 - title: Home
   url: /
 
-- title: Installing Satoru
+- title: Installing Whyis
   url: /install
 
-- title: Configuring Satoru
-  url: /configuration
-
-- title: Satoru Views
+- title: Whyis Views
   url: /views
 
 - title: Inference Agents
@@ -25,5 +22,5 @@
 #    - title: Semantic ETL
 #      url: /setl
 
-#- title: Satoru Architecture
+#- title: Whyis Architecture
 #  url: /architecture

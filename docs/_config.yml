@@ -14,7 +14,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 theme: jekyll-theme-minimal
-name: Satoru Knowledge Graph Framework
+name: Whyis Knowledge Graph Framework
 
 # Dependencies
 markdown:    kramdown

@@ -1,4 +1,4 @@
-@prefix : <http://vocab.rpi.edu/graphene/> .
+@prefix : <http://vocab.rpi.edu/whyis/> .
 @prefix dc: <http://purl.org/dc/terms/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -13,6 +13,6 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
-@prefix graphene: <http://vocab.rpi.edu/graphene/> .
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 
