@@ -376,7 +376,7 @@ np:Nanopublication a owl:Class;
 
 <search> a whyis:searchView.
 
-whyis:searchView whyis:hasView "search_view.html".
+whyis:searchView whyis:hasView "search.html".
 
 rdfs:label flaskld:fieldName "name" .
 
