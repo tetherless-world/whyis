@@ -54,7 +54,8 @@ class LoadNanopub(Command):
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
 
         g1 = g.parse(location=input_file, format=file_format, publicID=flask.current_app.NS.local)
-        if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
+        if len(list(g.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
+            print "Could not find existing nanopublications.", len(g1), len(g)
             new_np = Nanopublication(store=g1.store)
             new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
             new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
@@ -65,8 +66,9 @@ class LoadNanopub(Command):
                 for r in was_revision_of:
                     print "Marking as revision of", r
                     npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
+            print 'Prepared', npub.identifier
             nanopubs.append(npub)
-        flask.current_app.nanopub_manager.publish(npub)
+        flask.current_app.nanopub_manager.publish(*nanopubs)
         print "Published", npub.identifier
 
 class RetireNanopub(Command):
