@@ -851,13 +851,6 @@ construct {
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
-        # @self.route('/search/<query>')
-        # @login_required
-        # def search_results(query):
-        #     # results = self.search(query)
-        #     # return render_template('search_results.html', ns=self.NS, query=query, results=results, sort_by=sort_by, current_user=current_user)
-
-
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
@@ -906,28 +899,6 @@ construct {
                     fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                     return resource.this().graph.serialize(format=fmt)
 
-        def search(self, term):
-            search_query = '''PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX bds: <http://www.bigdata.com/rdf/search#>
-PREFIX np: <http://www.nanopub.org/nschema#>
-PREFIX sio: <http://semanticscience.org/resource/>
-PREFIX sioc: <http://rdfs.org/sioc/ns#>
-
-
-SELECT * WHERE {
-  	?obj bds:search "%s" .
-
-  	?obj bds:relevance ?score .  		
-  
-} ORDER BY DESC(?score)
-LIMIT 100 ''' % (term, )
-            results = self.db.query(search_query)
-            return results
-            
-        
-
         views = {}
         def render_view(resource):
             template_args = dict()
@@ -947,16 +918,6 @@ LIMIT 100 ''' % (term, )
             if 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
-            if 'query' in request.args:
-                print("request.args[0].query is:", request.args[0].query)
-
-                # try:
-                #     results = search(self, request.args[0].query)
-                #     template_args['results'] = results
-                #     print(template_args)
-                # except Exception as e:
-                #     print(str(e))
-
             fileid = resource.value(self.NS.whyis.hasFileID)
             if fileid is not None and view is None:
                 f = self.file_depot.get(fileid)
