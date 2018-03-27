@@ -54,41 +54,64 @@
     
   </head>
   <body>
-    <nav class="navbar navbar-default" style="margin-bottom: 0px">
-      <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="/" class="navbar-brand">Home</a>
+    <md-toolbar style="background-color: #08233c">
+      <div class="md-toolbar-tools">
+
+        <a href="/">Home</a>
+        
+	<!-- Form for Search -->
+	<form  ng-controller="SearchCtrl as ctrl"
+	      class="navbar-form"
+              style="color:black"
+	      role="search"
+	      action="/search"
+	      method="get"
+	      name="search" layout="row" flex>
+	  <md-autocomplete
+             flex ng-cloak
+             md-input-name="query"
+             md-input-id="query"
+	     md-selected-item="ctrl.selectedItem"
+	     md-search-text-change="ctrl.searchTextChange(ctrl.searchText)"
+	     md-search-text="ctrl.searchText"
+	     md-selected-item-change="ctrl.selectedItemChange(item)"
+	     md-items="item in ctrl.querySearch(ctrl.searchText)"
+	     md-item-text="item.label"
+	     md-min-length="3"
+	     placeholder="Search">
+	    <md-item-template>
+	      <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{[{item.label}]}</span>
+              <span ng-show="item.label != item.preflabel">(preferred: {[{item.preflabel}]})</span>
+              <span ng-show="item.types.length > 0">
+                (<span ng-repeat="t in item.types">{[{t.label}]}</span><span ng-if="not $last">, </span>)
+              </span>
+	    </md-item-template>
+	    <md-not-found>
+	      Nothing matches "{[{ctrl.searchText}]}".
+	      <a ng-click="ctrl.newNode(ctrl.searchText)">Create it.</a>
+	    </md-not-found>
+	    <input type="hidden" name="search" ng-bind="ctrl.searchText"/>
+	  </md-autocomplete>
+	</form><!-- /search form -->
+
+        <h3>
+        {% if not current_user or current_user.is_anonymous %}
+        <a flex="none" href="/login">Log in <span class="glyphicon glyphicon-log-in"></span></a>
+        {% else %}
+        <div flex="none" class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="/logout">Log out</a></li>
+            <li><a href="/change">Change password</a></li>
+          </ul>
         </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            {% if not current_user or current_user.is_anonymous %}
-            <li><a href="/login">Log in <span class="glyphicon glyphicon-log-in"></span></a></li>
-            {% else %}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
-              <ul class="dropdown-menu dropdown-menu-right">
-                <li><a href="/logout">Log out</a></li>
-                <li><a href="/change">Change password</a></li>
-              </ul>
-            </li>
-            {% endif %}
-            {% if current_user and current_user.is_anonymous and current_user.is_authenticated %}
-            <li><a href="{{config['SECURITY_REGISTER_URL']}}">Register <span class="glyphicon glyphicon-log-in"></span></a></li>
-            {% endif %}
-          </ul>
-        </div><!-- /.navbar-collapse -->
-      </div><!-- /.container-fluid -->
-    </nav>
+        {% endif %}
+        {% if current_user and current_user.is_anonymous and current_user.is_authenticated %}
+        <a flex="none" href="{{config['SECURITY_REGISTER_URL']}}">Register <span class="glyphicon glyphicon-log-in"></span></a>
+        {% endif %}
+        </h3>
+      </div>
+    </md-toolbar>
     <div class="container">
       <div class="clearfix"></div>
     </div>
@@ -160,7 +183,10 @@
 <script src="/static/bower_components/angular-paging-sparql-service/dist/sparql-service.js"></script>
 <script src="/static/bower_components/checklist-model/checklist-model.js"></script>
     <script src="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js"></script>
-<script>
+
+    <script src="/static/js/lib/moment-with-locales.min.js"></script>
+
+    <script>
 </script>
 <script src="/static/js/whyis.js"></script>
 

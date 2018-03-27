@@ -380,4 +380,12 @@ rdfs:label flaskld:fieldName "name" .
 <Home> a whyis:HomePage.
 
 whyis:HomePage a owl:Class;
-  whyis:hasView "home_view.html".
+  whyis:hasView "home_view.html";
+  whyis:latestView "latest.json";
+  whyis:resolveView "resolve.json".
+
+whyis:latestView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "latest".
+
+whyis:resolveView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "resolve".

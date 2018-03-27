@@ -2,6 +2,15 @@
     $('[data-toggle="tooltip"]').tooltip()
 //});
 
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 
 var app;
 /**
@@ -1035,6 +1044,81 @@ $( function() {
         };
     }]);
 
+    app.controller('SearchCtrl', ['$timeout','$q','$log','$http', "$location", function DemoCtrl ($timeout, $q, $log, $http, $location) {
+	var self = this;
+	
+	// list of `state` value/display objects
+	self.states        = [];
+	self.querySearch   = querySearch;
+	self.selectedItemChange = selectedItemChange;
+	self.searchTextChange   = searchTextChange;
+
+	self.newNode = function(nodeid) {
+	    window.location.href = '/'+nodeid.replace(' ','_');
+	}
+
+        self.searchText = getParameterByName("query");
+	// ******************************
+	// Internal methods
+	// ******************************
+
+	/**
+	 * Search for states... use $timeout to simulate
+	 * remote dataservice call.
+	 */
+	function querySearch (query) {
+            return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
+                .then(function(response) {
+                    return response.data.map(function(hit) {
+                        hit.value = angular.lowercase(hit.label);
+                        return hit;
+                    });
+                });
+	}
+
+	function searchTextChange(text) {
+	    $log.info('Text changed to ' + text);
+	}
+
+	function selectedItemChange(item) {
+	    window.location.href = '/about?uri='+window.encodeURIComponent(item.node);
+	}
+
+	/**
+	 * Create filter function for a query string
+	 */
+	function createFilterFor(query) {
+	    var lowercaseQuery = angular.lowercase(query);
+
+	    return function filterFn(state) {
+		return lowercaseQuery in state.value;
+	    };
+
+	}
+    }]);
+    
+    app.directive("latest", ["$http", 'getLabel', function($http, getLabel) {
+	return {
+	    restrict: "E",
+	    templateUrl: '/static/html/latest.html',
+            link: function(scope, element, attrs) {
+		scope.getLabel = getLabel;
+		$http.get("/?view=latest").then(function(response) {
+		    scope.entities = response.data;
+		    scope.entities.forEach(function (e) {
+//			e.types = e.types.split('||').map(function(t) {
+//			    return { uri: t, label: getLabel(t) };
+			//			});
+			//e.label = getLabel(e.about);
+			e.fromNow = moment.utc(e.updated).local().fromNow();
+		    });
+		    console.log(response);
+		});
+	    }
+	}
+    }]);
+
+    
     app.service("topClasses", ["$http", function($http) {
         function topClasses(ontology) {
             var query = 'prefix owl: <http://www.w3.org/2002/07/owl#>\n\

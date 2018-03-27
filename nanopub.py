@@ -9,6 +9,9 @@ import tempfile
 from depot.io.utils import FileIntent
 from depot.manager import DepotManager
 
+from datetime import datetime
+import pytz
+
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
@@ -220,10 +223,18 @@ class NanopublicationManager:
             for nanopub in nanopubs:
                 fileid = nanopub.identifier.replace(self.prefix, "")
                 g = rdflib.ConjunctiveGraph(store=nanopub.store)
+                r = False
+                now = rdflib.Literal(datetime.utcnow())
                 for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
                     for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                        nanopub.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
                         to_retire.append(nanopub_uri)
+                        r = True
                         print "Retiring", nanopub_uri
+                if r:
+                    nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
+                else:
+                    nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
                 serialized = g.serialize(format="trig")
                 self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                 data.write(serialized)
