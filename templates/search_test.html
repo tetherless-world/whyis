@@ -1,0 +1,24 @@
+{% block content %}
+    
+{% set qr = this.graph.query('''PREFIX bds: <http://www.bigdata.com/rdf/search#>
+
+  SELECT ?sub ?pred ?obj ?score WHERE {
+    ?obj bds:search  ?query .
+    ?obj bds:relevance ?score .  		
+    ?sub ?pred ?obj
+
+  } ORDER BY DESC(?score)
+  LIMIT 100''' , initNs=ns.prefixes, initBindings={"query":rdflib.Literal(args['query'])}) %}
+  
+    {% set data = [] %}
+    {%for row in qr%}
+        {% do data.append( row.asdict() )  %} {% if not loop.last %} {% endif %}
+    {% endfor %}
+
+
+    {% set jsonData = data|tojson|safe %}
+    
+{{jsonData}}
+
+{% endblock %}
+

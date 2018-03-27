@@ -1035,6 +1035,25 @@ $( function() {
         };
     }]);
 
+    // Changing Jim's example code for a directive
+    app.directive("search_test", ["$http", 'getLabel', function($http, getLabel) {
+        return {
+            restrict: "E",
+            templateUrl: '/static/html/search_view.html',
+            link: function(scope, element, attrs) {
+                $http.get("/test").then(function(response) {
+                    scope.entities = response.data;
+                    scope.entities.forEach(function (e) {
+                        e.types = e.types.split('||').map(function(t) {
+                            return { uri: t, label: getLabel(t) };
+                        });
+                    });
+                    console.log(response);
+                });
+            }
+        }
+    }]);
+
     app.service("topClasses", ["$http", function($http) {
         function topClasses(ontology) {
             var query = 'prefix owl: <http://www.w3.org/2002/07/owl#>\n\

@@ -4,27 +4,27 @@
   <h1>Search results for "{{ args.results }}":</h1>
 
 {% if results|length == 0 %}
-<p class="lead">No results found.</p>
+  <p class="lead">No results found.</p>
 {% endif %}
 
 {% for item in results %}
-<div class="row">
-  <div class="col-xs-10 col-md-offset-1" style="padding-bottom:1.5em">
-    <div class="pull-right progress" style="width:5em; height: 0.5em">
-      <div class="progress-bar" role="progressbar" aria-valuenow="{{item['score'].value*100}}" aria-valuemin="0" aria-valuemax="100" style="width:{{item['score'].value*100}}%;">
+  <div class="row">
+    <div class="col-xs-10 col-md-offset-1" style="padding-bottom:1.5em">
+      <div class="pull-right progress" style="width:5em; height: 0.5em">
+        <div class="progress-bar" role="progressbar" aria-valuenow="{{item['score'].value*100}}" aria-valuemin="0" aria-valuemax="100" style="width:{{item['score'].value*100}}%;">
+        </div>
       </div>
+      <p class="lead">
+        <a href="{{item.uri}}">
+          {{item['name']}}
+        </a>
+      </p>
+      {% if item['text']|string() != 'None' %}
+      <p>
+        {{ item['text'] }}
+      </p>
+    {% endif %}
     </div>
-    <p class="lead">
-      <a href="{{item.uri}}">
-        {{item['name']}}
-      </a>
-    </p>
-    {% if item['text']|string() != 'None' %}
-    <p>
-      {{ item['text'] }}
-    </p>
-  {% endif %}
   </div>
-</div>
 {% endfor %}
 {% endblock %}
