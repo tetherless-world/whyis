@@ -378,13 +378,21 @@ np:Nanopublication a owl:Class;
 
 # whyis:searchView whyis:hasView "search.html".
 
-<searchView> a whyis:searchView.
+# <searchView> a whyis:searchView.
 
-whyis:searchView whyis:hasView "search-view.html".
+# whyis:searchView whyis:hasView "search-view.html".
 
-<search> a whyis:searchTest .
+# <searchApi> a whyis:searchApi .
 
-whyis:searchTest whyis:hasView "search.html".
+# whyis:searchApi whyis:hasView "search-api.json".
+
+<search> a whyis:search .
+
+whyis:search whyis:hasView "search-view.html";
+  whyis:searchApiView "search-api.html".
+
+  whyis:searchApiView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "searchApi".
 
 rdfs:label flaskld:fieldName "name" .
 

@@ -1045,32 +1045,32 @@ $( function() {
     }]);
 
     // Changing Jim's example code for a directive
-    // app.directive("searchView", ["$http", 'getLabel', '$scope', function($http, $scope, getLabel) {
-    //     return {
-    //         restrict: "E",
-    //         templateUrl: '/static/html/search-view.html',
-    //         link: function(scope, element, attrs) {
-    //             console.log("does it try to go here!")
-    //             // return scope.entities = "testing"
+    app.directive("searchApi", ["$http", 'getLabel', '$scope', function($http, $scope, getLabel) {
+        return {
+            restrict: "E",
+            templateUrl: '/static/html/search-api.json',
+            link: function(scope, element, attrs) {
+                console.log("does it try to go here?")
+                // return scope.entities = "testing"
                 
-    //             $http.get("/test", {
-    //                 'params': {'query': "test"}
-    //                 // 'headers' : {'Accept' : 'application/json'}
-    //             }).then(function(response) {
-    //                 console.log(response);
-    //                 scope.entities = response;
-    //                 return entities;
+                $http.get("/searchApi", {
+                    'params': {'query': "test"}
+                    // 'headers' : {'Accept' : 'application/json'}
+                }).then(function(response) {
+                    console.log(response);
+                    scope.entities = response;
+                    return entities;
                     
-    //                 // scope.entities.forEach(function (e) {
-    //                 //     e.types = e.types.split('||').map(function(t) {
-    //                 //         return { uri: t, label: getLabel(t) };
-    //                 //     });
-    //                 // });
+                    // scope.entities.forEach(function (e) {
+                    //     e.types = e.types.split('||').map(function(t) {
+                    //         return { uri: t, label: getLabel(t) };
+                    //     });
+                    // });
                     
-    //             });
-    //         }
-    //     }
-    // }]);
+                });
+            }
+        }
+    }]);
 
     app.controller('SearchCtrl', ['$timeout','$q','$log','$http', "$location", function DemoCtrl ($timeout, $q, $log, $http, $location) {
 	var self = this;
