@@ -463,22 +463,24 @@ construct {
 #                    raise e
             return self._description
         
-    def get_resource(self, entity, async=True):
-        mapped_name, importer = self.map_entity(entity)
+    def get_resource(self, entity, async=True, retrieve=True):
+        if retrieve:
+            mapped_name, importer = self.map_entity(entity)
     
-        if mapped_name is not None:
-            entity = mapped_name
+            if mapped_name is not None:
+                entity = mapped_name
 
-        if importer is None:
-            importer = self.find_importer(entity)
+            if importer is None:
+                importer = self.find_importer(entity)
 
-        if importer is not None:
-            modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-            if modified is None or async is False:
-                self.run_importer(entity)
-            else:
-                print "Type of modified is",type(modified)
-                self.run_importer.delay(entity)
+            if importer is not None:
+                modified = importer.last_modified(entity, self.db, self.nanopub_manager)
+                if modified is None or async is False:
+                    self.run_importer(entity)
+                else:
+                    print "Type of modified is",type(modified)
+                    self.run_importer.delay(entity)
+                    
         return self.Entity(self.db, entity)
     
     def configure_template_filters(self):
@@ -700,6 +702,7 @@ construct {
             g.get_summary = get_summary
             g.get_label = get_label
             g.labelize = self.labelize
+            g.get_resource = self.get_resource
             g.get_entity = self.get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance

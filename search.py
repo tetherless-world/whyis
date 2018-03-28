@@ -67,3 +67,50 @@ where {
         result['types'] = [g.labelize({'uri':x},'uri','label') for x in result['types'].split('||')]
         results.append(result)
     return results
+
+latest_query = '''select distinct 
+?about 
+(max(coalesce(?modified, ?created)) as ?updated) 
+(group_concat(distinct ?type; separator="||") as ?types)
+where {                                                                                                 
+  graph ?np {
+    ?np 
+        np:hasPublicationInfo ?pubinfo;
+        np:hasAssertion ?assertion.
+  }
+  graph ?pubinfo {
+    optional {
+      ?assertion dc:created ?created.
+    }
+    optional {
+      ?assertion dc:modified ?modified.
+    }
+  }
+    graph ?np { ?np sio:isAbout ?about.}
+    filter not exists {
+      [] ?about [].
+    }
+
+    optional {
+      ?about rdf:type/rdfs:subClassOf* ?type.
+    }
+    
+} group by ?about order by desc (?updated)
+LIMIT 20
+'''
+
+def latest(graph, g):
+    results = []
+    for row in graph.query(latest_query, initNs=g.ns.prefixes):
+        entry = row.asdict()
+        entity = g.get_resource(rdflib.URIRef(entry['about']), retrieve=False)
+        entry['label'] = g.get_label(entity)
+        entry['description'] = [y for x,y in g.get_summary(entity)]
+        if len(entry['description']) > 0:
+            entry['description'] = entry['description'][0]
+        else:
+            del entry['description']
+        entry['types'] = [g.labelize(dict(uri=x),'uri','label') for x in entry['types'].split('||') if len(x) > 0]
+        results.append(entry)
+    return results
+                                
