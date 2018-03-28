@@ -49,7 +49,10 @@ class Service(sadi.Service):
     def getInstances(self, graph):
         if hasattr(graph.store, "nsBindings"):
             graph.store.nsBindings = {}
-        return [graph.resource(i) for i, in graph.query(self.get_query(), initNs=self.app.NS.prefixes)]
+        prefixes = self.app.NS.prefixes
+        if hasattr(self, 'prefixes'):
+            prefixes = self.prefixes
+        return [graph.resource(i) for i, in graph.query(self.get_query(), initNs=prefixes)]
     
     def process_graph(self, inputGraph):
         instances = self.getInstances(inputGraph)
@@ -409,6 +412,8 @@ class SETLr(UpdateChangeService):
             #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
             mappings = {}
 
+            to_publish = []
+            triples = 0
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings):
                 self.explain(new_np, i, o)
                 print "Publishing", new_np.identifier
@@ -422,8 +427,15 @@ class SETLr(UpdateChangeService):
                     if orig in old_np_map:
                         new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
                 print "Nanopub assertion has", len(new_np.assertion), "statements."
-                self.app.nanopub_manager.publish(new_np)
-                print 'Published'
+                to_publish.append(new_np)
+                triples == len(new_np)
+                if triples > 10000:
+                    self.app.nanopub_manager.publish(*to_publish)
+                    triples = 0
+                    to_publish = []
+            if len(to_publish) > 0:
+                self.app.nanopub_manager.publish(*to_publish)
+            print 'Published'
 
 class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 

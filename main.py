@@ -69,6 +69,8 @@ rdflib.plugin.register('sparql', Processor,
 rdflib.plugin.register('sparql', UpdateProcessor,
         'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
 
+import search
+
 # apps is a special folder where you can place your blueprints
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
@@ -120,6 +122,9 @@ NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
 from rdfalchemy import *
 from flask_ld.datastore import *
 
+#from flask_login.config import EXEMPT_METHODS
+from functools import wraps
+
 # Setup Flask-Security
 class ExtendedRegisterForm(RegisterForm):
     identifier = TextField('Identifier', [validators.Required()])
@@ -133,8 +138,25 @@ class SearchForm(Form):
 def to_json(result):
     return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in x.items()]) for x in result.bindings])
 
+def conditional_login_required(func):
+    from flask import current_app
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if request.method in ['OPTIONS']:# EXEMPT_METHODS:
+            return func(*args, **kwargs)
+        elif current_app.login_manager._login_disabled:
+            return func(*args, **kwargs)
+        elif 'DEFAULT_ANONYMOUS_READ' in current_app.config and current_app.config['DEFAULT_ANONYMOUS_READ']:
+            return func(*args, **kwargs)
+        elif not current_user.is_authenticated:
+            return current_app.login_manager.unauthorized()
+        return func(*args, **kwargs)
+    return decorated_view
+
 class App(Empty):
 
+
+    
     def configure_extensions(self):
         Empty.configure_extensions(self)
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
@@ -186,7 +208,7 @@ class App(Empty):
             @self.celery.task
             def find_instances():
                 print "Triggered task", task['name']
-                for x, in app.db.query(task['service'].get_query(), initPrefixes=self.NS.prefixes):
+                for x, in task['service'].getInstances(app.db):
                     task['do'](x)
             
             @self.celery.task
@@ -260,7 +282,7 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
-                        if len(list(nanopub_graph.query(service.get_query(),initNs=self.NS.prefixes))) > 0:
+                        if len(service.getInstances(nanopub_graph)) > 0:
                             print "invoking", name, nanopub_uri
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in self.config['inferencers'].items():
@@ -277,10 +299,11 @@ class App(Empty):
             """
             Check if a task is running or waiting.
             """
-            tasks = inspect().scheduled().values()[0]
-            for task in tasks:
-                if 'args' in task and entity_name in task['args']:
-                    return True
+            if inspect().scheduled():
+                tasks = inspect().scheduled().values()
+                for task in tasks:
+                    if 'args' in task and entity_name in task['args']:
+                        return True
             return False
 
         app = self
@@ -440,22 +463,24 @@ construct {
 #                    raise e
             return self._description
         
-    def get_resource(self, entity, async=True):
-        mapped_name, importer = self.map_entity(entity)
+    def get_resource(self, entity, async=True, retrieve=True):
+        if retrieve:
+            mapped_name, importer = self.map_entity(entity)
     
-        if mapped_name is not None:
-            entity = mapped_name
+            if mapped_name is not None:
+                entity = mapped_name
 
-        if importer is None:
-            importer = self.find_importer(entity)
+            if importer is None:
+                importer = self.find_importer(entity)
 
-        if importer is not None:
-            modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-            if modified is None or async is False:
-                self.run_importer(entity)
-            else:
-                print "Type of modified is",type(modified)
-                self.run_importer.delay(entity)
+            if importer is not None:
+                modified = importer.last_modified(entity, self.db, self.nanopub_manager)
+                if modified is None or async is False:
+                    self.run_importer(entity)
+                else:
+                    print "Type of modified is",type(modified)
+                    self.run_importer.delay(entity)
+                    
         return self.Entity(self.db, entity)
     
     def configure_template_filters(self):
@@ -470,6 +495,18 @@ construct {
             s = urllib.quote_plus(s)
             return Markup(s)
 
+        @self.template_filter('labelize')
+        def labelize(entry, key='about', label_key='label', fetch=False):
+            resource = None
+            if fetch:
+                resource = self.get_resource(URIRef(entry[key]))
+            else:
+                resource = self.Entity(self.db, URIRef(entry[key]))
+            entry[label_key] = g.get_label(resource.description())
+            return entry
+
+        self.labelize = labelize
+        
         @self.template_filter('lang')
         def lang_filter(terms):
             terms = list(terms)
@@ -664,6 +701,8 @@ construct {
             g.ns = self.NS
             g.get_summary = get_summary
             g.get_label = get_label
+            g.labelize = self.labelize
+            g.get_resource = self.get_resource
             g.get_entity = self.get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
@@ -791,7 +830,8 @@ construct {
                 self.NS.dc.description,
                 self.NS.dc.summary,
                 self.NS.RDFS.comment,
-                self.NS.dcelements.description
+                self.NS.dcelements.description,
+                URIRef("http://purl.obolibrary.org/obo/IAO_0000115")
             ]
             for property in summary_properties:
                 terms = self.lang_filter(resource[property])
@@ -801,7 +841,7 @@ construct {
         self.get_summary = get_summary
 
         @self.route('/sparql', methods=['GET', 'POST'])
-        @login_required
+        @conditional_login_required
         def sparql_view():
             has_query = False
             for arg in request.args.keys():
@@ -831,7 +871,7 @@ construct {
             return response, req.status_code
         
         @self.route('/sparql.html')
-        @login_required
+        @conditional_login_required
         def sparql_form():
             
             template_args = dict(ns=self.NS,
@@ -856,7 +896,7 @@ construct {
         @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
-        @login_required
+        @conditional_login_required
         def view(name=None, format=None, view=None):
             self.db.store.nsBindings = {}
             if format is not None:
@@ -911,7 +951,9 @@ construct {
                 args=request.args,
                 get_entity=get_entity,
                 get_summary=get_summary,
+                search = search,
                 rdflib=rdflib,
+                config=self.config,
                 hasattr=hasattr,
                 set=set))
             view = None
@@ -992,7 +1034,7 @@ construct {
 
         
         class NanopublicationResource(ld.LinkedDataResource):
-            decorators = [login_required]
+            decorators = [conditional_login_required]
 
             def __init__(self):
                 self.local_resource = app.nanopub_api
@@ -1010,6 +1052,7 @@ construct {
                     return None
                 return result
 
+            @login_required
             def delete(self, ident):
                 uri = self._get_uri(ident)
                 if not app._can_edit(uri):
@@ -1023,16 +1066,14 @@ construct {
                 contentType = request.headers['Content-Type']
                 sadi.deserialize(inputGraph, request.data, contentType)
                 return inputGraph
-            
+
+            @login_required
             def put(self, ident):
                 nanopub_uri = self._get_uri(ident)
                 inputGraph = self._get_graph()
                 old_nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
-                    modified = Literal(datetime.utcnow())
                     nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
-                    nanopub.pubinfo.set((old_nanopub.assertion.identifier, app.NS.prov.invalidatedAtTime, modified))
-                    nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.dc.modified, modified))
                     app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
@@ -1045,14 +1086,15 @@ construct {
                 self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
                 nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
                 return nanopub
-            
+
+            @login_required
             def post(self, ident=None):
                 if ident is not None:
                     return self.put(ident)
                 inputGraph = self._get_graph()
                 for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                     nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
-                    nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
+                    #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
                     app.nanopub_manager.publish(nanopub)
 

@@ -27,6 +27,10 @@ Config = dict(
 
     site_name = "{{cookiecutter.project_name}}",
 
+    site_header_image = '/static/images/random_network.png',
+
+    site_description = '',
+    
     root_path = '/apps/whyis',
 
     # use TESTING mode?

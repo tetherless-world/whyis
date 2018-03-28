@@ -39,6 +39,11 @@ Vagrant.configure(2) do |config|
   config.vm.network "private_network", ip: "192.168.33.36"
   config.ssh.forward_agent = true
 
+  # Needed in order to run screen
+  # https://www.vagrantup.com/docs/vagrantfile/ssh_settings.html
+  # http://stackoverflow.com/questions/27545745/start-screen-detached-in-a-vagrant-box-with-ssh-how
+  config.ssh.pty = true
+
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
