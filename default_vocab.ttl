@@ -374,13 +374,17 @@ owl:Ontology rdfs:label "Ontology";
 np:Nanopublication a owl:Class;
     whyis:hasView "nanopublication_view.html".
 
-<search> a whyis:searchView.
+# <search> a whyis:searchView.
 
-whyis:searchView whyis:hasView "search.html".
+# whyis:searchView whyis:hasView "search.html".
 
-<test> a whyis:searchTest .
+<searchView> a whyis:searchView.
 
-whyis:searchTest whyis:hasView "search_test.html".
+whyis:searchView whyis:hasView "search-view.html".
+
+<search> a whyis:searchTest .
+
+whyis:searchTest whyis:hasView "search.html".
 
 rdfs:label flaskld:fieldName "name" .
 

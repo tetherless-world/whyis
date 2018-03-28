@@ -4,7 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Search View</title>
 
-{% endblock %} {% block content %}
+{% endblock %} 
+{% block content %}
 
 <!-- Jim's example code below -->
 <div ng-cloak layout-gt-sm="row" layout="column">
@@ -12,22 +13,29 @@
         <div class="md-toolbar-tools">
             <span>Search Results</span>
         </div>
+        
     </md-toolbar>
     
     <md-content>
+        
         <md-list flex>
             <md-list-item class="md-3-line md-long-text" ng-repeat="entity in entities" ng-click="">
                 <div class="md-list-item-text" layout="column">
                     <h3>
-                        <a href="/about?view=view&uri={{entity.about}}">{{ entity.label }}</a>
+                        
                     </h3>
-                    <h4 data-ng-repeat="type in entity.types">{{ type.label }}</h4>
-                    <p>{{ entity.description }}</p>
+                    {# <h4 data-ng-repeat="type in entity.types">{{ type.label }}</h4>
+                    <p>{{ entity.description }}</p> #}
                 </div>
             </md-list-item>
         </md-list>
     </md-content>
+
+    
 </div>
+<div>
+    <div>entities are: {{entities}}</div>
+</div>     
 
 
 {% endblock %}
