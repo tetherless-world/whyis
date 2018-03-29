@@ -1045,7 +1045,7 @@ $( function() {
     }]);
 
     // Changing Jim's example code for a directive
-    app.directive("searchApi", ["$http", 'getLabel', '$scope', function($http, $scope, getLabel) {
+    app.directive("searchApi", ["$http", '$scope', 'getLabel', function($http, $scope, getLabel) {
         return {
             restrict: "E",
             templateUrl: '/static/html/search-api.json',
