@@ -1045,28 +1045,33 @@ $( function() {
     }]);
 
     // Changing Jim's example code for a directive
-    app.directive("searchApi", ["$http", '$scope', 'getLabel', function($http, $scope, getLabel) {
+    app.directive("searchResult", ["$http", function($http) {
         return {
             restrict: "E",
-            templateUrl: '/static/html/search-api.json',
-            link: function(scope, element, attrs) {
-                console.log("does it try to go here?")
+            templateUrl: '/static/html/searchResult.html',
+            scope:  {
+                query: "@"
+            },
+            link: function(scope, element, attrs) {//was scope
+                console.log('attributes are: ', attrs);
+                console.log('scope.query is: ', scope.query)
                 // return scope.entities = "testing"
                 
-                $http.get("/searchApi", {
-                    'params': {'query': "test"}
+                $http.get("searchApi", { //was "?view=searchApi"
+                    'params': {'query': scope.query },
+                    'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}
                 }).then(function(response) {
-                    console.log(response);
-                    scope.entities = response;
-                    return entities;
+                    console.log('response data: ', response.data);
+                    console.log('attrs is: ', attrs)
+                    if (response.data.length === 0) {
+                        console.log('length === 0 for response.data');
+                        scope.entities = [{obj: "No results"}];
+                    }else {
+                        scope.entities = response.data//was scope.entities
+                    }
                     
-                    // scope.entities.forEach(function (e) {
-                    //     e.types = e.types.split('||').map(function(t) {
-                    //         return { uri: t, label: getLabel(t) };
-                    //     });
-                    // });
-                    
+                                
                 });
             }
         }

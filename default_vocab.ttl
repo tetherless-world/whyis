@@ -391,10 +391,10 @@ whyis:searchApi whyis:hasView "search-api.json".
 whyis:search whyis:hasView "search-view.html".
 
 # whyis:search whyis:hasView "search-view.html";
-#   whyis:searchApiView "search-api.html".
+#   whyis:searchApi "search-api.json".
 
-  # whyis:searchApiView rdfs:subPropertyOf whyis:hasView;
-  # dc:identifier "searchApi".
+#   whyis:searchApi rdfs:subPropertyOf whyis:hasView;
+#   dc:identifier "searchApi".
 
 rdfs:label flaskld:fieldName "name" .
 

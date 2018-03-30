@@ -8,35 +8,9 @@
 {% block content %}
 
 <!-- Jim's example code below -->
-<div ng-cloak layout-gt-sm="row" layout="column">
-    <md-toolbar layout="row" class="md-hue-3">
-        <div class="md-toolbar-tools">
-            <span>Search Results</span>
-        </div>
-        
-    <!-- </md-toolbar>
-    
-    <md-content>
-        
-        <md-list flex>
-            <md-list-item class="md-3-line md-long-text" ng-repeat="entity in entities" ng-click="">
-                <div class="md-list-item-text" layout="column">
-                    <h3>
-                        
-                    </h3>
-                    {# <h4 data-ng-repeat="type in entity.types">{{ type.label }}</h4>
-                    <p>{{ entity.description }}</p> #}
-                </div>
-            </md-list-item>
-        </md-list>
-    </md-content> -->
 
-    
-</div>
-<search-api/>
-<div>
-    <div>entities are: {{entities}}</div>
-</div>     
+<search-result query={{ args['query'] }} />
+   
 
 
 {% endblock %}
