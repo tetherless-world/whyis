@@ -158,12 +158,15 @@ class App(Empty):
 
     
     def configure_extensions(self):
+
         Empty.configure_extensions(self)
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
         self.celery.conf.update(self.config)
         
         app = self
 
+        self.redis = self.celery.broker_connection().default_channel.client
+        
         if 'root_path' in self.config:
             self.root_path = self.config['root_path']
         
@@ -309,8 +312,10 @@ class App(Empty):
         app = self
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
         def run_importer(self, entity_name):
-            if is_waiting_importer(entity_name, self.request.id):
+            counter = app.redis.incr(("import",entity_name))
+            if counter > 1:
                 return
+            print 'importing', entity_name
             importer = app.find_importer(entity_name)
             if importer is None:
                 return
@@ -322,6 +327,7 @@ class App(Empty):
             print "Remote modified:", updated, type(updated), "Local modified:", modified, type(modified)
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
+            app.redis.set(("import",entity_name),0)
         self.run_importer = run_importer
 
         self.template_imports = {}
@@ -472,11 +478,16 @@ construct {
 
             if importer is None:
                 importer = self.find_importer(entity)
+            print entity, importer
 
             if importer is not None:
+                print 10
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
+                print 11
                 if modified is None or async is False:
+                    print 12
                     self.run_importer(entity)
+                    print 13
                 else:
                     print "Type of modified is",type(modified)
                     self.run_importer.delay(entity)
@@ -523,6 +534,15 @@ construct {
                 return resources + best_terms
             return resources
         self.lang_filter = lang_filter
+
+        @self.template_filter('query')
+        def query_filter(query, graph=self.db, prefixes={}, values=None):
+            namespaces = dict(self.NS.prefixes)
+            namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+            params = { 'initNs': namespaces}
+            if values is not None:
+                params['initBindings'] = values
+            return [x.asdict() for x in graph.query(query, **params)]
 
     def add_file(self, f, entity, nanopub):
         old_nanopubs = []
@@ -706,6 +726,7 @@ construct {
             g.get_entity = self.get_entity
             g.rdflib = rdflib
             g.isinstance = isinstance
+            g.current_user = current_user
             g.db = self.db
 
         @self.login_manager.user_loader
@@ -831,7 +852,9 @@ construct {
                 self.NS.dc.summary,
                 self.NS.RDFS.comment,
                 self.NS.dcelements.description,
-                URIRef("http://purl.obolibrary.org/obo/IAO_0000115")
+                URIRef("http://purl.obolibrary.org/obo/IAO_0000115"),
+                self.NS.prov.value,
+                self.NS.sio.hasValue
             ]
             for property in summary_properties:
                 terms = self.lang_filter(resource[property])

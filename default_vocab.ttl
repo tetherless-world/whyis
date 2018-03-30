@@ -408,5 +408,11 @@ whyis:HomePage a owl:Class;
 whyis:latestView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "latest".
 
+<https://www.iana.org/assignments/media-types/text/csv>
+  whyis:bipartiteView "bipartite_graph.svg".
+
+whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "bipartite".
+
 whyis:resolveView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "resolve".

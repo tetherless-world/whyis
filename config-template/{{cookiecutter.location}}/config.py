@@ -154,7 +154,9 @@ Config = dict(
 #               service=autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
 #               schedule=dict(hour="1")
 #              )
-    ]
+    ],
+
+    base_rate_probability = 0.5
 )
 
 
