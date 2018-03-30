@@ -12,6 +12,8 @@ from depot.manager import DepotManager
 from datetime import datetime
 import pytz
 
+from memory_profiler import memory_usage
+
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
@@ -155,7 +157,9 @@ class NanopublicationManager:
             #print quad
             output_graph.add(quad)
 
+        i = 0
         for nanopub_uri in output_graph.subjects(rdflib.RDF.type, np.Nanopublication):
+            i += 1
             nanopub = Nanopublication(identifier=nanopub_uri)
             nanopub += output_graph.get_context(nanopub.identifier)
             #print "Nanopub", len(nanopub), len(output_graph.get_context(identifier=nanopub_uri))
@@ -178,6 +182,7 @@ class NanopublicationManager:
                 nanopub.pubinfo.add((nanopub.identifier, rdflib.RDF.type, frbr.Expression))
             #print "Total", len(output_graph)
             #print "Contexts", [g.identifier for g in output_graph.contexts()]
+            print "Nanopub %s at %s MB" % (i, memory_usage()[0])
             yield nanopub
             
     def retire(self, *nanopub_uris):
@@ -222,7 +227,6 @@ class NanopublicationManager:
             to_retire = []
             for nanopub in nanopubs:
                 fileid = nanopub.identifier.replace(self.prefix, "")
-                g = rdflib.ConjunctiveGraph(store=nanopub.store)
                 r = False
                 now = rdflib.Literal(datetime.utcnow())
                 for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
@@ -235,7 +239,13 @@ class NanopublicationManager:
                     nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
                 else:
                     nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
+                g = rdflib.ConjunctiveGraph(store=nanopub.store)
+                for graph_part in [nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo]:
+                    g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
+                    g_part.addN([(s,p,o,g_part) for s,p,o in graph_part.triples((None,None,None))])
                 serialized = g.serialize(format="trig")
+                print "Adding %s bytes to the load file." % len(serialized)
+                del g
                 self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                 data.write(serialized)
                 data.write('\n')
@@ -243,6 +253,8 @@ class NanopublicationManager:
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data, *nanopubs)
+            print "Published %s nanopubs %s MB" % (len(nanopubs), memory_usage()[0])
+            
         for nanopub in nanopubs:
             self.update_listener(nanopub.identifier)
 

@@ -56,6 +56,15 @@ where {
     ?node a <http://www.nanopub.org/nschema#Provenance>
   }
   filter not exists {
+    ?node a owl:AnnotationProperty.
+  }
+  filter not exists {
+    ?node a owl:ObjectProperty.
+  }
+  filter not exists {
+    ?node a owl:DatatypeProperty.
+  }
+  filter not exists {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
 } group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10""" % (term, context_query)
@@ -86,11 +95,26 @@ where {
       ?assertion dc:modified ?modified.
     }
   }
-    graph ?np { ?np sio:isAbout ?about.}
+    {
+      graph ?np { 
+        ?np sio:isAbout ?about.
+      }
+    } union {
+	  graph ?assertion {
+        ?about ?p ?o.
+        filter (!regex(str(?about), "^bnode:"))
+        filter not exists {
+          [] ?relation <http://purl.org/twc/vocab/setl/SemanticETLScript>.
+        }
+      }
+      ?about a [].
+    }
+  
     filter not exists {
       [] ?about [].
     }
 
+    
     optional {
       ?about rdf:type/rdfs:subClassOf* ?type.
     }
@@ -101,16 +125,21 @@ LIMIT 20
 
 def latest(graph, g):
     results = []
+    entities = {}
     for row in graph.query(latest_query, initNs=g.ns.prefixes):
         entry = row.asdict()
+        if entry['about'] not in entities:
+            entities[entry['about']] = entry
+            results.append(entry)
         entity = g.get_resource(rdflib.URIRef(entry['about']), retrieve=False)
-        entry['label'] = g.get_label(entity)
-        entry['description'] = [y for x,y in g.get_summary(entity)]
-        if len(entry['description']) > 0:
-            entry['description'] = entry['description'][0]
-        else:
-            del entry['description']
-        entry['types'] = [g.labelize(dict(uri=x),'uri','label') for x in entry['types'].split('||') if len(x) > 0]
-        results.append(entry)
+        if 'label' not in entities[entry['about']]:
+            entry['label'] = g.get_label(entity)
+        if 'description' not in entities[entry['about']]:
+            d = [y for x,y in g.get_summary(entity)]
+            if len(d) > 0:
+                entry['description'] = d[0]
+        if entities[entry['about']] == entry or 'types' not in entities[entry['about']] or len(entities[entry['about']]['types']) == 0:
+            entities[entry['about']]['types'] = [g.labelize(dict(uri=x),'uri','label')
+                                                 for x in entry['types'].split('||') if len(x) > 0]
     return results
                                 

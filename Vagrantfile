@@ -30,7 +30,7 @@ Vagrant.configure(2) do |config|
        vb.name = "whyis-dev"
        # VM HARDWARE SPECS
 
-       vb.customize ["modifyvm", :id, "--memory", "4096"]
+       vb.customize ["modifyvm", :id, "--memory", "6144"]
        vb.customize ["modifyvm", :id, "--cpus", "2"]
        vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
@@ -64,7 +64,7 @@ Vagrant.configure(2) do |config|
   #   vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-    vb.memory = "2048"
+    vb.memory = "6144"
   end
   #
   # View the documentation for the provider you are using for more

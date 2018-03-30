@@ -1,6 +1,6 @@
 {% from "_macros.html" import get_label %}
 {% macro upload_button_modal(resource) %}
-{% if g.user %}
+{% if g.current_user and g.current_user.is_authenticated %}
 <button class="btn btn-default" type="button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
   <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
 </button>
