@@ -6,6 +6,20 @@
         <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
     </md-toolbar>
 
+</div>
+<md-content>
+    <md-list>
+        <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities">
+            <h4>
+                <a href="/about?view=view&uri={{ item['sub'] }}" >
+                    {{ item['obj'] }}
+                </a>
+            </h4>
+        </md-list-item>           
+    </md-list >
+</md-content>
+
+
     <!-- <md-content ng-show="entities">
         <md-list flex>
             <md-list-item class="md-3-line md-long-text" ng-repeat="entity in entities" ng-click="">
@@ -29,10 +43,3 @@
             </md-list-item>
         </md-list>
     </md-content> -->
-</div>
-    <md-list>
-        <!-- <md-toolbar>Search Results</md-toolbar> -->
-        <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities">{{item['obj']}}</md-list-item>
-    </md-list >
-
-</div>

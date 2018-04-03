@@ -1049,14 +1049,16 @@ $( function() {
         return {
             restrict: "E",
             templateUrl: '/static/html/searchResult.html',
+
+            //add scope: {} into directive so that I can bind query={{ args['query'] }}
+            //from inside <search-result> in the search-view.html jinja template
+            //use @ instead of = because I want string, not variable
             scope:  {
                 query: "@"
             },
             link: function(scope, element, attrs) {//was scope
-                console.log('attributes are: ', attrs);
-                console.log('scope.query is: ', scope.query)
-                // return scope.entities = "testing"
-                
+                console.log('attrs: ', attrs);
+                console.log('scope.query is: ', scope.query);
                 $http.get("searchApi", { //was "?view=searchApi"
                     'params': {'query': scope.query },
                     'resultType': 'json'
@@ -1069,9 +1071,7 @@ $( function() {
                         scope.entities = [{obj: "No results"}];
                     }else {
                         scope.entities = response.data//was scope.entities
-                    }
-                    
-                                
+                    }   
                 });
             }
         }

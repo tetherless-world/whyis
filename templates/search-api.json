@@ -1,12 +1,12 @@
 {% set qr = this.graph.query('''PREFIX bds: <http://www.bigdata.com/rdf/search#>
 
-  SELECT ?sub ?pred ?obj ?score WHERE {
-    ?obj bds:search  ?query .
-    ?obj bds:relevance ?score .  		
-    ?sub ?pred ?obj
-
-  } ORDER BY DESC(?score)
-  LIMIT 100''' , initNs=ns.prefixes, initBindings={"query":rdflib.Literal(args['query'])}) %}
+  SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score) WHERE {
+      ?obj bds:search ?query .
+      ?obj bds:relevance ?score .  		
+      ?sub ?pred ?obj
+  
+  } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
+    LIMIT 10''' , initNs=ns.prefixes, initBindings={"query":rdflib.Literal(args['query'])}) %}
   
 {% set data = [] %}
 {%for row in qr%}
