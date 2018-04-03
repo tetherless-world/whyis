@@ -1044,7 +1044,6 @@ $( function() {
         };
     }]);
 
-    // Changing Jim's example code for a directive
     app.directive("searchResult", ["$http", function($http) {
         return {
             restrict: "E",
@@ -1059,19 +1058,14 @@ $( function() {
             link: function(scope, element, attrs) {//was scope
                 console.log('attrs: ', attrs);
                 console.log('scope.query is: ', scope.query);
-                $http.get("searchApi", { //was "?view=searchApi"
+                $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
                     'params': {'query': scope.query },
                     'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}
                 }).then(function(response) {
                     console.log('response data: ', response.data);
                     console.log('attrs is: ', attrs)
-                    if (response.data.length === 0) {
-                        console.log('length === 0 for response.data');
-                        scope.entities = [{obj: "No results"}];
-                    }else {
-                        scope.entities = response.data//was scope.entities
-                    }   
+                    scope.entities = response.data;  
                 });
             }
         }
