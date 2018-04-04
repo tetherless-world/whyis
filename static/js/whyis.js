@@ -1044,6 +1044,33 @@ $( function() {
         };
     }]);
 
+    app.directive("searchResult", ["$http", function($http) {
+        return {
+            restrict: "E",
+            templateUrl: '/static/html/searchResult.html',
+
+            //add scope: {} into directive so that I can bind query={{ args['query'] }}
+            //from inside <search-result> in the search-view.html jinja template
+            //use @ instead of = because I want string, not variable
+            scope:  {
+                query: "@"
+            },
+            link: function(scope, element, attrs) {//was scope
+                console.log('attrs: ', attrs);
+                console.log('scope.query is: ', scope.query);
+                $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
+                    'params': {'query': scope.query },
+                    'resultType': 'json'
+                    // 'headers' : {'Accept' : 'application/json'}
+                }).then(function(response) {
+                    console.log('response data: ', response.data);
+                    console.log('attrs is: ', attrs)
+                    scope.entities = response.data;  
+                });
+            }
+        }
+    }]);
+
     app.controller('SearchCtrl', ['$timeout','$q','$log','$http', "$location", function DemoCtrl ($timeout, $q, $log, $http, $location) {
 	var self = this;
 	
