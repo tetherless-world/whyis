@@ -2,12 +2,12 @@
 {% block title %}{% endblock %}
 {% endmacro %}
 {% from "elements/upload.html" import upload_button_modal %}
-<html class="mdc-typography"
+<html lang="{{config['default_language']}}" class="mdc-typography"
       xmlns="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>{{ title() }} - {{ config['site_name'] }}</title>
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">

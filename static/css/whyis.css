@@ -6,6 +6,40 @@ md-dialog.fullscreen-dialog {
     border-radius: 0;
 }
 
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small,
+.h1 small,
+.h2 small,
+.h3 small,
+.h4 small,
+.h5 small,
+.h6 small,
+h1 .small,
+h2 .small,
+h3 .small,
+h4 .small,
+h5 .small,
+h6 .small,
+.h1 .small,
+.h2 .small,
+.h3 .small,
+.h4 .small,
+.h5 .small,
+.h6 .small {
+  font-weight: normal;
+  line-height: 1;
+  color: #555;
+}
+a {
+  color: #23537b;
+  text-decoration: none;
+}
+
+md-toolbar { color: white }
 .row-eq-height {
   display: -webkit-box;
   display: -webkit-flex;
