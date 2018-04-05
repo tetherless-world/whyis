@@ -1,0 +1,11 @@
+{{'''graph ?assertion {
+      {
+         ?source ?link_type ?target.
+      }
+    }
+    bind(?assertion as ?link)
+    minus { ?source owl:sameAs|rdfs:seeAlso|rdf:type|<http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
+    minus { ?source sio:hasPart|sio:hasAttribute ?target }
+    filter (!sameTerm(?source, ?target) && isIRI(?target))
+
+''' | probit(source=this.identifier) | tojson }}

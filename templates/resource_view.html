@@ -15,7 +15,11 @@
   <div class="col-md-8">
     {{ summary_panel(this.description()) }}
     {{ content(this.description()) }}
-    
+    <md-card>
+      <md-card-content layout="row" style="height: 40em">
+        <explore flex start="{{this.identifier}}"></explore>
+      </md-card-content>
+    </md-card>
     <div class="panel panel-default">
       <div class="panel-heading">
         <h2 class="panel-title">Nanopublications for {{get_label(this.description())}}</h2>

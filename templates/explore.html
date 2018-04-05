@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+
+{% block styles %}
+{% endblock %}
+{% block title %}Exploring {{g.get_label(this)}}{% endblock %}
+{% block body %}
+<md-content layout="row" layout-fill>
+<explore flex start="{{this.identifier}}"></explore>
+</md-content>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

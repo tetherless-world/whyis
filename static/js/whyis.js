@@ -817,14 +817,12 @@ $( function() {
                     np.resource.pubinfo = graphMap[np.resource.pubinfo['@id']];
                     np.resource.pubinfo = np.resource(np.resource.pubinfo['@id'],np.resource.pubinfo);
                     np.resource.pubinfo.resource.assertion = np.resource.pubinfo.resource(np.resource.assertion['@id']);
-                    console.log(np, np.resource.pubinfo.resource.assertion);
                 }
             })
             return nanopubs[0];
         }
 
         function processNanopubs(response) {
-            console.log(response);
             var nanopubs = response.data;
             var workMap = {};
             var npMap = {};
@@ -871,7 +869,6 @@ $( function() {
                 nanopub.newNanopub = Nanopub(nanopub.about, nanopub.work);
                 return nanopub;
             });
-            console.log(topNanopubs);
             return topNanopubs;
         }
         Nanopub.get = function(nanopub) {
@@ -1044,29 +1041,67 @@ $( function() {
         };
     }]);
 
-    app.controller('SearchCtrl', ['$timeout','$q','$log','$http', "$location", function DemoCtrl ($timeout, $q, $log, $http, $location) {
-	var self = this;
-	
-	// list of `state` value/display objects
-	self.states        = [];
-	self.querySearch   = querySearch;
-	self.selectedItemChange = selectedItemChange;
-	self.searchTextChange   = searchTextChange;
+    app.directive('searchAutocomplete', ['$timeout','$q','$log','$http', "$location", "resolveEntity",
+                                         function ($timeout, $q, $log, $http, $location, resolveEntity) {
+	return {
+	    restrict: "E",
+            scope: {
+                querySearch : "&?",
+                selectedItemChange : "&?",
+                searchTextChange : "&?",
+                newNode : "&?"
+            },
+	    templateUrl: '/static/html/searchAutocomplete.html',
+            link: function(scope, element, attrs) {
+	        var self = scope;
 
-	self.newNode = function(nodeid) {
-	    window.location.href = '/'+nodeid.replace(' ','_');
-	}
+                if (!self.querySearch) self.querySearch = function() { return resolveEntity};
+                if (!self.selectedItemChange) self.selectedItemChange = function() { return selectedItemChange};
+                if (!self.searchTextChange) self.searchTextChange = function() { return searchTextChange};
+                if (!self.newNode) self.newNode = function() { return newNode};
+                
+	        //self.querySearch   = querySearch;
+	        //self.selectedItemChange = selectedItemChange;
+	        //self.searchTextChange   = searchTextChange;
 
-        self.searchText = getParameterByName("query");
-	// ******************************
-	// Internal methods
-	// ******************************
+	        newNode = function(nodeid) {
+	            window.location.href = '/'+nodeid.replace(' ','_');
+	        }
 
+                self.searchText = getParameterByName("query");
+	        // ******************************
+	        // Internal methods
+	        // ******************************
+
+
+	        function searchTextChange(text) {
+	            $log.info('Text changed to ' + text);
+	        }
+
+	        function selectedItemChange(item) {
+	            window.location.href = '/about?uri='+window.encodeURIComponent(item.node);
+	        }
+
+	        /**
+	         * Create filter function for a query string
+	         */
+	        function createFilterFor(query) {
+	            var lowercaseQuery = angular.lowercase(query);
+                    
+	            return function filterFn(state) {
+		        return lowercaseQuery in state.value;
+	            };
+                    
+	        }
+            }
+        }
+    }]);
+
+    app.service('resolveEntity', ["$http", function($http) {
 	/**
-	 * Search for states... use $timeout to simulate
-	 * remote dataservice call.
+	 * Search for nodes.
 	 */
-	function querySearch (query) {
+	function resolveEntity (query) {
             return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
                 .then(function(response) {
                     return response.data.map(function(hit) {
@@ -1075,26 +1110,7 @@ $( function() {
                     });
                 });
 	}
-
-	function searchTextChange(text) {
-	    $log.info('Text changed to ' + text);
-	}
-
-	function selectedItemChange(item) {
-	    window.location.href = '/about?uri='+window.encodeURIComponent(item.node);
-	}
-
-	/**
-	 * Create filter function for a query string
-	 */
-	function createFilterFor(query) {
-	    var lowercaseQuery = angular.lowercase(query);
-
-	    return function filterFn(state) {
-		return lowercaseQuery in state.value;
-	    };
-
-	}
+        return resolveEntity;
     }]);
     
     app.directive("latest", ["$http", 'getLabel', function($http, getLabel) {
@@ -1417,6 +1433,551 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return angular.isArray(val) ? val : [val];
         }
     });
+
+    app.factory('edgeNames', function() {
+        // Maps each type of edge interaction with its name.
+        return {
+            "http://purl.obolibrary.org/obo/CHEBI_48705": "Agonist",                   
+            "http://purl.obolibrary.org/obo/MI_0190": "Molecule Connection",  
+            "http://purl.obolibrary.org/obo/CHEBI_23357": "Cofactor",                  
+            "http://purl.obolibrary.org/obo/CHEBI_25212": "Metabolite",                
+            "http://purl.obolibrary.org/obo/CHEBI_35224": "Effector",                   
+            "http://purl.obolibrary.org/obo/CHEBI_48706": "Antagonist",                
+            "http://purl.obolibrary.org/obo/GO_0048018": "Receptor Agonist Activity",                     
+            "http://purl.obolibrary.org/obo/GO_0030547":"Receptor Inhibitor Activity",    
+            "http://purl.obolibrary.org/obo/MI_0915": "Physical Association",          
+            "http://purl.obolibrary.org/obo/MI_0407": "Direct Interaction",          
+            "http://purl.obolibrary.org/obo/MI_0191": "Aggregation",                   
+            "http://purl.obolibrary.org/obo/MI_0914": "Association",                    
+            "http://purl.obolibrary.org/obo/MI_0217": "Phosphorylation Reaction",     
+            "http://purl.obolibrary.org/obo/MI_0403": "Colocalization",               
+            "http://purl.obolibrary.org/obo/MI_0570": "Protein Cleavage",              
+            "http://purl.obolibrary.org/obo/MI_0194": "Cleavage Reaction"             
+        }
+    });        
+    
+    app.factory("edgeTypes", function() {
+        // Maps edge interaction types to values for Cytoscape visualization
+        return {
+            "tri" : {
+                "shape": "triangle",
+                "color": "#FED700",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/CHEBI_48705", 
+                    "http://purl.obolibrary.org/obo/CHEBI_23357",
+                    "http://purl.obolibrary.org/obo/CHEBI_25212",
+                    "http://purl.obolibrary.org/obo/GO_0048018"
+                ],
+                "filter": false
+            },
+            "tee" : {
+                "shape": "tee",
+                "color": "#BF1578",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/CHEBI_48706",
+                    "http://purl.obolibrary.org/obo/GO_0030547",
+                ],
+                "filter": false
+            },
+            "cir" : {
+                "shape": "circle",
+                "color": "#6FCCDD",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/MI_0915",
+                    "http://purl.obolibrary.org/obo/MI_0191",
+                    "http://purl.obolibrary.org/obo/MI_0403"
+                ],
+                "filter": false
+            },
+            "dia" : {
+                "shape": "diamond",
+                "color": "#7851A1",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/MI_0217"
+                ],
+                "filter": false
+            },
+            "squ" : {
+                "shape": "square",
+                "color": "#A0A0A0",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/MI_0570",
+                    "http://purl.obolibrary.org/obo/MI_0194"
+                ],
+                "filter": false
+            },
+            "non" : {
+                "shape": "triangle",
+                "color": "#A7CE38",
+                "uris": [
+                    "http://purl.obolibrary.org/obo/MI_0190",
+                    "http://purl.obolibrary.org/obo/CHEBI_35224",
+                    "http://purl.obolibrary.org/obo/MI_0407",
+                    "http://purl.obolibrary.org/obo/MI_0914"
+                ],
+                "filter": false
+            },
+            "other": {
+                "shape": "triangle",
+                "color": "#FF0040",
+                "uris": [],
+                "filter": false
+            }
+        }
+    });
+        
+    app.factory("nodeTypes",function() {
+        // Maps node types to values for Cytoscape visualization
+        return {
+            // "triangle" : {
+            //     "shape": "triangle",
+            //     "size": "70",
+            //     "color": "#FED700",
+            //     "uris": ["http://semanticscience.org/resource/activator"]
+            // },
+            // "star" : {
+            //     "shape": "star",
+            //     "size": "70",
+            //     "color": "#BF1578",
+            //     "uris": ["http://semanticscience.org/resource/inhibitor"]
+            // },
+            "square" : {
+                "shape": "square",
+                "size": "50",
+                "color": "#EA6D00",
+                "uris": ["http://semanticscience.org/resource/Protein"]
+            },
+            "rect" : {
+                "shape": "roundrectangle",
+                "size": "60",
+                "color": "#112B49",
+                "uris": ["http://semanticscience.org/resource/SIO_010056"]
+            },
+            "circle" : {
+                "shape": "ellipse",
+                "size": "60",
+                "color": "#16A085",
+                "uris": ["http://semanticscience.org/resource/Drug"]
+            },
+            "other" : {
+                "shape": "octagon",
+                "size": "50",
+                "color": "#FF7F50",
+                "uris": []
+            }
+        }
+    });
+
+    app.factory("getNodeFeature",['nodeTypes', function(nodeTypes) {
+        // Gets the node feature of a given uri.
+        return function(feature, uris) {
+            var keys = Object.keys(nodeTypes);
+            for (var i = 0; i < keys.length; i++) {
+                for (var j = 0; j < uris.length; j++) {
+                    if (nodeTypes[keys[i]]["uris"].indexOf(uris[j]) > -1) {
+                        return nodeTypes[keys[i]][feature];
+                    }
+                }
+            }
+            return nodeTypes["other"][feature];
+        };
+    }]);
+                
+                
+    app.factory("getEdgeFeature", ['edgeTypes', 'edgeNames', function(edgeTypes) {
+        // Gets the edge feature of a given uri.
+        return function(feature, uri) {
+            if (feature == "name") { return edgeNames[uri]; }
+            else {
+                var keys = Object.keys(edgeTypes);
+                for (var i = 0; i < keys.length; i++) {
+                    if (edgeTypes[keys[i]]["uris"].indexOf(uri) > -1) {
+                        return edgeTypes[keys[i]][feature];
+                    }
+                }
+                return edgeTypes["other"][feature];
+            }
+        }
+    }]);
+
+    app.factory("links",["$http", "$q", 'getLabel', 'getEdgeFeature', 'getNodeFeature',
+                         function($http, $q, getLabel, getEdgeFeature, getNodeFeature) {
+
+        function links(entity, view, elements, update) {
+            if (!elements.nodes) {
+                elements.nodes = [];
+                elements.nodeMap = {};
+                function node(uri, label, types) {
+                    if (!elements.nodeMap[uri]) {
+                        elements.nodeMap[uri] = { group: 'nodes', data: { id: uri, label: label} };
+                        var nodeEntry = elements.nodeMap[uri];
+                        function processTypes() {
+                            if (nodeEntry.data['@type']) {
+                                var types = nodeEntry.data['@type'];
+                                nodeEntry.classes = types.join(' ');
+                                nodeEntry.data.shape = getNodeFeature("shape", types);
+                                nodeEntry.data.color = getNodeFeature("color", types);
+                            }
+                        }
+                        //nodeEntry.data.linecolor = "#E1EA38";
+                        if (types) {
+                            nodeEntry.data['@type'] = types;
+                            processTypes();
+                        } else {
+                            $http.get('/about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
+                                .then(function(response) {
+                                    response.data.forEach(function(x) {
+                                        if (x['@id'] == uri) {
+                                            $.extend(nodeEntry.data, x);
+                                            processTypes();
+                                        }
+                                    });
+                                    if (update) update()
+                                });
+                        }
+                        if (! nodeEntry.data.label) {
+                            $http.get('/about',{ params: {uri:uri,view:'label'}})
+                                .then(function(response) {
+                                    nodeEntry.data.label = response.data;
+                                    if (update) update();
+                                });
+                        }
+                        elements.nodes.push(nodeEntry);
+                    }
+                    return elements.nodeMap[uri];
+                }
+                elements.node = node;
+            }
+            if (!elements.edges) {
+                elements.edges = [];
+                elements.edgeMap = {};
+                function edge(edge) {
+                    var edgeKey = [edge.source, edge.link, edge.target].join(' ');
+                    if (!elements.edgeMap[edgeKey]) {
+                        elements.edgeMap[edgeKey] = { group: 'edges', data: edge };
+                        var edgeEntry = elements.edgeMap[edgeKey];
+                        edgeEntry.id = edgeKey;
+                        if (edgeEntry.data['link_types']) {
+                            var types = edgeEntry.data['link_types'];
+                            edgeEntry.classes = types.join(' ');
+                            edgeEntry.data.shape = getEdgeFeature("shape", types); 
+                            edgeEntry.data.color = getEdgeFeature("color", types);
+                        }
+                        edgeEntry.data.width = (edgeEntry.data.zscore * 4) + 1;
+                        elements.edges.push(edgeEntry);
+                    }
+                    return elements.edgeMap[edgeKey];
+                }
+                elements.edge = edge;
+            }
+            
+            var p = $http.get('/about',{ params: {uri:entity,view:view, }, responseType:'json'})
+                .then(function(response) {
+                    response.data.forEach(function(edge) {
+                        elements.node(edge.source, edge.source_label, edge.source_types);
+                        elements.node(edge.target, edge.target_label, edge.target_types);
+                        elements.edge(edge);
+                    });
+                });
+            if (!elements.all) {
+                elements.all = function() {
+                    return elements.nodes.concat(elements.edges);
+                }
+            }
+            return p;
+        }
+        return links;
+    }]);
+
+    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity",
+                              function($http, links, $timeout, $mdSidenav, resolveEntity) {
+	return {
+            scope: {
+                elements : "=?",
+                style : "=?",
+                layout : "=?",
+                start: "@?"
+            },
+            templateUrl: '/static/html/explore.html',
+	    restrict: "E",
+            link: function(scope, element, attrs) {
+                scope.toggleSidebar = function() {
+                    console.log($mdSidenav("explore"));
+                    
+                    $mdSidenav("explore").toggle();
+                }
+
+                scope.selectedEntities = null;
+                scope.searchText = null;
+
+                scope.searchTextChange = function(text) {
+                    scope.searchText = text;
+                }
+
+                scope.selectedItemChange = function(entity) {
+                    scope.selectedEntities = [entity];
+                }
+
+                scope.clear = function() {
+                }
+
+                function loadLinks(entities) {
+                    scope.loading = [];
+                    entities.forEach(function(e) {
+                        scope.loading.push(e.node);
+                        links(e.node, 'incoming', scope.elements).then(function() {
+                            return links(e.node, 'outgoing', scope.elements);
+                        }).then(function() {
+                            update();
+                            scope.loading = scope.loading.filter(function(d) { return d != e.node});
+                            console.log(scope.loading);
+                        });
+                    })
+                }
+                scope.add = function() {
+                    if (scope.selectedEntities) {
+                        loadLinks(scope.selectedEntities)
+                    } else if (scope.searchText && scope.searchText.length > 3) {
+                        resolveEntity(scope.searchText).then(loadLinks);
+                    }
+                }
+                
+                if (!scope.style) {
+                    scope.style = cytoscape.stylesheet()
+                        .selector('node')
+                        .css({
+                            'min-zoomed-font-size': 8,
+                            'text-valign': 'center',
+                            'border-width': 0,
+                            'cursor': 'pointer',
+                            'color' : 'white',
+                            'font-size' : '8px',
+                            'text-wrap': 'wrap',
+                            'text-max-width' : '5em',
+                            //'text-outline-width' : 3,
+                            //'text-outline-opacity' : 1,
+                            'text-background-opacity' : 1,
+                            'text-background-shape' : 'roundrectangle',
+                            'text-background-padding' : '1px',
+                            'width': '5em'
+                        })
+                        .selector('node[color]')
+                        .css({
+                            'background-color': 'data(color)',
+                            'text-background-color': 'data(color)',
+                            'shape': 'data(shape)',
+                            //'text-outline-color' : 'data(color)',
+                            //'border-color': 'data(linecolor)',
+//                            'height': 'data(size)',
+//                            'width': 'data(size)',
+                        })
+                        .selector('node[label]')
+                        .css({
+                            'content': 'data(label)',
+                        })
+                        .selector('edge')
+                        .css({
+                            'width':'data(width)',
+                            'target-arrow-shape': 'data(shape)',
+                            'curve-style' : 'bezier',
+                            'target-arrow-color': 'data(color)',
+                            'line-color': 'data(color)'
+                        })
+                        .selector(':selected')
+                        .css({
+                            'background-color': '#D8D8D8',
+                            'border-color': '#D8D8D8',
+                            'line-color': '#D8D8D8',
+                            'target-arrow-color': '#D8D8D8',
+                            'source-arrow-color': '#D8D8D8',
+                            'opacity':1,
+                        })
+                        .selector('.highlighted')
+                        .css({
+                            'background-color': '#000000',
+                            'line-color': '#000000',
+                            'target-arrow-color': '#000000',
+                            'transition-property': 'background-color, line-color, target-arrow-color, height, width',
+                            'transition-duration': '0.5s'
+                        })
+                        .selector(':locked')
+                        .css({
+                            'background-color': '#7f8c8d'
+                        })
+                        .selector('.faded')
+                        .css({
+                            'opacity': 0.25,
+                            'text-opacity': 0
+                        })
+                }
+                
+                /* 
+                 * CYTOSCAPE IMPLEMENTATION
+                 */
+                scope.neighborhood = [];
+                if (!scope.layout)
+                    scope.layout = {
+                        name: 'cose-bilkent',
+                        animate: false,
+                        randomize: true,
+                        nodeDimensionsIncludeLabels: true,
+                        //fit: false,
+                        //padding: [20,20,20,20],
+                        //circle: true,
+                        //concentric: function(){ 
+                            //var rank = scope.pageRank.rank(this);
+                            //console.log(this, rank, this.degree());
+                            //return scope.pageRank.ordinal[rank];
+                            //this.indegree() + this.outdegree();
+                            //return this.degree() * 10;
+                        //},
+                        //maxSimulationTime: parseInt(scope.numLayout) * 1000
+                    };
+                
+                scope.cy = cytoscape({
+                    container: $(element).find('.graph'),
+                    style: scope.style,
+                    elements: [] ,
+                    hideLabelsOnViewport: true ,
+                    ready: function(){
+                        scope.cy = cy = this;
+                        cy.boxSelectionEnabled(true);
+                        
+                        // Clicking on whitespace removes all CSS changes
+                        cy.on('vclick', function(e){
+                            if( e.cyTarget === cy ){
+                                cy.elements().removeClass('faded');
+                                cy.elements().removeClass("highlighted");
+                                scope.bfsrun = false;
+                                scope.neighborhood = [];
+                            }
+                        });
+
+                        // When an edge is selected
+                        cy.on('select', 'edge', function(e) {
+                        });
+                        
+                        // When a node is selected
+                        cy.on('select', 'node', function(e){
+                        });
+                    }
+                });
+
+                /* 
+                 * OPTIONS
+                 */
+                scope.showLabel = true;
+                scope.bfsrun = false;
+                scope.numSearch = 1;
+                scope.numLayout = 20;
+                scope.probThreshold = 0.95;
+                scope.found = -1;
+                scope.once = false;
+                scope.query = "none";     
+                scope.filter = {
+                    "customNode": {
+                        "activator": true,
+                        "inhibitor": true,
+                        "protein": true,
+                        "disease": true,
+                        "drug": true,
+                        "undef": true
+                    },
+                    "customEdge": {
+                        "activation": true,
+                        "inhibition": true,
+                        "association": true,
+                        "reaction": true,
+                        "cleavage": true,
+                        "interaction": true
+                    }
+                }
+                
+
+                /*
+                 * HELPER FUNCTIONS
+                 */
+                
+                // Error Handling
+                scope.handleError = function(data,status, headers, config) {
+                    scope.error = true;
+                    scope.loading = false;
+                };
+                // Returns a list of the requested attribute of the selected nodes.
+                scope.getSelected = function(attr) {
+                    if (!scope.cy) return [];
+                    var selected = scope.cy.$('node:selected');
+                    var query = [];
+                    selected.nodes().each(function(i,d) { query.push(d.data(attr)); });
+                    return query;
+                };
+
+                /*
+                 * NODE FUNCTIONS
+                 */
+
+                // Gets the details of a node by opening the uri in a new window.
+                scope.getDetails = function(query) {
+                    query.forEach(function(uri) { window.open('/about?uri='+uri); });
+                };
+                // Shows BFS animation starting from selected nodes
+                scope.showBFS = function(query) {
+                    scope.bfsrun = true;
+                    query.forEach(function(id) {
+                        cy.elements().removeClass("highlighted");
+                        var root = "#" + id;
+                        var bfs = cy.elements().bfs(root, function(){}, true);
+                        var i = 0;
+                        var highlightNextEle = function(){
+                            bfs.path[i].addClass('highlighted');
+                            bfs.path[i].removeClass('faded');
+                            if( i < bfs.path.length - 1){
+                                i++;
+                                if (scope.bfsrun) {
+                                    setTimeout(highlightNextEle, 50);
+                                } else { i = bfs.path.length; }
+                            }
+                        };
+                        highlightNextEle();
+                    });
+                };
+                // Lock/unlock the selected elements
+                scope.lock = function(query, lock) {
+                    query.forEach(function(id) {
+                        var node = "#" + id;
+                        if (lock) { cy.$(node).lock(); }
+                        else { cy.$(node).unlock(); }
+                    });
+                }
+                if (!scope.elements) scope.elements = {};
+
+
+                function update() {
+                    var elements = [];
+                    if (scope.elements && scope.elements.all) {
+                        elements = scope.elements.all();
+                        var eles = scope.cy.add(elements);
+                        //setTimeout(function(){
+                        scope.cy.style().update();
+                        scope.cy.layout(scope.layout).run();
+                        //    scope.$apply(function(){ scope.loading = false; });
+                        //}, 1000);
+                        scope.cy.resize();
+                    }
+                };
+
+                
+                scope.$watchCollection('elements.edges', update);
+                
+                if (scope.start) {
+                    links(scope.start, 'incoming', scope.elements, update).then(function() {
+                        return links(scope.start, 'outgoing', scope.elements, update);
+                    }).then(update);
+                }
+            }
+        }
+    }]);
+        
     angular.bootstrap(document, ['App']);
 
 });

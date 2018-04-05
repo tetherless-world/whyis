@@ -1,0 +1,72 @@
+<div layout="column" layout-fill>
+  <md-toolbar class="md-hue-2" flex="initial">
+    <div class="md-toolbar-tools" layout="row">
+      <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
+        <md-icon>menu</md-icon>
+      </md-button>
+      <h2>Knowledge Explorer</h2>
+    </div>
+  </md-toolbar>
+  <md-content flex layout="column" layout-fill>
+    <div flex class="graph"></div>
+    <md-sidenav class="md-sidenav-left" md-component-id="explore"
+                md-disable-backdrop md-whiteframe="4">
+      <md-content layout-margin layout="column">
+        <form layout="row" role="form" data-ng-submit="add()">
+          <search-autocomplete
+             flex
+             selected-item-change="selectedItemChange"
+             search-text-change="searchTextChange">
+          </search-autocomplete>
+        </form>
+        <md-progress-linear flex ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
+        <md-content flex layout="row">
+          <md-button class="md-icon-button" aria-label="Lock Position" title="Lock Position" data-ng-click="lock(getSelected('id'), true)">
+            <md-icon>lock_outline</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" aria-label="Unlock Position" title="Unlock Position" data-ng-click="lock(getSelected('id'), false)">
+            <md-icon>lock_open</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" aria-label="Highlight Connections" title="Highlight Connections" data-ng-click="showBFS(getSelected('id'))">
+            <md-icon>remove_red_eye</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" aria-label="Find Incoming Links" title="Find Incoming Links"  data-ng-click="">
+            <md-icon>arrow_forward</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" aria-label="Find Incoming and Outgoing Links" title="Find Incoming and Outgoing Links" data-ng-click="">
+            <md-icon>compare_arrows</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" aria-label="Find Outgoing Links" title="Find Outgoing Links" data-ng-click="">
+            <md-icon >arrow_back</md-icon>
+          </md-button>
+        </md-content>
+        <md-list flex>
+          <md-subheader >Link Traversal</md-subheader>
+          <md-list-item>
+            <md-slider-container layout="row">
+              <span flex="30">Max Links</span>
+              <md-slider flex discrete step="1" min="0" max="5" ng-model="numSearch" aria-label="Max Link Distance " id="link-distance-slider">
+              </md-slider>
+              <md-input-container flex="30">
+                <input type="number" ng-model="numSearch" aria-label="Max Link Distance" aria-controls="link-distance-slider">
+              </md-input-container>
+            </md-slider-container>
+          </md-list-item>
+          <md-list-item>
+            <md-slider-container layout="row">
+              <span flex="30">Min Joint P</span>
+              <md-slider flex min="0" max="1" step="0.01" ng-model="probThreshold" aria-label="Min Joint Probability " id="joint-probability-slider">
+              </md-slider>
+              <md-input-container flex="30">
+                <input type="number" ng-model="probThreshold" aria-label="Min Joint Probability" aria-controls="joint-probability-slider">
+              </md-input-container>
+            </md-slider-container>
+          </md-list-item>
+          <md-subheader >Details</md-subheader>
+          <md-list-item ng-show="getSelected('id').length == 0">Select a node or edge to see details.</md-list-item>
+        </md-list>
+      </md-content>
+    </md-sidenav>
+  </md-content>
+</div>
+

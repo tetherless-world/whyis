@@ -24,7 +24,7 @@ def resolve(graph, g, term, context=None):
 select distinct
 ?node
 ?label
-(group_concat(distinct ?type; separator="||") as ?types)
+#(group_concat(distinct ?type; separator="||") as ?types)
 (coalesce(?relevance+?cr, ?relevance) as ?score)
 where {
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
@@ -34,9 +34,9 @@ where {
   
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
   
-  optional {
-    ?node rdf:type/rdfs:subClassOf* ?type.
-  }
+#  optional {
+#    ?node rdf:type/rdfs:subClassOf* ?type.
+#  }
 
   %s
   
@@ -73,50 +73,34 @@ where {
     for hit in graph.query(query, initNs=prefixes):
         result = hit.asdict()
         g.labelize(result,'node','preflabel')
-        result['types'] = [g.labelize({'uri':x},'uri','label') for x in result['types'].split('||')]
+        #result['types'] = [g.labelize({'uri':x},'uri','label') for x in result['types'].split('||')]
         results.append(result)
     return results
 
 latest_query = '''select distinct 
 ?about 
-(max(coalesce(?modified, ?created)) as ?updated) 
+(max(?created) as ?updated)
 (group_concat(distinct ?type; separator="||") as ?types)
-where {                                                                                                 
-  graph ?np {
+where {
+    hint:Query hint:optimizer "Runtime" .                                                                                              graph ?np {
     ?np 
         np:hasPublicationInfo ?pubinfo;
         np:hasAssertion ?assertion.
   }
   graph ?pubinfo {
-    optional {
-      ?assertion dc:created ?created.
-    }
-    optional {
-      ?assertion dc:modified ?modified.
-    }
+      ?assertion dc:created|dc:modified ?created.
   }
     {
       graph ?np { 
         ?np sio:isAbout ?about.
       }
-    } union {
-	  graph ?assertion {
-        ?about ?p ?o.
-        filter (!regex(str(?about), "^bnode:"))
-        filter not exists {
-          [] ?relation <http://purl.org/twc/vocab/setl/SemanticETLScript>.
-        }
-      }
-      ?about a [].
     }
   
     filter not exists {
       [] ?about [].
     }
-
-    
     optional {
-      ?about rdf:type/rdfs:subClassOf* ?type.
+      ?about a ?type.
     }
     
 } group by ?about order by desc (?updated)

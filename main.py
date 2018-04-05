@@ -70,6 +70,7 @@ rdflib.plugin.register('sparql', UpdateProcessor,
         'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
 
 import search
+import filters
 
 # apps is a special folder where you can place your blueprints
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -495,54 +496,7 @@ construct {
         return self.Entity(self.db, entity)
     
     def configure_template_filters(self):
-        import urllib
-        from markupsafe import Markup
-    
-        @self.template_filter('urlencode')
-        def urlencode_filter(s):
-            if type(s) == 'Markup':
-                s = s.unescape()
-            s = s.encode('utf8')
-            s = urllib.quote_plus(s)
-            return Markup(s)
-
-        @self.template_filter('labelize')
-        def labelize(entry, key='about', label_key='label', fetch=False):
-            resource = None
-            if fetch:
-                resource = self.get_resource(URIRef(entry[key]))
-            else:
-                resource = self.Entity(self.db, URIRef(entry[key]))
-            entry[label_key] = g.get_label(resource.description())
-            return entry
-
-        self.labelize = labelize
-        
-        @self.template_filter('lang')
-        def lang_filter(terms):
-            terms = list(terms)
-            if terms is None or len(terms) == 0:
-                return []
-            resources = [x for x in terms if not isinstance(x, rdflib.Literal)]
-            literals = [x for x in terms if isinstance(x, rdflib.Literal)]
-            languages = set([x.language for x in literals if x.language is not None])
-            best_lang = request.accept_languages.best_match(list(languages))
-            best_terms = [x for x in literals if x.language == best_lang]
-            if len(best_terms) == 0:
-                best_terms = [x for x in literals if x.language == self.config['default_language']]
-            if len(best_terms) > 0:
-                return resources + best_terms
-            return resources
-        self.lang_filter = lang_filter
-
-        @self.template_filter('query')
-        def query_filter(query, graph=self.db, prefixes={}, values=None):
-            namespaces = dict(self.NS.prefixes)
-            namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
-            params = { 'initNs': namespaces}
-            if values is not None:
-                params['initBindings'] = values
-            return [x.asdict() for x in graph.query(query, **params)]
+        filters.configure(self)
 
     def add_file(self, f, entity, nanopub):
         old_nanopubs = []

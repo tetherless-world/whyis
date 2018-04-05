@@ -121,6 +121,7 @@ class LinkedData (Importer):
 
     def modified(self, entity_name):
         u = self._get_access_url(entity_name)
+        print "accessing at", u
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
