@@ -867,7 +867,7 @@ construct {
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
-                        
+
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
