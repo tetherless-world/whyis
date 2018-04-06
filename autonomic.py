@@ -397,7 +397,7 @@ class SETLr(UpdateChangeService):
         db_graph.NS = self.app.NS
         setlr.actions[whyis.sparql] = db_graph
         setl_graph = i.graph
-        setlr.run_samples = True
+        #setlr.run_samples = True
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
