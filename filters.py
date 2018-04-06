@@ -120,8 +120,8 @@ where {
                     rates = [base_rate for x in i['articles']]
                     if len(rates) == 0:
                         rates = [base_rate]
-                    p = combine_pvalues(rates, method="stouffer")
-                    i['probability'] = base_rate
+                    p = combine_pvalues(rates, method="stouffer")[1]
+                    i['probability'] = p
                 result['from'].append(i['np'])
                 result['articles'].extend(i['articles'])
             result['probability'] = geomean([i['probability'] for i in links])

@@ -5,8 +5,7 @@
 {% if this.description().value(ns.RDF.type) %} a
   {% for superClass in this.description()[ns.RDF.type] %}
   {% if loop.index > 1 and loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}
-  {% if loop.revindex > 2 %}, {% endif %}
+  {{ render_resource_link(superClass) }}{% if loop.revindex > 2 %}, {% endif %}
 {% endfor %}
 {% endif %}
 {% endblock %}

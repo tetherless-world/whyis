@@ -1494,6 +1494,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     "http://purl.obolibrary.org/obo/CHEBI_48705", 
                     "http://purl.obolibrary.org/obo/CHEBI_23357",
                     "http://purl.obolibrary.org/obo/CHEBI_25212",
+                    "http://purl.obolibrary.org/obo/MI_2254",
                     "http://purl.obolibrary.org/obo/GO_0048018"
                 ],
                 "filter": false
@@ -1503,7 +1504,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "color": "#BF1578",
                 "uris": [
                     "http://purl.obolibrary.org/obo/CHEBI_48706",
-                    "http://purl.obolibrary.org/obo/GO_0030547",
+                    "http://purl.obolibrary.org/obo/MI_2255",
                 ],
                 "filter": false
             },
@@ -1511,9 +1512,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "circle",
                 "color": "#6FCCDD",
                 "uris": [
-                    "http://purl.obolibrary.org/obo/MI_0915",
-                    "http://purl.obolibrary.org/obo/MI_0191",
-                    "http://purl.obolibrary.org/obo/MI_0403"
+                    "http://purl.obolibrary.org/obo/GO_0005488",
+                    "http://purl.obolibrary.org/obo/GO_0048037",
+                    "http://purl.obolibrary.org/obo/GO_0051087",
+                    "http://purl.obolibrary.org/obo/NCIT_C40468",
+                    "http://purl.obolibrary.org/obo/NCIT_C40483",
+                    "http://purl.obolibrary.org/obo/NCIT_C40492"
                 ],
                 "filter": false
             },
@@ -1521,7 +1525,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "diamond",
                 "color": "#7851A1",
                 "uris": [
-                    "http://purl.obolibrary.org/obo/MI_0217"
+                    "http://purl.obolibrary.org/obo/PATO_0002133",
+                    "http://semanticscience.org/resource/Metabolism"
                 ],
                 "filter": false
             },
@@ -1529,8 +1534,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "square",
                 "color": "#A0A0A0",
                 "uris": [
-                    "http://purl.obolibrary.org/obo/MI_0570",
-                    "http://purl.obolibrary.org/obo/MI_0194"
+                    "http://purl.obolibrary.org/obo/MI_1157",
+                    "http://purl.obolibrary.org/obo/MI_0194",
+                    "http://purl.obolibrary.org/obo/MI_2048",
                 ],
                 "filter": false
             },
@@ -1546,8 +1552,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "filter": false
             },
             "other": {
-                "shape": "triangle",
-                "color": "#FF0040",
+                "shape": "none",
+                "color": "#888",
                 "uris": [],
                 "filter": false
             }
@@ -1573,7 +1579,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "square",
                 "size": "50",
                 "color": "#EA6D00",
-                "uris": ["http://semanticscience.org/resource/Protein"]
+                "uris": ["http://purl.uniprot.org/core/Protein"]
             },
             "rect" : {
                 "shape": "roundrectangle",
@@ -1614,25 +1620,32 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 
     app.factory("getEdgeFeature", ['edgeTypes', 'edgeNames', function(edgeTypes) {
         // Gets the edge feature of a given uri.
-        return function(feature, uri) {
-            if (feature == "name") { return edgeNames[uri]; }
-            else {
-                var keys = Object.keys(edgeTypes);
-                for (var i = 0; i < keys.length; i++) {
-                    if (edgeTypes[keys[i]]["uris"].indexOf(uri) > -1) {
-                        return edgeTypes[keys[i]][feature];
+        return function(feature, uris) {
+            for (var k = 0; k < uris.length; k++) {
+                var uri = uris[k];
+                if (feature == "name") { return edgeNames[uri]; }
+                else {
+                    var keys = Object.keys(edgeTypes);
+                    for (var i = 0; i < keys.length; i++) {
+                        console.log(uri,keys[i], edgeTypes[keys[i]]["uris"]);
+                        if (edgeTypes[keys[i]]["uris"].indexOf(uri) > -1) {
+                            return edgeTypes[keys[i]][feature];
+                        }
                     }
                 }
-                return edgeTypes["other"][feature];
             }
+            return edgeTypes["other"][feature];
         }
     }]);
 
-    app.factory("links",["$http", "$q", 'getLabel', 'getEdgeFeature', 'getNodeFeature',
-                         function($http, $q, getLabel, getEdgeFeature, getNodeFeature) {
+    app.factory("links",
+                ["$http", "$q", 'getLabel', 'getEdgeFeature', 'getNodeFeature',
+                 function($http, $q, getLabel, getEdgeFeature, getNodeFeature) {
 
-        function links(entity, view, elements, update) {
-            if (!elements.nodes) {
+          function links(entity, view, elements, update, distance, maxP) {
+              if (distance == null) distance = 1;
+              if (maxP == null) maxP = 0.93;
+              if (!elements.nodes) {
                 elements.nodes = [];
                 elements.nodeMap = {};
                 function node(uri, label, types) {
@@ -1691,7 +1704,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             edgeEntry.data.shape = getEdgeFeature("shape", types); 
                             edgeEntry.data.color = getEdgeFeature("color", types);
                         }
-                        edgeEntry.data.width = (edgeEntry.data.zscore * 4) + 1;
+                        edgeEntry.data.width = (edgeEntry.data.zscore) + 1;
                         elements.edges.push(edgeEntry);
                     }
                     return elements.edgeMap[edgeKey];
