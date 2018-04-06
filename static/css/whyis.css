@@ -39,7 +39,11 @@ a {
   text-decoration: none;
 }
 
-md-toolbar { color: white }
+md-toolbar:not(.md-menu-toolbar) {
+    color: white;
+    background-color: #08233c;
+}
+
 .row-eq-height {
   display: -webkit-box;
   display: -webkit-flex;

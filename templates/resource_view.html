@@ -11,14 +11,12 @@
 {% endblock %}
 {% block content %}
 <div class="row" >
-  <div class="col-md-8">
+  <div class="col-md-8" >
     {{ summary_panel(this.description()) }}
     {{ content(this.description()) }}
-    <md-card>
-      <md-card-content layout="row" style="height: 40em">
-        <explore flex start="{{this.identifier}}"></explore>
-      </md-card-content>
-    </md-card>
+    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
+      <explore flex start="{{this.identifier}}"></explore>
+    </section>
     <div class="panel panel-default">
       <div class="panel-heading">
         <h2 class="panel-title">Nanopublications for {{get_label(this.description())}}</h2>

@@ -149,7 +149,8 @@ where {
                 result['from'].extend(i['from'])
                 result['articles'].extend(i['articles'])
             result['probability'] = combine_pvalues([e['probability'] for e in links], method="stouffer")[1]
-            result['zscore'] = norm.ppf(result['probability'])
+            if result['probability'] < 1 and result['probability'] > 0:
+                result['zscore'] = norm.ppf(result['probability'])
             return result
         
         result = collections.defaultdict(list)

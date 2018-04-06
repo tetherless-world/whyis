@@ -1642,9 +1642,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 ["$http", "$q", 'getLabel', 'getEdgeFeature', 'getNodeFeature',
                  function($http, $q, getLabel, getEdgeFeature, getNodeFeature) {
 
-          function links(entity, view, elements, update, distance, maxP) {
+          function links(entity, view, elements, update, maxP, distance) {
               if (distance == null) distance = 1;
               if (maxP == null) maxP = 0.93;
+              var results = [];
               if (!elements.nodes) {
                 elements.nodes = [];
                 elements.nodeMap = {};
@@ -1683,7 +1684,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                     if (update) update();
                                 });
                         }
-                        elements.nodes.push(nodeEntry);
                     }
                     return elements.nodeMap[uri];
                 }
@@ -1704,25 +1704,48 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             edgeEntry.data.shape = getEdgeFeature("shape", types); 
                             edgeEntry.data.color = getEdgeFeature("color", types);
                         }
-                        edgeEntry.data.width = (edgeEntry.data.zscore) + 1;
-                        elements.edges.push(edgeEntry);
+                        if (edgeEntry.data.zscore)
+                            edgeEntry.data.width = Math.abs(edgeEntry.data.zscore) + 1;
+                        else
+                            edgeEntry.data.width = 1 + edgeEntry.data.probability;
+                        if (edgeEntry.data.zscore < 0)
+                            edgeEntry.data.negation = true;
+                        //elements.edges.push(edgeEntry);
                     }
                     return elements.edgeMap[edgeKey];
                 }
                 elements.edge = edge;
             }
-            
+
             var p = $http.get('/about',{ params: {uri:entity,view:view, }, responseType:'json'})
                 .then(function(response) {
                     response.data.forEach(function(edge) {
-                        elements.node(edge.source, edge.source_label, edge.source_types);
-                        elements.node(edge.target, edge.target_label, edge.target_types);
-                        elements.edge(edge);
+                        if (edge.probability < maxP) {
+                            console.log(edge.probability, maxP, "skipping", edge);
+                            return;
+                        }
+                        elements.nodes.push(elements.node(edge.source, edge.source_label, edge.source_types));
+                        elements.nodes.push(elements.node(edge.target, edge.target_label, edge.target_types));
+                        elements.edges.push(elements.edge(edge));
                     });
                 });
             if (!elements.all) {
                 elements.all = function() {
                     return elements.nodes.concat(elements.edges);
+                }
+                elements.empty = function() {
+                    newElements = {
+                        edges : [],
+                        edgeMap : elements.edgeMap,
+                        edge : elements.edge,
+                        nodes : [],
+                        nodeMap : elements.nodeMap,
+                        node : elements.node,
+                        all : function() {
+                            return newElements.nodes.concat(newElements.edges);
+                        }
+                    }
+                    return newElements;
                 }
             }
             return p;
@@ -1743,8 +1766,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 	    restrict: "E",
             link: function(scope, element, attrs) {
                 scope.toggleSidebar = function() {
-                    console.log($mdSidenav("explore"));
-                    
                     $mdSidenav("explore").toggle();
                 }
 
@@ -1759,28 +1780,77 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     scope.selectedEntities = [entity];
                 }
 
-                scope.clear = function() {
+                scope.remove = function() {
+                    var selected = scope.cy.$(':selected');
+                    scope.cy.remove(selected);
+                    var selectedMap = {};
+                    selected.forEach(function(d) {
+                        selectedMap[d.id()] = d;
+                    });
+                    scope.elements.nodes = scope.elements.nodes.filter(function(d) {
+                        return selectedMap[d.data.id] == null;
+                    });
+                    scope.elements.edges = scope.elements.edges.filter(function(d) {
+                        return selectedMap[d.data.id] == null
+                            && selectedMap[d.data.source] == null
+                            && selectedMap[d.data.target] == null ;
+                    });
+                    
                 }
 
-                function loadLinks(entities) {
-                    scope.loading = [];
+                scope.loading = [];
+                function incomingOutgoing(entities) {
+                    if (entities == null) {
+                        var entities = scope.cy.$('node:selected').map(function(d) {return d.id()});
+                    }
                     entities.forEach(function(e) {
-                        scope.loading.push(e.node);
-                        links(e.node, 'incoming', scope.elements).then(function() {
-                            return links(e.node, 'outgoing', scope.elements);
+                        scope.loading.push(e);
+                        console.log(scope.probThreshold);
+                        links(e, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                            return links(e, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch);
                         }).then(function() {
                             update();
-                            scope.loading = scope.loading.filter(function(d) { return d != e.node});
+                            scope.loading = scope.loading.filter(function(d) { return d != e});
                             console.log(scope.loading);
                         });
                     })
                 }
                 scope.add = function() {
                     if (scope.selectedEntities) {
-                        loadLinks(scope.selectedEntities)
+                        incomingOutgoing(scope.selectedEntities.map(function(d) { return d.node}))
                     } else if (scope.searchText && scope.searchText.length > 3) {
-                        resolveEntity(scope.searchText).then(loadLinks);
+                        resolveEntity(scope.searchText).then(function (entities) {
+                            incomingOutgoing(entities.map(function(d) { return d.node}))
+                        });
                     }
+                }
+
+                scope.incoming = function(entities) {
+                    if (entities == null) {
+                        var entities = scope.cy.$('node:selected').map(function(d) {return d.id()});
+                    }
+                    entities.forEach(function(e) {
+                        scope.loading.push(e);
+                        links(e, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                            update();
+                            scope.loading = scope.loading.filter(function(d) { return d != e});
+                            console.log(scope.loading);
+                        });
+                    })
+                }
+                
+                scope.outgoing = function(entities) {
+                    if (entities == null) {
+                        var entities = scope.cy.$('node:selected').map(function(d) {return d.id()});
+                    }
+                    entities.forEach(function(e) {
+                        scope.loading.push(e);
+                        links(e, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                            update();
+                            scope.loading = scope.loading.filter(function(d) { return d != e});
+                            console.log(scope.loading);
+                        });
+                    })
                 }
                 
                 if (!scope.style) {
@@ -1823,6 +1893,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'curve-style' : 'bezier',
                             'target-arrow-color': 'data(color)',
                             'line-color': 'data(color)'
+                        })
+                        .selector('edge[negation]')
+                        .css({
+                            'line-style':'dotted',
                         })
                         .selector(':selected')
                         .css({
@@ -1949,7 +2023,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (!scope.cy) return [];
                     var selected = scope.cy.$('node:selected');
                     var query = [];
-                    selected.nodes().each(function(i,d) { query.push(d.data(attr)); });
+                    selected.nodes().each(function(i,d) { query.push(d.data[attr]); });
                     return query;
                 };
 
@@ -1993,6 +2067,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (!scope.elements) scope.elements = {};
 
 
+                scope.update = update;
                 function update() {
                     var elements = [];
                     if (scope.elements && scope.elements.all) {
@@ -2008,11 +2083,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 };
 
                 
-                scope.$watchCollection('elements.edges', update);
+                //scope.$watchCollection('elements.edges', update);
                 
                 if (scope.start) {
-                    links(scope.start, 'incoming', scope.elements, update).then(function() {
-                        return links(scope.start, 'outgoing', scope.elements, update);
+                    links(scope.start, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                        return links(scope.start, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch);
                     }).then(update);
                 }
             }
