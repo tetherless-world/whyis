@@ -1651,7 +1651,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 elements.nodeMap = {};
                 function node(uri, label, types) {
                     if (!elements.nodeMap[uri]) {
-                        elements.nodeMap[uri] = { group: 'nodes', data: { id: uri, label: label} };
+                        elements.nodeMap[uri] = { group: 'nodes', data: { uri:uri, id: uri, label: label} };
                         var nodeEntry = elements.nodeMap[uri];
                         function processTypes() {
                             if (nodeEntry.data['@type']) {
@@ -1666,12 +1666,15 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             nodeEntry.data['@type'] = types;
                             processTypes();
                         } else {
+                            nodeEntry.data.described = true;
                             $http.get('/about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
                                 .then(function(response) {
                                     response.data.forEach(function(x) {
+                                        console.log(x);
                                         if (x['@id'] == uri) {
                                             $.extend(nodeEntry.data, x);
                                             processTypes();
+                                            console.log(nodeEntry);
                                         }
                                     });
                                     if (update) update()
@@ -1694,12 +1697,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 elements.edgeMap = {};
                 function edge(edge) {
                     var edgeKey = [edge.source, edge.link, edge.target].join(' ');
+                    edge.uri = edge.link;
                     if (!elements.edgeMap[edgeKey]) {
                         elements.edgeMap[edgeKey] = { group: 'edges', data: edge };
                         var edgeEntry = elements.edgeMap[edgeKey];
                         edgeEntry.id = edgeKey;
                         if (edgeEntry.data['link_types']) {
                             var types = edgeEntry.data['link_types'];
+                            edgeEntry['@types'] = types;
                             edgeEntry.classes = types.join(' ');
                             edgeEntry.data.shape = getEdgeFeature("shape", types); 
                             edgeEntry.data.color = getEdgeFeature("color", types);
@@ -1753,8 +1758,32 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return links;
     }]);
 
-    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity",
-                              function($http, links, $timeout, $mdSidenav, resolveEntity) {
+    app.factory("getSummary",['listify',function(listify) {
+        var summaryProperties = [
+            'http://www.w3.org/2004/02/skos/core#definition',
+            'http://purl.org/dc/terms/abstract',
+            'http://purl.org/dc/terms/description',
+            'http://purl.org/dc/terms/summary',
+            'http://www.w3.org/2000/01/rdf-schema#comment',
+            "http://purl.obolibrary.org/obo/IAO_0000115",
+            'http://www.w3.org/ns/prov#value',
+            'http://semanticscience.org/resource/hasValue'
+        ];
+        function getSummary(ldEntity) {
+            console.log(ldEntity);
+            for (var i=0; i<summaryProperties.length; i++) {
+                console.log(summaryProperties[i], ldEntity[summaryProperties[i]]);
+                if (ldEntity[summaryProperties[i]] != null) {
+                    return listify(ldEntity[summaryProperties[i]])[0];
+                }
+            }
+        };
+        return getSummary;
+    }]);
+                
+    
+    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary',
+                              function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary) {
 	return {
             scope: {
                 elements : "=?",
@@ -1768,7 +1797,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.toggleSidebar = function() {
                     $mdSidenav("explore").toggle();
                 }
-
+                $mdSidenav("explore").open();
                 scope.selectedEntities = null;
                 scope.searchText = null;
 
@@ -1806,8 +1835,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     entities.forEach(function(e) {
                         scope.loading.push(e);
                         console.log(scope.probThreshold);
-                        links(e, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
-                            return links(e, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch);
+                        links(e, 'incoming', scope.elements, render, scope.probThreshold, scope.numSearch).then(function() {
+                            return links(e, 'outgoing', scope.elements, render, scope.probThreshold, scope.numSearch);
                         }).then(function() {
                             update();
                             scope.loading = scope.loading.filter(function(d) { return d != e});
@@ -1831,7 +1860,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     entities.forEach(function(e) {
                         scope.loading.push(e);
-                        links(e, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                        links(e, 'incoming', scope.elements, render, scope.probThreshold, scope.numSearch).then(function() {
                             update();
                             scope.loading = scope.loading.filter(function(d) { return d != e});
                             console.log(scope.loading);
@@ -1845,7 +1874,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     entities.forEach(function(e) {
                         scope.loading.push(e);
-                        links(e, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
+                        links(e, 'outgoing', scope.elements, render, scope.probThreshold, scope.numSearch).then(function() {
                             update();
                             scope.loading = scope.loading.filter(function(d) { return d != e});
                             console.log(scope.loading);
@@ -1900,11 +1929,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         })
                         .selector(':selected')
                         .css({
-                            'background-color': '#D8D8D8',
-                            'border-color': '#D8D8D8',
-                            'line-color': '#D8D8D8',
-                            'target-arrow-color': '#D8D8D8',
-                            'source-arrow-color': '#D8D8D8',
+                            //'background-color': '#D8D8D8',
+                            'border-color': '#b2d7fd',
+                            'border-width': 2,
+                            'line-color': '#b2d7fd',
+                            'target-arrow-color': '#b2d7fd',
+                            'source-arrow-color': '#b2d7fd',
                             'opacity':1,
                         })
                         .selector('.highlighted')
@@ -1948,6 +1978,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         //},
                         //maxSimulationTime: parseInt(scope.numLayout) * 1000
                     };
+
+                scope.selected = [];
                 
                 scope.cy = cytoscape({
                     container: $(element).find('.graph'),
@@ -1968,15 +2000,71 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             }
                         });
 
-                        // When an edge is selected
-                        cy.on('select', 'edge', function(e) {
-                        });
-                        
-                        // When a node is selected
-                        cy.on('select', 'node', function(e){
+                        // When an element is selected
+                        cy.on('select unselect', function(e){
+                            scope.$apply(function() {
+                                scope.selected =  scope.cy.$(':selected');
+                                scope.selected.forEach(function(d) {
+                                    updateDetails(d.data());
+                                });
+                                console.log(scope.selected.map(function(d) {return d.data()}));
+                            });
                         });
                     }
                 });
+
+                function updateDetails(data) {
+                    data.loading = 0;
+                    data.loaded = 0;
+                    if (! data.label) {
+                        data.loading += 1;
+                        $http.get('/about',{ params: {uri:data.uri,view:'label'}})
+                            .then(function(response) {
+                                data.label = response.data;
+                                data.loaded += 1;
+                                if (update) render();
+                            });
+                    }
+                    function updateTypes(data) {
+                        if (data['@type'] == null) return;
+                        data.types = data['@type'].map(function(d) {
+                            var result = {
+                                uri: d,
+                            };
+                            console.log(d);
+                            data.loading += 1;
+                            $http.get('/about',{ params: {uri:d,view:'label'}})
+                                .then(function(response) {
+                                    result.label = response.data;
+                                    data.loaded += 1; 
+                                });
+                            return result;
+                        });
+                    }
+                    if (! data.described) {
+                        data.described = true;
+                        data.loading += 1;
+                        $http.get('/about',{ params: {uri:data.uri,view:'describe'}, responseType:'json'})
+                            .then(function(response) {
+                                response.data.forEach(function(x) {
+                                    if (x['@id'] == data.uri) {
+                                        $.extend(data, x);
+                                    }
+                                });
+                                data.summary = getSummary(data);
+                                if (data.summary['@value']) data.summary = data.summary['@value'];
+                                updateTypes(data);
+                                data.loaded += 1;
+                                render();
+                            });
+                    } else {
+                        if (data.types == null)
+                            updateTypes(data);
+                        data.summary = getSummary(data);
+                        if (data.summary['@value']) data.summary = data.summary['@value'];
+                    }
+                }
+
 
                 /* 
                  * OPTIONS
@@ -2068,6 +2156,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
 
                 scope.update = update;
+                function render() {
+                    elements = scope.elements.all();
+                    var eles = scope.cy.add(elements);
+                    scope.cy.style().update();
+                }
                 function update() {
                     var elements = [];
                     if (scope.elements && scope.elements.all) {
@@ -2086,9 +2179,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 //scope.$watchCollection('elements.edges', update);
                 
                 if (scope.start) {
-                    links(scope.start, 'incoming', scope.elements, update, scope.probThreshold, scope.numSearch).then(function() {
-                        return links(scope.start, 'outgoing', scope.elements, update, scope.probThreshold, scope.numSearch);
-                    }).then(update);
+                    incomingOutgoing([scope.start]);
                 }
             }
         }

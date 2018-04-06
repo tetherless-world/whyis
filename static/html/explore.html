@@ -73,8 +73,21 @@
               </md-input-container>
             </md-slider-container>
           </md-list-item>
-          <md-subheader  >Details</md-subheader>
-          <md-list-item flex >Select a node or edge to see details.</md-list-item>
+        </md-list>
+        <md-list>
+          <md-subheader >Details</md-subheader>
+          <md-list-item flex ng-show="selected.length ==0">Select a node or edge to see details.</md-list-item>
+          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="/about?view=view&uri={{element.data().uri}}" Visit {{element.data().label}}>
+            <div class="md-list-item-text">
+              <h3>{{element.data().label}}</h3>
+              <h4><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
+              <p>{{element.data().summary}}</p>
+              <md-progress-linear
+                 ng-show="element.data().loading - element.data().loaded > 0"
+                 md-mode="determinate"
+                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
+            </div>
+          </md-list-item>
         </md-list>
       </md-content>
     </md-sidenav>

@@ -171,12 +171,19 @@ where {
         results = query_filter(q, values=values)
         results = mergeLink(results)
         results = mergeLinkTypes(results)
+        #for r in results:
+        #    r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
+        #    resource = app.get_resource(URIRef(r['link']))
+        #    labelize(r, 'link','label')
+        #    #r['descriptions'] = [v for k,v in app.get_summary(resource)]
         if 'target' not in values:
             results = iter_labelize(results,'target','target_label')
             for r in results:
-                r['target_types'] = [x for x, in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['target']))]
+                r['target_types'] = [x for x,
+                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['target']))]
         if 'source' not in values:
             results = iter_labelize(results,'source','source_label')
             for r in results:
-                r['source_types'] = [x for x, in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['source']))]
+                r['source_types'] = [x for x,
+                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['source']))]
         return results
