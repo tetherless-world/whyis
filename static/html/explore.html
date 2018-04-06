@@ -1,5 +1,5 @@
 <div layout="column" layout-fill>
-  <md-toolbar class="md-hue-2" flex="initial">
+  <md-toolbar flex="initial">
     <div class="md-toolbar-tools" layout="row">
       <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
         <md-icon>menu</md-icon>
@@ -8,46 +8,57 @@
     </div>
   </md-toolbar>
   <md-content flex layout="column" layout-fill>
-    <div flex class="graph"></div>
+    <div flex class="graph" ></div>
     <md-sidenav class="md-sidenav-left" md-component-id="explore"
                 md-disable-backdrop md-whiteframe="4">
-      <md-content layout-margin layout="column">
-        <form layout="row" role="form" data-ng-submit="add()">
+      <md-content layout-fill layout="column">
+        <form layout="column" flex="none" role="form" data-ng-submit="add()">
           <search-autocomplete
              flex
              selected-item-change="selectedItemChange"
              search-text-change="searchTextChange">
           </search-autocomplete>
+          <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
         </form>
-        <md-progress-linear flex ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
-        <md-content flex layout="row">
-          <md-button class="md-icon-button" aria-label="Lock Position" title="Lock Position" data-ng-click="lock(getSelected('id'), true)">
-            <md-icon>lock_outline</md-icon>
+        <md-content flex="none" layout="row">
+          <md-button class="md-icon-button" aria-label="Remove Selected" title="Remove Selected"  data-ng-click="remove()">
+            <md-icon>delete</md-icon>
           </md-button>
-          <md-button class="md-icon-button" aria-label="Unlock Position" title="Unlock Position" data-ng-click="lock(getSelected('id'), false)">
-            <md-icon>lock_open</md-icon>
+          <span flex></span>
+          <md-button class="md-icon-button"
+                     aria-label="Find Incoming Links"
+                     title="Find Incoming Links"
+                     data-ng-click="incoming()">
+            <md-icon>arrow_back</md-icon>
           </md-button>
-          <md-button class="md-icon-button" aria-label="Highlight Connections" title="Highlight Connections" data-ng-click="showBFS(getSelected('id'))">
-            <md-icon>remove_red_eye</md-icon>
-          </md-button>
-          <md-button class="md-icon-button" aria-label="Find Incoming Links" title="Find Incoming Links"  data-ng-click="">
-            <md-icon>arrow_forward</md-icon>
-          </md-button>
-          <md-button class="md-icon-button" aria-label="Find Incoming and Outgoing Links" title="Find Incoming and Outgoing Links" data-ng-click="">
+          <md-button class="md-icon-button"
+                     aria-label="Find Incoming and Outgoing Links"
+                     title="Find Incoming and Outgoing Links"
+                     data-ng-click="incomingOutgoing()">
             <md-icon>compare_arrows</md-icon>
           </md-button>
-          <md-button class="md-icon-button" aria-label="Find Outgoing Links" title="Find Outgoing Links" data-ng-click="">
-            <md-icon >arrow_back</md-icon>
+          <md-button class="md-icon-button"
+                     aria-label="Find Outgoing Links"
+                     title="Find Outgoing Links"
+                     data-ng-click="outgoing()">
+            <md-icon >arrow_forward</md-icon>
+          </md-button>
+          <span flex></span>
+          <md-button class="md-icon-button"
+                     aria-label="Update Layout"
+                     title="Update Layout"
+                     data-ng-click="update()">
+            <md-icon >refresh</md-icon>
           </md-button>
         </md-content>
-        <md-list flex>
+        <md-list flex="none">
           <md-subheader >Link Traversal</md-subheader>
-          <md-list-item>
+          <md-list-item ng-hide="true">
             <md-slider-container layout="row">
               <span flex="30">Max Links</span>
               <md-slider flex discrete step="1" min="0" max="5" ng-model="numSearch" aria-label="Max Link Distance " id="link-distance-slider">
               </md-slider>
-              <md-input-container flex="30">
+              <md-input-container  flex="30">
                 <input type="number" ng-model="numSearch" aria-label="Max Link Distance" aria-controls="link-distance-slider">
               </md-input-container>
             </md-slider-container>
@@ -62,8 +73,8 @@
               </md-input-container>
             </md-slider-container>
           </md-list-item>
-          <md-subheader >Details</md-subheader>
-          <md-list-item ng-show="getSelected('id').length == 0">Select a node or edge to see details.</md-list-item>
+          <md-subheader  >Details</md-subheader>
+          <md-list-item flex >Select a node or edge to see details.</md-list-item>
         </md-list>
       </md-content>
     </md-sidenav>
