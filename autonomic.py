@@ -51,10 +51,7 @@ class Service(sadi.Service):
     def getInstances(self, graph):
         if hasattr(graph.store, "nsBindings"):
             graph.store.nsBindings = {}
-        prefixes = self.app.NS.prefixes
-        if hasattr(self, 'prefixes'):
-            prefixes = self.prefixes
-        return [graph.resource(i) for i, in graph.query(self.get_query(), initNs=prefixes)]
+        return [graph.resource(i) for i, in graph.query(self.get_query(), initNs=self.app.NS.prefixes)]
     
     def process_graph(self, inputGraph):
         instances = self.getInstances(inputGraph)
@@ -424,6 +421,7 @@ class SETLr(UpdateChangeService):
             triples = 0
             for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
                 self.explain(new_np, i, o)
+                print "Publishing", new_np.identifier
                 orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
                 if len(orig) == 0:
                     continue
@@ -458,12 +456,16 @@ class Deductor(UpdateChangeService):
         return setl.SETLedFile
 
     def get_query(self):
-        self.app.db.store.nsBindings={}
-        return '''%s SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.prefixes, self.resource, self.where, self.construct )
+        #self.app.db.store.nsBindings={}
+	self.prefixes = dict(self.prefixes)
+	prefixes = ""
+	for pkey in self.prefixes.keys():
+		prefixes += "prefix " + pkey + ": <" + self.prefixes[pkey] + "> \n"
+        return '''%s SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( prefixes, self.resource, self.where, self.construct )
     
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''%s SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes, self.where, self.resource, i.identifier) )
+        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.where, self.resource, i.identifier),initNs=self.prefixes )
         for key in context_vars.json["results"]["bindings"][0].keys():
             context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
         return context
@@ -471,7 +473,11 @@ class Deductor(UpdateChangeService):
     def process(self, i, o):
         self.app.db.store.nsBindings={}
         npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query('''%s CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes,self.construct, self.where, self.construct, self.resource, i.identifier) ) # init.bindings = prefix, dict for identifier (see graph.query in rdflib)
+        prefixes={}
+	print("Prefixes",self.prefixes)
+	prefixes.update(self.prefixes)
+	prefixes.update(self.app.NS.prefixes)
+	triples = self.app.db.query('''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.construct, self.where, self.construct, self.resource, i.identifier),initNs=prefixes ) # init.bindings = prefix, dict for identifier (see graph.query in rdflib)
         for s, p, o, c in triples:
             print "Deductor Adding ", s, p, o
             npub.assertion.add((s, p, o))
