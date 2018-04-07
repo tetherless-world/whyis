@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1> the args are: {{args.query}} </h1>
+  
+  <hr/>
+  <!-- <form>
+      <input type="text" name="" id="" />
+  </form> -->
+    
+    {% set qr = this.graph.query('''PREFIX bds: <http://www.bigdata.com/rdf/search#>
+
+  SELECT ?sub ?pred ?obj ?score WHERE {
+    ?obj bds:search  ?query .
+    ?obj bds:relevance ?score .  		
+    ?sub ?pred ?obj
+
+  } ORDER BY DESC(?score)
+  LIMIT 100''' , initNs=ns.prefixes, initBindings={"query":rdflib.Literal(args['query'])}) %}
+  
+    {% set data = [] %}
+    {%for row in qr%}
+        {% do data.append( row.asdict() )  %} {% if not loop.last %}{% endif %}
+    {% endfor %}
+
+
+    {% set jsonData = data|tojson|safe %}
+    
+    <script>
+      window.onload = function() {
+                
+        //function just in case I don't want to display extra html
+        function stripHTML (html) {
+          let div = document.createElement("div");
+          div.innerHTML = html;
+          let text = div.textContent || div.innerText || "";
+          console.log('text is: ', text)
+          return text;
+        }
+        
+        let obj = {{jsonData}}
+        console.log('obj is: ', obj);
+        console.log('obj[0] is: ', obj[0])
+        
+        let htmlString = '';
+        for (let i = 0; i < obj.length; i++) {
+          //let justText = stripHTML(obj[i]['obj']);
+          htmlString += "<tr>";
+          htmlString += "<td><pre><xmp>" + obj[i]['obj'] + "</xmp></pre></td>";
+          htmlString += "</tr>";
+        }  
+        console.log("htmlstring is: ", htmlString);
+        let firstRow = document.querySelector('.firstRow');
+        firstRow.insertAdjacentHTML('afterend', htmlString);     
+      }
+      
+
+    </script>
+      <table>
+        <tr class='firstRow'>
+          <th>Object</th>
+        </tr>
+        
+      </table>
+ 
+{% endblock %}
+

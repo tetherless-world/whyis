@@ -60,7 +60,11 @@ class Importer:
         updated = self.modified(entity_name)
         if updated is None:
             updated = datetime.datetime.now(pytz.utc)
-        g = self.fetch(entity_name)
+        try:
+            g = self.fetch(entity_name)
+        except Exception as e:
+            print "Error loading %s: %s" %(entity_name,e)
+            return
         for new_np in nanopubs.prepare(g):
             #print "Adding new nanopub:", new_np.identifier
             self.explain(new_np, entity_name)
@@ -121,6 +125,7 @@ class LinkedData (Importer):
 
     def modified(self, entity_name):
         u = self._get_access_url(entity_name)
+        print "accessing at", u
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())

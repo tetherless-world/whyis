@@ -4,7 +4,7 @@ import os
 import logging
 from datetime import timedelta
 
-project_name = "satoru"
+project_name = "whyis"
 import importer
 
 import autonomic
@@ -23,7 +23,7 @@ Config = dict(
     # use DEBUG mode?
     DEBUG = False,
 
-    site_name = "Satoru Knowledge Graph",
+    site_name = "Whyis Knowledge Graph",
 
     # use TESTING mode?
     TESTING = False,
@@ -43,9 +43,13 @@ Config = dict(
         'depot.storage_path' : '/data/files'
     },
     vocab_file = "vocab.ttl",
-    SATORU_TEMPLATE_DIR = None,
-    SATORU_CDN_DIR = None,
+    WHYIS_TEMPLATE_DIR = None,
+    WHYIS_CDN_DIR = None,
 
+    DEFAULT_ANONYMOUS_READ = False,
+
+    site_header_image = '/static/images/random_network.png',
+    
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
     LOG_FILENAME = "/var/log/%s/output-%s.log" % (project_name,str(datetime.now()).replace(' ','_')),

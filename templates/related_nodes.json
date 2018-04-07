@@ -1,10 +1,6 @@
-{% set qr = this.graph.query('''#prefix dc: <http://purl.org/dc/terms/>
-#prefix  sio: <http://semanticscience.org/resource/>
-#prefix prov: <http://www.w3.org/ns/prov#>
-
-select distinct (sample(?relation) as ?relation) ?node (sample(?label) as ?label) (sample(?type) as ?type) (coalesce(max(?frequency),1) as ?tf) (coalesce(max(?idf_stated),1) as ?idf) (?tf* ?idf as ?tfidf)
+{{'''select distinct (sample(?relation) as ?relation) ?node (sample(?label) as ?label) (sample(?type) as ?type) (coalesce(max(?frequency),1) as ?tf) (coalesce(max(?idf_stated),1) as ?idf) (?tf* ?idf as ?tfidf)
 where {
-#    hint:Query hint:optimizer "Runtime" .
+    hint:Query hint:optimizer "Runtime" .
     ?local_node ?relation ?node.
     optional {
       ?local_node sio:hasPart ?term.
@@ -19,9 +15,4 @@ where {
       ?node rdfs:label|dc:title ?label.
     }
     FILTER NOT EXISTS { ?local_node sio:hasPart ?node }
-} group by ?node''', initNs=dict(sio=ns.sio, prov=ns.prov, dc=ns.dc), initBindings={"local_node":this.identifier}) %}
-[
-    {% for row in qr %}
-    {{row.asdict()|tojson}},
-    {% endfor %}
-]
+} group by ?node'''|query(values={"local_node":this.identifier}) | tojson }}

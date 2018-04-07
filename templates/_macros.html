@@ -37,11 +37,14 @@
         <dl class="dl-horizontal clearfix">
           <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
           <dd>
-            {% for object in objects | map('last') | lang %}
-            {% if g.isinstance(object, g.rdflib.Literal) %}
+            {% for object in objects | map('last') | lang()  %}
+            {%- if loop.index == 11 %}<p>...</p>{% endif %}
+            {% if loop.index <= 10 %}
+            {% if g.isinstance(object, g.rdflib.Literal)  %}
             <p property="{{predicate}}">{{object}}</p>
             {% else %}
             <p>{{render_resource_link(object)}}</p>
+            {% endif %}
             {% endif %}
             {% endfor %}
           </dd>

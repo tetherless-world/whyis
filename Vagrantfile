@@ -30,7 +30,7 @@ Vagrant.configure(2) do |config|
        vb.name = "whyis-dev"
        # VM HARDWARE SPECS
 
-       vb.customize ["modifyvm", :id, "--memory", "4096"]
+       vb.customize ["modifyvm", :id, "--memory", "6144"]
        vb.customize ["modifyvm", :id, "--cpus", "2"]
        vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
@@ -38,6 +38,11 @@ Vagrant.configure(2) do |config|
   end
   config.vm.network "private_network", ip: "192.168.33.36"
   config.ssh.forward_agent = true
+
+  # Needed in order to run screen
+  # https://www.vagrantup.com/docs/vagrantfile/ssh_settings.html
+  # http://stackoverflow.com/questions/27545745/start-screen-detached-in-a-vagrant-box-with-ssh-how
+  config.ssh.pty = true
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -59,7 +64,7 @@ Vagrant.configure(2) do |config|
   #   vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-    vb.memory = "2048"
+    vb.memory = "6144"
   end
   #
   # View the documentation for the provider you are using for more

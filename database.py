@@ -39,7 +39,7 @@ def engine_from_config(config, prefix):
                                   default_query_method=POST,
                                   returnFormat=JSON,
                                   node_to_sparql=node_to_sparql)
-        def publish(data, graphs):
+        def publish(data, *graphs):
             s = requests.session()
             s.keep_alive = False
             result = s.post(store.endpoint,
@@ -59,8 +59,9 @@ def engine_from_config(config, prefix):
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph(identifier=defaultgraph)
-        def publish(data, graphs):
-            graph.addN(nanopub.quads())
+        def publish(data, *graphs):
+            for nanopub in graphs:
+                graph.addN(nanopub.quads())
         graph.store.publish = publish
 
     return graph

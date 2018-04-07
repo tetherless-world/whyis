@@ -13,6 +13,7 @@ import datetime
 import rdflib
 from nanopub import Nanopublication
 from cookiecutter.main import cookiecutter
+import tempfile
 
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
@@ -51,22 +52,31 @@ class LoadNanopub(Command):
                 print "Could not find active nanopublication to revise:", was_revision_of
                 return
             was_revision_of = wasRevisionOf
-        g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
+        g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize(), store="Sleepycat")
+        graph_tempdir = tempfile.mkdtemp()
+        g.store.open(graph_tempdir, True)
+        #g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
 
         g1 = g.parse(location=input_file, format=file_format, publicID=flask.current_app.NS.local)
-        if len(list(g1.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
+        if len(list(g.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
+            print "Could not find existing nanopublications.", len(g1), len(g)
             new_np = Nanopublication(store=g1.store)
             new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
             new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
             new_np.add((g1.identifier, rdflib.RDF.type, np.Assertion))
+
+        nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
+        nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
+        nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
         nanopubs = []
-        for npub in flask.current_app.nanopub_manager.prepare(g):
+        for npub in flask.current_app.nanopub_manager.prepare(g, store=nanopub_prepare_graph.store):
             if was_revision_of is not None:
                 for r in was_revision_of:
                     print "Marking as revision of", r
                     npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
+            print 'Prepared', npub.identifier
             nanopubs.append(npub)
-        flask.current_app.nanopub_manager.publish(npub)
+        flask.current_app.nanopub_manager.publish(*nanopubs)
         print "Published", npub.identifier
 
 class RetireNanopub(Command):

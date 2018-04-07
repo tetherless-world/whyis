@@ -66,9 +66,8 @@ class IDFCalculator(autonomic.UpdateChangeService):
             if assertion is not None:
                 npub.pubinfo.add((npub.assertion.identifier, prov.wasRevisionOf, assertion))
             npub.assertion.add((concept, sio.InverseDocumentFrequency, Literal(idf)))
-            
-            
-        
+
+
 class EntityResolver(autonomic.UpdateChangeService):
     activity_class = whyis.EntityResolution
     

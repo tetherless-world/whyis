@@ -5,17 +5,18 @@
 {% if this.description().value(ns.RDF.type) %} a
   {% for superClass in this.description()[ns.RDF.type] %}
   {% if loop.index > 1 and loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}
-  {% if loop.revindex > 2 %}, {% endif %}
+  {{ render_resource_link(superClass) }}{% if loop.revindex > 2 %}, {% endif %}
 {% endfor %}
 {% endif %}
 {% endblock %}
 {% block content %}
 <div class="row" >
-  <div class="col-md-8">
+  <div class="col-md-8" >
     {{ summary_panel(this.description()) }}
     {{ content(this.description()) }}
-    
+    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
+      <explore flex start="{{this.identifier}}"></explore>
+    </section>
     <div class="panel panel-default">
       <div class="panel-heading">
         <h2 class="panel-title">Nanopublications for {{get_label(this.description())}}</h2>

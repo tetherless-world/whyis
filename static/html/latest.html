@@ -1,0 +1,25 @@
+<div ng-cloak layout-gt-sm="row" layout="column">
+  <md-toolbar layout="column">
+    <div class="md-toolbar-tools">
+      <h2>Recently Changed</h2>
+    </div>
+    <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
+  </md-toolbar>
+
+  <md-content ng-show="entities">
+    <md-list flex >
+      <md-list-item class="md-3-line md-long-text" ng-repeat="entity in entities" ng-click="">
+	  <div class="md-list-item-text" layout="column">
+            <h3><a href="/about?view=view&uri={{entity.about}}">{{entity.label}}</a> <small>({{entity.fromNow}})</small></h3>
+            <h4 md-truncate>
+              <span data-ng-repeat="type in entity.types">
+                {{ type.label}}
+                <span ng-hide="$last">, </span>
+              </span>
+            </h4>
+	    <p>{{ entity.description }}</p>
+	  </div>
+	</md-list-item>
+    </md-list>
+  </md-content>
+</div>
