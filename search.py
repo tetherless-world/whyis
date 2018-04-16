@@ -143,3 +143,41 @@ def latest(graph, g):
                                                  for x in entry['types'].split('||') if len(x) > 0]
     return results
                                 
+
+
+def search(graph, args, g):
+  results = []
+  typeList = []
+  print('g is:', g)
+  print('args in search.py: ', args)
+  search_query = '''PREFIX bds: <http://www.bigdata.com/rdf/search#>
+
+  SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score) 
+    (group_concat(distinct ?type; separator="||") as ?types)
+  WHERE {
+      ?obj bds:search "%s" .
+      ?obj bds:relevance ?score .  		
+      ?sub ?pred ?obj .
+  OPTIONAL { 
+      ?sub rdf:type ?type.
+    }
+  } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
+    LIMIT 10''' % args
+  for row in graph.query(search_query, initNs=g.ns.prefixes):
+    result = row.asdict()    
+    print("result:", result)
+    print("g.labelize( result['sub'] )", g.labelize( result['sub'] ) )
+    # result['label'] = [ g.labelize( result['sub'] ) ]
+    print("result['label'] is:", result['label'])
+    results.append( result )
+  for item in results:
+    if item['types'] is not None:
+      for type in item['types'].split('||'):
+        typeList.append(type)
+    item['type'] = typeList
+    print("typeList is:", typeList)
+    typeList = []
+  return results
+
+
+

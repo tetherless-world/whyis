@@ -386,6 +386,10 @@ np:Nanopublication a owl:Class;
 
 whyis:searchApi whyis:hasView "search-api.json".
 
+<searchApi2> a whyis:searchApi2 . 
+
+whyis:searchApi2 whyis:hasView "search-api2.json".
+
 <search> a whyis:search .
 
 whyis:search whyis:hasView "search-view.html".

@@ -1055,10 +1055,10 @@ $( function() {
             scope:  {
                 query: "@"
             },
-            link: function(scope, element, attrs) {//was scope
+            link: function(scope, element, attrs) {
                 console.log('attrs: ', attrs);
                 console.log('scope.query is: ', scope.query);
-                $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
+                $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now trying searchApi2
                     'params': {'query': scope.query },
                     'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}
