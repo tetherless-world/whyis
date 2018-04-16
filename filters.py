@@ -82,8 +82,10 @@ def configure(app):
 ?target
 (group_concat(distinct ?link_type; separator=" ") as ?link_types) 
 ?np 
-?probability 
-?prob_np
+?probability
+#(max(?tfidf) as ?tfidf)
+(max(?frequency) as ?frequency)
+(max(?idf) as ?idf)
 (group_concat(distinct ?article; separator=" ") as ?articles) 
 where {
     hint:Query hint:optimizer "Runtime" .
@@ -95,9 +97,10 @@ where {
     optional {
       ?np np:hasProvenance ?provenance
       graph ?provenance {
-        ?assertion prov:wasDerivedFrom ?article.
-        ?article a sio:PeerReviewedArticle.
+        ?assertion prov:wasDerivedFrom|dc:references ?article.
+        #?article a sio:PeerReviewedArticle.
       }
+      minus { ?article a np:Nanopublication.}
     }
     optional {
       graph ?prob_assertion {
@@ -105,7 +108,17 @@ where {
       }
       ?prob_np np:hasAssertion ?prob_assertion.
     }
-} group by ?source ?target ?link ?np ?probability ?prob_np''' % select
+    optional {
+      ?source sio:hasPart ?term.
+      ?term prov:specializationOf ?target;
+            sio:Frequency ?frequency.
+      optional {
+        ?target sio:InverseDocumentFrequency ?idf.
+      }
+      #bind (?frequency * ?idf as ?tfidf)
+      #bind (?tfidf/(1+?tfidf) as ?probability)
+    }
+} group by ?source ?target ?link ?np ?prob_np ?probability''' % select
 
     @app.template_filter('mergeLinks')
     def mergeLink(edges):
@@ -116,15 +129,22 @@ where {
             result['articles'] = []
             for i in links:
                 if 'probability' not in i:
+                    
                     # Do a very rudimentary meta-analysis based on the number of supporting papers
                     rates = [base_rate for x in i['articles']]
                     if len(rates) == 0:
                         rates = [base_rate]
                     p = combine_pvalues(rates, method="stouffer")[1]
                     i['probability'] = p
+                    if 'frequency' in i:
+                        idf = 10 ** i.get('idf',Literal(100)).value
+                        tfidf = (0.5+i['frequency'].value) * idf
+                        i['probability'] = combine_pvalues([tfidf/(1+tfidf)],method='stouffer')[1]
+                else:
+                    i['probability'] = i['probability'].value
                 result['from'].append(i['np'])
                 result['articles'].extend(i['articles'])
-            result['probability'] = geomean([i['probability'] for i in links])
+            result['probability'] = max([i['probability'] for i in links])
             #print "end: "
             return result
     
@@ -167,15 +187,14 @@ where {
     @app.template_filter('probit')
     def probit(q, **values):
         q = probquery(q)
-        print q
         results = query_filter(q, values=values)
         results = mergeLink(results)
-        results = mergeLinkTypes(results)
-        #for r in results:
-        #    r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
-        #    resource = app.get_resource(URIRef(r['link']))
-        #    labelize(r, 'link','label')
-        #    #r['descriptions'] = [v for k,v in app.get_summary(resource)]
+        results = sorted(mergeLinkTypes(results), key=lambda x: x['probability'], reverse=True)
+        for r in results:
+            r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
+            resource = app.get_resource(URIRef(r['link']))
+            labelize(r, 'link','label')
+            #r['descriptions'] = [v for k,v in app.get_summary(resource)]
         if 'target' not in values:
             results = iter_labelize(results,'target','target_label')
             for r in results:

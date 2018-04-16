@@ -63,14 +63,16 @@ class Service(sadi.Service):
             print "Processing", i.identifier, self
             output_nanopub = Nanopublication()
             o = output_nanopub.assertion.resource(i.identifier) # OutputClass(i.identifier)
+            error = False
             try:
                 result = self.process_nanopub(i, o, output_nanopub)
             except Exception as e:
                 output_nanopub.add((output_nanopub.assertion.identifier,self.app.NS.sioc.content, rdflib.Literal(str(e))))
                 logging.exception("Error processing resource %s in nanopub %s"%(i.identifier, inputGraph.identifier))
+                error = True
             print "Output Graph", output_nanopub.identifier, len(output_nanopub)
             for new_np in self.app.nanopub_manager.prepare(rdflib.ConjunctiveGraph(store=output_nanopub.store)):
-                if len(new_np.assertion) == 0:
+                if len(new_np.assertion) == 0 and not error:
                     continue
                 self.explain(new_np, i, o)
                 new_np.add((new_np.identifier, sio.isAbout, i.identifier))
@@ -199,16 +201,13 @@ class DatasetImporter(UpdateChangeService):
         node = self.app.run_importer(i.identifier)
                     
                             
-class OntologyImporter(GlobalChangeService):
+class OntologyImporter(UpdateChangeService):
 
     activity_class = whyis.OntologyImport
     
     def get_query(self):
         return '''select ?resource where {
     ?ontology owl:imports ?resource.
-    filter not exists {
-      ?resource a whyis:ImportedOntology.
-    }
 }'''
             
     def getInputClass(self):
@@ -218,6 +217,8 @@ class OntologyImporter(GlobalChangeService):
         return whyis.ImportedOntology
 
     def process_nanopub(self, i, o, new_np):
+        if (i.identifier, rdflib.RDF.type, whyis.ImportedOntology) in self.app.db:
+            return
         file_format = rdflib.util.guess_format(i.identifier)
         try: # Try the best guess at a format.
             new_np.assertion.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)

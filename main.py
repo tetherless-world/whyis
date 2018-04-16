@@ -482,13 +482,9 @@ construct {
             print entity, importer
 
             if importer is not None:
-                print 10
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-                print 11
                 if modified is None or async is False:
-                    print 12
                     self.run_importer(entity)
-                    print 13
                 else:
                     print "Type of modified is",type(modified)
                     self.run_importer.delay(entity)
@@ -810,6 +806,8 @@ construct {
                 self.NS.prov.value,
                 self.NS.sio.hasValue
             ]
+            if 'summary_properties' in self.config:
+                summary_properties.extend(self.config['summary_properties'])
             for property in summary_properties:
                 terms = self.lang_filter(resource[property])
                 for term in terms:

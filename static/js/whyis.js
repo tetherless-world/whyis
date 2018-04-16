@@ -1552,7 +1552,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "filter": false
             },
             "other": {
-                "shape": "none",
+                "shape": "triangle",
                 "color": "#888",
                 "uris": [],
                 "filter": false
@@ -1594,7 +1594,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "uris": ["http://semanticscience.org/resource/Drug"]
             },
             "other" : {
-                "shape": "octagon",
+                "shape": "ellipse",
                 "size": "50",
                 "color": "#FF7F50",
                 "uris": []
