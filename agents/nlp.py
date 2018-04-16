@@ -141,6 +141,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
     property_path = "<http://schema.org/text>|<http://purl.org/dc/terms/summary>|<http://purl.org/dc/terms/abstract>|<http://purl.org/dc/terms/description>|<http://www.w3.org/2000/01/rdf-schema#comment>|<http://www.w3.org/2004/02/skos/core#definition>"
 
     def __init__(self, property_path=None):
+        nltk.download('all', quiet=True)
         if property_path is not None:
             self.property_path = property_path
         

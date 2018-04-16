@@ -358,6 +358,9 @@ whyis:hasLabel dc:identifier "label";
 
 rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
+  whyis:hasOutgoing "outgoing_resource.json";
+  whyis:hasIncoming "incoming_resource.json";
+  whyis:hasExplore "explore.html";
   whyis:hasDescribe "describe.json";
   whyis:hasNanopublications "nanopublications.json";
   whyis:hasLabel "label_view.html".
@@ -420,3 +423,10 @@ whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
 
 whyis:resolveView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "resolve".
+
+whyis:hasExplore rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "explore".
+whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "outgoing".
+whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "incoming".

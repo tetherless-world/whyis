@@ -5,17 +5,18 @@
 {% if this.description().value(ns.RDF.type) %} a
   {% for superClass in this.description()[ns.RDF.type] %}
   {% if loop.index > 1 and loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}
-  {% if loop.revindex > 2 %}, {% endif %}
+  {{ render_resource_link(superClass) }}{% if loop.revindex > 2 %}, {% endif %}
 {% endfor %}
 {% endif %}
 {% endblock %}
 {% block content %}
 <div class="row" >
-  <div class="col-md-8">
+  <div class="col-md-8" >
     {{ summary_panel(this.description()) }}
+    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
+      <explore flex start="{{this.identifier}}"></explore>
+    </section>
     {{ content(this.description()) }}
-    
     <div class="panel panel-default">
       <div class="panel-heading">
         <h2 class="panel-title">Nanopublications for {{get_label(this.description())}}</h2>
@@ -26,9 +27,10 @@
     </div>
   </div>
   <div class="col-md-4">
+    {% if this.description().value(ns.foaf.depiction) %}
+    <img src="/about?uri={{this.description().value(ns.foaf.depiction).identifier}}" class="img-thumbnail"></img>
+    {% endif %}
     {{ facts_panel(this.description()) }}
   </div>
-  <!-- <p>this is from resource_view.html!</p> -->
-  <!-- for debugging purposes -->
 
 {% endblock %}

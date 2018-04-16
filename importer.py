@@ -14,6 +14,7 @@ import os
 from requests_testadapter import Resp
 import magic
 import mimetypes
+import traceback, sys
 
 np = rdflib.Namespace('http://www.nanopub.org/nschema#')
 prov = rdflib.Namespace('http://www.w3.org/ns/prov#')
@@ -60,16 +61,21 @@ class Importer:
         updated = self.modified(entity_name)
         if updated is None:
             updated = datetime.datetime.now(pytz.utc)
-        g = self.fetch(entity_name)
+        try:
+            g = self.fetch(entity_name)
+        except Exception as e:
+            print "Error loading %s: %s" %(entity_name,e)
+            traceback.print_exc(file=sys.stdout)
+            return
         for new_np in nanopubs.prepare(g):
-            #print "Adding new nanopub:", new_np.identifier
+            print "Adding new nanopub:", new_np.identifier
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, rdflib.URIRef(entity_name)))
             if updated != None:
                 new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
-            #print new_np.serialize(format="trig")
+            print new_np.serialize(format="trig")
             nanopubs.publish(new_np)
 
         for old_np in old_nps:
@@ -86,7 +92,9 @@ class Importer:
         
 
 class LinkedData (Importer):
-    def __init__(self, prefix, url, headers=None, access_url=None, format=None, modified_headers=None, postprocess_update=None, min_modified=0):
+    def __init__(self, prefix, url, headers=None, access_url=None,
+                 format=None, modified_headers=None, postprocess_update=None,
+                 postprocess=None, min_modified=0):
         self.prefix = prefix
         self.url = url
         self.detect_url = url.split("%s")[0]
@@ -103,6 +111,7 @@ class LinkedData (Importer):
         else:
             self._get_access_url = lambda entity_name: self.access_url % entity_name
         self.postprocess_update = postprocess_update
+        self.postprocess = postprocess
 
     def resource_matches(self, entity):
         return entity.startswith(self.detect_url)
@@ -121,6 +130,7 @@ class LinkedData (Importer):
 
     def modified(self, entity_name):
         u = self._get_access_url(entity_name)
+        print "accessing at", u
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
@@ -145,6 +155,10 @@ class LinkedData (Importer):
         if self.postprocess_update is not None:
             #print "update postprocess query."
             g.update(self.postprocess_update)
+        if self.postprocess is not None:
+            print "postprocessing", entity_name
+            p = self.postprocess
+            p(g)
         #print g.serialize(format="trig")
         return rdflib.ConjunctiveGraph(identifier=local.identifier, store=g.store)
         
