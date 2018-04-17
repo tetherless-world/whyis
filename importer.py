@@ -53,6 +53,7 @@ class Importer:
         return modified
         
     def load(self, entity_name, db, nanopubs):
+        entity_name = rdflib.URIRef(entity_name)
         print "Fetching", entity_name
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
@@ -70,12 +71,11 @@ class Importer:
         for new_np in nanopubs.prepare(g):
             print "Adding new nanopub:", new_np.identifier
             self.explain(new_np, entity_name)
-            new_np.add((new_np.identifier, sio.isAbout, rdflib.URIRef(entity_name)))
+            new_np.add((new_np.identifier, sio.isAbout, entity_name))
             if updated != None:
                 new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
-            print new_np.serialize(format="trig")
             nanopubs.publish(new_np)
 
         for old_np in old_nps:
@@ -211,7 +211,7 @@ class FileImporter (LinkedData):
         old_nanopubs = self.app.add_file(f, entity_name, np)
         np.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
         for old_np, old_np_assertion in old_nanopubs:
-            np.pubinfo.add((np.assertion.identifier, NS.prov.wasRevisionOf, old_np_assertion))
+            np.pubinfo.add((np.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
 
         return np
         

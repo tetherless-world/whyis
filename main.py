@@ -313,6 +313,7 @@ class App(Empty):
         app = self
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
         def run_importer(self, entity_name):
+            entity_name = URIRef(entity_name)
             counter = app.redis.incr(("import",entity_name))
             if counter > 1:
                 return
@@ -495,6 +496,7 @@ construct {
         filters.configure(self)
 
     def add_file(self, f, entity, nanopub):
+        entity = rdflib.URIRef(entity)
         old_nanopubs = []
         for np_uri, np_assertion, in self.db.query('''select distinct ?np ?assertion where {
     hint:Query hint:optimizer "Runtime" .
