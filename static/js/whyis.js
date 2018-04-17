@@ -1056,7 +1056,7 @@ $( function() {
             link: function(scope, element, attrs) {
                 console.log('attrs: ', attrs);
                 console.log('scope.query is: ', scope.query);
-                $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now trying searchApi2
+                $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now searchApi2
                     'params': {'query': scope.query },
                     'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}

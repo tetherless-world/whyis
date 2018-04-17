@@ -1,4 +1,5 @@
 import rdflib
+import filters
 
 prefixes = dict(
     skos = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#"),
@@ -116,6 +117,7 @@ def latest(graph, g):
             entities[entry['about']] = entry
             results.append(entry)
         entity = g.get_resource(rdflib.URIRef(entry['about']), retrieve=False)
+        print("entity is:", entity)
         if 'label' not in entities[entry['about']]:
             entry['label'] = g.get_label(entity)
         if 'description' not in entities[entry['about']]:
@@ -132,6 +134,7 @@ def latest(graph, g):
 def search(graph, args, g):
   results = []
   typeList = []
+  labelsList = []
   print('g is:', g)
   print('args in search.py: ', args)
   search_query = '''PREFIX bds: <http://www.bigdata.com/rdf/search#>
@@ -148,19 +151,25 @@ def search(graph, args, g):
   } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
     LIMIT 10''' % args
   for row in graph.query(search_query, initNs=g.ns.prefixes):
-    result = row.asdict()    
-    print("result:", result)
-    print("g.labelize( result['sub'] )", g.labelize( result['sub'] ) )
+    result = row.asdict()
+    # print("result['sub']:", result['sub'])
+    # print("g.get_label( result )", g.labelize( result, "sub" ) )#failing here
+    g.labelize( result, "sub" )
     # result['label'] = [ g.labelize( result['sub'] ) ]
-    print("result['label'] is:", result['label'])
+    # print("result['label'] is:", result['label'])
     results.append( result )
   for item in results:
     if item['types'] is not None:
       for type in item['types'].split('||'):
+        labelsList.append( g.labelize({"uri": type}, 'uri' ) )
         typeList.append(type)
+    item['typeLabels'] = labelsList
     item['type'] = typeList
+    # for type in item['type']:
+    #   g.labelize ( {"type":type}, 'type' )
     print("typeList is:", typeList)
     typeList = []
+  
   return results
 
 
