@@ -152,11 +152,7 @@ def search(graph, args, g):
     LIMIT 10''' % args
   for row in graph.query(search_query, initNs=g.ns.prefixes):
     result = row.asdict()
-    # print("result['sub']:", result['sub'])
-    # print("g.get_label( result )", g.labelize( result, "sub" ) )#failing here
     g.labelize( result, "sub" )
-    # result['label'] = [ g.labelize( result['sub'] ) ]
-    # print("result['label'] is:", result['label'])
     results.append( result )
   for item in results:
     if item['types'] is not None:
@@ -165,10 +161,8 @@ def search(graph, args, g):
         typeList.append(type)
     item['typeLabels'] = labelsList
     item['type'] = typeList
-    # for type in item['type']:
-    #   g.labelize ( {"type":type}, 'type' )
-    print("typeList is:", typeList)
-    typeList = []
+    # print("typeList is:", typeList)
+    typeList = [] #reset typeList
   
   return results
 

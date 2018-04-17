@@ -1054,15 +1054,15 @@ $( function() {
                 query: "@"
             },
             link: function(scope, element, attrs) {
-                console.log('attrs: ', attrs);
-                console.log('scope.query is: ', scope.query);
+                // console.log('attrs: ', attrs);
+                // console.log('scope.query is: ', scope.query);
                 $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now searchApi2
                     'params': {'query': scope.query },
                     'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}
                 }).then(function(response) {
-                    console.log('response data: ', response.data);
-                    console.log('attrs is: ', attrs)
+                    // console.log('response data: ', response.data);
+                    // console.log('attrs is: ', attrs)
                     scope.entities = response.data;  
                 });
             }
