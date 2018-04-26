@@ -114,10 +114,10 @@
   content: "Alternate";
 }
 </style>
-        <div class="row" >
+<div class="row" >
+  <div class="col-md-5">
     {{ summary_panel(this.description()) }}
     {{ content(this.description()) }}
-            <div class="col-md-5">
               <h2>Super Classes</h2>
               <p>Super class definitions also apply to this class.</p>
               <div class="panel panel-default">
@@ -132,8 +132,6 @@
                       {% endfor %}
                     </ul>
                 </div>
-             </div>
-             <div class="col-md-4">
                <div class="panel panel-default">
                     <div class="panel-heading">
                         <h2 class="panel-title">Details</h2>
@@ -200,17 +198,23 @@
                         {%endif%}
                     </div>
                 </div>               
-            </div>
-            <div class="col-md-3">
-            <div class="panel panel-default">
-            <div class="panel-heading">
-              <h2 class="panel-title">Nanopublications</h2>
-            </div>
-            <div class="panel-body">
-              <nanopubs resource="{{this.description().identifier}}"/>
-            </div>
-            </div>
-            </div>
-        </div>
+
+  </div>
+  <div class="col-md-7" >
+    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
+      <explore flex start="{{this.identifier}}"></explore>
+    </section>
+  </div>
+</div>
+<div class="row">
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h2 class="panel-title">Nanopublications</h2>
+  </div>
+  <div class="panel-body">
+    <nanopubs resource="{{this.description().identifier}}"/>
+  </div>
+</div>
 
 {%endblock%}

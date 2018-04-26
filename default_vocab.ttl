@@ -368,8 +368,13 @@ rdfs:Resource whyis:hasView "resource_view.html";
 bibo:AcademicArticle whyis:hasView "article_view.html".
 
 owl:Class rdfs:label "Class";
-    whyis:hasView "class_view.html".
+  whyis:hasConstraints "class_constraints.json";
+  whyis:hasOutgoing "outgoing_class.json";
+  whyis:hasIncoming "incoming_class.json";
+  whyis:hasView "class_view.html".
 
+whyis:hasConstraints dc:identifier "constraints";
+  rdfs:subPropertyOf whyis:hasView.
 
 owl:Ontology rdfs:label "Ontology";
     whyis:hasView "ontology_view.html".
