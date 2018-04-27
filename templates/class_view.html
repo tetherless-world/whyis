@@ -206,8 +206,68 @@
     </section>
   </div>
 </div>
-<div class="row">
-  <instance-facets></instance-facets>
+
+<div layout="column" layout-fill>
+  <md-toolbar flex="initial">
+    <div class="md-toolbar-tools" layout="row">
+      <h2 flex>Instances</h2>
+      <md-button ng-href="/about?view=new&uri={{this.identifier}}" class="md-icon-button" aria-label="Create">
+        <md-icon>add</md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-content flex layout="column" layout-fill ng-controller="InstanceFacetController as vm">
+    <div class="row">
+      <div class="col-md-12">
+        <div ng-if="vm.error">
+          <uib-alert type="danger"><span ng-bind="vm.error"></span></uib-alert>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">
+        <!-- Facets are defined here using the configurations defined in the controller -->
+        <seco-text-facet data-options="vm.facets.name"></seco-text-facet>
+        <seco-text-facet data-options="vm.facets.description"></seco-text-facet>
+        <seco-basic-facet data-options="vm.facets.type"></seco-basic-facet>
+      </div>
+
+      <!-- Results view -->
+      <div class="col-md-9">
+        <img src="/static/images/loading-lg.gif" ng-show="vm.isLoadingResults" />
+        <md-content ng-hide="vm.isLoadingResults">
+          <md-list>
+            <md-list-item flex ng-show="vm.page.length ==0">No results found.</md-list-item>
+            <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="/about?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
+              <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
+	      <div class="md-list-item-text" layout="column" flex>
+                <div class="md-list-item-text" >
+                  <h3><span data-ng-if="entity.label" data-ng-bind="entity.label"/><span data-ng-if="!entity.label" data-ng-bind="vm.getLabel(entity.id)"/></h3>
+                  <p ng-if="entity.summary" >{[{entity.summary[0][1]}]}</p>
+	        </div>
+              </div>
+              <md-button md-secondary ng-href="/about?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
+                <md-icon>create</md-icon>
+              </md-button>
+	    </md-list-item>
+          </md-list>
+        </md-content>
+        <!-- Pagination -->
+        <uib-pagination
+          class="pagination-sm"
+          max-size="10"
+          boundary-links="true"
+          rotate="false"
+          total-items="vm.totalCount"
+          ng-model="vm.pageNo"
+          ng-disabled="vm.isLoadingResults"
+          ng-change="vm.getPage()">
+        </uib-pagination>
+      </div>
+    </div>
+  </div>
+  </div>
+  </md-content>
 </div>
 <div class="panel panel-default">
   <div class="panel-heading">

@@ -28,7 +28,7 @@
   </div>
   <div class="col-md-4">
     {% if this.description().value(ns.foaf.depiction) %}
-    <img src="/about?uri={{this.description().value(ns.foaf.depiction).identifier}}" class="img-thumbnail"></img>
+    <img src="{{this.description().value(ns.foaf.depiction).identifier}}" class="img-thumbnail"></img>
     {% endif %}
     {{ facts_panel(this.description()) }}
   </div>

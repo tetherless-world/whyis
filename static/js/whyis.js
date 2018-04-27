@@ -1772,7 +1772,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         function getSummary(ldEntity) {
             console.log(ldEntity);
             for (var i=0; i<summaryProperties.length; i++) {
-                console.log(summaryProperties[i], ldEntity[summaryProperties[i]]);
                 if (ldEntity[summaryProperties[i]] != null) {
                     var summary =  listify(ldEntity[summaryProperties[i]])[0];
                     if (summary['@value']) summary = summary['@value'];
@@ -2230,6 +2229,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             type: {
                 facetId: 'type',
                 predicate:'rdf:type/rdfs:subClassOf*',
+                specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
                 enabled: true,
                 name: 'Type'
             },
@@ -2286,13 +2286,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         '   ?id rdfs:label|skos:prefLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name> ?label . \n' +
         '  }\n' +
         '  OPTIONAL { \n' +
-        '   ?id skos:definition|rdfs:comment|dc:description:dc:abstract|dc:summary ?definition . \n' +
+        '   ?id skos:definition|rdfs:comment|dc:description:dc:abstract|dc:summary ?description . \n' +
         '  }\n' +
         '  OPTIONAL { \n' +
         '   ?id foaf:depiction|<http://schema.org/image> ?depiction . \n' +
         '  }\n' +
         '  OPTIONAL { \n' +
         '   ?id rdf:type/rdfs:subClassOf* ?type__id . \n' +
+        '   FILTER (!ISBLANK(?type__id) && !strstarts(str(?type__id), "bnode:") )' +
         '   OPTIONAL { \n' +
         '    ?type__id rdfs:label ?type__label . \n' +
         '   }\n' +
@@ -2345,105 +2346,120 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     /*
      * The controller.
      */
-    app.directive("instanceFacets", ["$http", 'FacetHandler', 'instanceFacetService', 'facetUrlStateHandlerService',
-                              function($http, FacetHandler, instanceFacetService, facetUrlStateHandlerService) {
-	return {
-            scope: {
-            },
-            templateUrl: '/static/html/instance_facets.html',
-	    restrict: "E",
-            link: function(scope, element, attrs) {
-                var vm = scope;
+    app.controller('InstanceFacetController', function($scope, FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
+        var vm = this;
 
-                var updateId = 0;
+        var updateId = 0;
 
-                // page is the current page of results.
-                vm.page = [];
-                vm.pageNo = 0;
-                vm.getPage = getPage;
-                vm.makeArray = makeArray;
+        // page is the current page of results.
+        vm.page = [];
+        vm.pageNo = 0;
+        vm.getPage = getPage;
+        vm.makeArray = makeArray;
+        vm.getLabel = getLabel;
 
-                vm.disableFacets = disableFacets;
+        vm.disableFacets = disableFacets;
 
-                // Listen for the facet events
-                // This event is triggered when a facet's selection has changed.
-                $scope.$on('sf-facet-constraints', updateResults);
-                // This is the initial configuration event
-                var initListener = $scope.$on('sf-initial-constraints', function(event, cons) {
-                    updateResults(event, cons);
-                    // Only listen once, then unregister
-                    initListener();
-                });
+        // Listen for the facet events
+        // This event is triggered when a facet's selection has changed.
+        $scope.$on('sf-facet-constraints', updateResults);
+        // This is the initial configuration event
+        var initListener = $scope.$on('sf-initial-constraints', function(event, cons) {
+            updateResults(event, cons);
+            // Only listen once, then unregister
+            initListener();
+        });
 
-                // Get the facet configurations from dbpediaService.
-                vm.facets = instanceFacetService.getFacets();
-                // Initialize the facet handler
-                vm.handler = new FacetHandler(getFacetOptions());
+        // Get the facet configurations from dbpediaService.
+        vm.facets = instanceFacetService.getFacets();
+        // Initialize the facet handler
+        vm.handler = new FacetHandler(getFacetOptions());
 
-                // Disable the facets while results are being retrieved.
-                function disableFacets() {
-                    return vm.isLoadingResults;
-                }
+        // Disable the facets while results are being retrieved.
+        function disableFacets() {
+            return vm.isLoadingResults;
+        }
 
-                // Setup the FacetHandler options.
-                function getFacetOptions() {
-                    var options = instanceFacetService.getFacetOptions();
-                    options.scope = $scope;
-                    
-                    // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
-                    options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
-                    return options;
-                }
-                
-                
-                // Get results based on facet selections (each time the selections change).
-                function updateResults(event, facetSelections) {
-                    var uid = ++updateId;
-                    vm.lock = true;
-                    vm.isLoadingResults = true;
-                    
-                    // Update the URL parameters based on facet selections
-                    facetUrlStateHandlerService.updateUrlParams(facetSelections);
-                    
-                    // The dbpediaService returns a (promise of a) pager object.
-                    return instanceFacetService.getResults(facetSelections)
-                        .then(function(pager) {
-                            if (uid === updateId) {
-                                vm.pager = pager;
-                                vm.totalCount = pager.totalCount;
-                                vm.pageNo = 1;
-                                getPage(uid).then(function() {
-                                    vm.lock = false;
-                                    return vm.page;
+        // Setup the FacetHandler options.
+        function getFacetOptions() {
+            var options = instanceFacetService.getFacetOptions();
+            options.scope = $scope;
+
+            // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
+            options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
+            return options;
+        }
+
+
+        // Get results based on facet selections (each time the selections change).
+        function updateResults(event, facetSelections) {
+            // As the facets are not locked while the results are loading,
+            // this function may be called again before the results have been
+            // retrieved. This creates a race condition where the later call
+            // may return before the first one, which leads to an inconsistent
+            // state once the first returns. To avoid this we'll have a counter
+            // that is incremented each time update is called, and we'll abort
+            // the update if the counter has been incremented before it finishes.
+            var uid = ++updateId;
+            // As the user can also change the page via pagination, and introduce
+            // a race condition that way, we'll want to discard any pending
+            // page changes if a facet value changes. So set a boolean flag for
+            // this purpose.
+            vm.lock = true;
+            // This variable is used to disable page selection, and display the
+            // spinner animation.
+            vm.isLoadingResults = true;
+
+            // Update the URL parameters based on facet selections
+            facetUrlStateHandlerService.updateUrlParams(facetSelections);
+
+            // The dbpediaService returns a (promise of a) pager object.
+            return instanceFacetService.getResults(facetSelections)
+            .then(function(pager) {
+                if (uid === updateId) {
+                    vm.pager = pager;
+                    vm.totalCount = pager.totalCount;
+                    vm.pageNo = 1;
+                    getPage(uid).then(function() {
+                        vm.lock = false;
+                        vm.page.forEach(function(d) {
+                            $http.get('/about',{ params: {uri:d.id,view:'label'}})
+                                .then(function(response) {
+                                    d.label = response.data;
                                 });
-                            }
+                            $http.get('/about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
+                                .then(function(response) {
+                                    d.summary = response.data;
+                                });
                         });
-                }
-                
-                // Get a page of mapped objects.
-                // Angular-UI pagination handles the page number changes.
-                function getPage(uid) {
-                    vm.isLoadingResults = true;
-                    // Get the page.
-                    // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
-                    return vm.pager.getPage(vm.pageNo-1).then(function(page) {
-                        // Check if it's ok to change the page
-                        if (!vm.lock || (uid === updateId)) {
-                            vm.page = page;
-                            vm.isLoadingResults = false;
-                        }
-                    }).catch(function(error) {
-                        vm.error = error;
-                        vm.isLoadingResults = false;
+                        return vm.page;
                     });
                 }
-                
-                function makeArray(val) {
-                    return angular.isArray(val) ? val : [val];
-                }
-            }
+            });
         }
-}]);
+
+        // Get a page of mapped objects.
+        // Angular-UI pagination handles the page number changes.
+        function getPage(uid) {
+            vm.isLoadingResults = true;
+            // Get the page.
+            // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
+            return vm.pager.getPage(vm.pageNo-1).then(function(page) {
+                // Check if it's ok to change the page
+                if (!vm.lock || (uid === updateId)) {
+                    vm.page = page;
+                    vm.isLoadingResults = false;
+                }
+            }).catch(function(error) {
+                vm.error = error;
+                vm.isLoadingResults = false;
+            });
+        }
+
+        function makeArray(val) {
+            return angular.isArray(val) ? val : [val];
+        }
+    });
     
     angular.bootstrap(document, ['App']);
 
