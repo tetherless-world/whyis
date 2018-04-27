@@ -131,12 +131,22 @@ def latest(graph, g):
                                 
 
 
-def search(graph, args, g):
+def search(graph, query, g, args):
+  finalResults = []
   results = []
   typeList = []
   labelsList = []
   print('g is:', g)
-  print('args in search.py: ', args)
+  print('query in search.py: ', query)  
+  try:
+    page = int(args['page'])
+  except:
+    page = 0
+  # if args['page'] is not None:
+  #   page = int(args['page'])
+  # else:
+  #   page = 0  
+  print('page is:', page)
   search_query = '''PREFIX bds: <http://www.bigdata.com/rdf/search#>
 
   SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score) 
@@ -149,7 +159,8 @@ def search(graph, args, g):
       ?sub rdf:type ?type.
     }
   } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
-    LIMIT 10''' % args
+    LIMIT 10
+    OFFSET %d''' % (query, page)
   for row in graph.query(search_query, initNs=g.ns.prefixes):
     result = row.asdict()
     g.labelize( result, "sub" )
@@ -157,14 +168,52 @@ def search(graph, args, g):
   for item in results:
     if item['types'] is not None:
       for type in item['types'].split('||'):
-        labelsList.append( g.labelize({"uri": type}, 'uri' ) )
+        labelsList.append( g.labelize( {"uri": type}, 'uri' ) )
         typeList.append(type)
     item['typeLabels'] = labelsList
     item['type'] = typeList
     # print("typeList is:", typeList)
     typeList = [] #reset typeList
+  #finally add page for pagination
+  finalResults.append({'data': results})
+  finalResults[0]['page'] = page 
+
+  #add in count query
+  countQuery = '''PREFIX bds: <http://www.bigdata.com/rdf/search#>
+
+  SELECT  
+	(COUNT(DISTINCT ?sub) as ?count)
+	
+  WHERE {
+      ?obj bds:search "%s" .  		
+      ?sub ?pred ?obj .
+  OPTIONAL { 
+      ?sub rdf:type ?type.
+    }
+  } 
+    OFFSET 0''' % query
+  countResults = []
+  countItems = 0
+  countList = []
   
-  return results
+  for row in graph.query(countQuery, initNs=g.ns.prefixes):
+    countResult = row.asdict()
+    countResults.append( countResult )
+  print('countResults is:',countResults)
+
+  #count for while loop
+  count = int(countResults[0]['count'])
+  while (count > 0):
+    countList.append( count )
+    count = count - 1
+  print('countList is:', countList)
+
+  # finalResults.append({'count': int(countResults[0]['count'])} )
+  # finalResults({'countAsList': countList} )
+  finalResults[0]['count'] =  int(countResults[0]['count'])
+  finalResults[0]['countList'] = countList
+
+  return finalResults
 
 
 

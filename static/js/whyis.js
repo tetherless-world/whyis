@@ -1051,17 +1051,18 @@ $( function() {
             //from inside <search-result> in the search-view.html jinja template
             //use @ instead of = because I want string, not variable
             scope:  {
-                query: "@"
+                query: "@",
+                page: "@"
             },
             link: function(scope, element, attrs) {
                 // console.log('attrs: ', attrs);
                 // console.log('scope.query is: ', scope.query);
                 $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now searchApi2
-                    'params': {'query': scope.query },
+                    'params': {'query': scope.query, 'page': scope.page },
                     'resultType': 'json'
                     // 'headers' : {'Accept' : 'application/json'}
                 }).then(function(response) {
-                    // console.log('response data: ', response.data);
+                    console.log('response data: ', response.data);
                     // console.log('attrs is: ', attrs)
                     scope.entities = response.data;  
                 });

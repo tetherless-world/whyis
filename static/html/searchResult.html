@@ -2,21 +2,37 @@
     <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
 </div>
 <md-content>
-    <md-list flex>
-        <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities" layout-wrap>
-            <div class="list-item-text" layout="column">
+    <md-list>  
+        <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities[0]['data']">
+            <div class="list-item-text">
                 <h4>
                     <a href="/about?view=view&uri={{ item['sub'] }}" >
                         {{ item['label'] }}
                     </a>
                 </h4>
-                <h6><span ng-repeat="item in item.typeLabels">{{ item.label }}<span ng-hide="$last">, </span></span></h6>
+                <div>
+                    <h6><span ng-repeat="item in item.typeLabels">{{ item.label }}<span ng-hide="$last">, </span></span></h6>
+                </div>
+                
                 <p> {{ item.obj }} </p>
             </div>
         </md-list-item>
-        <md-list-item ng-hide="entities.length > 0">
+        <md-list-item ng-hide="entities[0]['data'].length > 0">
             <h4>No results</h4>
         </md-list-item>         
     </md-list >
 </md-content>
+<div layout="row" layout-align="center center">
+    <p>
+        <!-- if the page is 0 then no need to display Previous button -->
+        <span ng-hide="entities[0]['page'] < 1">Previous</span>
+        <span ng-hide="entities[0]['page'] < ">Next</span>
+    </p>
+<!--     
+    <p>
+        <span>Why</span><span ng-repeat="number in entities[3]['countAsList']"> y </span> <span>is</span>
+    </p>
+    <p>{{entities[2]['count']}}</p> 
+-->
+</div>
 
