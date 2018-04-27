@@ -356,6 +356,9 @@ whyis:hasRelated dc:identifier "related";
 whyis:hasLabel dc:identifier "label";
   rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasSummary dc:identifier "summary";
+  rdfs:subPropertyOf whyis:hasView.
+
 rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
@@ -363,7 +366,8 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasExplore "explore.html";
   whyis:hasDescribe "describe.json";
   whyis:hasNanopublications "nanopublications.json";
-  whyis:hasLabel "label_view.html".
+  whyis:hasLabel "label_view.html";
+  whyis:hasSummary "summary_view.json".
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
 
