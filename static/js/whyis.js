@@ -720,16 +720,18 @@ $( function() {
                     localPart = localPart.split("/").filter(function(d) {return d.length > 0});
                     localPart = localPart[localPart.length-1];
                     getLabel.labels[uri] = localPart;
-                    promises[uri] = $http.get('/about?uri='+encodeURI(uri)+"&view=label")
-                    .then(function(data, status, headers, config) {
-                        if (status == 200) {
-                            var label = data.data;
-                            getLabel.labels[uri] = data.data;
-                        }
-                    });
+                    promises[uri] = $q.defer();
+                    $http.get('/about?uri='+encodeURI(uri)+"&view=label")
+                        .then(function(data, status, headers, config) {
+                            if (status == 200) {
+                                var label = data.data;
+                                getLabel.labels[uri] = data.data;
+                                promises[uri].resolve(getLabel.labels[uri]);
+                            }
+                        });
                 }
             }
-            return getLabel.labels[uri];
+            return promises[uri].promise;
         };
         getLabel.labels = {};
         return getLabel;
@@ -2190,7 +2192,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
      * DBpedia service
      * Handles SPARQL queries and defines facet configurations.
      */
-    app.service('instanceFacetService', function(FacetResultHandler) {
+    app.service('instanceFacetService', function(FacetResultHandler, $http) {
 
         /* Public API */
 
@@ -2210,30 +2212,51 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         //  a property path, for example).
         // 'name' is the title of the facet to show to the user.
         // If 'enabled' is not true, the facet will be disabled by default.
-        var facets = {
+        var facets = [
             // Text search facet for names
-            name: {
+            {
                 facetId: 'label',
                 predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
                 enabled: true,
-                name: 'Label'
+                name: 'Label',
+                type: 'text'
             },
             // Text search facet for descriptions
-            description: {
+            {
                 facetId: 'description',
                 predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
                 enabled: true,
-                name: 'Description'
+                name: 'Description',
+                type: 'text'
             },
             // Text search facet for types
-            type: {
+            {
                 facetId: 'type',
                 predicate:'rdf:type/rdfs:subClassOf*',
                 specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
+                preferredLang: "en",
                 enabled: true,
+                type: 'basic',
                 name: 'Type'
-            },
-        };
+            }
+        ];
+
+        $http.get('/about',{ params: {uri:NODE_URI,view:'constraints'}, responseType:'json'})
+            .then(function(response) {
+                response.data.forEach(function (d) {
+                    d.name = d.propertyLabel;
+                    if (d.rangeLabel && d.name.indexOf(d.rangeLabel) == -1)
+                        d.name += " " + d.rangeLabel;
+                    d.facetId = d.property;
+                    if (d.range)
+                        d.facetId += " " + d.range;
+                    d.predicate = '<'+d.property+'>';
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                    facets.push(d);
+                });
+            });
 
         var endpointUrl = '/sparql';
 
@@ -2431,6 +2454,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 .then(function(response) {
                                     d.summary = response.data;
                                 });
+                            d.type.forEach(function(type) {
+                                getLabel(type.id).then(function(d) { type.label = d});
+                            });
                         });
                         return vm.page;
                     });

@@ -207,8 +207,8 @@
   </div>
 </div>
 
-<div layout="column" layout-fill>
-  <md-toolbar flex="initial">
+<section layout="column" ng-cloak ng-controller="InstanceFacetController as vm">
+  <md-toolbar>
     <div class="md-toolbar-tools" layout="row">
       <h2 flex>Instances</h2>
       <md-button ng-href="/about?view=new&uri={{this.identifier}}" class="md-icon-button" aria-label="Create">
@@ -216,59 +216,54 @@
       </md-button>
     </div>
   </md-toolbar>
-  <md-content flex layout="column" layout-fill ng-controller="InstanceFacetController as vm">
-    <div class="row">
-      <div class="col-md-12">
-        <div ng-if="vm.error">
-          <uib-alert type="danger"><span ng-bind="vm.error"></span></uib-alert>
-        </div>
+  <md-progress-linear ng-show="vm.isLoadingResults" md-mode="indeterminate"></md-progress-linear>
+  <uib-alert flex ng-if="vm.error" type="danger"><span ng-bind="vm.error"></span></uib-alert>
+  <div layout="row" layout-xs="column">
+    <div>
+      <!-- Facets are defined here using the configurations defined in the controller -->
+      <div ng-repeat="facet in vm.facets" ng-switch="facet.type">
+        <seco-text-facet ng-switch-when="text" data-options="facet"></seco-text-facet>
+        <seco-basic-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
+        <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
+        <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
+        <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-3">
-        <!-- Facets are defined here using the configurations defined in the controller -->
-        <seco-text-facet data-options="vm.facets.name"></seco-text-facet>
-        <seco-text-facet data-options="vm.facets.description"></seco-text-facet>
-        <seco-basic-facet data-options="vm.facets.type"></seco-basic-facet>
-      </div>
 
-      <!-- Results view -->
-      <div class="col-md-9">
-        <img src="/static/images/loading-lg.gif" ng-show="vm.isLoadingResults" />
-        <md-content ng-hide="vm.isLoadingResults">
-          <md-list>
-            <md-list-item flex ng-show="vm.page.length ==0">No results found.</md-list-item>
-            <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="/about?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
-              <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
-	      <div class="md-list-item-text" layout="column" flex>
-                <div class="md-list-item-text" >
-                  <h3><span data-ng-if="entity.label" data-ng-bind="entity.label"/><span data-ng-if="!entity.label" data-ng-bind="vm.getLabel(entity.id)"/></h3>
-                  <p ng-if="entity.summary" >{[{entity.summary[0][1]}]}</p>
-	        </div>
-              </div>
-              <md-button md-secondary ng-href="/about?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
-                <md-icon>create</md-icon>
-              </md-button>
-	    </md-list-item>
-          </md-list>
-        </md-content>
-        <!-- Pagination -->
-        <uib-pagination
-          class="pagination-sm"
-          max-size="10"
-          boundary-links="true"
-          rotate="false"
-          total-items="vm.totalCount"
-          ng-model="vm.pageNo"
-          ng-disabled="vm.isLoadingResults"
-          ng-change="vm.getPage()">
-        </uib-pagination>
-      </div>
-    </div>
+    <!-- Results view -->
+    <md-content flex>
+      <md-list ng-hide="vm.isLoadingResults">
+        <md-list-item flex ng-show="vm.page.length ==0">No results found.</md-list-item>
+        <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="/about?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
+          <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
+	  <div class="md-list-item-text" ng-class="{'md-offset': !entity.depiction }">
+            <div class="md-list-item-text" >
+              <h3><span data-ng-if="entity.label" data-ng-bind="entity.label"/><span data-ng-if="!entity.label" data-ng-bind="vm.getLabel(entity.id)"/></h3>
+              <h4>
+                <span data-ng-repeat="type in entity.type">{[{type.label}]}<span ng-hide="!type.label || $last">, </span></span>
+              </h4>
+              <p ng-if="entity.summary" >{[{entity.summary[0][1]}]}</p>
+	    </div>
+          </div>
+          <md-button md-secondary ng-href="/about?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
+            <md-icon>create</md-icon>
+          </md-button>
+	</md-list-item>
+      </md-list>
+      <!-- Pagination -->
+      <uib-pagination
+         class="pagination-sm"
+         max-size="10"
+         boundary-links="true"
+         rotate="false"
+         total-items="vm.totalCount"
+         ng-model="vm.pageNo"
+         ng-disabled="vm.isLoadingResults"
+         ng-change="vm.getPage()">
+      </uib-pagination>
+    </md-content>
   </div>
-  </div>
-  </md-content>
-</div>
+</section>
 <div class="panel panel-default">
   <div class="panel-heading">
     <h2 class="panel-title">Nanopublications</h2>
