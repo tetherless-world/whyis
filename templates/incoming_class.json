@@ -1,0 +1,14 @@
+{{'''graph ?assertion {
+      {
+         ?source rdfs:subClassOf|owl:equivalentClass ?target.
+         ?source ?link_type ?target.
+      }
+    }
+    bind(1 as ?probability)
+    bind(?assertion as ?link)
+    minus { ?source owl:sameAs|rdfs:seeAlso|rdf:type|<http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
+    minus { ?source sio:hasPart|sio:hasAttribute ?target }
+    minus { ?target a sio:Term.}
+    filter (!sameTerm(?source, ?target) && isIRI(?target))
+    FILTER (!regex(str(?source), "^bnode:"))
+''' | probit(target=this.identifier) | tojson }}
