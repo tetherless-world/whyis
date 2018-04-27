@@ -496,4 +496,3 @@ class Deductor(UpdateChangeService):
 
     def __str__(self):
         return "Deductor Instance: " + str(self.__dict__)
-
