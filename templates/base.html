@@ -12,15 +12,16 @@
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
     <!-- Angular Material style sheet -->
-    <link rel="stylesheet" href="/static/bower_components/angular-material/angular-material.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/angular-material/angular-material.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/angular-bootstrap/ui-bootstrap-csp.css')}}">
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}">
     
     <!-- Optional theme -->
-    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
         
-    <link rel="stylesheet" href="/static/css/whyis.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/apple-icon-57x57.png') }}">
 <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='images/apple-icon-60x60.png') }}">
@@ -37,9 +38,10 @@
 <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
 <meta name="msapplication-TileImage" content="{{ url_for('static', filename='images/ms-icon-144x144.png') }}">
 
-<link href="/static/bower_components/bootstrap-fileinput/css/fileinput.css" media="all" rel="stylesheet" type="text/css"/>
+<link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
 
     <style>
+      .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
       div.container {
       width: 95%;
       }
@@ -56,14 +58,14 @@
     <md-toolbar >
       <div class="md-toolbar-tools">
 
-        <a href="/">Home</a>
+        <a href="{{url_for('view',name='')}}">Home</a>
         
 	<!-- Form for Search -->
 	<form 
 	      class="navbar-form"
               style="color:black"
 	      role="search"
-	      action="/search"
+	      action="{{url_for('view',name='search')}}"
 	      method="get"
 	       name="search" layout="row" flex>
           <search-autocomplete flex></search-autocomplete>
@@ -71,18 +73,18 @@
 
         <h3>
         {% if not current_user or current_user.is_anonymous %}
-        <a flex="none" href="/login">Log in <span class="glyphicon glyphicon-log-in"></span></a>
+        <a flex="none" href="{{config['site_url_path']}}login">Log in <span class="glyphicon glyphicon-log-in"></span></a>
         {% else %}
         <div flex="none" class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
           <ul class="dropdown-menu dropdown-menu-right">
-            <li><a href="/logout">Log out</a></li>
-            <li><a href="/change">Change password</a></li>
+            <li><a href="{{url_for('security.logout')}}">Log out</a></li>
+            <li><a href="{{url_for('security.change_password')}}">Change password</a></li>
           </ul>
         </div>
         {% endif %}
         {% if current_user and current_user.is_anonymous and current_user.is_authenticated %}
-        <a flex="none" href="{{config['SECURITY_REGISTER_URL']}}">Register <span class="glyphicon glyphicon-log-in"></span></a>
+        <a flex="none" href="{{url_for('security.register')}}">Register <span class="glyphicon glyphicon-log-in"></span></a>
         {% endif %}
         </h3>
       </div>
@@ -92,19 +94,29 @@
     </div>
     {% block pageheader %}
     <div class="container">
-    <div class="page-header">
+    <div class="page-header" layout="row">
+       <h1 flex property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
+       </h1>
        {% if this is defined %}
-        <div class="btn-group pull-right" role="group" aria-label="...">
-          {{ upload_button_modal(this) }}
-          <button class="btn btn-default" type="button" aria-label="Edit" title="Edit Node" href="/about?view=edit&uri={{this.identifier}}">
-            Edit
-          </button>
-
-        </div>
-        {% endif %}
-        <h1 property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
-        </h1>
-      </div>
+       <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
+         {{ upload_button_modal(this) }}
+          {% if g.current_user and g.current_user.is_authenticated %}
+          <md-button md-secondary ng-href="{{url_for('view',view='edit', uri=this.identifier)}}" class="md-icon-button" aria-label="Edit" title="Edit">
+            <md-icon>create</md-icon>
+          </md-button>
+          {% endif %}
+          {% if this.description().value(ns.whyis.hasFileID) %}
+          <md-button md-secondary ng-href="{{url_for('view',uri=this.identifier)}}" class="md-icon-button" aria-label="Download File" title="Download File">
+            <md-icon>file_download</md-icon>
+          </md-button>
+          {% endif %}
+          {% if not this.identifier.startswith(ns.local) %}
+          <md-button md-secondary ng-href="{{this.identifier}}" class="md-icon-button" aria-label="Visit Page" title="Visit Page">
+            <md-icon>launch</md-icon>
+          </md-button>
+          {% endif %}
+       </section>
+       {% endif %}
     </div>
     {% endblock %}
     <div class="container">
@@ -142,44 +154,45 @@
       if (NODE.length > 0)  NODE = NODE[0];
       else NODE = {"@id" : NODE_URI};
       {% endif %}
+      ROOT_URL = "{{url_for('view',name='')}}";
     </script>
 
-    <script src="/static/js/lib/jquery/dist/jquery.js"></script>
+    <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
 
-    <script src="/static/bower_components/d3/d3.js"></script>
-    <script src="/static/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="{{ url_for('static', filename='bower_components/d3/d3.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
 
-    <script src="/static/bower_components/bootstrap-fileinput/js/fileinput.js" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
     
     <!-- Angular Material Dependencies -->
-    <link rel="stylesheet" href="/static/bower_components/angular-material/angular-material.min.css">
-    <script src="/static/bower_components/angular/angular.min.js"></script>
-    <script src="/static/bower_components/angular-animate/angular-animate.min.js"></script>
-    <script src="/static/bower_components/angular-aria/angular-aria.min.js"></script>
-    <script src="/static/bower_components/angular-material/angular-material.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/angular-material/angular-material.min.css')}}">
+    <script src="{{ url_for('static', filename='bower_components/angular/angular.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-animate/angular-animate.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-aria/angular-aria.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-material/angular-material.min.js')}}"></script>
     
     <!-- Angular Material Fileinput -->
-    <link rel="stylesheet" href="/static/bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.css">
-    <script src="/static/bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.css')}}">
+    <script src="{{ url_for('static', filename='bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.js')}}"></script>
 
-    <script src="/static/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
-    <script src="/static/bower_components/angular-messages/angular-messages.min.js"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-sanitize/angular-sanitize.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-messages/angular-messages.min.js')}}"></script>
 
-<script src="/static/bower_components/lodash/dist/lodash.min.js"></script>
-<script src="/static/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-<script src="/static/bower_components/spin.js/spin.js"></script>
-<script src="/static/bower_components/angular-spinner/angular-spinner.min.js"></script>
-<script src="/static/bower_components/angular-paging-sparql-service/dist/sparql-service.js"></script>
-<script src="/static/bower_components/checklist-model/checklist-model.js"></script>
-    <script src="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js"></script>
+<script src="{{ url_for('static', filename='bower_components/lodash/dist/lodash.min.js')}}"></script>
+<script src="{{ url_for('static', filename='bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js')}}"></script>
+<script src="{{ url_for('static', filename='bower_components/spin.js/spin.js')}}"></script>
+<script src="{{ url_for('static', filename='bower_components/angular-spinner/angular-spinner.min.js')}}"></script>
+<script src="{{ url_for('static', filename='bower_components/angular-paging-sparql-service/dist/sparql-service.js')}}"></script>
+<script src="{{ url_for('static', filename='bower_components/checklist-model/checklist-model.js')}}"></script>
+    <script src="{{ url_for('static', filename='bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js')}}"></script>
 
-    <script src="/static/js/lib/moment-with-locales.min.js"></script>
+    <script src="{{ url_for('static', filename='js/lib/moment-with-locales.min.js')}}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
-<script type="text/javascript" src="/static/js/lib/cytoscape-cose-bilkent.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/cytoscape-cose-bilkent.js')}}"></script>
 
     <script>
 </script>
-<script src="/static/js/whyis.js"></script>
+<script src="{{ url_for('static', filename='js/whyis.js')}}"></script>
 
 {% block scripts %}{% endblock %}
 </body>

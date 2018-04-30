@@ -1,5 +1,5 @@
 {% macro render_resource_link(resource) %}
-  <a href="/about?uri={{resource.identifier | urlencode }}">{{get_label(resource)}}</a>
+  <a href="{{url_for('view', uri=resource.identifier)}}">{{get_label(resource)}}</a>
 {% endmacro %}
 
 {% macro render_rdfa_resource_link(resource, predicate) %}

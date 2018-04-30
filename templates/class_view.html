@@ -80,7 +80,7 @@
       <dt>Attributed To</dt>
       <dd>
         {% for attrib in def[ns.prov.wasAttributedTo] %}
-          <p><a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
+          <p><a href="{{url_for('view',uri=attrib.identifier)}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
         {% endfor %}
       </dd>
     </dl>
@@ -137,7 +137,7 @@
                         <h2 class="panel-title">Details</h2>
                     </div>
                     <div class="panel-body">
-                      <p style="font-weight: bold"><a href="{{this.description().identifier}}">{{this.description().identifier}}</a></p>
+                      <p style="font-weight: bold"><a href="{{url_for('view', uri=this.identifier)}}">{{this.identifier}}</a></p>
                         <dl class="dl-horizontal clearfix">
                             <dt>Term</dt>
                             <dd>{{this.description().value(ns.RDFS.label)}}</dd>
@@ -211,7 +211,7 @@
   <md-toolbar>
     <div class="md-toolbar-tools" layout="row">
       <h2 flex>Instances</h2>
-      <md-button ng-href="/about?view=new&uri={{this.identifier}}" class="md-icon-button" aria-label="Create">
+      <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create">
         <md-icon>add</md-icon>
       </md-button>
     </div>
@@ -231,10 +231,10 @@
     </div>
 
     <!-- Results view -->
-    <md-content flex>
+    <md-content flex layout="column">
       <md-list ng-hide="vm.isLoadingResults">
         <md-list-item flex ng-show="vm.page.length ==0">No results found.</md-list-item>
-        <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="/about?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
+        <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="{{url_for('view')}}?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
           <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
 	  <div class="md-list-item-text" ng-class="{'md-offset': !entity.depiction }">
             <div class="md-list-item-text" >
@@ -245,22 +245,24 @@
               <p ng-if="entity.summary" >{[{entity.summary[0][1]}]}</p>
 	    </div>
           </div>
-          <md-button md-secondary ng-href="/about?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
+          <md-button md-secondary ng-href="{{url_for('view')}}?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
             <md-icon>create</md-icon>
           </md-button>
 	</md-list-item>
       </md-list>
       <!-- Pagination -->
-      <uib-pagination
-         class="pagination-sm"
-         max-size="10"
-         boundary-links="true"
-         rotate="false"
-         total-items="vm.totalCount"
-         ng-model="vm.pageNo"
-         ng-disabled="vm.isLoadingResults"
-         ng-change="vm.getPage()">
-      </uib-pagination>
+      <div layout="row" layout-align="center">
+        <ul uib-pagination
+            ng-hide="vm.isLoadingResults"
+            max-size="10"
+            boundary-links="true"
+            rotate="false"
+            total-items="vm.totalCount"
+            ng-model="vm.pageNo"
+            ng-disabled="vm.isLoadingResults"
+            ng-change="vm.getPage()">
+        </ul>
+      </div>
     </md-content>
   </div>
 </section>

@@ -869,10 +869,11 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.route('/about', methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
+        @self.route('/home', methods=['GET','POST','DELETE'])
+        @self.route('/about', methods=['GET','POST','DELETE'])
         @conditional_login_required
         def view(name=None, format=None, view=None):
             self.db.store.nsBindings = {}
@@ -926,6 +927,7 @@ construct {
                 current_user=current_user,
                 isinstance=isinstance,
                 args=request.args,
+                url_for=url_for,
                 get_entity=get_entity,
                 get_summary=get_summary,
                 search = search,
