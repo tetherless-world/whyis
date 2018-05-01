@@ -131,22 +131,32 @@ def latest(graph, g):
                                 
 
 
-def search(graph, query, g, args):
+def search(graph, args, g):
   finalResults = []
   results = []
   typeList = []
   labelsList = []
+  print('query in search.py: ', args['query'])  
+  query = args['query']
   print('g is:', g)
-  print('query in search.py: ', query)  
+   #check for page arg
+  print("args['page'] is ", args['page'])
+  #make sure paging works if args['page'] not included
   try:
-    page = int(args['page'])
+    if int(args['page'])  == 0:
+      page = 1
+    else:
+      page = int(args['page'])
   except:
-    page = 0
-  # if args['page'] is not None:
-  #   page = int(args['page'])
-  # else:
-  #   page = 0  
+    page = 1
   print('page is:', page)
+
+   #create number of results wanted at a time and use with page for pagination
+  limit = 10
+  
+  #this is used for offset in sparql query
+  pageOffset = (page - 1) * limit
+
   search_query = '''PREFIX bds: <http://www.bigdata.com/rdf/search#>
 
   SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score) 
@@ -159,22 +169,27 @@ def search(graph, query, g, args):
       ?sub rdf:type ?type.
     }
   } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
-    LIMIT 10
-    OFFSET %d''' % (query, page)
+    LIMIT %d
+    OFFSET %d''' % (query, limit, pageOffset)
+  #query and gather each row for result JSON
   for row in graph.query(search_query, initNs=g.ns.prefixes):
     result = row.asdict()
     g.labelize( result, "sub" )
     results.append( result )
+  
+  #add loop to split up the types into 
   for item in results:
     if item['types'] is not None:
       for type in item['types'].split('||'):
+        #leverage labelize for each link after splitting
         labelsList.append( g.labelize( {"uri": type}, 'uri' ) )
         typeList.append(type)
     item['typeLabels'] = labelsList
     item['type'] = typeList
     # print("typeList is:", typeList)
-    typeList = [] #reset typeList
-  #finally add page for pagination
+    typeList = [] #reset typeList for next item
+  
+  #add page for pagination
   finalResults.append({'data': results})
   finalResults[0]['page'] = page 
 
@@ -190,8 +205,8 @@ def search(graph, query, g, args):
   OPTIONAL { 
       ?sub rdf:type ?type.
     }
-  } 
-    OFFSET 0''' % query
+  } ''' % query
+  print('countQuery is:', countQuery)
   countResults = []
   countItems = 0
   countList = []
@@ -203,15 +218,20 @@ def search(graph, query, g, args):
 
   #count for while loop
   count = int(countResults[0]['count'])
+  #logic for paging!
+  if (count > pageOffset and page > 0):
+    count = count - pageOffset
   while (count > 0):
     countList.append( count )
     count = count - 1
   print('countList is:', countList)
 
-  # finalResults.append({'count': int(countResults[0]['count'])} )
-  # finalResults({'countAsList': countList} )
-  finalResults[0]['count'] =  int(countResults[0]['count'])
+  #add in more to JSON
+  finalResults[0]['Total Results'] = int(countResults[0]['count'])#total number without paging
+  finalResults[0]['count'] =  len(countList)
   finalResults[0]['countList'] = countList
+  finalResults[0]['query'] = query
+  finalResults[0]['limit'] = limit
 
   return finalResults
 
