@@ -22,24 +22,28 @@
         </md-list-item>         
     </md-list >
 </md-content>
-<div layout="row" layout-align="space-around space-around">
+<div layout="row" layout-align="center center">
     <!-- if the page less than 2 then no need to display Previous button -->
     <a  ng-if = "entities[0]['page'] > 1"
+        href    = 'search?query={{ entities[0]["query"] }}&page=1'>
+        <md-button> First </md-button>
+    </a>
+    <a  ng-if = "entities[0]['page'] > 1"
         href    = 'search?query={{ entities[0]["query"] }}&page={{ entities[0]["page"] - 1 }}'>
-        <div>Previous</div>
+        <md-button> Previous </md-button>
     </a>
     
     <a  
         ng-if= "entities[0]['Total Results'] > entities[0]['limit'] * entities[0]['page']" 
         href    = 'search?query={{ entities[0]["query"] }}&page={{entities[0]["page"] + 1}}'
     >
-        <div>Next</div>
+        <md-button>Next</md-button>
     </a>
-<!--     
-    <p>
-        <span>Why</span><span ng-repeat="number in entities[3]['countAsList']"> y </span> <span>is</span>
-    </p>
-    <p>{{entities[2]['count']}}</p> 
--->
+    <a  
+        ng-if= "entities[0]['Last Page'] != entities[0]['page']" 
+        href    = 'search?query={{ entities[0]["query"] }}&page={{entities[0]["Last Page"] }}'
+    >
+        <md-button>Last</md-button>
+    </a>
 </div>
 

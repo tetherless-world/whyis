@@ -218,6 +218,13 @@ def search(graph, args, g):
 
   #count for while loop
   count = int(countResults[0]['count'])
+  #last page
+  if (count > limit):
+    lastPage = -(-count // limit)#way to do ceiling from floor
+  else:
+    lastPage = 1 
+  print('lastPage is:', lastPage)
+  
   #logic for paging!
   if (count > pageOffset and page > 0):
     count = count - pageOffset
@@ -229,9 +236,10 @@ def search(graph, args, g):
   #add in more to JSON
   finalResults[0]['Total Results'] = int(countResults[0]['count'])#total number without paging
   finalResults[0]['count'] =  len(countList)
-  finalResults[0]['countList'] = countList
+  finalResults[0]['countList'] = countList #for ng-repeat, need list
   finalResults[0]['query'] = query
   finalResults[0]['limit'] = limit
+  finalResults[0]['Last Page'] = lastPage #for last page button
 
   return finalResults
 
