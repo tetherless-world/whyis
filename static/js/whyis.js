@@ -408,7 +408,7 @@ $( function() {
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
-    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'seco.facetedSearch']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch']);
     console.log("Here's the app",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
@@ -697,7 +697,7 @@ $( function() {
                 uri: "=",
                 label: "="
             },
-            template: '<a href="{{uri}}"><span ng-if="label">{{label}}</span><span ng-if="label == null">{{getLabel(uri)}}</span></a>',
+            template: '<a href="'+ROOT_URL+'about?uri={{uri}}"><span ng-if="label">{{label}}</span><span ng-if="label == null">{{getLabel(uri)}}</span></a>',
             link: function (scope, element, attrs) {
                 scope.getLabel = getLabel;
                 //scope.$watch("uri", function(){
@@ -720,16 +720,18 @@ $( function() {
                     localPart = localPart.split("/").filter(function(d) {return d.length > 0});
                     localPart = localPart[localPart.length-1];
                     getLabel.labels[uri] = localPart;
-                    promises[uri] = $http.get('/about?uri='+encodeURI(uri)+"&view=label")
-                    .then(function(data, status, headers, config) {
-                        if (status == 200) {
-                            var label = data.data;
-                            getLabel.labels[uri] = data.data;
-                        }
-                    });
+                    promises[uri] = $q.defer();
+                    $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
+                        .then(function(data, status, headers, config) {
+                            if (status == 200) {
+                                var label = data.data;
+                                getLabel.labels[uri] = data.data;
+                                promises[uri].resolve(getLabel.labels[uri]);
+                            }
+                        });
                 }
             }
-            return getLabel.labels[uri];
+            return promises[uri].promise;
         };
         getLabel.labels = {};
         return getLabel;
@@ -873,7 +875,7 @@ $( function() {
         }
         Nanopub.get = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0]
-            return $http.get('/pub/'+npID, 
+            return $http.get(ROOT_URL+'pub/'+npID, 
                                         {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
                 .then(function(response, error) {
                     nanopub.graph = processNanopub(response);
@@ -893,7 +895,7 @@ $( function() {
                 });
         };
         Nanopub.list = function(about) {
-            return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
+            return $http.get(ROOT_URL+"about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
                 .then(processNanopubs, function (response, error) {
                     console.log(response);
                     console.log(error);
@@ -902,7 +904,7 @@ $( function() {
         Nanopub.update = function(nanopub) {
             // console.log("nanopub inside Nanopub.update: ",nanopub);
             var npID = nanopub.np.split("/").slice(-1)[0];
-            return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
+            return $http.put(ROOT_URL+'pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
         Nanopub.save = function(nanopub) {
             //remove null values from nanopub.resource.provenance and assertion
@@ -914,13 +916,13 @@ $( function() {
             nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
             nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
 
-            return $http.post('/pub', nanopub,
+            return $http.post(ROOT_URL+'pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0];
             // console.log("Nanopub.delete: " + npID);
-            return $http.delete('/pub/'+npID);
+            return $http.delete(ROOT_URL+'pub/'+npID);
         }
         return Nanopub;
     }]);
@@ -935,7 +937,7 @@ $( function() {
                 save: "&onSave",
                 editing: "@"
             },
-            templateUrl: '/static/html/newNanopub.html',
+            templateUrl: ROOT_URL+'static/html/newNanopub.html',
             link: function (scope, element, attrs, nanopubsCtrl) {
                 scope.currentGraph = "assertion";
                 scope.formats = formats;
@@ -985,7 +987,7 @@ $( function() {
                 resource: "@",
                 disableNanopubing: "="
             },
-            templateUrl: '/static/html/nanopubs.html',
+            templateUrl: ROOT_URL+'static/html/nanopubs.html',
             controller: ['Resource','$scope', '$http', function (Resource, $scope, $http) {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
@@ -1045,7 +1047,7 @@ $( function() {
     app.directive("searchResult", ["$http", function($http) {
         return {
             restrict: "E",
-            templateUrl: '/static/html/searchResult.html',
+            templateUrl: ROOT_URL+'static/html/searchResult.html',
 
             //add scope: {} into directive so that I can bind query={{ args['query'] }}
             //from inside <search-result> in the search-view.html jinja template
@@ -1054,10 +1056,11 @@ $( function() {
                 query: "@",
                 page: "@"
             },
-            link: function(scope, element, attrs) {
-                console.log('attrs: ', attrs);
-                console.log("scope.query is:", scope.query);
-                console.log('scope.page is: ', scope.page);
+            link: function(scope, element, attrs) {//was scope
+                scope.ROOT_URL = ROOT_URL;
+                // console.log('attrs: ', attrs);
+                // console.log("scope.query is:", scope.query);
+                // console.log('scope.page is: ', scope.page);
                 if (!scope.page) { scope.page = 1; }//if page not included
                 //api
                 $http.get("searchApi2", { //either "?view=searchApi" or "searchApi", now searchApi2
@@ -1082,7 +1085,7 @@ $( function() {
                 searchTextChange : "&?",
                 newNode : "&?"
             },
-	    templateUrl: '/static/html/searchAutocomplete.html',
+	    templateUrl: ROOT_URL+'static/html/searchAutocomplete.html',
             link: function(scope, element, attrs) {
 	        var self = scope;
 
@@ -1096,7 +1099,7 @@ $( function() {
 	        //self.searchTextChange   = searchTextChange;
 
 	        newNode = function(nodeid) {
-	            window.location.href = '/'+nodeid.replace(' ','_');
+	            window.location.href = ROOT_URL+nodeid.replace(' ','_');
 	        }
 
                 self.searchText = getParameterByName("query");
@@ -1110,7 +1113,7 @@ $( function() {
 	        }
 
 	        function selectedItemChange(item) {
-	            window.location.href = '/about?uri='+window.encodeURIComponent(item.node);
+	            window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(item.node);
 	        }
 
 	        /**
@@ -1147,10 +1150,11 @@ $( function() {
     app.directive("latest", ["$http", 'getLabel', function($http, getLabel) {
 	return {
 	    restrict: "E",
-	    templateUrl: '/static/html/latest.html',
+	    templateUrl: ROOT_URL+'static/html/latest.html',
             link: function(scope, element, attrs) {
 		scope.getLabel = getLabel;
-		$http.get("/?view=latest").then(function(response) {
+                scope.ROOT_URL = ROOT_URL;
+		$http.get(ROOT_URL+"?view=latest").then(function(response) {
 		    scope.entities = response.data;
 		    scope.entities.forEach(function (e) {
 //			e.types = e.types.split('||').map(function(t) {
@@ -1182,7 +1186,7 @@ select distinct ?id where {\n\
   FILTER ( !strstarts(str(?id), "bnode:") )\n\
 }\n\
 ';
-            return $http.get('/sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+            return $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
                 .then(function(data) {
                     return data.data.results.bindings.map(function(row) {
                         return row.id.value;
@@ -1244,7 +1248,7 @@ select distinct ?id where {\n\
             };
         });
         
-        var endpointUrl = '/sparql';
+        var endpointUrl = ROOT_URL+'sparql';
 
         // We are building a faceted search for classes.
         var rdfClass = '<http://www.w3.org/2002/07/owl#Class>';
@@ -1670,7 +1674,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             processTypes();
                         } else {
                             nodeEntry.data.described = true;
-                            $http.get('/about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
+                            $http.get(ROOT_URL+'about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
                                 .then(function(response) {
                                     response.data.forEach(function(x) {
                                         console.log(x);
@@ -1684,7 +1688,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 });
                         }
                         if (! nodeEntry.data.label) {
-                            $http.get('/about',{ params: {uri:uri,view:'label'}})
+                            $http.get(ROOT_URL+'about',{ params: {uri:uri,view:'label'}})
                                 .then(function(response) {
                                     nodeEntry.data.label = response.data;
                                     if (update) update();
@@ -1725,7 +1729,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 elements.edge = edge;
             }
 
-            var p = $http.get('/about',{ params: {uri:entity,view:view, }, responseType:'json'})
+            var p = $http.get(ROOT_URL+'about',{ params: {uri:entity,view:view, }, responseType:'json'})
                 .then(function(response) {
                     response.data.forEach(function(edge) {
                         if (edge.probability < maxP) {
@@ -1795,7 +1799,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 layout : "=?",
                 start: "@?"
             },
-            templateUrl: '/static/html/explore.html',
+            templateUrl: ROOT_URL+'static/html/explore.html',
 	    restrict: "E",
             link: function(scope, element, attrs) {
                 scope.toggleSidebar = function() {
@@ -1804,6 +1808,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 $mdSidenav("explore").open();
                 scope.selectedEntities = null;
                 scope.searchText = null;
+                scope.ROOT_URL = ROOT_URL;
 
                 scope.searchTextChange = function(text) {
                     scope.searchText = text;
@@ -2023,7 +2028,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     data.loaded = 0;
                     if (! data.label) {
                         data.loading += 1;
-                        $http.get('/about',{ params: {uri:data.uri,view:'label'}})
+                        $http.get('about',{ params: {uri:data.uri,view:'label'}})
                             .then(function(response) {
                                 data.label = response.data;
                                 data.loaded += 1;
@@ -2038,7 +2043,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             };
                             console.log(d);
                             data.loading += 1;
-                            $http.get('/about',{ params: {uri:d,view:'label'}})
+                            $http.get(ROOT_URL+'about',{ params: {uri:d,view:'label'}})
                                 .then(function(response) {
                                     result.label = response.data;
                                     data.loaded += 1; 
@@ -2049,7 +2054,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (! data.described) {
                         data.described = true;
                         data.loading += 1;
-                        $http.get('/about',{ params: {uri:data.uri,view:'describe'}, responseType:'json'})
+                        $http.get(ROOT_URL+'about',{ params: {uri:data.uri,view:'describe'}, responseType:'json'})
                             .then(function(response) {
                                 response.data.forEach(function(x) {
                                     if (x['@id'] == data.uri) {
@@ -2125,7 +2130,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                 // Gets the details of a node by opening the uri in a new window.
                 scope.getDetails = function(query) {
-                    query.forEach(function(uri) { window.open('/about?uri='+uri); });
+                    query.forEach(function(uri) { window.open(ROOT_URL+'about?uri='+uri); });
                 };
                 // Shows BFS animation starting from selected nodes
                 scope.showBFS = function(query) {
@@ -2193,7 +2198,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
      * DBpedia service
      * Handles SPARQL queries and defines facet configurations.
      */
-    app.service('instanceFacetService', function(FacetResultHandler) {
+    app.service('instanceFacetService', function(FacetResultHandler, $http) {
 
         /* Public API */
 
@@ -2213,32 +2218,53 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         //  a property path, for example).
         // 'name' is the title of the facet to show to the user.
         // If 'enabled' is not true, the facet will be disabled by default.
-        var facets = {
+        var facets = [
             // Text search facet for names
-            name: {
+            {
                 facetId: 'label',
                 predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
                 enabled: true,
-                name: 'Label'
+                name: 'Label',
+                type: 'text'
             },
             // Text search facet for descriptions
-            description: {
+            {
                 facetId: 'description',
                 predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
                 enabled: true,
-                name: 'Description'
+                name: 'Description',
+                type: 'text'
             },
             // Text search facet for types
-            type: {
+            {
                 facetId: 'type',
                 predicate:'rdf:type/rdfs:subClassOf*',
                 specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
+                preferredLang: "en",
                 enabled: true,
+                type: 'basic',
                 name: 'Type'
-            },
-        };
+            }
+        ];
 
-        var endpointUrl = '/sparql';
+        $http.get(ROOT_URL+'about',{ params: {uri:NODE_URI,view:'constraints'}, responseType:'json'})
+            .then(function(response) {
+                response.data.forEach(function (d) {
+                    d.name = d.propertyLabel;
+                    if (d.rangeLabel && d.name.indexOf(d.rangeLabel) == -1)
+                        d.name += " " + d.rangeLabel;
+                    d.facetId = d.property;
+                    if (d.range)
+                        d.facetId += " " + d.range;
+                    d.predicate = '<'+d.property+'>';
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                    facets.push(d);
+                });
+            });
+
+        var endpointUrl = ROOT_URL+'sparql';
 
         // We are building a faceted search for classes.
         var rdfClass = '<'+NODE_URI+'>';
@@ -2306,7 +2332,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         var resultOptions = {
             prefixes: prefixes, // required if the queryTemplate uses prefixes
             queryTemplate: queryTemplate, // required
-            resultsPerPage: 30, // optional (default is 10)
+            resultsPerPage: 10, // optional (default is 10)
             pagesPerQuery: 1, // optional (default is 1)
             paging: true // optional (default is true), if true, enable paging of the results
         };
@@ -2425,16 +2451,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.pageNo = 1;
                     getPage(uid).then(function() {
                         vm.lock = false;
-                        vm.page.forEach(function(d) {
-                            $http.get('/about',{ params: {uri:d.id,view:'label'}})
-                                .then(function(response) {
-                                    d.label = response.data;
-                                });
-                            $http.get('/about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
-                                .then(function(response) {
-                                    d.summary = response.data;
-                                });
-                        });
                         return vm.page;
                     });
                 }
@@ -2451,6 +2467,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 // Check if it's ok to change the page
                 if (!vm.lock || (uid === updateId)) {
                     vm.page = page;
+                    vm.page.forEach(function(d) {
+                        $http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'label'}})
+                            .then(function(response) {
+                                d.label = response.data;
+                            });
+                        $http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
+                            .then(function(response) {
+                                d.summary = response.data;
+                            });
+                        d.type.forEach(function(type) {
+                            getLabel(type.id).then(function(d) { type.label = d});
+                        });
+                    });
                     vm.isLoadingResults = false;
                 }
             }).catch(function(error) {

@@ -1,9 +1,9 @@
 {% from "_macros.html" import get_label %}
 {% macro upload_button_modal(resource) %}
 {% if g.current_user and g.current_user.is_authenticated %}
-<button class="btn btn-default" type="button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
-  <span class="glyphicon glyphicon-upload" aria-hidden="true"></span>
-</button>
+<md-button md-secondary class="md-icon-button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
+  <md-icon>file_upload</md-icon>
+</md-button>
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
   <div class="modal-dialog" role="document">
     <form class="modal-content" action="" method="post" enctype="multipart/form-data">

@@ -77,7 +77,7 @@
         <md-list>
           <md-subheader >Details</md-subheader>
           <md-list-item flex ng-show="selected.length ==0">Select a node or edge to see details.</md-list-item>
-          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="/about?view=view&uri={{element.data().uri}}" Visit {{element.data().label}}>
+          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="{{ROOT_URL}}about?view=view&uri={{element.data().uri}}" Visit {{element.data().label}}>
             <div class="md-list-item-text">
               <h3>{{element.data().label}}</h3>
               <h4><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>

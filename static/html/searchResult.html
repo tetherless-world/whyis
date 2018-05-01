@@ -6,7 +6,7 @@
         <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities[0]['data']">
             <div class="list-item-text">
                 <h4>
-                    <a href="/about?view=view&uri={{ item['sub'] }}" >
+                    <a href="{{ROOT_URL}}about?view=view&uri={{ item['sub'] }}" >
                         {{ item['label'] }}
                     </a>
                 </h4>

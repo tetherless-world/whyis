@@ -55,13 +55,13 @@
           <tbody>
             <tr ng-repeat="class in vm.page">
               <td style="width:21%">
-                <resource-link uri="'/about?uri='+class.id" label="class.label"></resource-link>
+                <resource-link uri="class.id" label="class.label"></resource-link>
               </td>
               <td>
                 <p ng-bind="class.definition"></p>
               </td>
-              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="'/about?uri='+superclass.id" label="superclass.label"></resource-link></div></td>
-              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="'/about?uri='+ontology.id" label="ontology.label"></resource-link></div></td>
+              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="superclass.id" label="superclass.label"></resource-link></div></td>
+              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="ontology.id" label="ontology.label"></resource-link></div></td>
             </tr>
           </tbody>
         </table>

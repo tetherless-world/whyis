@@ -10,7 +10,7 @@
     <md-list flex >
       <md-list-item class="md-3-line md-long-text" ng-repeat="entity in entities" ng-click="">
 	  <div class="md-list-item-text" layout="column">
-            <h3><a href="/about?view=view&uri={{entity.about}}">{{entity.label}}</a> <small>({{entity.fromNow}})</small></h3>
+            <h3><a href="{{ROOT_URL}}about?view=view&uri={{entity.about}}">{{entity.label}}</a> <small>({{entity.fromNow}})</small></h3>
             <h4 md-truncate>
               <span data-ng-repeat="type in entity.types">
                 {{ type.label}}

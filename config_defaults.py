@@ -33,6 +33,8 @@ Config = dict(
 
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
+    
+    site_url_path = '/',
 
     nanopub_archive = {
         'depot.storage_path' : "/data/nanopublications",

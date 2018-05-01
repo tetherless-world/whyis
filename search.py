@@ -136,11 +136,13 @@ def search(graph, args, g):
   results = []
   typeList = []
   labelsList = []
-  print('query in search.py: ', args['query'])  
+  # print('query in search.py: ', args['query'])  
   query = args['query']
-  print('g is:', g)
-   #check for page arg
-  print("args['page'] is ", args['page'])
+  # print('g is:', g)
+
+  #check for page arg
+  # print("args['page'] is ", args['page'])
+  
   #make sure paging works if args['page'] not included
   try:
     if int(args['page'])  == 0:
@@ -149,9 +151,9 @@ def search(graph, args, g):
       page = int(args['page'])
   except:
     page = 1
-  print('page is:', page)
+  #print('page is:', page)
 
-   #create number of results wanted at a time and use with page for pagination
+  #create number of results wanted at a time and use with page for pagination
   limit = 10
   
   #this is used for offset in sparql query
@@ -206,7 +208,7 @@ def search(graph, args, g):
       ?sub rdf:type ?type.
     }
   } ''' % query
-  print('countQuery is:', countQuery)
+  # print('countQuery is:', countQuery)
   countResults = []
   countItems = 0
   countList = []
@@ -214,7 +216,7 @@ def search(graph, args, g):
   for row in graph.query(countQuery, initNs=g.ns.prefixes):
     countResult = row.asdict()
     countResults.append( countResult )
-  print('countResults is:',countResults)
+  # print('countResults is:',countResults)
 
   #count for while loop
   count = int(countResults[0]['count'])
@@ -223,7 +225,7 @@ def search(graph, args, g):
     lastPage = -(-count // limit)#way to do ceiling from floor
   else:
     lastPage = 1 
-  print('lastPage is:', lastPage)
+  # print('lastPage is:', lastPage)
   
   #logic for paging!
   if (count > pageOffset and page > 0):
@@ -231,7 +233,7 @@ def search(graph, args, g):
   while (count > 0):
     countList.append( count )
     count = count - 1
-  print('countList is:', countList)
+  # print('countList is:', countList)
 
   #add in more to JSON
   finalResults[0]['Total Results'] = int(countResults[0]['count'])#total number without paging
@@ -242,6 +244,3 @@ def search(graph, args, g):
   finalResults[0]['Last Page'] = lastPage #for last page button
 
   return finalResults
-
-
-
