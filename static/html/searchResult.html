@@ -4,14 +4,14 @@
 <md-content>
     <md-list>  
         <md-list-item md-ink-ripple="#FF0000" ng-repeat="item in entities[0]['data']">
-            <div class="list-item-text">
+            <div class="list-item-text" style="max-width:100%">
                 <h4>
                     <a href="{{ROOT_URL}}about?view=view&uri={{ item['sub'] }}" >
                         {{ item['label'] }}
                     </a>
                 </h4>
-                <div>
-                    <h6><span ng-repeat="item in item.typeLabels">{{ item.label }}<span ng-hide="$last">, </span></span></h6>
+                <div layout="row" class="md-truncate">
+                    <h6 class="md-truncate"><span ng-repeat="item in item.typeLabels">{{ item.label }}<span ng-hide="$last">, </span></span></h6>
                 </div>
                 
                 <p> {{ item.obj }} </p>
