@@ -408,7 +408,7 @@ $( function() {
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
-    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch','jsonLdEditor']);
     console.log("Here's the app",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
@@ -911,10 +911,12 @@ $( function() {
             function notNull (value) {
                 return value["@value"] === null ? false : ( value["@id"] === null ? false : true );
             }
-            nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
-            nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
-            nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
-            nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            if (nanopub.resource) {
+                nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
+                nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+                nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
+                nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            }
 
             return $http.post(ROOT_URL+'pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
@@ -2491,6 +2493,107 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         function makeArray(val) {
             return angular.isArray(val) ? val : [val];
         }
+    });
+
+    app.service('makeID',function() {
+        var ID = function () {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return Math.random().toString(36).substr(2, 10);
+        };
+        return ID;
+    });
+
+    app.service("resolveURI", function() {
+        function resolveURI(uri, context) {
+            if (context[uri]) {
+                return resolveURI(context[uri]);
+            } else if (uri.indexOf(':') != -1) {
+                var i = s.indexOf(':');
+                var parts = [s.slice(0,i), s.slice(i+1)];
+                var prefix = parts[0];
+                var local = parts[1];
+                if (context[prefix]) {
+                    c = context[prefix];
+                    if (c['@id']) c = c['@id'];
+                    return resolveURI(c+local);
+                }
+            } else if (context['@vocab']) {
+                return context['@vocab'] + uri;
+            }
+            return uri;
+        }
+        return resolveURI;
+    });
+    
+    /*
+     * The controller.
+     */
+    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
+        var vm = this;
+        var np_id = makeID();
+        vm.resolveURI = resolveURI;
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {"@id" : 'dc:description', "@type": "xsd:string"}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : [],
+                        'description' : []
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
     });
     
     angular.bootstrap(document, ['App']);

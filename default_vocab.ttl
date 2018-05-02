@@ -375,6 +375,7 @@ owl:Class rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
+  whyis:newInstanceView "new_instance_view.html";
   whyis:hasView "class_view.html".
 
 whyis:hasConstraints dc:identifier "constraints";
@@ -423,6 +424,9 @@ whyis:HomePage a owl:Class;
 
 whyis:latestView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "latest".
+
+whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "new".
 
 <https://www.iana.org/assignments/media-types/text/csv>
   whyis:bipartiteView "bipartite_graph.svg".
