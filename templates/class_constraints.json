@@ -1,30 +1,31 @@
-{{'''SELECT ?class ?superClass ?property ?range ?extent ?mincardinality ?maxcardinality ?cardinality (min(?o) as ?min) (max(?o) as ?max) WHERE {
+{{'''SELECT distinct ?class ?superClass ?property ?range ?propertyType ?extent ?cardinality WHERE {
+  ?class (rdfs:subClassOf|owl:equivalentClass|(owl:intersectionOf/rdf:rest*/rdf:first))* ?superClass.
   {
-    select ?class ?extent ?superClass ?property ?range ?mincardinality ?maxcardinality ?cardinality where {
-      ?class rdfs:subClassOf* ?superClass.
-      {
-        ?superClass owl:onProperty ?property.
-        ?superClass owl:someValuesFrom|owl:allValuesFrom ?range.
-        ?superClass ?extent ?range.
-        optional {
-          ?superClass owl:minCardinality ?mincardinality.
-        }
-        optional {
-          ?superClass owl:maxCardinality ?maxcardinality.
-        }
-        optional {
-          ?superClass owl:exactCardinality ?cardinality.
-        }
-      } union {
-        ?property rdfs:domain ?superClass;
-                  rdfs:range ?range.
-      }
-    }
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:someValuesFrom|owl:allValuesFrom ?range.
+    ?superClass ?extent ?range.
+    optional { ?property rdf:type ?propertyType }
+  } union {
+    ?superClass owl:onDataRange ?range.
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minQualifiedCardinality|owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinality.
+    ?superClass ?extent ?cardinality.
+    bind(owl:DatatypeProperty as ?propertyType)
+  } union {
+    ?superClass owl:onClass ?range.
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minQualifiedCardinality|owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinality.
+    ?superClass ?extent ?cardinality.
+    bind(owl:ObjectProperty as ?propertyType)
+  } union {
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minCardinality|owl:maxCardinality|owl:exactCardinality ?cardinality.
+    ?superClass ?extent ?cardinality
+    optional { ?property rdf:type ?propertyType }
+  } union {
+    ?property rdfs:domain ?superClass;
+              rdfs:range ?range.
+    optional { ?property rdf:type ?propertyType }
   }
-  optional {
-    ?x rdf:type/rdfs:subClassOf* ?class;
-       ?property ?o.
-    filter (datatype(?o) != ?range)
-  }
-} group by ?class ?superClass ?property ?range ?extent ?mincardinality ?maxcardinality ?cardinality
+}
 LIMIT 100'''|query(values={"class":this.identifier}) | iter_labelize('property','propertyLabel') | iter_labelize('range','rangeLabel')| tojson }}
