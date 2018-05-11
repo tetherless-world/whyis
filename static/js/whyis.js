@@ -2570,6 +2570,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
         var np_id = makeID();
+        // let contextString = "";
         vm.resolveURI = resolveURI;
         vm.submit = function() {
             vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
@@ -2578,6 +2579,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
             });
         }
+
+        
         vm.nanopub = {
             "@context" : {
                 "@vocab": LOD_PREFIX+'/',
@@ -2594,7 +2597,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
                 'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
                 'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
-                'description' : {"@id" : 'dc:description', "@type": "xsd:string"}
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
             },
             "@id" : "urn:"+np_id,
             "@graph" : {
@@ -2631,7 +2634,34 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         };
         vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
         vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+        
+        //get the constrainsts for the class
+        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":NODE_URI },'resultType': 'json' })
+            .then(function(data) {
+                let constraints = data.data;
+                
+                console.log('class constraints:', constraints);
+                // contextString = "";
+                // let regex;
+                contextObject = {}
+                for (constraint of constraints) {
+                    console.log('PropertyLabel:', constraint.propertyLabel);
+                    // regex = new RegExp(constraint.propertyLabel);
+                    // console.log('Regex true or false ', !contextString.match(regex) )
+                    // // if ( !contextString.match(regex) ) contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": '${constraint.range}\n` 
+                    // contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": "${constraint.range}" } , \n`
+                    vm.nanopub["@context"][constraint.propertyLabel] = {};
+                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = 'dc:description';
+                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = 'xsd:string'; 
+                }
+                // contextString = contextString.replace(/,\s*$/, "");
+                // console.log('contextString is:', contextString);
+        });
+
+
     });
+    
+
     
     angular.bootstrap(document, ['App']);
 
