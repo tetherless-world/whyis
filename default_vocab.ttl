@@ -363,6 +363,7 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
   whyis:hasIncoming "incoming_resource.json";
+  whyis:cardView "card.html";
   whyis:hasExplore "explore.html";
   whyis:hasDescribe "describe.json";
   whyis:hasNanopublications "nanopublications.json";
@@ -382,6 +383,8 @@ whyis:hasConstraints dc:identifier "constraints";
   rdfs:subPropertyOf whyis:hasView.
 
 owl:Ontology rdfs:label "Ontology";
+    whyis:hasOutgoing "outgoing_ontology.json";
+    whyis:hasIncoming "incoming_ontology.json";
     whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;
@@ -417,6 +420,9 @@ whyis:HomePage a owl:Class;
   whyis:hasView "home_view.html";
   whyis:latestView "latest.json";
   whyis:resolveView "resolve.json".
+
+whyis:cardView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "card".
 
 whyis:latestView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "latest".

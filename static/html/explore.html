@@ -4,55 +4,83 @@
       <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
         <md-icon>menu</md-icon>
       </md-button>
-      <h2>Knowledge Explorer</h2>
+      <h2 ng-bind="title"></h2>
+      <form flex layout="column"  role="form" data-ng-submit="add()" class="navbar-form" style="color:black">
+        <search-autocomplete
+           flex
+           selected-item-change="selectedItemChange"
+           search-text-change="searchTextChange">
+        </search-autocomplete>
+        <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
+      </form>
+      <div flex="none" layout="row">
+           <md-button class="md-icon-button" aria-label="Remove Selected" title="Remove Selected"  data-ng-click="remove()">
+             <md-icon>delete</md-icon>
+           </md-button>
+           <span flex></span>
+           <md-button class="md-icon-button"
+                      aria-label="Find Incoming Links"
+                      title="Find Incoming Links"
+                      data-ng-click="incoming()">
+             <md-icon>arrow_back</md-icon>
+           </md-button>
+           <md-button class="md-icon-button"
+                      aria-label="Find Incoming and Outgoing Links"
+                      title="Find Incoming and Outgoing Links"
+                      data-ng-click="incomingOutgoing()">
+             <md-icon>compare_arrows</md-icon>
+           </md-button>
+           <md-button class="md-icon-button"
+                      aria-label="Find Outgoing Links"
+                      title="Find Outgoing Links"
+                      data-ng-click="outgoing()">
+             <md-icon >arrow_forward</md-icon>
+           </md-button>
+           <span flex></span>
+           <md-button class="md-icon-button"
+                      aria-label="Update Layout"
+                      title="Update Layout"
+                      data-ng-click="update()">
+             <md-icon >refresh</md-icon>
+           </md-button>
+      </div>
     </div>
   </md-toolbar>
   <md-content flex layout="column" layout-fill>
-    <div flex class="graph" ></div>
+    <div flex layout="row">
+      <div flex class="graph" ></div>
+      <div flex="20" n>
+        <md-list>
+          <md-list-item flex>
+            <div class="md-list-item-text">
+              <h4><em ng-if="thisElement.data().probability">p={{thisElement.data().probability | number}}</em> <span data-ng-repeat="type in thisElement.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
+              <p>{{thisElement.data().summary}}</p>
+              <md-progress-linear
+                 ng-show="thisElement.data().loading - thisElement.data().loaded > 0"
+                 md-mode="determinate"
+                 value="{{(100.0*thisElement.data().loaded)/(thisElement.data().loaded)}}"></md-progress-linear>
+            </div>
+          </md-list-item>
+          <md-subheader >Selected Nodes</md-subheader>
+          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="{{ element.data().uri | kglink:'view'}}" Visit {{element.data().label}}>
+            <div class="md-list-item-text">
+              <h3>{{element.data().label}}</h3>
+              <h4><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
+              <p>{{element.data().summary}}</p>
+              <md-progress-linear
+                 ng-show="element.data().loading - element.data().loaded > 0"
+                 md-mode="determinate"
+                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
+            </div>
+          </md-list-item>
+        </md-list>
+      </div>
+    </div>
     <md-sidenav class="md-sidenav-left" md-component-id="explore"
                 md-disable-backdrop md-whiteframe="4">
       <md-content layout-fill layout="column">
-        <form layout="column" flex="none" role="form" data-ng-submit="add()">
-          <search-autocomplete
-             flex
-             selected-item-change="selectedItemChange"
-             search-text-change="searchTextChange">
-          </search-autocomplete>
-          <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
-        </form>
-        <md-content flex="none" layout="row">
-          <md-button class="md-icon-button" aria-label="Remove Selected" title="Remove Selected"  data-ng-click="remove()">
-            <md-icon>delete</md-icon>
-          </md-button>
-          <span flex></span>
-          <md-button class="md-icon-button"
-                     aria-label="Find Incoming Links"
-                     title="Find Incoming Links"
-                     data-ng-click="incoming()">
-            <md-icon>arrow_back</md-icon>
-          </md-button>
-          <md-button class="md-icon-button"
-                     aria-label="Find Incoming and Outgoing Links"
-                     title="Find Incoming and Outgoing Links"
-                     data-ng-click="incomingOutgoing()">
-            <md-icon>compare_arrows</md-icon>
-          </md-button>
-          <md-button class="md-icon-button"
-                     aria-label="Find Outgoing Links"
-                     title="Find Outgoing Links"
-                     data-ng-click="outgoing()">
-            <md-icon >arrow_forward</md-icon>
-          </md-button>
-          <span flex></span>
-          <md-button class="md-icon-button"
-                     aria-label="Update Layout"
-                     title="Update Layout"
-                     data-ng-click="update()">
-            <md-icon >refresh</md-icon>
-          </md-button>
-        </md-content>
         <md-list flex="none">
-          <md-subheader >Link Traversal</md-subheader>
+          <md-subheader >Link Traversal Options</md-subheader>
           <md-list-item ng-hide="true">
             <md-slider-container layout="row">
               <span flex="30">Max Links</span>
@@ -72,21 +100,6 @@
                 <input type="number" ng-model="probThreshold" aria-label="Min Joint Probability" aria-controls="joint-probability-slider">
               </md-input-container>
             </md-slider-container>
-          </md-list-item>
-        </md-list>
-        <md-list>
-          <md-subheader >Details</md-subheader>
-          <md-list-item flex ng-show="selected.length ==0">Select a node or edge to see details.</md-list-item>
-          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="{{ROOT_URL}}about?view=view&uri={{element.data().uri}}" Visit {{element.data().label}}>
-            <div class="md-list-item-text">
-              <h3>{{element.data().label}}</h3>
-              <h4><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
-              <p>{{element.data().summary}}</p>
-              <md-progress-linear
-                 ng-show="element.data().loading - element.data().loaded > 0"
-                 md-mode="determinate"
-                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
-            </div>
           </md-list-item>
         </md-list>
       </md-content>

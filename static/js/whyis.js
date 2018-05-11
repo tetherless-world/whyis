@@ -1561,7 +1561,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "triangle",
                 "color": "#888",
                 "uris": [],
-                "filter": false
+                "filter": false,
+                'label' : true
             }
         }
     });
@@ -1603,7 +1604,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "ellipse",
                 "size": "50",
                 "color": "#FF7F50",
-                "uris": []
+                "uris": [],
             }
         }
     });
@@ -1714,6 +1715,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             edgeEntry.classes = types.join(' ');
                             edgeEntry.data.shape = getEdgeFeature("shape", types); 
                             edgeEntry.data.color = getEdgeFeature("color", types);
+                            if (getEdgeFeature("label",types) && types.length > 0) {
+                                edgeEntry.data.label = types[0].label;
+                            }
                         }
                         if (edgeEntry.data.zscore)
                             edgeEntry.data.width = Math.abs(edgeEntry.data.zscore) + 1;
@@ -1788,6 +1792,15 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return getSummary;
     }]);
                 
+    app.filter('kglink', function() {
+        return function(uri, view) {
+            uri = window.encodeURIComponent(uri);
+            var result = ROOT_URL+"about?";
+            if (view) result += 'view='+view+'&';
+            result += 'uri='+uri;
+            return result;
+        };
+    });
     
     app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary',
                               function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary) {
@@ -1796,6 +1809,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 elements : "=?",
                 style : "=?",
                 layout : "=?",
+                title : "=?",
                 start: "@?"
             },
             templateUrl: ROOT_URL+'static/html/explore.html',
@@ -1804,7 +1818,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.toggleSidebar = function() {
                     $mdSidenav("explore").toggle();
                 }
-                $mdSidenav("explore").open();
+                $mdSidenav("explore").close();
                 scope.selectedEntities = null;
                 scope.searchText = null;
                 scope.ROOT_URL = ROOT_URL;
@@ -1900,15 +1914,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'border-width': 0,
                             'cursor': 'pointer',
                             'color' : 'white',
-                            'font-size' : '8px',
+                            'font-size': 'mapData(rank,0,1,8,24)',
+//                            'font-size' : '8px',
                             'text-wrap': 'wrap',
-                            'text-max-width' : '5em',
+                            'text-max-width': 'mapData(rank,0,1,100,300)',
                             //'text-outline-width' : 3,
                             //'text-outline-opacity' : 1,
                             'text-background-opacity' : 1,
                             'text-background-shape' : 'roundrectangle',
                             'text-background-padding' : '1px',
-                            'width': '5em'
+                            'width': 'mapData(rank,0,1,100,300)',
+                            'height': 'mapData(rank,0,1,30,90)',
                         })
                         .selector('node[color]')
                         .css({
@@ -1931,6 +1947,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'curve-style' : 'bezier',
                             'target-arrow-color': 'data(color)',
                             'line-color': 'data(color)'
+                        })
+                        .selector('edge[label]')
+                        .css({
+                            'font-size' : '6px',
+                            'source-text-offset': '0.5em',
+                            'text-wrap':'wrap',
+                            'text-max-width':'5em',
+                            'source-label': 'data(label)',
                         })
                         .selector('edge[negation]')
                         .css({
@@ -1973,10 +1997,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     scope.layout = {
                         name: 'cose-bilkent',
                         animate: false,
-                        randomize: true,
+                        //randomize: true,
                         nodeDimensionsIncludeLabels: true,
                         //fit: false,
                         //padding: [20,20,20,20],
+                        idealEdgeLength: 60,
                         //circle: true,
                         //concentric: function(){ 
                             //var rank = scope.pageRank.rank(this);
@@ -2069,7 +2094,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         if (data.types == null)
                             updateTypes(data);
                         data.summary = getSummary(data);
-                        if (data.summary['@value']) data.summary = data.summary['@value'];
+                        if (data.summary && data.summary['@value']) data.summary = data.summary['@value'];
                     }
                 }
 
@@ -2163,18 +2188,33 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (!scope.elements) scope.elements = {};
 
 
+                function updateCentrality() {
+                    var nodes = scope.cy.nodes();
+                    var pr = nodes.betweennessCentrality({weight:function(edge) {
+                        return edge.data("probability");
+                    }} );
+                    nodes.forEach(function(node) {
+                        var rank = pr.betweennessNormalized(node);
+                        node.data("rank",rank);
+                        console.log(node.data(), rank);
+                    });
+                }
+                
                 scope.update = update;
                 function render() {
                     elements = scope.elements.all();
                     var eles = scope.cy.add(elements);
+                    updateCentrality();
                     scope.cy.style().update();
                 }
                 function update() {
                     var elements = [];
                     if (scope.elements && scope.elements.all) {
+                        scope.thisElement = scope.cy.$id(scope.start);
                         elements = scope.elements.all();
                         var eles = scope.cy.add(elements);
                         //setTimeout(function(){
+                        updateCentrality();
                         scope.cy.style().update();
                         scope.cy.layout(scope.layout).run();
                         //    scope.$apply(function(){ scope.loading = false; });

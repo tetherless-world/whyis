@@ -24,6 +24,9 @@
 {{ summary_panel(this.description()) }}
 <div class="row">
   <div class="container-fluid col-md-8" ng-controller="OntologyFacetController as vm">
+    <section md-whiteframe="2" layout="column" style="min-height: 40em; margin-bottom:1em;">
+      <explore flex start="{{this.identifier}}"></explore>
+    </section>
     <div class="row">
       <div class="col-md-12">
         <h1>Ontology Classes</h1>

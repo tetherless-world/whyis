@@ -1,7 +1,20 @@
 {{'''graph ?assertion {
       {
-         ?source rdfs:subClassOf ?target.
+         ?source owl:imports ?target.
          ?source ?link_type ?target.
+         bind(owl:imports as ?link_type)
+      } union {
+         ?source skos:topConcept ?target.
+      } union {
+         ?source a owl:Ontology.
+         ?target a owl:Class.
+         minus {
+           ?source skos:topConcept [].
+         }
+         minus {
+           ?target rdfs:subClassOf [].
+         }
+         bind(skos:topConcept as ?link_type)
       }
     }
     bind(1 as ?probability)
@@ -10,6 +23,5 @@
     minus { ?source sio:hasPart|sio:hasAttribute ?target }
     minus { ?target a sio:Term.}
     filter (!sameTerm(?source, ?target) && isIRI(?target))
-    FILTER (!regex(str(?target), "^bnode:"))
-
+    FILTER (!regex(str(?source), "^bnode:"))
 ''' | probit(source=this.identifier) | tojson }}
