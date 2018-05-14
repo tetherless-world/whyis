@@ -19,7 +19,7 @@
 {% endmacro %}
 
 {% macro render_definition(def) %}
-
+<div layout="column" layout-fill>
 <div class="panel panel-default {% if def[ns.RDF.type:ns.hbgd.UnreviewedDefinition] %}panel-warning{% endif %} {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}panel-primary{% endif %}" >
   <div class="panel-body">
     <blockquote>
@@ -207,7 +207,7 @@
   </div>
 </div>
 
-<section layout="column" ng-cloak ng-controller="InstanceFacetController as vm">
+<section ng-cloak md-whiteframe="2" ng-controller="InstanceFacetController as vm">
   <md-toolbar>
     <div class="md-toolbar-tools" layout="row">
       <h2 flex>Instances</h2>
@@ -218,22 +218,22 @@
   </md-toolbar>
   <md-progress-linear ng-show="vm.isLoadingResults" md-mode="indeterminate"></md-progress-linear>
   <uib-alert flex ng-if="vm.error" type="danger"><span ng-bind="vm.error"></span></uib-alert>
-  <div layout="row" layout-xs="column">
-    <div>
-      <!-- Facets are defined here using the configurations defined in the controller -->
-      <div ng-repeat="facet in vm.facets" ng-switch="facet.type">
-        <seco-text-facet ng-switch-when="text" data-options="facet"></seco-text-facet>
-        <seco-basic-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
-        <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
-        <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
-        <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
-      </div>
+  <div layout="row" >
+    <div flex="auto"  style="max-width: 30em">
+        <!-- Facets are defined here using the configurations defined in the controller -->
+        <div ng-repeat="facet in vm.facets" ng-switch="facet.type">
+          <seco-text-facet ng-switch-when="text" data-options="facet"></seco-text-facet>
+          <seco-basic-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
+          <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
+          <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
+          <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
+        </div>
     </div>
 
     <!-- Results view -->
-    <md-content flex layout="column">
+    <div flex="grow">
       <md-list ng-hide="vm.isLoadingResults">
-        <md-list-item flex ng-show="vm.page.length ==0">No results found.</md-list-item>
+        <md-list-item ng-show="vm.page.length ==0">No results found.</md-list-item>
         <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="{{url_for('view')}}?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
           <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
 	  <div class="md-list-item-text" ng-class="{'md-offset': !entity.depiction }">
@@ -263,16 +263,12 @@
             ng-change="vm.getPage()">
         </ul>
       </div>
-    </md-content>
+    </div>
   </div>
 </section>
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title">Nanopublications</h2>
-  </div>
-  <div class="panel-body">
-    <nanopubs resource="{{this.description().identifier}}"/>
-  </div>
-</div>
 
+<div md-whiteframe="2">
+  <nanopubs resource="{{this.description().identifier}}"/>
+</div>
+</div>
 {%endblock%}
