@@ -2651,8 +2651,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     // // if ( !contextString.match(regex) ) contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": '${constraint.range}\n` 
                     // contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": "${constraint.range}" } , \n`
                     vm.nanopub["@context"][constraint.propertyLabel] = {};
-                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = 'dc:description';
-                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = 'xsd:string'; 
+                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
+                    vm.instance[constraint.propertyLabel] = {};
                 }
                 // contextString = contextString.replace(/,\s*$/, "");
                 // console.log('contextString is:', contextString);
