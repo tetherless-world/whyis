@@ -505,10 +505,13 @@ md-input-container {
                         return scope.parent != null && scope.property != null;
                     };
                     scope.remove = function() {
+                        /*
                         if (scope.index)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
                             delete scope.parent[scope.property];
+                        */
+                        scope.parent[scope.property].splice(scope.index, 1);
                     };
                 });
             }

@@ -2565,7 +2565,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     });
     
     /*
-     * The controller.
+     * The controller - New Instance.
      */
     app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
@@ -2653,6 +2653,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.nanopub["@context"][constraint.propertyLabel] = {};
                     vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
                     vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@extent"] = constraint.extent;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@cardinality"] = constraint.cardinality;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
                     vm.instance[constraint.propertyLabel] = {};
                 }
                 // contextString = contextString.replace(/,\s*$/, "");
@@ -2662,7 +2665,108 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
     });
     
+    /*
+     * The controller - Edit Instance.
+     */
+    
+    app.controller('EditInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
+        var vm = this;
+        var np_id = makeID();
+        // let contextString = "";
+        vm.resolveURI = resolveURI;
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
 
+        
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : [],
+                        'description' : []
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+        
+        //get the constrainsts for the class
+        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":NODE_URI },'resultType': 'json' })
+            .then(function(data) {
+                let constraints = data.data;
+                
+                console.log('class constraints:', constraints);
+                // contextString = "";
+                // let regex;
+                contextObject = {}
+                for (constraint of constraints) {
+                    console.log('PropertyLabel:', constraint.propertyLabel);
+                    // regex = new RegExp(constraint.propertyLabel);
+                    // console.log('Regex true or false ', !contextString.match(regex) )
+                    // // if ( !contextString.match(regex) ) contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": '${constraint.range}\n` 
+                    // contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": "${constraint.range}" } , \n`
+                    vm.nanopub["@context"][constraint.propertyLabel] = {};
+                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@extent"] = constraint.extent;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@cardinality"] = constraint.cardinality;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
+                    vm.instance[constraint.propertyLabel] = {};
+                }
+                // contextString = contextString.replace(/,\s*$/, "");
+                // console.log('contextString is:', contextString);
+        });
+        $scope.context2 = vm.nanopub["@context"];
+
+    });
     
     angular.bootstrap(document, ['App']);
 
