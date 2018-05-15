@@ -2641,15 +2641,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 let constraints = data.data;
                 
                 console.log('class constraints:', constraints);
-                // contextString = "";
-                // let regex;
                 contextObject = {}
                 for (constraint of constraints) {
                     console.log('PropertyLabel:', constraint.propertyLabel);
-                    // regex = new RegExp(constraint.propertyLabel);
-                    // console.log('Regex true or false ', !contextString.match(regex) )
-                    // // if ( !contextString.match(regex) ) contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": '${constraint.range}\n` 
-                    // contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": "${constraint.range}" } , \n`
                     vm.nanopub["@context"][constraint.propertyLabel] = {};
                     vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
                     vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
@@ -2658,13 +2652,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
                     vm.instance[constraint.propertyLabel] = {};
                 }
-                // contextString = contextString.replace(/,\s*$/, "");
-                // console.log('contextString is:', contextString);
         });
-
-
+        $scope.context = vm.nanopub['@context'];
     });
     
+    /*
+     * New Directive for new_instance_view.html and edit_instance_view.html
+     */
+    app.directive('globalJsonContext',  function(){
+        return {
+            restrict: 'EA',
+            scope: false,
+            link: function(data){
+                console.log('context is: ', data.context );
+            }
+        }
+    });
+
     /*
      * The controller - Edit Instance.
      */
@@ -2744,15 +2748,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 let constraints = data.data;
                 
                 console.log('class constraints:', constraints);
-                // contextString = "";
-                // let regex;
                 contextObject = {}
                 for (constraint of constraints) {
                     console.log('PropertyLabel:', constraint.propertyLabel);
-                    // regex = new RegExp(constraint.propertyLabel);
-                    // console.log('Regex true or false ', !contextString.match(regex) )
-                    // // if ( !contextString.match(regex) ) contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": '${constraint.range}\n` 
-                    // contextString += `'${constraint.propertyLabel}' : {"@id": '${constraint.property}', "@type": "${constraint.range}" } , \n`
                     vm.nanopub["@context"][constraint.propertyLabel] = {};
                     vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
                     vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
@@ -2761,10 +2759,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
                     vm.instance[constraint.propertyLabel] = {};
                 }
-                // contextString = contextString.replace(/,\s*$/, "");
-                // console.log('contextString is:', contextString);
         });
-        $scope.context2 = vm.nanopub["@context"];
+        $scope.context = vm.nanopub['@context'];
 
     });
     
