@@ -409,14 +409,17 @@ md-input-container {
                         return false;
                     }
                     scope.getProperties = function(resource) {
+                        
                         var properties = [];
                         if (typeof resource === 'string' || resource instanceof String) return [];
                         for (var property in resource) {
+                            console.log("property: ", property)
                             if (property.startsWith("$$")) continue;
                             if (property.startsWith("@")) continue;
                             if (resource.hasOwnProperty(property) && property != '@id' &&
                                 property != '@graph' && property != "@context")
-                                properties.push(property);
+                                // properties.push(property);
+                                properties.push(property["@propertyLabel"]);
                         }
                         return properties;
                     };

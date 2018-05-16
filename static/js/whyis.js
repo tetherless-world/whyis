@@ -2644,13 +2644,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 contextObject = {}
                 for (constraint of constraints) {
                     console.log('PropertyLabel:', constraint.propertyLabel);
-                    vm.nanopub["@context"][constraint.propertyLabel] = {};
-                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@extent"] = constraint.extent;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@cardinality"] = constraint.cardinality;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
-                    vm.instance[constraint.propertyLabel] = {};
+                    vm.nanopub["@context"][constraint.superClass] = {};
+                    vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
+                    vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
+                    vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
+                    vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
+                    vm.instance[constraint.superClass] = {};
+                    vm.instance[constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
                 }
         });
         $scope.context = vm.nanopub['@context'];
@@ -2751,13 +2752,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 contextObject = {}
                 for (constraint of constraints) {
                     console.log('PropertyLabel:', constraint.propertyLabel);
-                    vm.nanopub["@context"][constraint.propertyLabel] = {};
-                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = constraint.range;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@extent"] = constraint.extent;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@cardinality"] = constraint.cardinality;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@propertyType"] = constraint.propertyType;
-                    vm.instance[constraint.propertyLabel] = {};
+                    vm.nanopub["@context"][constraint.superClass] = {};
+                    vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
+                    vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
+                    vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
+                    vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
+                    vm.instance[constraint.superClass] = {};
+                    vm.instance[constraint.superClass][constraint.propertyLabel] = {};
                 }
         });
         $scope.context = vm.nanopub['@context'];
