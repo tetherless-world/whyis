@@ -150,9 +150,11 @@
         </td>
       </tr>
       <tr data-ng-repeat="property in getProperties(resource)">
-        <th  style="vertical-align:top ; padding: 8px;">{{property}}</th>
+        <!-- th  style="vertical-align:top ; padding: 8px;">{{property}}</th -->
+        <th  style="vertical-align:top ; padding: 8px;">{{property['@propertyLabel']}}</th>
         <td width="100%">
-          <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/>
+          <!-- json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/ -->
+          <json-ld-editor resource="property" property="property['@propertyLabel']" parent="resource" context="localContext"/>
         </td>
         <td style="vertical-align:top">
           <div class="btn-group">
@@ -160,8 +162,10 @@
               <md-icon class="material-icons md-light md-48">add</md-icon>
             </md-button>
             <ul class="dropdown-menu dropdown-menu-right">
-              <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li>
-              <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li>
+              <!-- li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li -->
+              <!-- li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li -->
+              <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(Object.keys(property)[0])" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a></li>
+              <li><a aria-label="Add a value" ng-if="!isResourceProperty(Object.keys(property)[0])" ng-click="appendValue({'@value':'','@propertyLabel':property['@propertyLabel'],'@key':property['@key']}, property['@key'])">Add a value</a></li>
             </ul>
           </div>
         </td>
@@ -409,21 +413,29 @@ md-input-container {
                         return false;
                     }
                     scope.getProperties = function(resource) {
-                        
                         var properties = [];
                         if (typeof resource === 'string' || resource instanceof String) return [];
                         for (var property in resource) {
-                            console.log("property: ", property)
+                            console.log("property Key: ", property);
                             if (property.startsWith("$$")) continue;
                             if (property.startsWith("@")) continue;
                             if (resource.hasOwnProperty(property) && property != '@id' &&
-                                property != '@graph' && property != "@context")
-                                // properties.push(property);
-                                properties.push(property["@propertyLabel"]);
+                                property != '@graph' && property != "@context") {
+                                    if (scope.isArray(resource[property])) {
+                                        console.log("!!! this is an array: ", resource[property]);
+                                        properties.push(resource[property][0]);
+                                    } else {
+                                        console.log("!!! this is NOT an array: ", resource[property]);
+                                        properties.push(resource[property]);
+                                    }
+                                }
                         }
                         return properties;
                     };
                     scope.appendValue = function(resource, property) {
+                        console.log("!!! property: ", property);
+                        console.log("!!! resource: ", resource);
+                        console.log("!!! scope.resource[property]: ", scope.resource[property]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
                             scope.addProperty(property);
                         if (!scope.isArray(scope.resource[property])) {
@@ -482,7 +494,8 @@ md-input-container {
                             scope.resource = newResource;
                         }
                         if (!scope.resource[property]) {
-                            scope.resource[property] = [];
+                            //scope.resource[property] = [];
+                            scope.resource[property] = {"@propertyLabel" : property};
                         }
                         
                     };
@@ -508,13 +521,10 @@ md-input-container {
                         return scope.parent != null && scope.property != null;
                     };
                     scope.remove = function() {
-                        /*
-                        if (scope.index)
+                        if (scope.index !== undefined)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
                             delete scope.parent[scope.property];
-                        */
-                        scope.parent[scope.property].splice(scope.index, 1);
                     };
                 });
             }
