@@ -2663,9 +2663,26 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if ((!vm.instance[constraint.propertyLabel])) {
                         vm.instance[constraint.propertyLabel] = [];
                     }
-                    var newObject = {};
+                    let newObject = {};
                     if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
                         newObject["@id"] = constraint.range;
+                        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":constraint.range },'resultType': 'json' }).then(function(data) {
+                            let innerConstraints = data.data;
+
+                            for (innerConstraint of innerConstraints) {
+                                if ((!newObject[innerConstraint.propertyLabel])) {
+                                    newObject[innerConstraint.propertyLabel] = [];
+                                }
+                                var newObject2 = {};
+                                if (innerConstraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                                    newObject2["@id"] = innerConstraint.range;
+                                    console.log("newObject2[@id]: ", newObject2["@id"]);
+                                } else {
+                                    newObject2["@value"] = "";
+                                }
+                                newObject[innerConstraint.propertyLabel].push(newObject2);
+                            }
+                        });
                     } else {
                         newObject["@value"] = "";
                     }
