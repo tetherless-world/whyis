@@ -2611,11 +2611,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "@type" : [NODE_URI],
                         'label' : {
                             "@value": "",
-                            "@propertyLabel" : "label"
+                            "@propertyLabel": "label",
+                            "@key": "label"
                         },
                         'description' : {
                             "@value": "",
-                            "@propertyLabel" : "description"
+                            "@propertyLabel": "description",
+                            "@key": "description"
                         }
                     }
                 },

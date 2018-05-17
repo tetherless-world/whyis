@@ -103,6 +103,7 @@
         return contextualize;
     });
 
+/*
     var editor_template = `
 <md-card data-ng-if="!isArray(resource) && isResource(resource, property)">
   <md-card-title layout="row">
@@ -151,10 +152,10 @@
       </tr>
       <tr data-ng-repeat="property in getProperties(resource)">
         <!-- th  style="vertical-align:top ; padding: 8px;">{{property}}</th -->
-        <th  style="vertical-align:top ; padding: 8px;">{{property['@propertyLabel']}}</th>
+        <th  style="vertical-align:top ; padding: 8px;">{{resource[property]['@propertyLabel']}}</th>
         <td width="100%">
           <!-- json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/ -->
-          <json-ld-editor resource="property" property="property['@propertyLabel']" parent="resource" context="localContext"/>
+          <json-ld-editor resource="resource[property]" property="property['@propertyLabel']" parent="resource" context="localContext"/>
         </td>
         <td style="vertical-align:top">
           <div class="btn-group">
@@ -164,8 +165,10 @@
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li -->
               <!-- li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li -->
-              <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(Object.keys(property)[0])" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a></li>
-              <li><a aria-label="Add a value" ng-if="!isResourceProperty(Object.keys(property)[0])" ng-click="appendValue({'@value':'','@propertyLabel':property['@propertyLabel'],'@key':property['@key']}, property['@key'])">Add a value</a></li>
+              <!-- li><a aria-label="Add a thing" ng-if="!isLiteralProperty(Object.keys(property)[0])" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a></li -->
+              <!-- li><a aria-label="Add a value" ng-if="!isResourceProperty(Object.keys(property)[0])" ng-click="appendValue({'@value':'','@propertyLabel':property['@propertyLabel'],'@key':property['@key']}, property['@key'])">Add a value</a></li -->
+              <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a></li>
+              <li><a aria-label="Add a value" ng-if="!isResourceProperty(Obproperty)" ng-click="appendValue({'@value':'','@propertyLabel':resource[property]['@propertyLabel'],'@key':resource[property]['@key']}, resource[property]['@key'])">Add a value</a></li>
             </ul>
           </div>
         </td>
@@ -307,11 +310,11 @@ md-input-container {
   }
 </style>
 `
-    
+*/    
     module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes',
                                       function(context, RecursionHelper, contextualize, $mdMenu, datatypes) {
         return {
-            template: editor_template,
+            templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
             scope: {
                 resource: '=',
@@ -403,6 +406,8 @@ md-input-container {
                         else return false;
                     };
                     scope.isResource = function(resource, property) {
+                        console.log("isResource resource: ", resource);
+                        console.log("isResource property: ", property);
                         if (property == null) {
                             return true;
                         }
@@ -413,29 +418,33 @@ md-input-container {
                         return false;
                     }
                     scope.getProperties = function(resource) {
+                        //console.log("resource in getProperties: ", resource);
                         var properties = [];
                         if (typeof resource === 'string' || resource instanceof String) return [];
                         for (var property in resource) {
-                            console.log("property Key: ", property);
                             if (property.startsWith("$$")) continue;
                             if (property.startsWith("@")) continue;
                             if (resource.hasOwnProperty(property) && property != '@id' &&
                                 property != '@graph' && property != "@context") {
+                                    //console.log("property Key: ", property);
+                                    properties.push(property);
+                                    /*
                                     if (scope.isArray(resource[property])) {
-                                        console.log("!!! this is an array: ", resource[property]);
-                                        properties.push(resource[property][0]);
+                                        console.log("!!! this is an array: ", resource[property][0]);
+                                        properties.push(resource[property][0]["@key"]);
                                     } else {
                                         console.log("!!! this is NOT an array: ", resource[property]);
                                         properties.push(resource[property]);
                                     }
+                                    */
                                 }
                         }
                         return properties;
                     };
                     scope.appendValue = function(resource, property) {
-                        console.log("!!! property: ", property);
-                        console.log("!!! resource: ", resource);
-                        console.log("!!! scope.resource[property]: ", scope.resource[property]);
+                        //console.log("!!! property: ", property);
+                        //console.log("!!! resource: ", resource);
+                        //console.log("!!! scope.resource[property]: ", scope.resource[property]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
                             scope.addProperty(property);
                         if (!scope.isArray(scope.resource[property])) {
