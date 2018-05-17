@@ -53,12 +53,11 @@
                 </td>
             </tr>
             <tr data-ng-repeat="property in getProperties(resource)">
-                <!-- th  style="vertical-align:top ; padding: 8px;">{{property}}</th -->
-                <th style="vertical-align:top ; padding: 8px;">{{resource[property]['@propertyLabel']}}</th>
+                <th  style="vertical-align:top ; padding: 8px;">{{property}}</th>
+                <!--th style="vertical-align:top ; padding: 8px;">{{resource[property]['@propertyLabel']}}</th-->
                 <td width="100%">
-                    <!-- json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/ -->
-                    <json-ld-editor resource="resource[property]" property="property['@propertyLabel']" parent="resource" context="localContext"
-                    />
+                    <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/>
+                    <!--json-ld-editor resource="resource[property]" property="property['@propertyLabel']" parent="resource" context="localContext"/-->
                 </td>
                 <td style="vertical-align:top">
                     <div class="btn-group">
@@ -66,16 +65,18 @@
                             <md-icon class="material-icons md-light md-48">add</md-icon>
                         </md-button>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <!-- li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li -->
-                            <!-- li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li -->
+                            <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li>
+                            <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li>
                             <!-- li><a aria-label="Add a thing" ng-if="!isLiteralProperty(Object.keys(property)[0])" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a></li -->
                             <!-- li><a aria-label="Add a value" ng-if="!isResourceProperty(Object.keys(property)[0])" ng-click="appendValue({'@value':'','@propertyLabel':property['@propertyLabel'],'@key':property['@key']}, property['@key'])">Add a value</a></li -->
+                            <!--
                             <li>
                                 <a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, Object.keys(property)[0])">Add a thing</a>
                             </li>
                             <li>
                                 <a aria-label="Add a value" ng-if="!isResourceProperty(Obproperty)" ng-click="appendValue({'@value':'','@propertyLabel':resource[property]['@propertyLabel'],'@key':resource[property]['@key']}, resource[property]['@key'])">Add a value</a>
                             </li>
+                            -->
                         </ul>
                     </div>
                 </td>

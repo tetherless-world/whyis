@@ -2610,14 +2610,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "@id": makeID(),
                         "@type" : [NODE_URI],
                         'label' : {
-                            "@value": "",
-                            "@propertyLabel": "label",
-                            "@key": "label"
+                            "@value": ""
                         },
                         'description' : {
-                            "@value": "",
-                            "@propertyLabel": "description",
-                            "@key": "description"
+                            "@value": ""
                         }
                     }
                 },
@@ -2651,6 +2647,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 console.log('class constraints:', constraints);
                 contextObject = {}
                 for (constraint of constraints) {
+                    /*
                     vm.nanopub["@context"][constraint.superClass] = {};
                     vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
                     vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
@@ -2659,18 +2656,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
                     vm.nanopub["@context"][constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
                     vm.instance[constraint.superClass] = {};
-                    //vm.instance[constraint.superClass]["@id"] = constraint.property;
-                    if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                        vm.instance[constraint.superClass]["@id"] = constraint.range;
-                    } else {
-                        vm.instance[constraint.superClass]["@value"] = "";
+                    */
+                    vm.nanopub["@context"][constraint.propertyLabel] = {};
+                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = "@uri";
+                    if ((!vm.instance[constraint.propertyLabel])) {
+                        vm.instance[constraint.propertyLabel] = [];
                     }
-                    //vm.instance[constraint.superClass]["@type"] = constraint.range;
-                    //vm.instance[constraint.superClass]["@extent"] = constraint.extent;
-                    //vm.instance[constraint.superClass]["@cardinality"] = constraint.cardinality;
-                    //vm.instance[constraint.superClass]["@propertyType"] = constraint.propertyType;
-                    vm.instance[constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
-                    vm.instance[constraint.superClass]["@key"] = constraint.superClass;
+                    var newObject = {};
+                    if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                        newObject["@id"] = constraint.range;
+                    } else {
+                        newObject["@value"] = "";
+                    }
+                    vm.instance[constraint.propertyLabel].push(newObject);
                 }
         });
         $scope.context = vm.nanopub['@context'];
