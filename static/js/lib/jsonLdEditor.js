@@ -103,8 +103,8 @@
         return contextualize;
     });
 
-    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes) {
+    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID',
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID) {
         return {
             templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
@@ -220,11 +220,20 @@
                         return properties;
                     };
                     scope.appendValue = function(resource, property) {
+                        console.log("Property that we are constraining:", property);
+                        console.log("Class that we are constraining:", scope.resource["@type"]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
                             scope.addProperty(property);
                         if (!scope.isArray(scope.resource[property])) {
                             var existing = scope.resource[property];
                             scope.resource[property] = [existing];
+                        }
+                        console.log("typeof resource:",typeof resource);
+                        if (typeof resource === 'object' && resource !== null) {
+                            if (resource["@value"] === undefined) {
+                                if (resource["@id"] === undefined || resource["@id"] === "") resource["@id"] = makeID();
+                                if (resource["@type"] === undefined || resource["@type"] === "") resource["@type"] = "http://www.w3.org/2002/07/owl#Thing";
+                            }
                         }
                         scope.resource[property].push(resource);
                     };

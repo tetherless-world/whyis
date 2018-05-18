@@ -2639,12 +2639,30 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
         vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
 
+        function populateContext(constraint) {
+            if (!vm.nanopub["@context"][constraint.propertyLabel]) {
+                vm.nanopub["@context"][constraint.propertyLabel] = [];
+            }
+            var newProperty = {};
+            newProperty["@superClass"] = constraint.superClass;
+            newProperty["@range"] = constraint.range;
+            newProperty["@rangeLabel"] = constraint.rangeLabel;
+            newProperty["@extent"] = constraint.extent;
+            newProperty["@cardinality"] = constraint.cardinality;
+            newProperty["@class"] = constraint.class;
+            newProperty["@property"] = constraint.property;
+            newProperty["@propertyLabel"] = constraint.propertyLabel;
+            newProperty["@propertyType"] = constraint.propertyType;
+            vm.nanopub["@context"][constraint.propertyLabel].push(newProperty);
+        }
+
         function populateJsonObject(currentObject) {
             if (currentObject["@id"]) {
                 $http.get(ROOT_URL+"about",{ 'params': { "view":"constraints", "uri":currentObject["@type"]},'resultType': 'json' })
                 .then(function(data) {
                     let constraints = data.data;
                     for (constraint of constraints) {
+                        populateContext(constraint);
                         if ((!currentObject[constraint.propertyLabel])) {
                             currentObject[constraint.propertyLabel] = [];
                         }
@@ -2661,29 +2679,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     }
                     return;
+                }, function(error){
+                    console.log(error);
+                    return;
                 });
             } else {
                 return;
             }
         }
-
-        populateJsonObject(vm.instance);
         
-        //get the constrainsts for the class
-        /*
-        vm.nanopub["@context"][constraint.superClass] = {};
-        vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
-        vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
-        vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
-        vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
-        vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
-        vm.nanopub["@context"][constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
-        vm.instance[constraint.superClass] = {};
+        populateJsonObject(vm.instance);
 
-        vm.nanopub["@context"][constraint.propertyLabel] = {};
-        vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
-        vm.nanopub["@context"][constraint.propertyLabel]["@type"] = "@uri";
-        */
         $scope.context = vm.nanopub['@context'];
     });
     
