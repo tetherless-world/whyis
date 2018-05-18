@@ -2638,57 +2638,52 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         };
         vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
         vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        function populateJsonObject(currentObject) {
+            if (currentObject["@id"]) {
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"constraints", "uri":currentObject["@type"]},'resultType': 'json' })
+                .then(function(data) {
+                    let constraints = data.data;
+                    for (constraint of constraints) {
+                        if ((!currentObject[constraint.propertyLabel])) {
+                            currentObject[constraint.propertyLabel] = [];
+                        }
+                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            let newObject = {};
+                            newObject["@id"] = makeID();
+                            newObject["@type"] = constraint.range;
+                            populateJsonObject(newObject);
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        } else {
+                            let newObject = {};
+                            newObject["@value"] = "";
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        }
+                    }
+                    return;
+                });
+            } else {
+                return;
+            }
+        }
+
+        populateJsonObject(vm.instance);
         
         //get the constrainsts for the class
-        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":NODE_URI },'resultType': 'json' })
-            .then(function(data) {
-                let constraints = data.data;
-                
-                console.log('class constraints:', constraints);
-                contextObject = {}
-                for (constraint of constraints) {
-                    /*
-                    vm.nanopub["@context"][constraint.superClass] = {};
-                    vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
-                    vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
-                    vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
-                    vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
-                    vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
-                    vm.nanopub["@context"][constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
-                    vm.instance[constraint.superClass] = {};
-                    */
-                    vm.nanopub["@context"][constraint.propertyLabel] = {};
-                    vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
-                    vm.nanopub["@context"][constraint.propertyLabel]["@type"] = "@uri";
-                    if ((!vm.instance[constraint.propertyLabel])) {
-                        vm.instance[constraint.propertyLabel] = [];
-                    }
-                    let newObject = {};
-                    if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                        newObject["@id"] = constraint.range;
-                        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":constraint.range },'resultType': 'json' }).then(function(data) {
-                            let innerConstraints = data.data;
+        /*
+        vm.nanopub["@context"][constraint.superClass] = {};
+        vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
+        vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
+        vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
+        vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
+        vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
+        vm.nanopub["@context"][constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
+        vm.instance[constraint.superClass] = {};
 
-                            for (innerConstraint of innerConstraints) {
-                                if ((!newObject[innerConstraint.propertyLabel])) {
-                                    newObject[innerConstraint.propertyLabel] = [];
-                                }
-                                var newObject2 = {};
-                                if (innerConstraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                                    newObject2["@id"] = innerConstraint.range;
-                                    console.log("newObject2[@id]: ", newObject2["@id"]);
-                                } else {
-                                    newObject2["@value"] = "";
-                                }
-                                newObject[innerConstraint.propertyLabel].push(newObject2);
-                            }
-                        });
-                    } else {
-                        newObject["@value"] = "";
-                    }
-                    vm.instance[constraint.propertyLabel].push(newObject);
-                }
-        });
+        vm.nanopub["@context"][constraint.propertyLabel] = {};
+        vm.nanopub["@context"][constraint.propertyLabel]["@id"] = constraint.property;
+        vm.nanopub["@context"][constraint.propertyLabel]["@type"] = "@uri";
+        */
         $scope.context = vm.nanopub['@context'];
     });
     
