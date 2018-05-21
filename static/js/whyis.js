@@ -2690,7 +2690,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         
         populateJsonObject(vm.instance);
 
-        $scope.context = vm.nanopub['@context'];
+        $scope.globalContext = vm.nanopub['@context'];
     });
     
     /*
@@ -2701,7 +2701,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             restrict: 'EA',
             scope: false,
             link: function(data){
-                console.log('context is: ', data.context );
+                console.log('context is: ', data.globalContext );
             }
         }
     });

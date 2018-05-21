@@ -114,6 +114,10 @@
                 property: '=',
                 context: '=',
                 index: "=",
+                globalContext: '=',
+            },
+            controller: function($scope) {
+                console.log("jsonLdEditor-controller:", $scope.globalContext);
             },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
@@ -220,6 +224,7 @@
                         return properties;
                     };
                     scope.appendValue = function(resource, property) {
+                        console.log("localContext at appendValue:", scope.localContext);
                         console.log("Property that we are constraining:", property);
                         console.log("Class that we are constraining:", scope.resource["@type"]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
@@ -266,6 +271,13 @@
                         }
                         var results = query ? list.filter( createFilterFor(query) ) : list;
                         return results;
+                    };
+                    scope.evaluateDatatype = function(property, datatype) {
+                        console.log("scope.evaluateDatatype property:", property);
+                        console.log("scope.evaluateDatatype datatype:", datatype);
+                        console.log("scope.evaluateDatatype scope.parent[property]:", scope.parent[property]);
+                        console.log("scope.evaluateDatatype scope.context:", scope.context);
+                        console.log("scope.evaluateDatatype scope.globalContext:", scope.globalContext);
                     };
                     scope.queryLanguages = function(query) {
                         var list = [query];
