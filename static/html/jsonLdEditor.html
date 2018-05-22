@@ -44,7 +44,7 @@
                 <th style="vertical-align:top; padding: 8px;">type</th>
                 <td width="100%">
                     <json-ld-editor ng-if="resource['@type'] !== undefined" resource="resource['@type']" property="'@type'" parent="resource"
-                        context="localContext" globalContext="globalContext" />
+                        context="localContext" global-context="globalContext" />
                 </td>
                 <td style="vertical-align:top">
                     <!-- <md-button class="md-icon-button" aria-label="Add" ng-click="appendValue({'@value':''}, '@type')"> -->
@@ -56,7 +56,7 @@
             <tr data-ng-repeat="property in getProperties(resource)">
                 <th  style="vertical-align:top ; padding: 8px;">{{property}}</th>
                 <td width="100%">
-                    <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext" globalContext="globalContext"/>
+                    <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext" global-context="globalContext"/>
                 </td>
                 <td style="vertical-align:top">
                     <div class="btn-group">
@@ -98,7 +98,7 @@
                     </md-button>
                 </div>
             </md-toolbar>
-            <json-ld-editor resource="resource['@graph']" property="'@graph'" parent="resource" context="localContext" globalContext="globalContext"/>
+            <json-ld-editor resource="resource['@graph']" property="'@graph'" parent="resource" context="localContext" global-context="globalContext"/>
         </md-content>
     </md-card-content>
 </md-card>
@@ -164,7 +164,7 @@
 </md-card>
 <div data-ng-if="isArray(resource)" layout="{{'column' ? parent === undefined : 'row'}}" layout-wrap="true">
     <json-ld-editor flex="initial" data-ng-repeat="r in resource" resource="r" index="$index" property="property" parent="parent"
-        context="localContext" globalContext="globalContext">
+        context="localContext" global-context="globalContext">
         </jsonLdEditor>
         <md-button data-ng-if="parent == null" class="md-icon-button" aria-label="Add Thing">
             <md-icon class="material-icons md-light md-48">add</md-icon>

@@ -116,9 +116,9 @@
                 index: "=",
                 globalContext: '=',
             },
-            controller: function($scope) {
-                console.log("jsonLdEditor-controller:", $scope.globalContext);
-            },
+            // controller: function($scope) {
+            //     console.log("jsonLdEditor-controller:", $scope.globalContext);
+            // },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
                     scope.openMenu = function(ev) {
@@ -275,9 +275,9 @@
                     scope.evaluateDatatype = function(property, datatype) {
                         console.log("scope.evaluateDatatype property:", property);
                         console.log("scope.evaluateDatatype datatype:", datatype);
+                        console.log("scope.evaluateDatatype scope.parent[@type]:", scope.parent["@type"]);
                         console.log("scope.evaluateDatatype scope.parent[property]:", scope.parent[property]);
-                        console.log("scope.evaluateDatatype scope.context:", scope.context);
-                        console.log("scope.evaluateDatatype scope.globalContext:", scope.globalContext);
+                        console.log("scope.evaluateDatatype scope.globalContext[property]:", scope.globalContext[property]);
                     };
                     scope.queryLanguages = function(query) {
                         var list = [query];
@@ -325,11 +325,40 @@
                         return scope.parent != null && scope.property != null;
                     };
                     scope.remove = function() {
+                        console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
+                        console.log("jsonLdEditor remove scope.property:", scope.property);
+                        console.log("jsonLdEditor remove scope.parent:", scope.parent);
                         if (scope.index !== undefined)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
                             delete scope.parent[scope.property];
+                        scope.validateEditor(scope.parent, scope.property);
                     };
+                    scope.validateEditor = function(resource, property) {
+                        console.log("jsonLdEditor validateEditor resource:", resource);
+                        console.log("jsonLdEditor validateEditor property:", property);
+                        let constraints = scope.retrieveConstraints(resource, property);
+                        console.log("jsonLdEditor validateEditor constraints:", constraints);
+                    };
+                    scope.retrieveConstraints = function(resource, property) {
+                        let constraints = [];
+                        for (constraint of scope.globalContext[property]) {
+                            console.log("constraint['@class']:", constraint["@class"]);
+                            console.log('resource["@type"]: ', resource["@type"]);
+                            if (constraint["@class"] === resource["@type"][0] ) {
+                                for (value of resource[property]) {
+                                    let range = labelize(constraint["@range"]);
+                                    range = "xsd:" + range;
+                                    console.log("constraint['@range']", constraint["@range"])
+                                    console.log("labelize range & xsd added:", range);
+                                    if (range === value["@type"]) {
+                                        constraints.push(constraint);
+                                    }
+                                }
+                            }
+                        }
+                        return constraints;
+                    }
                 });
             }
         };
