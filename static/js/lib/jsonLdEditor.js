@@ -241,6 +241,7 @@
                             }
                         }
                         scope.resource[property].push(resource);
+                        scope.validateEditor(scope.resource, property);
                     };
                     scope.queryProperties = function(query) {
                         var list = [];
@@ -272,13 +273,27 @@
                         var results = query ? list.filter( createFilterFor(query) ) : list;
                         return results;
                     };
-                    scope.evaluateDatatype = function(property, datatype) {
+                    //not being used
+                    scope.queryDatatypeItems = function(query) {
+                        var datatypes = scope.queryDatatypes(query);
+                        var results = [];
+                        for (datatype of datatypes) {
+                            var item = {};
+                            item["display"] = datatype;
+                            item["value"] = scope.getFullUri(item.display);
+                            results.push(item);
+                        }
+                        return results;
+                    };
+                    /*
+                    scope.evaluateDatatype = function(resource, property, datatype) {
                         console.log("scope.evaluateDatatype property:", property);
                         console.log("scope.evaluateDatatype datatype:", datatype);
                         console.log("scope.evaluateDatatype scope.parent[@type]:", scope.parent["@type"]);
                         console.log("scope.evaluateDatatype scope.parent[property]:", scope.parent[property]);
                         console.log("scope.evaluateDatatype scope.globalContext[property]:", scope.globalContext[property]);
-                    };
+                        scope.validateEditor(scope.parent, scope.property);
+                    };*/
                     scope.queryLanguages = function(query) {
                         var list = [query];
                         function createFilterFor(query) {
@@ -301,7 +316,7 @@
                         if (!scope.resource[property]) {
                             scope.resource[property] = [];
                         }
-                        
+                        //scope.validateEditor(scope.parent, scope.property);
                     };
                     scope.addDatatype = function() {
                         if (scope.isString(scope.resource)) {
@@ -325,9 +340,9 @@
                         return scope.parent != null && scope.property != null;
                     };
                     scope.remove = function() {
-                        console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
-                        console.log("jsonLdEditor remove scope.property:", scope.property);
-                        console.log("jsonLdEditor remove scope.parent:", scope.parent);
+                        //console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
+                        //console.log("jsonLdEditor remove scope.property:", scope.property);
+                        //console.log("jsonLdEditor remove scope.parent:", scope.parent);
                         if (scope.index !== undefined)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
@@ -339,22 +354,78 @@
                         console.log("jsonLdEditor validateEditor property:", property);
                         let constraints = scope.retrieveConstraints(resource, property);
                         console.log("jsonLdEditor validateEditor constraints:", constraints);
+                        var lengthObject = {};
+                        for (assertion of resource[property]) {
+                            if (assertion["@type"]) {
+                                var datatypeUri = scope.getFullUri(assertion["@type"]);
+                                if (lengthObject[datatypeUri]) {
+                                    lengthObject[datatypeUri]++;
+                                } else {
+                                    lengthObject[datatypeUri] = 1;
+                                }
+                            }
+                        }
+                        console.log("scope.validateEditor lengthObject:", lengthObject);
+                        for (constraint of constraints) {
+                            console.log("scope.validateEditor constraint['@extent']:", constraint["@extent"]);
+                            console.log("scope.validateEditor constraint['@range']:", constraint["@range"]);
+                            console.log("scope.validateEditor constraint['@cardinality']:", constraint["@cardinality"]);
+                            //console.log("scope.validateEditor lengthObject[constraint['@range']]:", lengthObject[constraint["@range"]]);
+                            if (!lengthObject[constraint["@range"]]) lengthObject[constraint["@range"]] = 0;
+                            if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
+                                if (lengthObject[constraint["@range"]] < 1) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            }
+                            //constraint["@extent"]
+                            //constraint["@cardinality"]
+                            //constraint["@range"]
+                            //resource[property]
+                        }
+                    };
+                    scope.getFullUri = function(prefixedUri) {
+                        let uriRegEx = /^(http|https)/i
+                        if (uriRegEx.test(prefixedUri)) {
+                            console.log("scope.getFullUri already a full URI:", prefixedUri);
+                            return prefixedUri;
+                        } else {
+                            console.log("scope.getFullUri a prefixed URI:", prefixedUri);
+                        }
+                        var prefixes = {
+                            'xsd':'http://www.w3.org/2001/XMLSchema#',
+                            'dc':'http://purl.org/dc/elements/1.1/',
+                            'dct':'http://purl.org/dc/terms/',
+                            'rdfs':'http://www.w3.org/2000/01/rdf-schema#'
+                        };
+                        let regexBeginning = /.+?(?=:)/g
+                        let regexEnd = /[^:]+$/g
+                        let suffix = prefixedUri.match(regexEnd);
+                        let prefix = prefixedUri.match(regexBeginning);
+                        if (prefix === null) {
+                            console.log("no matches for prefix in getFullUri");
+                            return prefixedUri;
+                        } else {
+                            return prefixes[prefix[0]] + suffix[0];
+                        }
                     };
                     scope.retrieveConstraints = function(resource, property) {
                         let constraints = [];
                         for (constraint of scope.globalContext[property]) {
-                            console.log("constraint['@class']:", constraint["@class"]);
-                            console.log('resource["@type"]: ', resource["@type"]);
-                            if (constraint["@class"] === resource["@type"][0] ) {
-                                for (value of resource[property]) {
-                                    let range = labelize(constraint["@range"]);
-                                    range = "xsd:" + range;
-                                    console.log("constraint['@range']", constraint["@range"])
-                                    console.log("labelize range & xsd added:", range);
-                                    if (range === value["@type"]) {
-                                        constraints.push(constraint);
-                                    }
-                                }
+                            if (resource["@type"] && constraint["@class"] === resource["@type"][0]) {
+                                console.log("constraint pushed");
+                                constraints.push(constraint);
                             }
                         }
                         return constraints;

@@ -32,9 +32,9 @@
         <md-card-title-text flex="auto">
             <span class="md-headline" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}} </span>
             <md-input-container class="md-subhead" md-no-float>
-                <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]"></input>
-                <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]"></input>
-                <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']"></input>
+                <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]" ng-change="validateEditor(parent, property)"></input>
+                <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
+                <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']" ng-change="validateEditor(parent, property)"></input>
             </md-input-container>
         </md-card-title-text>
     </md-card-title>
@@ -138,7 +138,7 @@
             <md-input-container flex="grow" data-ng-show="index === undefined && resource['@value'] === undefined" md-no-float>
                 <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="parent[property]"></textarea>
             </md-input-container>
-            <md-autocomplete ng-if="resource['@type'] !== undefined" flex="initial" md-selected-item="resource['@type']" md-selected-item-change="evaluateDatatype(property, typeSearch)" md-search-text="typeSearch"
+            <md-autocomplete ng-if="resource['@type'] !== undefined" flex="initial" md-selected-item="resource['@type']" md-selected-item-change="validateEditor(parent, property)" md-search-text="typeSearch"
                 md-items="item in queryDatatypes(typeSearch)" md-autoselect="true" md-item-text="item" md-min-length="0" md-floating-label="Type">
                 <md-item-template>
                     <span md-highlight-text="typeSearch" md-highlight-flags="^i">{{item}}</span>

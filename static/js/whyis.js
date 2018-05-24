@@ -2669,7 +2669,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
                             let newObject = {};
                             newObject["@id"] = makeID();
-                            newObject["@type"] = constraint.range;
+                            newObject["@type"] = [constraint.range];
                             populateJsonObject(newObject);
                             currentObject[constraint.propertyLabel].push(newObject);
                         } else {
