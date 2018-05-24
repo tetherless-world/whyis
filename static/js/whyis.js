@@ -2565,11 +2565,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     });
     
     /*
-     * The controller.
+     * The controller - New Instance.
      */
     app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
         var np_id = makeID();
+        // let contextString = "";
         vm.resolveURI = resolveURI;
         vm.submit = function() {
             vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
@@ -2578,6 +2579,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
             });
         }
+
+        
         vm.nanopub = {
             "@context" : {
                 "@vocab": LOD_PREFIX+'/',
@@ -2594,7 +2597,150 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
                 'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
                 'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
-                'description' : {"@id" : 'dc:description', "@type": "xsd:string"}
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : {
+                            "@value": ""
+                        },
+                        'description' : {
+                            "@value": ""
+                        }
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        function populateContext(constraint) {
+            if (!vm.nanopub["@context"][constraint.propertyLabel]) {
+                vm.nanopub["@context"][constraint.propertyLabel] = [];
+            }
+            var newProperty = {};
+            newProperty["@superClass"] = constraint.superClass;
+            newProperty["@range"] = constraint.range;
+            newProperty["@rangeLabel"] = constraint.rangeLabel;
+            newProperty["@extent"] = constraint.extent;
+            newProperty["@cardinality"] = constraint.cardinality;
+            newProperty["@class"] = constraint.class;
+            newProperty["@property"] = constraint.property;
+            newProperty["@propertyLabel"] = constraint.propertyLabel;
+            newProperty["@propertyType"] = constraint.propertyType;
+            vm.nanopub["@context"][constraint.propertyLabel].push(newProperty);
+        }
+
+        function populateJsonObject(currentObject) {
+            if (currentObject["@id"]) {
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"constraints", "uri":currentObject["@type"]},'resultType': 'json' })
+                .then(function(data) {
+                    let constraints = data.data;
+                    for (constraint of constraints) {
+                        populateContext(constraint);
+                        if ((!currentObject[constraint.propertyLabel])) {
+                            currentObject[constraint.propertyLabel] = [];
+                        }
+                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            let newObject = {};
+                            newObject["@id"] = makeID();
+                            newObject["@type"] = [constraint.range];
+                            populateJsonObject(newObject);
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        } else {
+                            let newObject = {};
+                            newObject["@value"] = "";
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        }
+                    }
+                    return;
+                }, function(error){
+                    console.log(error);
+                    return;
+                });
+            } else {
+                return;
+            }
+        }
+        
+        populateJsonObject(vm.instance);
+
+        $scope.globalContext = vm.nanopub['@context'];
+    });
+    
+    /*
+     * New Directive for new_instance_view.html and edit_instance_view.html
+     */
+    app.directive('globalJsonContext',  function(){
+        return {
+            restrict: 'EA',
+            scope: false,
+            link: function(data){
+                console.log('context is: ', data.globalContext );
+            }
+        }
+    });
+
+    /*
+     * The controller - Edit Instance.
+     */
+    
+    app.controller('EditInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
+        var vm = this;
+        var np_id = makeID();
+        // let contextString = "";
+        vm.resolveURI = resolveURI;
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+
+        
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
             },
             "@id" : "urn:"+np_id,
             "@graph" : {
@@ -2629,8 +2775,36 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 }
             }
         };
+
         vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
         vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+        
+        //get the constrainsts for the class
+        $http.get(ROOT_URL+'about',{ 'params': { "view":"constraints", "uri":NODE_URI },'resultType': 'json' })
+            .then(function(data) {
+                let constraints = data.data;
+                
+                console.log('class constraints:', constraints);
+                contextObject = {}
+                for (constraint of constraints) {
+                    vm.nanopub["@context"][constraint.superClass] = {};
+                    vm.nanopub["@context"][constraint.superClass]["@id"] = constraint.property;
+                    vm.nanopub["@context"][constraint.superClass]["@type"] = constraint.range;
+                    vm.nanopub["@context"][constraint.superClass]["@extent"] = constraint.extent;
+                    vm.nanopub["@context"][constraint.superClass]["@cardinality"] = constraint.cardinality;
+                    vm.nanopub["@context"][constraint.superClass]["@propertyType"] = constraint.propertyType;
+                    vm.nanopub["@context"][constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
+                    vm.instance[constraint.superClass] = {};
+                    //vm.instance[constraint.superClass]["@id"] = constraint.property;
+                    vm.instance[constraint.superClass]["@type"] = constraint.range;
+                    vm.instance[constraint.superClass]["@extent"] = constraint.extent;
+                    vm.instance[constraint.superClass]["@cardinality"] = constraint.cardinality;
+                    vm.instance[constraint.superClass]["@propertyType"] = constraint.propertyType;
+                    vm.instance[constraint.superClass]["@propertyLabel"] = constraint.propertyLabel;
+                }
+        });
+        $scope.context = vm.nanopub['@context'];
+
     });
     
     angular.bootstrap(document, ['App']);
