@@ -22,3 +22,5 @@ RUN echo "Downloading puppet configuration"
 RUN curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
 
 RUN puppet apply /tmp/install_whyis.pp
+
+RUN puppet apply /tmp/install_whyis.pp
