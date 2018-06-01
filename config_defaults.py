@@ -144,8 +144,8 @@ Config = dict(
         importer.LinkedData(
             prefix = LOD_PREFIX+'/dbpedia/class/',
             url = 'http://dbpedia.org/class/%s',
-            headers={'Accept':'text/turtle'},
-            format='turtle',
+            access_url = 'http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=DESCRIBE+<%s>&format=application/json-ld',
+            format='json-ld',
         )
     ],
     inferencers = {

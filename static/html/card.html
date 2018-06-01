@@ -26,7 +26,7 @@
       </span>
       <a aria-label="Show All Types"
                ng-style="{ 'font-size': '1em', height: '1em'}"               
-                 title="Show All Types" class="size-16" style="line-height: 1rem" flex="initial" ng-hide="showAllTypes"  data-ng-click="showAllTypes = true">(more)</a>
+                 title="Show All Types" class="size-16" style="line-height: 1rem" flex="initial" ng-hide="compact || showAllTypes"  data-ng-click="showAllTypes = true">(more)</a>
     </div>
     <p ng-repeat="desc in entity.description" ng-if="!compact || $first">
       <strong ng-hide="compact" ng-bind="desc.label"/>

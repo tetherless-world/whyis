@@ -918,7 +918,7 @@ construct {
                     return resource.this().graph.serialize(format=fmt)
                 
         views = {}
-        def render_view(resource, view=None):
+        def render_view(resource, view=None, args=None):
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(
@@ -926,7 +926,7 @@ construct {
                 this=resource, g=g,
                 current_user=current_user,
                 isinstance=isinstance,
-                args=request.args,
+                args=request.args if args is None else args,
                 url_for=url_for,
                 get_entity=get_entity,
                 get_summary=get_summary,

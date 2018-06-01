@@ -1061,15 +1061,19 @@ $( function() {
                 scope.ROOT_URL = ROOT_URL;
                 console.log('attrs: ', attrs);
                 console.log('scope.query is: ', scope.query);
-                $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
-                    'params': {'query': scope.query },
-                    'resultType': 'json'
-                    // 'headers' : {'Accept' : 'application/json'}
-                }).then(function(response) {
-                    console.log('response data: ', response.data);
-                    console.log('attrs is: ', attrs)
-                    scope.entities = response.data;  
-                });
+                if (RESULTS) {
+                    scope.entities = RESULTS;
+                } else {
+                    $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
+                        'params': {'query': scope.query },
+                        'resultType': 'json'
+                        // 'headers' : {'Accept' : 'application/json'}
+                    }).then(function(response) {
+                        console.log('response data: ', response.data);
+                        console.log('attrs is: ', attrs)
+                        scope.entities = response.data;  
+                    });
+                }
             }
         }
     }]);

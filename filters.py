@@ -106,10 +106,12 @@ def configure(app):
         return result
 
     @app.template_filter('include')
-    def include(entity, view='view'):
+    def include(entity, view='view', **kwargs):
         if not isinstance(entity, app.Entity):
             entity = app.get_resource(entity)
-        result, status, headers = app.render_view(entity, view=view)
+        if len(kwargs) == 0:
+            kwargs = None
+        result, status, headers = app.render_view(entity, view=view, args=kwargs)
         return result
         
     @app.template_filter('probquery')
