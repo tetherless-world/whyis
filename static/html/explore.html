@@ -4,14 +4,12 @@
       <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
         <md-icon>menu</md-icon>
       </md-button>
-      <form flex layout="column"  role="form" data-ng-submit="add()" style="color:black; margin-bottom: 0px;">
         <search-autocomplete
            flex
+           style="color:black;
            selected-item-change="selectedItemChange"
            search-text-change="searchTextChange">
         </search-autocomplete>
-        <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
-      </form>
       <div flex="none" layout="row">
            <md-button class="md-icon-button" aria-label="Remove Selected" title="Remove Selected"  data-ng-click="remove()">
              <md-icon>delete</md-icon>
@@ -45,6 +43,7 @@
       </div>
     </div>
   </md-toolbar>
+  <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
   <md-content flex layout="column" layout-fill>
     <div flex layout="row" layout-fill>
       <div flex class="graph" ></div>
