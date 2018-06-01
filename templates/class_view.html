@@ -232,24 +232,11 @@
 
     <!-- Results view -->
     <div flex="grow">
-      <md-list ng-hide="vm.isLoadingResults">
-        <md-list-item ng-show="vm.page.length ==0">No results found.</md-list-item>
-        <md-list-item ng-repeat="entity in vm.page" class="md-3-line md-long-text" ng-href="{{url_for('view')}}?view=view&uri={[{entity.id}]}" Visit {[{entity.label}]}>
-          <img ng-if="entity.depiction" ng-src="{[{entity.depiction}]}" class="md-avatar" alt="{[{entity.label}]}" />
-	  <div class="md-list-item-text" ng-class="{'md-offset': !entity.depiction }">
-            <div class="md-list-item-text" >
-              <h3><span data-ng-if="entity.label" data-ng-bind="entity.label"/><span data-ng-if="!entity.label" data-ng-bind="vm.getLabel(entity.id)"/></h3>
-              <h4>
-                <span data-ng-repeat="type in entity.type">{[{type.label}]}<span ng-hide="!type.label || $last">, </span></span>
-              </h4>
-              <p ng-if="entity.summary" >{[{entity.summary[0][1]}]}</p>
-	    </div>
-          </div>
-          <md-button md-secondary ng-href="{{url_for('view')}}?view=edit&uri={[{entity.id}]}" class="md-icon-button" aria-label="Edit">
-            <md-icon>create</md-icon>
-          </md-button>
-	</md-list-item>
-      </md-list>
+      <div layout-fill layout="column" ng-hide="vm.isLoadingResults">
+        <md-subheader ng-hide="vm.page.length > 0" >No results found.</md-subheader>
+        <kg-card  ng-repeat="entity in vm.page"  compact="true" src="entity.id">
+        </kg-card>
+      </div>
       <!-- Pagination -->
       <div layout="row" layout-align="center">
         <ul uib-pagination

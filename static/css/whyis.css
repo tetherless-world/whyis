@@ -44,6 +44,12 @@ md-toolbar:not(.md-menu-toolbar) {
     background-color: #08233c;
 }
 
+.flex-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .row-eq-height {
   display: -webkit-box;
   display: -webkit-flex;

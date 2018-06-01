@@ -1,0 +1,19 @@
+{{'''select distinct ?property ?value ?unit where {
+    {
+      ?this ?property ?value.
+      filter( ?property not in  (foaf:depiction, sioc:content, skos:definition, dc:abstract, dc:description, dc:summary, rdfs:comment, dcelements:description, <http://purl.obolibrary.org/obo/IAO_0000115>, prov:value, sio:hasValue, <http://dbpedia.org/ontology/abstract>))
+      filter (isLiteral(?value))
+    } union {
+      ?this sio:hasAttribute ?attr.
+      ?attr a ?property; sio:hasValue ?value.
+      optional {
+        ?attr sio:hasUnit ?unit.
+      }
+    } union {
+      ?this sio:hasAttribute ?attr.
+      ?attr a ?property.
+      ?attr a ?value.
+      ?value rdfs:subClassOf ?property.
+    }
+}
+''' | attributes(this) | tojson }}

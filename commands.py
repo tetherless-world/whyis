@@ -5,7 +5,7 @@ from flask_script import Command, Option, prompt_bool
 from flask_security.utils import encrypt_password, verify_password, get_hmac
 
 import flask
-
+import interpreter
 
 from base64 import b64encode
 import os
@@ -252,3 +252,18 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
         unittest.TextTestRunner(
             verbosity=verbosity, failfast=failfast).run(test_suite)
+
+class RunInterpreter(Command):
+    '''Add a nanopublication to the knowledge graph.'''
+    def get_options(self):
+        return [
+            Option('--input', '-i', dest='config_file',
+                   type=str),
+        ]
+    
+    def run(self, config_file=None):
+        app = flask.current_app
+        if config_file is not None :
+            agent = interpreter.Interpreter(config_fn=config_file)
+            agent.app = app
+            agent.process_graph(app.db)

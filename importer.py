@@ -146,7 +146,7 @@ class LinkedData (Importer):
 
     def fetch(self, entity_name):
         u = self._get_access_url(entity_name)
-        #print u
+        print u
         r = requests.get(u, headers = self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.URIRef("urn:default_assertion"))
