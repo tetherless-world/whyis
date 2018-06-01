@@ -91,11 +91,8 @@
         </h3>
       </div>
     </md-toolbar>
-    <div class="container">
-      <div class="clearfix"></div>
-    </div>
     {% block pageheader %}
-    <div class="container">
+    <div class="container" >
       <div class="page-header" layout="row">
         <h1 flex property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
         </h1>
@@ -123,7 +120,7 @@
         {% endif %}
       </div>
       {% endblock %}
-      <div class="container">
+      <div>
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}

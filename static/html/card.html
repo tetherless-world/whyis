@@ -39,9 +39,7 @@
     <p ng-repeat="attribute in entity.attributes" ng-if="!compact">
       <strong>{{attribute.label}}: </strong>
       <span data-ng-repeat="value in attribute.values">
-        {{ value.value}}
-        <emph ng-if="value.unit_label" ng-bind="value.unit_label"/>
-        <span ng-hide="$last">, </span>
+        {{ value.value}}<emph ng-if="value.unit_label" ng-bind="value.unit_label"/><span ng-hide="$last">, </span>
       </span>
     </p>
   </md-card-content>

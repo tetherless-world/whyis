@@ -1971,17 +1971,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'border-width': 0,
                             'cursor': 'pointer',
                             'color' : 'white',
-                            'font-size': 'mapData(rank,0,1,8,24)',
+                            'font-size': 'mapData(rank,0,1,8,16)',
 //                            'font-size' : '8px',
                             'text-wrap': 'wrap',
-                            'text-max-width': 'mapData(rank,0,1,100,300)',
+                            'text-max-width': 'mapData(rank,0,1,100,200)',
                             //'text-outline-width' : 3,
                             //'text-outline-opacity' : 1,
                             'text-background-opacity' : 1,
                             'text-background-shape' : 'roundrectangle',
                             'text-background-padding' : '1px',
-                            'width': 'mapData(rank,0,1,100,300)',
-                            'height': 'mapData(rank,0,1,30,90)',
+                            'width': 'mapData(rank,0,1,100,200)',
+                            'height': 'mapData(rank,0,1,30,60)',
                         })
                         .selector('node[color]')
                         .css({
