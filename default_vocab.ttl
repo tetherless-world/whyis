@@ -369,6 +369,7 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasDescribe "describe.json";
   whyis:hasNanopublications "nanopublications.json";
   whyis:hasLabel "label_view.html";
+  whyis:editInstanceView "edit_instance_view.html";
   whyis:hasSummary "summary_view.json".
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
@@ -430,6 +431,9 @@ whyis:latestView rdfs:subPropertyOf whyis:hasView;
 
 whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "new".
+
+whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "edit".
 
 <https://www.iana.org/assignments/media-types/text/csv>
   whyis:bipartiteView "bipartite_graph.svg".

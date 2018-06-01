@@ -103,211 +103,10 @@
         return contextualize;
     });
 
-    var editor_template = `
-<md-card data-ng-if="!isArray(resource) && isResource(resource, property)">
-  <md-card-title layout="row">
-    <div flex="none">
-      <div class="btn-group">
-        <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <md-icon class="material-icons md-light md-48">more_vert</md-icon>
-        </md-button>
-        <ul class="dropdown-menu">
-          <li><a aria-label="Add Type" data-ng-click="appendValue({'@id':''},'@type'); ">
-              <md-icon class="material-icons md-light md-48">add</md-icon>Add Type
-          </a></li>
-          <li><a aria-label="Remove" data-ng-click="remove()">
-              <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
-          </a></li>
-          <li><a aria-label="Add Named Graph" data-ng-click="addProperty('@graph')">
-              <md-icon class="material-icons md-light md-48">group_work</md-icon>Add Named Graph
-          </a></li>
-          <li><a aria-label="Set Context..." data-ng-click="">
-              <md-icon class="material-icons md-light md-48">label</md-icon>Set Context...
-          </a></li>
-        </ul>
-      </div>
-    </div>
-    <md-card-title-text flex="auto">
-      <span class="md-headline" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}} </span>
-      <md-input-container class="md-subhead" md-no-float>
-        <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]"></input>
-        <input  placeholder="IRI" type="text"  data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]"></input>
-        <input  placeholder="IRI" type="text"  data-ng-if="!isString(resource)" data-ng-model="resource['@id']"></input>
-      </md-input-container>
-    </md-card-title-text>
-  </md-card-title>
-  <md-card-content layout="column">
-    <table width="100%" flex="100">
-      <tr ng-if="resource['@type'] !== undefined" >
-        <th style="vertical-align:top; padding: 8px;">type</th>
-        <td width="100%">
-          <json-ld-editor ng-if="resource['@type'] !== undefined" resource="resource['@type']" property="'@type'" parent="resource" context="localContext"/>
-        </td>
-        <td style="vertical-align:top">
-          <md-button class="md-icon-button" aria-label="Add" ng-click="appendValue({'@value':''}, '@type')">
-            <md-icon class="material-icons md-light md-48">add</md-icon>
-          </md-button>
-        </td>
-      </tr>
-      <tr data-ng-repeat="property in getProperties(resource)">
-        <th  style="vertical-align:top ; padding: 8px;">{{property}}</th>
-        <td width="100%">
-          <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext"/>
-        </td>
-        <td style="vertical-align:top">
-          <div class="btn-group">
-            <md-button class="md-icon-button" aria-label="Add" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <md-icon class="material-icons md-light md-48">add</md-icon>
-            </md-button>
-            <ul class="dropdown-menu dropdown-menu-right">
-              <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li>
-              <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td style="vertical-align:top; padding: 8px;">
-          <md-autocomplete 
-             md-selected-item="selectedProperty"
-             md-search-text="searchProperty"
-             md-selected-item-change="addProperty(item.display) ; searchProperty = selectedProperty = null"
-             md-items="item in queryProperties(searchProperty)"
-             md-autoselect="true"
-             md-item-text="item.display"
-             md-min-length="0"
-             md-floating-label="+">
-            <md-item-template>
-              <span md-highlight-text="searchProperty" md-highlight-flags="^i">{{item.display}}</span>
-            </md-item-template>
-            <md-not-found>
-              <a ng-click="addProperty(searchProperty) ; searchProperty = selectedProperty = null">Add Property <i>{{searchText}}</i></a>
-            </md-not-found>
-          </md-autocomplete>
-        </td>
-        <td width="100%">
-        </td>
-      </tr>
-    </table>
-    <md-content data-ng-if="resource['@graph']">
-      <md-toolbar class="md-theme-light">
-        <div class="md-toolbar-tools">
-          <h2 flex md-truncate>Graph</h2>
-          <md-button class="md-icon-button" aria-label="Add" ng-click="appendValue({'@id':''}, '@graph')">
-            <md-icon class="material-icons md-light md-48">add</md-icon>
-          </md-button>
-        </div>
-      </md-toolbar>
-      <json-ld-editor resource="resource['@graph']" property="'@graph'" parent="resource" context="localContext"/>
-    </md-content>
-  </md-card-content>
-</md-card>
-<md-card flex="grow" layout="row" data-ng-if="!isArray(resource) && !isResource(resource, property)">
-  <md-card-title>
-    <div flex="none">
-      <div class="btn-group">
-        <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <md-icon class="material-icons md-light md-48">more_vert</md-icon>
-        </md-button>
-        <ul class="dropdown-menu">
-          <li><a aria-label="Remove" data-ng-click="remove()">
-              <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
-          </a></li>
-          <li><a disabled="{{resource['@type'] !== undefined}}" aria-label="Add Datatype" data-ng-click="addDatatype()">
-              <md-icon class="material-icons md-light md-48">code</md-icon>Set Datatype...
-          </a></li>
-          <li><a disabled="{{resource['@language'] !== undefined}}" aria-label="Set Language" data-ng-click="addLanguage()">
-              <md-icon class="material-icons md-light md-48">language</md-icon>Set Language...
-          </a></li>
-        </ul>
-      </div>
-    </div>
-    <md-card-title-text layout="row">
-      <md-input-container flex="grow" data-ng-show="resource['@value'] !== undefined" md-no-float >
-        <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="resource['@value']"></textarea>
-      </md-input-container>
-      <md-input-container flex="grow" data-ng-show="index !== undefined && resource['@value'] === undefined" md-no-float>
-        <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="parent[property][index]"></textarea>
-      </md-input-container>
-      <md-input-container flex="grow" data-ng-show="index === undefined && resource['@value'] === undefined" md-no-float>
-        <textarea placeholder="Value" aria-label="{{property}}" rows="1"  data-ng-model="parent[property]"></textarea>
-      </md-input-container>
-      <md-autocomplete
-         ng-if="resource['@type'] !== undefined"
-         flex="initial"
-         md-selected-item="resource['@type']"
-         md-search-text="typeSearch"
-         md-items="item in queryDatatypes(typeSearch)"
-         md-autoselect="true"
-         md-item-text="item"
-         md-min-length="0"
-         md-floating-label="Type">
-        <md-item-template>
-          <span md-highlight-text="typeSearch" md-highlight-flags="^i">{{item}}</span>
-        </md-item-template>
-        <md-not-found>
-          <a ng-click="resource['@type'] = typeSearch">Add Datatype <i>{{typeSearch}}</i></a>
-        </md-not-found>
-      </md-autocomplete>
-      <md-autocomplete
-         ng-if="resource['@language'] !== undefined"
-         flex="initial"
-         md-selected-item="resource['@language']"
-         md-search-text="searchLang"
-         md-items="item in queryLanguages(searchLang)"
-         md-autoselect="true"
-         md-item-text="item"
-         md-min-length="0"
-         md-floating-label="Language">
-        <md-item-template>
-          <span md-highlight-text="searchLang" md-highlight-flags="^i">{{item}}</span>
-        </md-item-template>
-        <md-not-found>
-          <a ng-click="resource['@language'] = searchLang">Add Language <i>{{searchLang}}</i></a>
-        </md-not-found>
-      </md-autocomplete>
-  </md-card-title-text>
-</md-card>
-<div data-ng-if="isArray(resource)" layout="{{'column' ? parent === undefined : 'row'}}"  layout-wrap="true">
-  <json-ld-editor flex="initial" data-ng-repeat="r in resource" resource="r" index="$index" property="property" parent="parent" context="localContext"></jsonLdEditor>
-<md-button data-ng-if="parent == null" class="md-icon-button" aria-label="Add Thing">
-  <md-icon class="material-icons md-light md-48">add</md-icon>
-</md-button>
-</div>
-<style>
-  json-ld-editor .well {
-    margin-bottom: 0px;
-  }
-  json-ld-editor .panel-group {
-    margin-bottom: 0px;
-  }
-
-  .md-errors-spacer {
-    display: none;
-  }
-md-input-container {
-    margin-bottom: 0px;
-  }
-  json-ld-editor md-card-title {
-  padding: 4px;
-  padding-top: 10px;
-  }
-  md-input-container {
-  margin-top: 8px;
-  }
-  json-ld-editor md-card-content {
-  padding-bottom: 8px;
-  }
-  json-ld-editor md-autocomplete {
-  min-width: 100px;
-  }
-</style>
-`
-    
-    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes) {
+    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID',
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID) {
         return {
-            template: editor_template,
+            templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
             scope: {
                 resource: '=',
@@ -315,7 +114,11 @@ md-input-container {
                 property: '=',
                 context: '=',
                 index: "=",
+                globalContext: '=',
             },
+            // controller: function($scope) {
+            //     console.log("jsonLdEditor-controller:", $scope.globalContext);
+            // },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
                     scope.openMenu = function(ev) {
@@ -364,7 +167,6 @@ md-input-container {
                             if (resource[uri]) result = resource[uri];
                             if (result == null && scope.inverseContext) {
                                 var contextualized = contextualize(uri, scope.inverseContext);
-                                //console.log(uri, contextualized, resource[contextualized]);
                                 if (resource[contextualized]) result = resource[contextualized];
                             }
                             if (result != null) {
@@ -415,19 +217,31 @@ md-input-container {
                             if (property.startsWith("$$")) continue;
                             if (property.startsWith("@")) continue;
                             if (resource.hasOwnProperty(property) && property != '@id' &&
-                                property != '@graph' && property != "@context")
-                                properties.push(property);
+                                property != '@graph' && property != "@context") {
+                                    properties.push(property);
+                                }
                         }
                         return properties;
                     };
                     scope.appendValue = function(resource, property) {
+                        console.log("localContext at appendValue:", scope.localContext);
+                        console.log("Property that we are constraining:", property);
+                        console.log("Class that we are constraining:", scope.resource["@type"]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
                             scope.addProperty(property);
                         if (!scope.isArray(scope.resource[property])) {
                             var existing = scope.resource[property];
                             scope.resource[property] = [existing];
                         }
+                        console.log("typeof resource:",typeof resource);
+                        if (typeof resource === 'object' && resource !== null) {
+                            if (resource["@value"] === undefined) {
+                                if (resource["@id"] === undefined || resource["@id"] === "") resource["@id"] = makeID();
+                                if (resource["@type"] === undefined || resource["@type"] === "") resource["@type"] = "http://www.w3.org/2002/07/owl#Thing";
+                            }
+                        }
                         scope.resource[property].push(resource);
+                        scope.validateEditor(scope.resource, property);
                     };
                     scope.queryProperties = function(query) {
                         var list = [];
@@ -459,6 +273,27 @@ md-input-container {
                         var results = query ? list.filter( createFilterFor(query) ) : list;
                         return results;
                     };
+                    //not being used
+                    scope.queryDatatypeItems = function(query) {
+                        var datatypes = scope.queryDatatypes(query);
+                        var results = [];
+                        for (datatype of datatypes) {
+                            var item = {};
+                            item["display"] = datatype;
+                            item["value"] = scope.getFullUri(item.display);
+                            results.push(item);
+                        }
+                        return results;
+                    };
+                    /*
+                    scope.evaluateDatatype = function(resource, property, datatype) {
+                        console.log("scope.evaluateDatatype property:", property);
+                        console.log("scope.evaluateDatatype datatype:", datatype);
+                        console.log("scope.evaluateDatatype scope.parent[@type]:", scope.parent["@type"]);
+                        console.log("scope.evaluateDatatype scope.parent[property]:", scope.parent[property]);
+                        console.log("scope.evaluateDatatype scope.globalContext[property]:", scope.globalContext[property]);
+                        scope.validateEditor(scope.parent, scope.property);
+                    };*/
                     scope.queryLanguages = function(query) {
                         var list = [query];
                         function createFilterFor(query) {
@@ -481,7 +316,7 @@ md-input-container {
                         if (!scope.resource[property]) {
                             scope.resource[property] = [];
                         }
-                        
+                        //scope.validateEditor(scope.parent, scope.property);
                     };
                     scope.addDatatype = function() {
                         if (scope.isString(scope.resource)) {
@@ -505,11 +340,96 @@ md-input-container {
                         return scope.parent != null && scope.property != null;
                     };
                     scope.remove = function() {
-                        if (scope.index)
+                        //console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
+                        //console.log("jsonLdEditor remove scope.property:", scope.property);
+                        //console.log("jsonLdEditor remove scope.parent:", scope.parent);
+                        if (scope.index !== undefined)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
                             delete scope.parent[scope.property];
+                        scope.validateEditor(scope.parent, scope.property);
                     };
+                    scope.validateEditor = function(resource, property) {
+                        console.log("jsonLdEditor validateEditor resource:", resource);
+                        console.log("jsonLdEditor validateEditor property:", property);
+                        let constraints = scope.retrieveConstraints(resource, property);
+                        console.log("jsonLdEditor validateEditor constraints:", constraints);
+                        var lengthObject = {};
+                        for (assertion of resource[property]) {
+                            if (assertion["@type"]) {
+                                var datatypeUri = scope.getFullUri(assertion["@type"]);
+                                if (lengthObject[datatypeUri]) {
+                                    lengthObject[datatypeUri]++;
+                                } else {
+                                    lengthObject[datatypeUri] = 1;
+                                }
+                            }
+                        }
+                        console.log("scope.validateEditor lengthObject:", lengthObject);
+                        for (constraint of constraints) {
+                            console.log("scope.validateEditor constraint['@extent']:", constraint["@extent"]);
+                            console.log("scope.validateEditor constraint['@range']:", constraint["@range"]);
+                            console.log("scope.validateEditor constraint['@cardinality']:", constraint["@cardinality"]);
+                            //console.log("scope.validateEditor lengthObject[constraint['@range']]:", lengthObject[constraint["@range"]]);
+                            if (!lengthObject[constraint["@range"]]) lengthObject[constraint["@range"]] = 0;
+                            if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
+                                if (lengthObject[constraint["@range"]] < 1) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
+                                if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
+                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                }
+                            }
+                            //constraint["@extent"]
+                            //constraint["@cardinality"]
+                            //constraint["@range"]
+                            //resource[property]
+                        }
+                    };
+                    scope.getFullUri = function(prefixedUri) {
+                        let uriRegEx = /^(http|https)/i
+                        if (uriRegEx.test(prefixedUri)) {
+                            console.log("scope.getFullUri already a full URI:", prefixedUri);
+                            return prefixedUri;
+                        } else {
+                            console.log("scope.getFullUri a prefixed URI:", prefixedUri);
+                        }
+                        var prefixes = {
+                            'xsd':'http://www.w3.org/2001/XMLSchema#',
+                            'dc':'http://purl.org/dc/elements/1.1/',
+                            'dct':'http://purl.org/dc/terms/',
+                            'rdfs':'http://www.w3.org/2000/01/rdf-schema#'
+                        };
+                        let regexBeginning = /.+?(?=:)/g
+                        let regexEnd = /[^:]+$/g
+                        let suffix = prefixedUri.match(regexEnd);
+                        let prefix = prefixedUri.match(regexBeginning);
+                        if (prefix === null) {
+                            console.log("no matches for prefix in getFullUri");
+                            return prefixedUri;
+                        } else {
+                            return prefixes[prefix[0]] + suffix[0];
+                        }
+                    };
+                    scope.retrieveConstraints = function(resource, property) {
+                        let constraints = [];
+                        for (constraint of scope.globalContext[property]) {
+                            if (resource["@type"] && constraint["@class"] === resource["@type"][0]) {
+                                console.log("constraint pushed");
+                                constraints.push(constraint);
+                            }
+                        }
+                        return constraints;
+                    }
                 });
             }
         };

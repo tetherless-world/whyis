@@ -42,5 +42,6 @@ if __name__ == "__main__":
     manager.add_command("test_agent", commands.TestAgent())
     manager.add_command("load", commands.LoadNanopub())
     manager.add_command("retire", commands.RetireNanopub())
+    manager.add_command("interpret", commands.RunInterpreter())
 
     manager.run()
