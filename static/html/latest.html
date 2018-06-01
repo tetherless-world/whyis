@@ -1,12 +1,17 @@
 <div ng-cloak layout-gt-sm="row" layout="column">
-  <md-toolbar layout="column">
-    <div class="md-toolbar-tools">
-      <h2>Recently Changed</h2>
-    </div>
-    <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
-  </md-toolbar>
 
-  <md-content ng-show="entities" layout-fill layout="column">
+  <section layout="column" flex style="height: 60em; margin-bottom:1em;">
+    <explore flex start-list="[entities[0].about]"></explore>
+  </section>
+
+
+  <md-content flex ng-show="entities" layout-fill layout="column">
+    <md-toolbar layout="column">
+      <div class="md-toolbar-tools">
+        <h2>Recently Changed</h2>
+      </div>
+      <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
+    </md-toolbar>
     <kg-card  ng-show="entities.length > 0" ng-repeat="entity in entities"  compact="true" src="entity.about">
       ({{entity.fromNow}})
     </kg-card>

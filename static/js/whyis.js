@@ -1168,6 +1168,7 @@ $( function() {
 		    });
 		    console.log(response);
 		});
+                scope.getURLs = function(d) { return d.about};
 	    }
 	}
     }]);
@@ -1856,15 +1857,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
     }]);
     
-    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary',
-                              function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary) {
+    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary', 'getView',
+                              function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary, getView) {
 	return {
             scope: {
                 elements : "=?",
                 style : "=?",
                 layout : "=?",
                 title : "=?",
-                start: "@?"
+                start: "@?",
+                startList: "=?"
             },
             templateUrl: ROOT_URL+'static/html/explore.html',
 	    restrict: "E",
@@ -1873,7 +1875,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     $mdSidenav("explore").toggle();
                 }
                 $mdSidenav("explore").close();
-                $mdSidenav("details").close();
+                $mdSidenav("explore_details").close();
                 scope.selectedEntities = null;
                 scope.searchText = null;
                 scope.ROOT_URL = ROOT_URL;
@@ -2100,8 +2102,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 scope.selectedEdges.forEach(function(d) {
                                     updateDetails(d.data());
                                 });
-                                if (scope.selected.length != 0) $mdSidenav("details").open();
-                                if (scope.selected.length == 0) $mdSidenav("details").close();
+                                if (scope.selected.length != 0) $mdSidenav("explore_details").open();
+                                if (scope.selected.length == 0) $mdSidenav("explore_details").close();
                                 console.log(scope.selected.map(function(d) {return d.data()}));
                             });
                         });
@@ -2290,6 +2292,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (scope.start) {
                     incomingOutgoing([scope.start]);
                 }
+                scope.$watch("startList",function() {
+                    incomingOutgoing(scope.startList);
+                });
+                
             }
         }
     }]);
