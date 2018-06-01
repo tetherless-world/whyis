@@ -2567,7 +2567,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     /*
      * The controller - New Instance.
      */
-    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
+    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI, $mdToast) {
         var vm = this;
         var np_id = makeID();
         // let contextString = "";
@@ -2691,6 +2691,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         populateJsonObject(vm.instance);
 
         $scope.globalContext = vm.nanopub['@context'];
+
+        $scope.toast = function(text) {
+            //show simple toast
+            // let parentEl = angular.element(document.getElementsByTagName("BODY")[0])
+            // let parentEl = angular.element(document.body);
+            let toast = $mdToast.simple()
+                .textContent(text)
+                .hideDelay(10000)
+                // .parent(parentEl)
+                .capsule(true)
+                .action("X")
+                .highlightAction(true)
+            $mdToast.show(toast);
+            // $mdToast.showSimple("Hello World")
+            console.log('Is toast working?');
+            console.log("text of toast: ", text);
+        }
     });
     
     /*

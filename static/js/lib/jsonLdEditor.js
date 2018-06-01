@@ -103,8 +103,8 @@
         return contextualize;
     });
 
-    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID) {
+    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID','$mdToast',
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID, $mdToast) {
         return {
             templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
@@ -115,6 +115,7 @@
                 context: '=',
                 index: "=",
                 globalContext: '=',
+                toast: '&',
             },
             // controller: function($scope) {
             //     console.log("jsonLdEditor-controller:", $scope.globalContext);
@@ -374,19 +375,23 @@
                             if (!lengthObject[constraint["@range"]]) lengthObject[constraint["@range"]] = 0;
                             if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
                                 if (lengthObject[constraint["@range"]] < 1) {
-                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    console.log("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    scope.toast("range < 1")
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
-                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    scope.toast("lengthObject[constraint['@range']] != constraint['@cardinality']");
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
-                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    scope.toast("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#minQualifiedCardinality'");
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
-                                    console.log("scope.validateEditor [WARNING]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    scope.toast("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#maxQualifiedCardinality'");
                                 }
                             }
                             //constraint["@extent"]
@@ -395,6 +400,22 @@
                             //resource[property]
                         }
                     };
+                    // scope.showToast = function(text) {
+                    //     //show simple toast
+                    //     // let parentEl = angular.element(document.getElementsByTagName("BODY")[0])
+                    //     let parentEl = angular.element(document.body);
+                    //     let toast = $mdToast.simple()
+                    //         .textContent(text)
+                    //         .hideDelay(10000)
+                    //         .parent(parentEl)
+                    //         .capsule(true)
+                    //         .action("X")
+                    //         .highlightAction(true)
+                    //     $mdToast.show(toast);
+                    //     // $mdToast.showSimple("Hello World")
+                    //     console.log('Is toast working?');
+                    //     console.log("text of toast: ", text);
+                    // }
                     scope.getFullUri = function(prefixedUri) {
                         let uriRegEx = /^(http|https)/i
                         if (uriRegEx.test(prefixedUri)) {
