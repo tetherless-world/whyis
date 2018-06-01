@@ -4,8 +4,7 @@
     <explore flex start-list="[entities[0].about]"></explore>
   </section>
 
-
-  <md-content flex ng-show="entities" layout-fill layout="column">
+  <div flex layout-fill layout="column">
     <md-toolbar layout="column">
       <div class="md-toolbar-tools">
         <h2>Recently Changed</h2>
@@ -15,5 +14,5 @@
     <kg-card  ng-show="entities.length > 0" ng-repeat="entity in entities"  compact="true" src="entity.about">
       ({{entity.fromNow}})
     </kg-card>
-  </md-content>
+  </div>
 </div>
