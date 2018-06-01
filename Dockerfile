@@ -11,4 +11,4 @@ RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_M
 RUN sh install.sh
 
 # NOTE: Second puppet apply is a fix for Jetty8 Puppet Bug (see Issue#37)
-ENTRYPOINT puppet apply /tmp/install_whyis.pp && puppet apply /tmp/install_whyis.pp
+ENTRYPOINT puppet apply /tmp/install_whyis.pp && puppet apply /tmp/install_whyis.pp && bash
