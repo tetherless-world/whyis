@@ -153,6 +153,7 @@
       {% endif %}
       {% if this is defined %}
       NODE_URI = "{{this.identifier | safe}}";
+      ATTRIBUTES = {{ this | include('attributes') | safe }};
       DESCRIPTION = {{this.description().graph.serialize(format="json-ld") | safe}};
       NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
       if (NODE.length > 0)  NODE = NODE[0];

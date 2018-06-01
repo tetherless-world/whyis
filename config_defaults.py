@@ -134,6 +134,18 @@ Config = dict(
                 }
             }
             '''
+        ),
+        importer.LinkedData(
+            prefix = LOD_PREFIX+'/dbpedia/ontolgy/',
+            url = 'http://dbpedia.org/ontology/%s',
+            headers={'Accept':'text/turtle'},
+            format='turtle',
+        ),
+        importer.LinkedData(
+            prefix = LOD_PREFIX+'/dbpedia/class/',
+            url = 'http://dbpedia.org/class/%s',
+            headers={'Accept':'text/turtle'},
+            format='turtle',
         )
     ],
     inferencers = {

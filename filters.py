@@ -74,6 +74,44 @@ def configure(app):
             params['initBindings'] = values
         return [x.asdict() for x in graph.query(query, **params)]
 
+    @app.template_filter('attributes')
+    def attributes(query, this):
+        result = {
+            "@id" : this.identifier,
+            'description' : [labelize({'@id':property, "value": value},key="@id") for property, value in app.get_summary(this)],
+            'type' : [labelize({"@id":x.identifier},key='@id') for x in this.description()[app.NS.RDF.type]],
+            "attributes" : collections.defaultdict(lambda : dict(values=[]))
+        }
+        result['description'] = sorted(result['description'], key=lambda x: len(x['value']))
+        thumbnail = this.description().value(app.NS.foaf.depiction)
+        if thumbnail is not None:
+            result['thumbnail'] = thumbnail.identifier
+        labelize(result, key="@id")
+        attrs = query_filter(query, values=dict(this=this.identifier))
+        for attr in attrs:
+            result['attributes'][attr['property']]['@id'] = attr['property']
+            result['attributes'][attr['property']]['values'].append(attr)
+        for attr in result['attributes'].values():
+            values = set(lang_filter([x['value'] for x in attr['values'] if x['value'] != result['label']]))
+            attr['values'] = [x for x in attr['values'] if x['value'] in values]
+            labelize(attr, key='@id')
+            for value in attr['values']:
+                if isinstance(value['value'], URIRef):
+                    value['@id'] = value['value']
+                    labelize(value, key='@id', label_key='value')
+                if 'unit' in value:
+                    labelize(vaue, key='unit', label_key='unit_label')
+                del value['property']
+        result['attributes'] = [x for x in result['attributes'].values() if len(x['values']) > 0]
+        return result
+
+    @app.template_filter('include')
+    def include(entity, view='view'):
+        if not isinstance(entity, app.Entity):
+            entity = app.get_resource(entity)
+        result, status, headers = app.render_view(entity, view=view)
+        return result
+        
     @app.template_filter('probquery')
     def probquery(select):
         return '''select distinct 

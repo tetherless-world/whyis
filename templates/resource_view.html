@@ -1,19 +1,10 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
-{% block subtitle %}
-{% if this.description().value(ns.RDF.type) %} a
-  {% for superClass in this.description()[ns.RDF.type] %}
-  {% if loop.index > 1 and loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}{% if loop.revindex > 2 %}, {% endif %}
-{% endfor %}
-{% endif %}
-{% endblock %}
 {% block content %}
 <div class="row" >
   <div class="col-md-8" >
-    {{ summary_panel(this.description()) }}
-    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
+    <section md-whiteframe="2" layout="column" style="min-height: 40em; margin-bottom:1em;">
       <explore flex start="{{this.identifier}}"></explore>
     </section>
     {{ content(this.description()) }}
@@ -27,10 +18,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    {% if this.description().value(ns.foaf.depiction) %}
-    <img src="{{this.description().value(ns.foaf.depiction).identifier}}" class="img-thumbnail"></img>
-    {% endif %}
-    {{ facts_panel(this.description()) }}
+    <kg-card src="'{{this.identifier}}'"/>
   </div>
 
 {% endblock %}

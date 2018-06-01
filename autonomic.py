@@ -413,49 +413,59 @@ class SETLr(UpdateChangeService):
         db_graph = rdflib.ConjunctiveGraph(store=query_store)
         db_graph.NS = self.app.NS
         setlr.actions[whyis.sparql] = db_graph
+        setlr.actions[whyis.NanopublicationManager] = self.app.nanopub_manager
+        setlr.actions[whyis.Nanopublication] = self.app.nanopub_manager.new
         setl_graph = i.graph
         #setlr.run_samples = True
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
-        for new_np, assertion, orig in  self.app.db.query('''select distinct ?np ?assertion ?original_uri where {
+        to_retire = []
+        for new_np, assertion, orig in self.app.db.query('''select distinct ?np ?assertion ?original_uri where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion;
         prov:wasGeneratedBy/a ?setl;
         prov:wasQuotedFrom ?original_uri.
 }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
             old_np_map[orig] = assertion
-            self.app.nanopub_manager.retire(new_np)
+            to_retire.append(new_np)
+            if len(to_retire) > 100:
+                self.app.nanopub_manager.retire(*to_retire)
+                to_retire = []
+        self.app.nanopub_manager.retire(*to_retire)
             #print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
-            out = resources[output_graph]
-            out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
-            #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
-            nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
-            nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
-            nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
+            if setl_graph.resource(output_graph)[rdflib.RDF.type:whyis.NanopublicationCollection]:
+                self.app.nanopub_manager.publish(resources[output_graph])
+            else:
+                out = resources[output_graph]
+                out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
+                #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
+                nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
+                nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
+                nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
+    
+                mappings = {}
 
-            mappings = {}
-
-            to_publish = []
-            triples = 0
-            for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
-                self.explain(new_np, i, o)
-                orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
-                if len(orig) == 0:
-                    continue
-                orig = orig[0]
-                print orig
-                if isinstance(orig, rdflib.URIRef):
-                    new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
-                    if orig in old_np_map:
-                        new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
-                print "Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion))
-                to_publish.append(new_np)
+                to_publish = []
+                triples = 0
+                for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
+                    self.explain(new_np, i, o)
+                    orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
+                    if len(orig) == 0:
+                        continue
+                    orig = orig[0]
+                    print orig
+                    if isinstance(orig, rdflib.URIRef):
+                        new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
+                        if orig in old_np_map:
+                            new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
+                    print "Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion))
+                    to_publish.append(new_np)
             
-            #triples += len(new_np)
-            #if triples > 10000:
-            self.app.nanopub_manager.publish(*to_publish)
+                #triples += len(new_np)
+                #if triples > 10000:
+                self.app.nanopub_manager.publish(*to_publish)
             print 'Published'
 
 class Deductor(UpdateChangeService):

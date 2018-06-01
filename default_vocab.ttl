@@ -363,6 +363,7 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
   whyis:hasIncoming "incoming_resource.json";
+  whyis:hasAttributes "attributes.json";
   whyis:cardView "card.html";
   whyis:hasExplore "explore.html";
   whyis:hasDescribe "describe.json";
@@ -445,3 +446,5 @@ whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
   dc:identifier "outgoing".
 whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
   dc:identifier "incoming".
+whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "attributes".

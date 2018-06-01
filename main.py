@@ -916,9 +916,9 @@ construct {
                 else:
                     fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
                     return resource.this().graph.serialize(format=fmt)
-
+                
         views = {}
-        def render_view(resource):
+        def render_view(resource, view=None):
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(
@@ -935,8 +935,7 @@ construct {
                 config=self.config,
                 hasattr=hasattr,
                 set=set))
-            view = None
-            if 'view' in request.args:
+            if view is None and 'view' in request.args:
                 view = request.args['view']
             # 'view' is the default view
             fileid = resource.value(self.NS.whyis.hasFileID)
@@ -984,6 +983,7 @@ construct {
             # if available, replace with class view
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
+        self.render_view = render_view
 
         def render_nanopub(data, code, headers=None):
             if data is None:

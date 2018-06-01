@@ -1791,8 +1791,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         };
         return getSummary;
     }]);
-                
-    app.filter('kglink', function() {
+
+    app.service('generateLink', function() {
         return function(uri, view) {
             uri = window.encodeURIComponent(uri);
             var result = ROOT_URL+"about?";
@@ -1801,6 +1801,56 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return result;
         };
     });
+    
+    app.filter('kglink', function(generateLink) {
+        return generateLink;
+    });
+
+    app.service("getView", [ '$http', '$q', function($http, $q) {
+        var promises = {};
+        function getView(uri, view, responseType) {
+            if (!promises[uri]) promises[uri] = {};
+            if (!promises[uri][view]) {
+                promises[uri][view] = $q.defer();
+                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType:'json'})
+                    .then(function(response) {
+                        promises[uri][view].resolve(response.data);
+                    });
+            }
+            return promises[uri][view].promise;
+        };
+        return getView;
+    }]);
+
+    app.directive("kgCard", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary', 'getView',
+                             function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary, getView) {
+	return {
+            scope: {
+                src : "=?",
+                entity : "=?",
+                compact : "=?",
+            },
+            transclude: true,
+            templateUrl: ROOT_URL+'static/html/card.html',
+	    restrict: "E",
+            link: function(scope, element, attrs) {
+                scope.cache = {};
+                if (scope.entity == null) {
+                    if (scope.src == null) {
+                        scope.src = NODE_URI;
+                    }
+                    if (scope.src == NODE_URI) {
+                        scope.entity = ATTRIBUTES;
+                    } else {
+                        getView(scope.src, 'attributes')
+                            .then(function(attributes) {
+                                scope.entity = attributes;
+                            });
+                    }
+                }
+            }
+        }
+    }]);
     
     app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary',
                               function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary) {
@@ -1819,6 +1869,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     $mdSidenav("explore").toggle();
                 }
                 $mdSidenav("explore").close();
+                $mdSidenav("details").close();
                 scope.selectedEntities = null;
                 scope.searchText = null;
                 scope.ROOT_URL = ROOT_URL;
@@ -2014,6 +2065,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     };
 
                 scope.selected = [];
+                scope.selectedNodes = [];
+                scope.selectedEdges = [];
                 
                 scope.cy = cytoscape({
                     container: $(element).find('.graph'),
@@ -2038,9 +2091,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         cy.on('select unselect', function(e){
                             scope.$apply(function() {
                                 scope.selected =  scope.cy.$(':selected');
-                                scope.selected.forEach(function(d) {
+                                scope.selectedNodes =  scope.cy.$('node:selected');
+                                scope.selectedEdges =  scope.cy.$('edge:selected');
+                                scope.selectedEdges.forEach(function(d) {
                                     updateDetails(d.data());
                                 });
+                                if (scope.selected.length != 0) $mdSidenav("details").open();
+                                if (scope.selected.length == 0) $mdSidenav("details").close();
                                 console.log(scope.selected.map(function(d) {return d.data()}));
                             });
                         });

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block styles %}
+{% endblock %}
+{% block title %}{{g.get_label(this)}}{% endblock %}
+{% block body %}
+<kg-card src="'{{this.identifier}}'" compact="{{'true' if 'compact' in args else 'false'}}"/>
+{% endblock %}

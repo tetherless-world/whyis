@@ -46,32 +46,10 @@
     </div>
   </md-toolbar>
   <md-content flex layout="column" layout-fill>
-    <div flex layout="row">
+    <div flex layout="row" layout-fill>
       <div flex class="graph" ></div>
-      <div flex="20" n>
-        <md-list>
-          <md-list-item flex>
-            <div class="md-list-item-text">
-              <h4><em ng-if="thisElement.data().probability">p={{thisElement.data().probability | number}}</em> <span data-ng-repeat="type in thisElement.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
-              <p>{{thisElement.data().summary}}</p>
-              <md-progress-linear
-                 ng-show="thisElement.data().loading - thisElement.data().loaded > 0"
-                 md-mode="determinate"
-                 value="{{(100.0*thisElement.data().loaded)/(thisElement.data().loaded)}}"></md-progress-linear>
-            </div>
-          </md-list-item>
-          <md-subheader >Selected Nodes</md-subheader>
-          <md-list-item ng-repeat="element in selected" class="md-3-line md-long-text" ng-href="{{ element.data().uri | kglink:'view'}}" Visit {{element.data().label}}>
-            <div class="md-list-item-text">
-              <h3>{{element.data().label}}</h3>
-              <h4><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></h4>
-              <p>{{element.data().summary}}</p>
-              <md-progress-linear
-                 ng-show="element.data().loading - element.data().loaded > 0"
-                 md-mode="determinate"
-                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
-            </div>
-          </md-list-item>
+      <div flex="40" ng-show="selected.length > 0">
+        <md-list >
         </md-list>
       </div>
     </div>
@@ -101,6 +79,31 @@
             </md-slider-container>
           </md-list-item>
         </md-list>
+      </md-content>
+    </md-sidenav>
+    <md-sidenav class="md-sidenav-right" md-component-id="details"
+                md-disable-backdrop md-whiteframe="4">
+      <md-content layout-fill layout="column">
+        <md-subheader ng-show="selectedNodes.length > 0" >Nodes</md-subheader>
+        <kg-card  ng-show="selectedNodes.length > 0" ng-repeat="element in selectedNodes"  compact="true" src="element.data().uri"></kg-card>
+        <md-subheader ng-show="selectedEdges.length > 0" >Edges</md-subheader>
+        <div ng-show="selectedEdges.length > 0" ng-repeat="element in selectedEdges">
+          <md-card >
+            <md-card-header>
+              <md-card-header-text>
+                <span class="md-title"><a ng-href="{{element.data().source | kglink : 'view' }}" ng-bind="element.source().data().label"/> {{element.data().label}} <a ng-href="{{element.data().target | kglink : 'view' }}" ng-bind="element.target().data().label"/></span>
+              </md-card-header-text>
+            </md-card-header>
+            <md-card-content>
+              <div class="md-caption"><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></div>
+              <p>{{element.data().summary}}</p>
+              <md-progress-linear
+                 ng-show="element.data().loading - element.data().loaded > 0"
+                 md-mode="determinate"
+                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
+            </md-card-content>
+          </md-card>
+          </div>
       </md-content>
     </md-sidenav>
   </md-content>
