@@ -1,4 +1,5 @@
 <md-card data-ng-if="!isArray(resource) && isResource(resource, property)">
+    <md-chips ng-if="chips.length > 0" ng-model="chips"></md-chips>
     <md-card-title layout="row">
         <div flex="none">
             <div class="btn-group">
@@ -100,10 +101,14 @@
             </md-toolbar>
             <json-ld-editor resource="resource['@graph']" property="'@graph'" parent="resource" context="localContext" global-context="globalContext"/>
         </md-content>
+        <!-- <md-chips ng-if="chips.length > 0" ng-model="chips">
+            <md-chip>Test chip 1</md-chip>
+        </md-chips> -->
     </md-card-content>
 </md-card>
 <md-card flex="grow" layout="row" data-ng-if="!isArray(resource) && !isResource(resource, property)">
     <md-card-title>
+        <md-chips ng-if="chips.length > 0" ng-model="chips"></md-chips>
         <div flex="none">
             <div class="btn-group">
                 <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -161,6 +166,9 @@
                 </md-not-found>
             </md-autocomplete>
         </md-card-title-text>
+        <!-- <md-chips ng-if="chips.length > 0" ng-model="chips">
+            <!-- <md-chip>Test chip 2</md-chip> -->
+        <!-- </md-chips> -->
 </md-card>
 <div data-ng-if="isArray(resource)" layout="{{'column' ? parent === undefined : 'row'}}" layout-wrap="true">
     <json-ld-editor flex="initial" data-ng-repeat="r in resource" resource="r" index="$index" property="property" parent="parent"
@@ -170,7 +178,16 @@
             <md-icon class="material-icons md-light md-48">add</md-icon>
         </md-button>
 </div>
+
 <style>
+    #toast-container{
+        position: fixed;
+        
+        left: 0;
+        bottom: 0;
+        
+        
+    }
     json-ld-editor .well {
         margin-bottom: 0px;
     }

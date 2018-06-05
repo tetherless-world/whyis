@@ -115,11 +115,9 @@
                 context: '=',
                 index: "=",
                 globalContext: '=',
-                toast: '&',
+                // toast: '&',
+                // showHideToast2: '&',
             },
-            // controller: function($scope) {
-            //     console.log("jsonLdEditor-controller:", $scope.globalContext);
-            // },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
                     scope.openMenu = function(ev) {
@@ -342,8 +340,9 @@
                     };
                     scope.remove = function() {
                         //console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
-                        //console.log("jsonLdEditor remove scope.property:", scope.property);
-                        //console.log("jsonLdEditor remove scope.parent:", scope.parent);
+                        console.log("jsonLdEditor remove scope.property:", scope.property);
+                        console.log("jsonLdEditor remove scope.parent:", scope.parent);
+                        console.log("jsonLdEditor remove scope.index:", scope.index);
                         if (scope.index !== undefined)
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
@@ -376,22 +375,38 @@
                             if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
                                 if (lengthObject[constraint["@range"]] < 1) {
                                     console.log("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.toast("range < 1")
+                                    scope.addChip("range < 1")
+                                    scope.addChip("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
+                                    // scope.toast("scope.validateEditor [WARNING 1]:")
+                                    // scope.toaster("scope.validateEditor [WARNING 1]:")
+                                    scope.showHideToast()
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.toast("lengthObject[constraint['@range']] != constraint['@cardinality']");
+                                    scope.addChip("lengthObject[constraint['@range']] != constraint['@cardinality']");
+                                    scope.addChip("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
+                                    // scope.toast("scope.validateEditor [WARNING 2]:")
+                                    // scope.toaster("scope.validateEditor [WARNING 2]:")
+                                    scope.showHideToast()
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.toast("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#minQualifiedCardinality'");
+                                    scope.addChip("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#minQualifiedCardinality'");
+                                    scope.addChip("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
+                                    // scope.toast("scope.validateEditor [WARNING 3]:")
+                                    // scope.toaster("scope.validateEditor [WARNING 3]:")
+                                    scope.showHideToast()
                                 }
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.toast("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#maxQualifiedCardinality'");
+                                    scope.addChip("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#maxQualifiedCardinality'");
+                                    scope.addChip("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
+                                    // scope.toast("scope.validateEditor [WARNING 4]:")
+                                    // scope.toaster("scope.validateEditor [WARNING 4]:")
+                                    scope.showHideToast()
                                 }
                             }
                             //constraint["@extent"]
@@ -400,22 +415,40 @@
                             //resource[property]
                         }
                     };
-                    // scope.showToast = function(text) {
-                    //     //show simple toast
+
+                    //testing different toast
+                    scope.showHideToast = function () {
+                        $mdToast.show({
+                                        template  : '<md-toast id="toast-container"><span flex>Warning!</span><md-button ng-click="closeToast()">close</md-button></md-toast>',
+                                        hideDelay : 0,
+                                        parent    : angular.element(document.getElementById('toast-container')),
+                                        controller: "toastController",
+                                        // position  : 'bottom right',
+                                      });
+                        console.log("showHideToast here!")
+                    }
+                    // scope.closeToast = function(){
+                    //     $mdToast.hide();
+                    // }
+
+                    // scope.toaster = function(text) {
+                    //     //show simple toast message
+                
                     //     // let parentEl = angular.element(document.getElementsByTagName("BODY")[0])
                     //     let parentEl = angular.element(document.body);
-                    //     let toast = $mdToast.simple()
+                    //     let toastMessage = $mdToast.simple()
                     //         .textContent(text)
                     //         .hideDelay(10000)
                     //         .parent(parentEl)
                     //         .capsule(true)
                     //         .action("X")
                     //         .highlightAction(true)
-                    //     $mdToast.show(toast);
+                    //     $mdToast.show(toastMessage);
                     //     // $mdToast.showSimple("Hello World")
-                    //     console.log('Is toast working?');
-                    //     console.log("text of toast: ", text);
+                    //     console.log('Is toaster working?');
+                    //     console.log("text of toaster: ", text);
                     // }
+
                     scope.getFullUri = function(prefixedUri) {
                         let uriRegEx = /^(http|https)/i
                         if (uriRegEx.test(prefixedUri)) {
@@ -451,10 +484,25 @@
                         }
                         return constraints;
                     }
+
+                    //add message to md-chips element on jsonLdEditor.html
+                    //md-chips uses array
+                    scope.addChip = function(chip){
+                        scope.chips ? (scope.chips.indexOf(chip) === -1 && scope.chips.push(chip)) : scope.chips = [chip]
+                        console.log('scope.chips', scope.chips);
+                    }
+
+
                 });
             }
         };
     }]);
+
+    module.controller('toastController', function($scope, $mdToast){
+        $scope.closeToast = function(){
+            $mdToast.hide()
+        }    
+    })
 
     module.factory('RecursionHelper', ['$compile', function($compile){
         return {
