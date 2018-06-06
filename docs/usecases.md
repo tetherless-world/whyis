@@ -70,39 +70,96 @@ These stories are about accessing and displaying knowledge to human and computat
 <dl>
 <dt>Custom Views</dt> 
 <dd>
-  As a knowledge graph developer, I can create custom web or data (API) views for my users so that they can see the most relevant information about a node of interest.
+
+> As a knowledge graph developer, I can create custom web or data (API) views for my users so that they can see the most relevant information about a node of interest.
+
+Developers of Whyis knowledge graphs can create custom views for nodes by both the *rdf:type* of the node and the `view` URL parameter. 
+These views are looked up as templates and rendered using the [Jinja2 templating engine](http://jinja.pocoo.org/docs/2.10).
+This is configured in a "vocab" turtle file, where viewed classes and view properties are defined.
+For instance, to define a default view on the class *sio:Protein*, see below. 
+For all nodes that are of type *sio:Protein*, when a user visits the node page, the `protein_view.html` template will be rendered.
+
+```turtle
+sio:Protein whyis:hasView "protein_view.html".
+```
+
+If different views for a type are desired, developers can define those custom views. For instance, if the code below is added to the vocabulary, when the page for a given protein is given the parameter `view=structure`, the `protein\_structure\_view.html` template will be used.
+Other templates can be used for the same view, if the same predicate is used to link types to the desired template.
+In BioKG, this capability is used to provide biology-specific incoming and outgoing link results.
+For more details, please see the [view documentation](http://tetherless-world.github.io/whyis/views).
+
+```turtle
+ex:structureView rdfs:subPropertyOf whyis:hasView;
+    dcterms:identifier "structure".
+sio:Protein ex:structureView "protein_structure_view.html".
+```
 </dd>
 <dt>Explanation</dt> 
 <dd>
-  As a knowledge graph developer, I can query for the source of a displayed fragment of knowledge so that the UI can provide justification for it to the user.
+  
+> As a knowledge graph developer, I can query for the source of a displayed fragment of knowledge so that the UI can provide justification for it to the user.
+
+Through the use of nanopublications, developers can provide explanation for all assertions
+made in the graph by accessing the linked provenance graph when a user asks for more details.
 </dd>
 <dt>Search</dt> 
 <dd>
-  As a user I can search for graph nodes based on their label or the text descriptions associated with them so that I can find nodes of interest.
+  
+> As a user I can search for graph nodes based on their label or the text descriptions associated with them so that I can find nodes of interest.
+
+Search is supported, and provides an entity resolution-based autocomplete and a full text search page.
 </dd>
 </dl>
 
 ## Knowledge Inference
-These stories are about expanding the knowledge graph based on knowledge already included in the graph
+These stories are about expanding the knowledge graph based on knowledge already included in the graph.
+
+Knowledge Inference in Whyis is performed by a suite of *Agents*, each performing the analogue to a single rule in traditional deductive inference. 
+
 <dl>
-<dt>Standard Inferencing</dt> 
-  <dd>
-    As a knowledge graph developer, I can add deductive inferencing support for standard entailment regimes, like RDFS, OWL 2 profiles (DL, RL, QL, and EL) so that I can query over the deductive closure of the graph as well as the explicit inferences.
-  </dd>
+<dt>Custom Inference</dt>
+<dd>
+
+> As a knowledge graph developer, I can write custom algorithms that listen for changes of interest in the graph and produce arbitrary knowledge output based on those changes.
+  
+The agent framework provides custom inference capability, and is composed of a SPARQL query that serves as the *rule body* and a python function that serves has the *head*.
+The agent is invoked when new nanopublications are added to the knowledge graph that match the SPARQL query defined by the agent.
+Developers can choose to run this query either on just the single nanopublication that has been added, or on the entire graph.
+Whole-graph queries will need to exclude query matches that would cause the agent to be invoked over and over.
+This can take some consideration for complex cases, but  excluding similar knowledge to the expected output or nodes that have already had the agent run on them will often suffice.
+The function *head* is invoked on each query match.
+This function can produce unqualified RDF or full nanopublications.
+The agent superclass will assign some basic provenance and publication information related to the given inference activity, but developers can expand on this by overriding the *explain()* function.  
+</dd>
 <dt>Custom Rules</dt>
   <dd>
-    As a knowledge graph developer, I can add custom deductive rules so that I can expand the knowledge graph using domain-specific rule expansion knowledge.
+  
+> As a knowledge graph developer, I can add custom deductive rules so that I can expand the knowledge graph using domain-specific rule expansion knowledge.
+
+Whyis  provides support for custom deductive rules using the autonomic.Deductor class.
+Developers can write rules by providing a \textit{construct} clause as the head and a \textit{where} clause as the body.
+  </dd>
+<dt>Standard Inferencing</dt> 
+  <dd>
+> As a knowledge graph developer, I can add deductive inferencing support for standard entailment regimes, like RDFS, OWL 2 profiles (DL, RL, QL, and EL) so that I can query over the deductive closure of the graph as well as the explicit inferences.
+  
+Whyis provides customized Deductor instances that are collected up into OWL 2 partial profiles (with an eye towards near-term completion of them) for OWL 2 EL, RL, and QL.
+
   </dd>
 <dt>NLP Support</dt>
 <dd>
-  As a knowledge graph developer, I can add NLP algorithms that read text changes in the graph and produce structured knowledge extracted from that text.
+
+> As a knowledge graph developer, I can add NLP algorithms that read text changes in the graph and produce structured knowledge extracted from that text.
+
+Default inference agent types include some NLP support, including entity detection using noun phrase extraction, basic entity resolution against other knowledge graph nodes, and Inverse Document Frequency computation for resolved nodes.
 </dd>
-<dt>Custom Inference</dt>
-<dd>
-  As a knowledge graph developer, I can write custom algorithms that listen for changes of interest in the graph and produce arbitrary knowledge output based on those changes.
-</dd>
+
 <dt>Truth Maintenance</dt> 
 <dd>
-  As a knowledge graph system, I apply generalized truth maintenance to all inferred knowledge, regardless of source, so that revisions to the graph maintain consistency with itself.
+
+> As a knowledge graph system, I apply generalized truth maintenance to all inferred knowledge, regardless of source, so that revisions to the graph maintain consistency with itself.
+  
+Truth maintenance is performed through derivation tracing. When a nanopublication is retired from the knowledge graph, either through revision or retirement, all nanopublications that are transitively derived from (*prov:wasDerivedFrom*) the original nanopublication are also retired.
+When a revision occurs, the inclusion of a new nanopublication  triggers inference agents to be run on its content, creatiing a re-calculation cascade in the case of revisions.
 </dd>
 <dl>
