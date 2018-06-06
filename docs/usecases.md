@@ -13,7 +13,7 @@ These stories are about acquiring knowledge from external sources and users.
 <dt>Semantic Extract, Transform, and Load (SETL)</dt> 
 <dd>
 
->  As a knowledge curator, I can reproducibly transform data into a common knowledge representation so that knowledge can be automatically incorporated from external sources.
+<blockquote>As a knowledge curator, I can reproducibly transform data into a common knowledge representation so that knowledge can be automatically incorporated from external sources.</blockquote>
 
 Semantic ETL is realized using the [Semantic Extract, Transform, and Load-r (SETLr)](https://github.com/tetherless-world/setlr) to support conversion of tabular data, JSON, XML, HTML, and other custom formats (through embedded python) into RDF suitable for the knowledge graph, as well as transforming existing RDF into a better desired representation.
 By loading SETL scripts (written in RDF) into the knowledge graph, the SETLr inference agent is triggered, which runs the script and imports the generated RDF.
