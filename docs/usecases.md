@@ -53,7 +53,7 @@ This can be invoked on-demand, so that metadata can be loaded from one SETL scri
 
 > As a user exploring the knowledge graph, I can comment on nodes and fragments of knowledge to add plain text notes to the graph, so that my feedback can be used to improve the graph.
 
-Users can provide *commentary on nodes and nanopublications through the default view. 
+Users can provide commentary on nodes and nanopublications through the default view. 
 This view can be re-used and customized by developers. 
 Nanopublications can be replied to, which themselves become nanopublications.
 The text of the commentary is interpreted as [semantic markdown](https://github.com/tetherless-world/markdown-rdfa) in order to extract potential RDF from the commentary.
