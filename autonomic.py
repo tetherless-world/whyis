@@ -416,7 +416,7 @@ class SETLr(UpdateChangeService):
         setlr.actions[whyis.NanopublicationManager] = self.app.nanopub_manager
         setlr.actions[whyis.Nanopublication] = self.app.nanopub_manager.new
         setl_graph = i.graph
-        #setlr.run_samples = True
+        setlr.run_samples = True
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
