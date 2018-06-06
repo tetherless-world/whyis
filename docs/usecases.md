@@ -141,6 +141,7 @@ Developers can write rules by providing a \textit{construct} clause as the head 
   </dd>
 <dt>Standard Inferencing</dt> 
   <dd>
+  
 > As a knowledge graph developer, I can add deductive inferencing support for standard entailment regimes, like RDFS, OWL 2 profiles (DL, RL, QL, and EL) so that I can query over the deductive closure of the graph as well as the explicit inferences.
   
 Whyis provides customized Deductor instances that are collected up into OWL 2 partial profiles (with an eye towards near-term completion of them) for OWL 2 EL, RL, and QL.
