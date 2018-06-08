@@ -737,6 +737,28 @@ $( function() {
         return getLabel;
     }]);
 
+    app.filter("label", ["$http", '$q', function($http, $q) {
+        function label(uri) {
+            if (getLabel.labels[uri] === undefined) {
+                var localPart = uri.split("#").filter(function(d) {return d.length > 0});
+                localPart = localPart[localPart.length-1];
+                localPart = localPart.split("/").filter(function(d) {return d.length > 0});
+                localPart = localPart[localPart.length-1];
+                label.labels[uri] = {"label": localPart};
+                $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
+                    .then(function(data, status, headers, config) {
+                        if (status == 200) {
+                            var label = data.data;
+                            getLabel.labels[uri].label = data.data;
+                        }
+                    });
+            }
+            return getLabel.labels[uri];
+        };
+        label.labels = {};
+        return label;
+    }]);
+    
     app.factory("Nanopub", ["$http", "Graph", "Resource", function($http, Graph, Resource) {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');

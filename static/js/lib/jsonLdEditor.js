@@ -103,8 +103,45 @@
         return contextualize;
     });
 
-    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID) {
+    module.service("getView", [ '$http', '$q', function($http, $q) {
+        var promises = {};
+        function getView(uri, view, responseType) {
+            if (!promises[uri]) promises[uri] = {};
+            if (!promises[uri][view]) {
+                promises[uri][view] = $q.defer();
+                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType:'json'})
+                    .then(function(response) {
+                        promises[uri][view].resolve(response.data);
+                    });
+            }
+            return promises[uri][view].promise;
+        };
+        return getView;
+    }]);
+
+    module.service('resolveEntity', ["$http", function($http) {
+        var promises = {};
+	/**
+	 * Search for nodes.
+	 */
+	function resolveEntity (query) {
+            if (!promises[query]) {
+                promises[query] = $q.defer();
+                $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
+                    .then(function(response) {
+                        promises[query].resolve(response.data.map(function(hit) {
+                            hit.value = angular.lowercase(hit.label);
+                            return hit;
+                        }));
+                    });
+                return promises[query].promise;
+            }
+	}
+        return resolveEntity;
+    }]);
+    
+    module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID','resolveEntity',
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID,resolveEntity) {
         return {
             templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
@@ -140,6 +177,34 @@
                         if (typeof variable === 'string' || variable instanceof String) return false;
                         return typeof variable === 'Array' || variable instanceof Array || variable.constructor === Array;
                     };
+
+                    scope.querySearch = function(text) {
+                        console.log(text);
+                        var results = [];
+                        var resultMap = {};
+                        [scope.context, scope.globalContext].forEach(function(A) {
+                            for (var entry in A) {
+                                if (entry.startsWith("$$")) continue;
+                                if (entry.startsWith("@")) continue;
+
+                                console.log(entry);
+                                if (angular.lowercase(entry).indexOf(angular.lowercase(text)) != -1 && !resultMap[entry]) {
+                                    resultMap[entry] = true;
+                                    results.push(entry);
+                                }
+                            }
+                        });
+                        resolveEntity(text).then(function(hits) {
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                }
+                            });
+                        });
+                        console.log(results);
+                        return results;
+                    };
                     function labelize(uri) {
                         if (uri == null || uri.length == 0) return uri;
                         var localPart = uri.split("#").filter(function(d) {return d.length > 0});
@@ -149,6 +214,7 @@
                         localPart = localPart.replace("_"," ");
                         return decodeURIComponent(localPart);
                     }
+                    
                     scope.getLabel = function(resource) {
                         if (scope.isArray(resource)) return null;
                         if (scope.isString(resource)) return labelize(resource);
