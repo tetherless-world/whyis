@@ -2759,34 +2759,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
 
-        //testing different toast
-        // $scope.showHideToast2 = function () {
-        //     $mdToast.show({
-        //                     template  : '<md-toast>test</md-toast>',
-        //                     hideDelay : 0,
-        //                     position  : 'bottom right',
-        //                     // action    : "X",
-        //                     // parent    : angular.element(document.body)
-        //                   });
-        //     console.log("showHideToast2 is here!");
-        // }
         
-        // $scope.toast = function(text) {
-        //     //show simple toast
-        //     // let parentEl = angular.element(document.getElementsByTagName("BODY")[0])
-        //     let parentEl = angular.element(window.document.body);
-        //     let toast = $mdToast.simple()
-        //         .textContent(text)
-        //         .hideDelay(10000)
-        //         .parent(parentEl)
-        //         .capsule(true)
-        //         .action("X")
-        //         .highlightAction(true)
-        //     $mdToast.show(toast);
-        //     // $mdToast.showSimple("Hello World");
-        //     console.log('Is toast working?');
-        //     console.log("text of toast: ", text);
-        // }
     });
     
     /*
@@ -2797,7 +2770,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             restrict: 'EA',
             scope: false,
             link: function(data){
-                console.log('context is: ', data.globalContext );
+                console.log('global context is: ', data.globalContext );
             }
         }
     });
