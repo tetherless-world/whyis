@@ -34,7 +34,7 @@ Vagrant.configure(2) do |config|
        vb.customize ["modifyvm", :id, "--cpus", "2"]
        vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
-       vb.customize ["modifyvm", :id, "--vram", "256"]       
+       vb.customize ["modifyvm", :id, "--vram", "256"]
   end
   config.vm.network "private_network", ip: "192.168.33.36"
   config.ssh.forward_agent = true

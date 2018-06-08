@@ -1,4 +1,4 @@
-<div layout="column" layout-fill>
+<div layout="column" layout-fill >
   <md-toolbar flex="initial">
     <div class="md-toolbar-tools" layout="row">
       <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
@@ -45,13 +45,7 @@
   </md-toolbar>
   <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
   <md-content flex layout="column" layout-fill>
-    <div flex layout="row" layout-fill>
-      <div flex class="graph" ></div>
-      <div flex="40" ng-show="selected.length > 0">
-        <md-list >
-        </md-list>
-      </div>
-    </div>
+    <div flex class="graph" layout-fill ></div>
     <md-sidenav class="md-sidenav-left" md-component-id="explore"
                 md-disable-backdrop md-whiteframe="4">
       <md-content layout-fill layout="column">
