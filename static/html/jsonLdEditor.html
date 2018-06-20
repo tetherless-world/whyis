@@ -14,12 +14,12 @@
           </md-button>
           <ul class="dropdown-menu">
             <li>
-              <a aria-label="Add Type" data-ng-click="appendValue({'@id':''},'@type'); ">
+              <a aria-label="Add Type" data-ng-click="appendValue({'@id':''},'@type',$event); ">
                 <md-icon class="material-icons md-light md-48">add</md-icon>Add Type
               </a>
             </li>
             <li>
-              <a aria-label="Remove" data-ng-click="remove()">
+              <a aria-label="Remove" data-ng-click="remove($event)">
                 <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
               </a>
             </li>
@@ -57,8 +57,9 @@
                   </md-chips>
                 </td>
             </tr>
-            <tr data-ng-repeat="property in getProperties(resource)">
-                <th  style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
+            <!-- add ng-addclass bolow -->
+            <tr data-ng-repeat="property in getProperties(resource) track by $index">
+                <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
                 <td width="100%">
                     <json-ld-editor resource="resource[property]" property="property" parent="resource" context="localContext" global-context="globalContext"/>
                 </td>
@@ -68,8 +69,8 @@
                             <md-icon class="material-icons md-light md-48">add</md-icon>
                         </md-button>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property)">Add a thing</a></li>
-                            <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property)">Add a value</a></li>
+                            <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':''}, property, $event)">Add a thing</a></li>
+                            <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property, $event)">Add a value</a></li>
                         </ul>
                     </div>
                 </td>
@@ -145,7 +146,7 @@
           </md-button>
           <ul class="dropdown-menu">
             <li>
-              <a aria-label="Remove" data-ng-click="remove()">
+              <a aria-label="Remove" data-ng-click="remove($event)">
                 <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
               </a>
             </li>
@@ -164,7 +165,7 @@
       </div>
 </div>
 <div data-ng-if="isArray(resource)" layout="{{'column' ? parent === undefined : 'row'}}" layout-wrap="true">
-    <json-ld-editor flex="auto" data-ng-repeat="r in resource" resource="r" index="$index" property="property" parent="parent"
+    <json-ld-editor flex="auto" data-ng-repeat="r in resource track by $index" resource="r" index="$index" property="property" parent="parent"
         context="localContext" global-context="globalContext">
         </jsonLdEditor>
         <md-button data-ng-if="parent == null" class="md-icon-button" aria-label="Add Thing">

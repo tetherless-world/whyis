@@ -152,7 +152,6 @@
                 context: '=',
                 index: "=",
                 globalContext: '=',
-                // toast: '&',
                 // showHideToast2: '&',
             },
             compile: function(element) {
@@ -288,7 +287,8 @@
                         }
                         return properties;
                     };
-                    scope.appendValue = function(resource, property) {
+                    scope.appendValue = function(resource, property, $event) {
+                        console.log('appendvalue $event:', $event)
                         console.log("localContext at appendValue:", scope.localContext);
                         console.log("Property that we are constraining:", property);
                         console.log("Class that we are constraining:", scope.resource["@type"]);
@@ -306,7 +306,10 @@
                             }
                         }
                         scope.resource[property].push(resource);
-                        scope.validateEditor(scope.resource, property);
+                        //get jquery lite event target 
+                        let targetEl = angular.element($event.target);
+                        console.log('targetEl that I am putting into the validateEditor()', targetEl)
+                        scope.validateEditor(scope.resource, property, targetEl);
                     };
                     scope.queryProperties = function(query) {
                         var list = [];
@@ -404,8 +407,13 @@
                     scope.isRemovable = function() {
                         return scope.parent != null && scope.property != null;
                     };
-                    scope.remove = function() {
+
+                    // add in $event!
+                    scope.remove = function($event) {
                         //console.log("jsonLdEditor remove scope.globalContext:", scope.globalContext);
+                        console.log('what is $event', $event);
+                        //get event target jquery lite
+                        let targetEl = angular.element($event.target);
                         console.log("jsonLdEditor remove scope.property:", scope.property);
                         console.log("jsonLdEditor remove scope.parent:", scope.parent);
                         console.log("jsonLdEditor remove scope.index:", scope.index);
@@ -413,9 +421,14 @@
                             scope.parent[scope.property].splice(scope.index, 1);
                         else 
                             delete scope.parent[scope.property];
-                        scope.validateEditor(scope.parent, scope.property);
+                        scope.validateEditor(scope.parent, scope.property, targetEl);
                     };
-                    scope.validateEditor = function(resource, property) {
+                    scope.validateEditor = function(resource, property, targetEl) {
+                        //what is color of background?
+                        let backgroundColor = targetEl.closest('tr').css('background-color');
+                        console.log('background-color is:', backgroundColor);
+                        //reset background color if already yellow
+                        targetEl.closest('tr').css('background-color', 'white');
                         console.log("jsonLdEditor validateEditor resource:", resource);
                         console.log("jsonLdEditor validateEditor property:", property);
                         let constraints = scope.retrieveConstraints(resource, property);
@@ -454,46 +467,31 @@
                             if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
                                 if (lengthObject[constraint["@range"]] < 1) {
                                     console.log("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    // scope.addChip("range < 1")
-                                    // scope.addChip("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
-                                    // scope.toast("scope.validateEditor [WARNING 1]:")
-                                    // scope.toaster("scope.validateEditor [WARNING 1]:")
-                                    scope.addChip(`Must have exactly 1 or more of ${constraint["@propertyLabel"]}`)
-                                    // scope.showHideToast("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
                                     scope.showHideToast(`Must have exactly 1 or more of ${constraint["@propertyLabel"]}`)
                                 }
                                 //must have the number specified in cardinality (no more no less)
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    // scope.addChip("lengthObject[constraint['@range']] != constraint['@cardinality']");
-                                    // scope.addChip("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
-                                    // scope.toast("scope.validateEditor [WARNING 2]:")
-                                    // scope.toaster("scope.validateEditor [WARNING 2]:")
-                                    scope.addChip(`Must have exactly ${constraint['@cardinality']} of ${constraint["@propertyLabel"]}`)
-                                    // scope.showHideToast("lengthObject[constraint['@range']] != constraint['@cardinality']")
                                     scope.showHideToast(`Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`)
                                     console.log('Warning 2, lengthObject is:', lengthObject);
+                                    console.log('Warning 2 property is:', property)
+                                    
+                                    //background color yellow for row if it's not meeting this constraint
+                                    let closest = targetEl.closest('tr');
+                                    console.log('closest is: ', closest);
+                                    closest.css('background-color','yellow');
                                 }
                                 //must have at least the number that's in cardinality 
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    // scope.addChip("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#minQualifiedCardinality'");
-                                    // scope.addChip("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
-                                    scope.addChip(`Doesn't satisfy minimum amount for ${constraint['@propertyLabel']}, must be ${constraint["@cardinality"]} or more`)
                                     scope.showHideToast(`Doesn't satisfy minimum amount of ${constraint['@propertyLabel']}`)
                                 }
                                 //must have no more than this amount
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    // scope.addChip("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#maxQualifiedCardinality'");
-                                    // scope.addChip("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED")
-                                    // scope.toast("scope.validateEditor [WARNING 4]:")
-                                    // scope.toaster("scope.validateEditor [WARNING 4]:")
-                                    // scope.showHideToast("constraint['@extent'] === 'http://www.w3.org/2002/07/owl#maxQualifiedCardinality'");
-                                    scope.addChip(`Doesn't satisfy maximum amount for ${constraint['@propertyLabel']}, must be ${constraint["@cardinality"]} or less`)
                                     scope.showHideToast(`Gone over maximum (${constraint["@cardinality"]}) amount of ${constraint['@propertyLabel']}`)
                                 }
                             }
@@ -504,7 +502,7 @@
                         }
                     };
 
-                    //testing different toast
+                    //toast
                     scope.showHideToast = function (message) {
                         $mdToast.show({
                                         template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">close</md-button></md-toast>`,
@@ -513,7 +511,6 @@
                                         controller: "toastController",
                                         // position  : 'bottom right',
                                       });
-                        console.log("showHideToast here!")
                     }
                     scope.showDialog = function(){
                         //put more info here from toast or chip
@@ -569,16 +566,6 @@
                         }
                         return constraints;
                     }
-
-                    //add message to md-chips element on jsonLdEditor.html
-                    //md-chips uses array
-                    scope.addChip = function(chip){
-                        //if same chip exists nothing happens else adds to array, if chip doesn't exist create it
-                        scope.chips ? ( scope.chips.indexOf(chip) === -1 && scope.chips.push(chip) ) : scope.chips = [chip]
-                        console.log('scope.chips', scope.chips);
-                    }
-
-
                 });
             }
         };
