@@ -9,6 +9,7 @@ import importer
 
 import autonomic
 import agents.nlp as nlp
+import agents.hermit as hermit
 import rdflib
 from datetime import datetime
 
@@ -51,6 +52,9 @@ Config = dict(
     DEFAULT_ANONYMOUS_READ = False,
 
     site_header_image = '/static/images/random_network.png',
+
+    # JAVA
+    JAVA_CLASSPATH = '/apps/whyis/jars',
     
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
@@ -192,6 +196,7 @@ Config = dict(
             where = "\t?resource ?p ?o .\n\t?p owl:inverseOf ?inverseProperty .", 
             construct="?o ?inverseProperty ?resource .",
             explanation="The properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."),
+        "Consistency Check" : hermit.ConsistencyCheck()
         #"Some Values From": autonomic.Deductor(resource="?resource", prefixes="", where = "", construct="", explanation=""),
         #"Property Path Closure": autonomic.Deductor(resource="?resource", prefixes="", where = "", construct="", explanation=""),
 #        "HTML2Text" : nlp.HTML2Text(),
