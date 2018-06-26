@@ -29,7 +29,7 @@ public class HermiTAgent {
         String msg = String.valueOf(hermit.isConsistent());
         msg = Instant.now().toString() + "::: " + msg + "\n";
         System.out.print(msg);
-        Files.write(Paths.get("/apps/hermit/hermit.log"), msg.getBytes());
+        Files.write(Paths.get("/apps/hermit.log"), msg.getBytes());
         return String.valueOf(hermit.isConsistent());
     }
 }

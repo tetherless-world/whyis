@@ -97,7 +97,7 @@ Config = dict(
     ADMIN_EMAIL_RECIPIENTS = [],
     db_defaultGraph = LOD_PREFIX + '/',
 
-    JAVA_CLASSPATH = "{{cookiecutter.JAVA_CLASSPATH}}",
+    java_classpath = "{{cookiecutter.location}}/jars",
 
     admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',

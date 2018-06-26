@@ -9,6 +9,5 @@
     "version": "0.1",
     "packages": "",
     "SECRET_KEY":"",
-    "SECURITY_PASSWORD_SALT" : "",
-    "JAVA_CLASSPATH" : "/apps/{{cookiecutter.project_slug}}/jars"
+    "SECURITY_PASSWORD_SALT" : ""
 }

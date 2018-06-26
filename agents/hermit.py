@@ -29,7 +29,7 @@ class ConsistencyCheck(autonomic.UpdateChangeService):
         return '''select ?resource where { ?resource <http://rdfs.org/sioc/ns#content> [].}'''
 
     def process(self, i, o):
-        javabridge.start_vm(class_path=javabridge.JARS+["/apps/whyis/jars/whyis-java.jar:/apps/whyis/jars/HermiT.jar"],run_headless=True)
+        javabridge.start_vm(class_path=javabridge.JARS+["/apps/whyis/jars/whyis-java-jar-with-dependencies.jar"],run_headless=True)
         try:
             javabridge.run_script('edu.rpi.tw.whyis.HermiTAgent.reason();',
                 dict(greetee='world'))

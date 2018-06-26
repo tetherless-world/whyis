@@ -205,3 +205,9 @@ exec { "create_knowledge_namespace":
   cwd => "/apps/whyis",
 }
 
+exec { "compile_java": 
+  command => "mvn clean compile assembly:single -PwhyisProfile",
+  creates => "/apps/whyis/java_compile.log",
+  user => "whyis",
+  cwd => "/apps/whyis/whyis-java",
+}
