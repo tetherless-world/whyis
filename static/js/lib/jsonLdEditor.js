@@ -291,7 +291,7 @@
                         console.log('appendvalue $event:', $event)
                         console.log("localContext at appendValue:", scope.localContext);
                         console.log("Property that we are constraining:", property);
-                        console.log("Class that we are constraining:", scope.resource["@type"]);
+                        console.log("Class that we are constraining(scope.resource['@type']):", scope.resource["@type"]);
                         if (scope.resource[property] === undefined || scope.resource[property] === null)
                             scope.addProperty(property);
                         if (!scope.isArray(scope.resource[property])) {
@@ -306,7 +306,7 @@
                             }
                         }
                         scope.resource[property].push(resource);
-                        //get jquery lite event target 
+                        //get jquery lite event target to color 'tr' element
                         let targetEl = angular.element($event.target);
                         console.log('targetEl that I am putting into the validateEditor()', targetEl)
                         scope.validateEditor(scope.resource, property, targetEl);
@@ -423,11 +423,19 @@
                             delete scope.parent[scope.property];
                         scope.validateEditor(scope.parent, scope.property, targetEl);
                     };
-                    scope.validateEditor = function(resource, property, targetEl) {
+                    scope.validateEditor = function(resource, property, targetEl, eventTarget) {
+                        //when md-autocomplete calls validateEditor, targetEl is not defined and can only pass event.target
+                        if (!targetEl && eventTarget) {
+                            targetEl = angular.element(eventTarget);
+                            console.log("changing targetEl with eventTarget:", eventTarget)
+                        }
+                        // what is targetEl?
+                        console.log("validateEditor targetEl is:", targetEl)
                         //what is color of background?
                         let backgroundColor = targetEl.closest('tr').css('background-color');
                         console.log('background-color is:', backgroundColor);
-                        //reset background color if already yellow
+                        
+                        //reset background color 
                         targetEl.closest('tr').css('background-color', 'white');
                         console.log("jsonLdEditor validateEditor resource:", resource);
                         console.log("jsonLdEditor validateEditor property:", property);
@@ -440,19 +448,29 @@
                             // if (!assertion.hasOwnProperty('@type')) {assertion['@type'] = 'xsd:string'}
 
                             console.log("constraints[0]['@range']:", constraints[0]['@range']);
-                            console.log('assertion:',assertion)
-                            if (assertion["@type"]) {
+                            console.log('assertion:',assertion) //added {@type: []} to appendValue 
+                            console.log("isArray(assertion['@type']) is:", scope.isArray(assertion['@type']));
+                            //{ @type: [] } now will go thru after checking if it's an array.
+                            //this if statement works with "has condition"                    do this first then check datatype
+                            //checking @type for datatype (xsd:string) and doesn't have property
+                            if (assertion["@type"] && (!scope.isArray(assertion['@type'])) && (constraints[0]['@propertyLabel'] !== property) ) { 
                                 var datatypeUri = scope.getFullUri(assertion["@type"]);
-                                if (lengthObject[datatypeUri]) {
-                                    lengthObject[datatypeUri]++;
-                                } else {
-                                    lengthObject[datatypeUri] = 1;
+                                console.log("datatypeUri", datatypeUri)
+                                // check if the type matches the range then add up the number of times
+                                if ( datatypeUri === constraints[0]['@range'] ) {
+                                    if (lengthObject[datatypeUri]) {
+                                        lengthObject[datatypeUri]++;
+                                    } else {
+                                        lengthObject[datatypeUri] = 1;
+                                    }
                                 }
-                                //for has combining algorithm needs to check property label vs property then can create length obj
+                            //works for combining algorithm
+                            //for has combining algorithm needs to check property label vs property then can create length obj (assertion['type']==="")    
                             } else if ( constraints[0]['@propertyLabel'] === property ) {
-                                
+                                //adding up the lengthObject
                                 ( lengthObject.hasOwnProperty(constraints[0]['@range']) ) ? lengthObject[constraints[0]['@range']]++ : lengthObject[constraints[0]['@range']] = 1;
-                            }
+                            }                 
+                            
                         }
                         console.log("scope.validateEditor lengthObject:", lengthObject);
 
@@ -480,19 +498,20 @@
                                     //background color yellow for row if it's not meeting this constraint
                                     let closest = targetEl.closest('tr');
                                     console.log('closest is: ', closest);
-                                    closest.css('background-color','yellow');
+                                    closest.css('background-color','lightyellow');
                                 }
                                 //must have at least the number that's in cardinality 
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Doesn't satisfy minimum amount of ${constraint['@propertyLabel']}`)
+                                    scope.showHideToast(`Doesn't satisfy minimum amount for "${constraint['@propertyLabel']}"`)
                                 }
                                 //must have no more than this amount
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Gone over maximum (${constraint["@cardinality"]}) amount of ${constraint['@propertyLabel']}`)
+                                    targetEl.closest('tr').css('background-color', 'lightyellow');
+                                    scope.showHideToast(`Gone over maximum (${constraint["@cardinality"]}) for "${constraint['@propertyLabel']}"`);
                                 }
                             }
                             //constraint["@extent"]
@@ -505,11 +524,10 @@
                     //toast
                     scope.showHideToast = function (message) {
                         $mdToast.show({
-                                        template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">close</md-button></md-toast>`,
+                                        template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">X</md-button></md-toast>`,
                                         hideDelay : 0,
                                         parent    : angular.element(document.getElementById('toast-container')),
                                         controller: "toastController",
-                                        // position  : 'bottom right',
                                       });
                     }
                     scope.showDialog = function(){
@@ -534,6 +552,8 @@
                         let regexEnd = /[^:]+$/g
                         let suffix = prefixedUri.match(regexEnd);
                         let prefix = prefixedUri.match(regexBeginning);
+                        console.log("suffix is:",suffix);
+                        console.log("prefix is:",prefix);
                         if (prefix === null) {
                             console.log("no matches for prefix in getFullUri");
                             return prefixedUri;
