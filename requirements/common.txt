@@ -31,3 +31,4 @@ keepalive
 filedepot
 bibtexparser
 python-magic
+javabridge

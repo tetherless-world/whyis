@@ -11,7 +11,6 @@ from base64 import b64encode
 import os
 import datetime
 import rdflib
-import subprocess
 from nanopub import Nanopublication
 from cookiecutter.main import cookiecutter
 import tempfile
@@ -30,10 +29,6 @@ class Configure(Command):
     
     def run(self, extension_directory=None, extension_name=None):
         # Create project from the cookiecutter-pypackage/ template
-        print 'Compiling and packaging JAVA classes...'
-        subprocess.call('mvn -f /apps/whyis/whyis-java/pom.xml clean compile assembly:single', shell=True)
-        print 'Copying JAVA packages to your configuration...'
-        subprocess.call('cp /apps/whyis/whyis-java/target/whyis-java-0.0.1-SNAPSHOT-jar-with-dependencies.jar /apps/whyis/config-template/\{\{cookiecutter.location\}\}/jars/whyis-java.jar', shell=True)
         extra_context = { 'SECRET_KEY':rando(), 'SECURITY_PASSWORD_SALT': rando() }
         cookiecutter('config-template/', extra_context=extra_context)
 
