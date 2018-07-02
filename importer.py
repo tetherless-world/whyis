@@ -33,6 +33,8 @@ def repair(brokenjson):
 class Importer:
 
     min_modified = 0
+
+    import_once=False
     
     def last_modified(self, entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
@@ -94,7 +96,7 @@ class Importer:
 class LinkedData (Importer):
     def __init__(self, prefix, url, headers=None, access_url=None,
                  format=None, modified_headers=None, postprocess_update=None,
-                 postprocess=None, min_modified=0):
+                 postprocess=None, min_modified=0, import_once=False):
         self.prefix = prefix
         self.url = url
         self.detect_url = url.split("%s")[0]
@@ -102,6 +104,7 @@ class LinkedData (Importer):
         self.modified_headers = modified_headers
         self.format = format
         self.min_modified = min_modified
+        self.import_once = import_once
         if access_url is not None:
             self.access_url = access_url
         else:

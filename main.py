@@ -116,6 +116,8 @@ NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
 NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
+NS.sd = rdflib.Namespace('http://www.w3.org/ns/sparql-service-description#')
+NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
@@ -486,7 +488,7 @@ construct {
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
                 if modified is None or async is False:
                     self.run_importer(entity)
-                else:
+                elif not importer.import_once:
                     print "Type of modified is",type(modified)
                     self.run_importer.delay(entity)
                     
@@ -533,7 +535,7 @@ construct {
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
             if not self._can_edit(np_uri):
                 raise Unauthorized()
-        self.nanopub_manager.retire(np_uri)
+            self.nanopub_manager.retire(np_uri)
         
                 
     def add_files(self, uri, files, upload_type=NS.pv.File):
@@ -690,7 +692,7 @@ construct {
                 #    return None
             else:
                 return None
-            
+
         extensions = {
             "rdf": "application/rdf+xml",
             "jsonld": "application/ld+json",
@@ -712,6 +714,9 @@ construct {
             "application/n-quads" : "nquads",
             "application/n-triples" : "nt",
             "application/rdf+json" : "json",
+            "text/html" : None,
+            "application/xhtml+xml" : None,
+            "application/xhtml" : None,
             None: "json-ld"
         }
 
@@ -869,14 +874,16 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
         @self.route('/home', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
         @conditional_login_required
         def view(name=None, format=None, view=None):
             self.db.store.nsBindings = {}
+            print format, name, view, extensions
+            content_type = None
             if format is not None:
                 if format in extensions:
                     content_type = extensions[format]
@@ -906,16 +913,26 @@ construct {
                 return '', 204
             elif request.method == 'GET':
                 resource = self.get_resource(entity)
-            
-                content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
+
+                if content_type is None:
+                    content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
-                htmls = set(['application/xhtml','text/html'])
-                if 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
+                fmt = sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)
+                print fmt
+                if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
+                elif fmt in dataFormats:
+                    print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
+                    output_graph = ConjunctiveGraph()
+                    result, status, headers = render_view(resource, view='describe')
+                    output_graph.parse(data=result, format="json-ld")
+                    print len(output_graph)
+                    return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
+                #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
-                    fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
-                    return resource.this().graph.serialize(format=fmt)
+                    return render_view(resource)
                 
         views = {}
         def render_view(resource, view=None, args=None):

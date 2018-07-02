@@ -387,6 +387,7 @@ whyis:hasConstraints dc:identifier "constraints";
 owl:Ontology rdfs:label "Ontology";
     whyis:hasOutgoing "outgoing_ontology.json";
     whyis:hasIncoming "incoming_ontology.json";
+    whyis:hasDescribe "describe_ontology.json";
     whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;

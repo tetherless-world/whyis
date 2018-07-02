@@ -1018,8 +1018,7 @@ $( function() {
                 $scope.getLabel = getLabel;
                 $scope.canEdit = function(nanopub) {
                     //console.log( USER.uri, nanopub.resource.pubinfo);
-                    return true;//USER.admin == "True"; ||
-                        //nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
+                    return USER.uri != null && (USER.admin == "True" || nanopub.contributor == USER.uri);
                 };
                 //$scope.$watch('resource', function(newval) {
                 //    if ($scope.about != null) {
@@ -2328,55 +2327,57 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
      */
     app.service('instanceFacetService', function(FacetResultHandler, $http) {
 
-        /* Public API */
+        function instanceFacetService(type, constraints) {
+            /* Public API */
+            var result = {
+            };
 
-        // Get the results from DBpedia based on the facet selections.
-        this.getResults = getResults;
-        // Get the facet definitions.
-        this.getFacets = getFacets;
-        // Get the facet options.
-        this.getFacetOptions = getFacetOptions;
+            // Get the results from DBpedia based on the facet selections.
+            result.getResults = getResults;
+            // Get the facet definitions.
+            result.getFacets = getFacets;
+            // Get the facet options.
+            result.getFacetOptions = getFacetOptions;
 
-        /* Implementation */
+            /* Implementation */
+            
+            // Facet definitions
+            // 'facetId' is a "friendly" identifier for the facet,
+            //  and should be unique within the set of facets.
+            // 'predicate' is the property that defines the facet (can also be
+            //  a property path, for example).
+            // 'name' is the title of the facet to show to the user.
+            // If 'enabled' is not true, the facet will be disabled by default.
+            var facets = [
+                // Text search facet for names
+                {
+                    facetId: 'label',
+                    predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
+                    enabled: true,
+                    name: 'Label',
+                    type: 'text'
+                },
+                // Text search facet for descriptions
+                {
+                    facetId: 'description',
+                    predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
+                    enabled: true,
+                    name: 'Description',
+                    type: 'text'
+                },
+                // Text search facet for types
+                {
+                    facetId: 'type',
+                    predicate:'rdf:type/rdfs:subClassOf*',
+                    specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
+                    preferredLang: "en",
+                    enabled: true,
+                    type: 'basic',
+                    name: 'Type'
+                }
+            ];
 
-        // Facet definitions
-        // 'facetId' is a "friendly" identifier for the facet,
-        //  and should be unique within the set of facets.
-        // 'predicate' is the property that defines the facet (can also be
-        //  a property path, for example).
-        // 'name' is the title of the facet to show to the user.
-        // If 'enabled' is not true, the facet will be disabled by default.
-        var facets = [
-            // Text search facet for names
-            {
-                facetId: 'label',
-                predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
-                enabled: true,
-                name: 'Label',
-                type: 'text'
-            },
-            // Text search facet for descriptions
-            {
-                facetId: 'description',
-                predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
-                enabled: true,
-                name: 'Description',
-                type: 'text'
-            },
-            // Text search facet for types
-            {
-                facetId: 'type',
-                predicate:'rdf:type/rdfs:subClassOf*',
-                specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
-                preferredLang: "en",
-                enabled: true,
-                type: 'basic',
-                name: 'Type'
-            }
-        ];
-
-        $http.get(ROOT_URL+'about',{ params: {uri:NODE_URI,view:'constraints'}, responseType:'json'})
-            .then(function(response) {
+            function processConstraints(response) {
                 response.data.forEach(function (d) {
                     d.name = d.propertyLabel;
                     if (d.rangeLabel && d.name.indexOf(d.rangeLabel) == -1)
@@ -2385,242 +2386,258 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (d.range)
                         d.facetId += " " + d.range;
                     d.predicate = '<'+d.property+'>';
+                    if (d.propertyType == "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                        d.predicate = d.predicate + "/rdf:type";
+                    }
+                    if (d.range) {
+                        d.specifier = '?value rdfs:subClassOf* <'+d.range + ">";
+                    }
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
                     facets.push(d);
                 });
-            });
+            }
+            if (constraints != null) processConstraints({data: constraints});
+            else {
+                $http.get(ROOT_URL+'about', { params: {uri:type,view:'constraints'}, responseType:'json'})
+                    .then(processConstraints);
+            }
+            
+            var endpointUrl = ROOT_URL+'sparql';
 
-        var endpointUrl = ROOT_URL+'sparql';
+            // We are building a faceted search for classes.
+            var rdfClass = '<'+type+'>';
 
-        // We are building a faceted search for classes.
-        var rdfClass = '<'+NODE_URI+'>';
-
-        // The facet configuration also accept a 'constraint' option.
-        // The value should be a valid SPARQL pattern.
-        // One could restrict the results further, e.g., to writers in the
-        // science fiction genre by using the 'constraint' option:
-        //
-        // var constraint = '?id <http://dbpedia.org/ontology/genre> <http://dbpedia.org/resource/Science_fiction> .';
-        //
-        // Note that the variable representing a result in the constraint should be "?id".
-        //
-        // 'rdfClass' is just a shorthand constraint for '?id a <rdfClass> .'
-        // Both rdfClass and constraint are optional, but you should define at least
-        // one of them, or you might get bad results when there are no facet selections.
-        var facetOptions = {
-            endpointUrl: endpointUrl, // required
-            rdfClass: rdfClass, // optional
-            constraint: 'FILTER (!ISBLANK(?id))\n\
+            // The facet configuration also accept a 'constraint' option.
+            // The value should be a valid SPARQL pattern.
+            // One could restrict the results further, e.g., to writers in the
+            // science fiction genre by using the 'constraint' option:
+            //
+            // var constraint = '?id <http://dbpedia.org/ontology/genre> <http://dbpedia.org/resource/Science_fiction> .';
+            //
+            // Note that the variable representing a result in the constraint should be "?id".
+            //
+            // 'rdfClass' is just a shorthand constraint for '?id a <rdfClass> .'
+            // Both rdfClass and constraint are optional, but you should define at least
+            // one of them, or you might get bad results when there are no facet selections.
+            var facetOptions = {
+                endpointUrl: endpointUrl, // required
+                rdfClass: rdfClass, // optional
+                constraint: 'FILTER (!ISBLANK(?id))\n\
 FILTER ( !strstarts(str(?id), "bnode:") )\n\
 ',
-            preferredLang : 'en' // required
-        };
+                preferredLang : 'en' // required
+            };
 
-        var prefixes =
-            ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n' +
-            ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
-            ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
-            ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
-            ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n' +
-            ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
+            var prefixes =
+                ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n' +
+                ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
+                ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
+                ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
+                ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n' +
+                ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
+            
+            // This is the result query, with <RESULT_SET> as a placeholder for
+            // the result set subquery that is formed from the facet selections.
+            // The variable names used in the query will be the property names of
+            // the reusulting mapped objects.
+            // Note that ?id is the variable used for the result resource here,
+            // as in the constraint option.
+            // Variable names with a '__' (double underscore) in them will results in
+            // an object. I.e. here ?work__id, ?work__label, and ?work__link will be
+            // combined into an object:
+            // writer.work = { id: '[work id]', label: '[work label]', link: '[work link]' }
+            var queryTemplate =
+                ' SELECT * WHERE {\n' +
+                '  <RESULT_SET> \n' +
+                ' }';
 
-        // This is the result query, with <RESULT_SET> as a placeholder for
-        // the result set subquery that is formed from the facet selections.
-        // The variable names used in the query will be the property names of
-        // the reusulting mapped objects.
-        // Note that ?id is the variable used for the result resource here,
-        // as in the constraint option.
-        // Variable names with a '__' (double underscore) in them will results in
-        // an object. I.e. here ?work__id, ?work__label, and ?work__link will be
-        // combined into an object:
-        // writer.work = { id: '[work id]', label: '[work label]', link: '[work link]' }
-        var queryTemplate =
-        ' SELECT * WHERE {\n' +
-        '  <RESULT_SET> \n' +
-        '  OPTIONAL { \n'+
-        '   ?id rdfs:label|skos:prefLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name> ?label . \n' +
-        '  }\n' +
-        '  OPTIONAL { \n' +
-        '   ?id skos:definition|rdfs:comment|dc:description:dc:abstract|dc:summary ?description . \n' +
-        '  }\n' +
-        '  OPTIONAL { \n' +
-        '   ?id foaf:depiction|<http://schema.org/image> ?depiction . \n' +
-        '  }\n' +
-        '  OPTIONAL { \n' +
-        '   ?id rdf:type/rdfs:subClassOf* ?type__id . \n' +
-        '   FILTER (!ISBLANK(?type__id) && !strstarts(str(?type__id), "bnode:") )' +
-        '   OPTIONAL { \n' +
-        '    ?type__id rdfs:label ?type__label . \n' +
-        '   }\n' +
-        '  }\n' +
-        ' }';
+            var resultOptions = {
+                prefixes: prefixes, // required if the queryTemplate uses prefixes
+                queryTemplate: queryTemplate, // required
+                resultsPerPage: 10, // optional (default is 10)
+                pagesPerQuery: 1, // optional (default is 1)
+                paging: true // optional (default is true), if true, enable paging of the results
+            };
 
-        var resultOptions = {
-            prefixes: prefixes, // required if the queryTemplate uses prefixes
-            queryTemplate: queryTemplate, // required
-            resultsPerPage: 10, // optional (default is 10)
-            pagesPerQuery: 1, // optional (default is 1)
-            paging: true // optional (default is true), if true, enable paging of the results
-        };
-
-        // FacetResultHandler is a service that queries the endpoint with
-        // the query and maps the results to objects.
-        var resultHandler = new FacetResultHandler(endpointUrl, resultOptions);
-
-        // This function receives the facet selections from the controller
-        // and gets the results from DBpedia.
-        // Returns a promise.
-        function getResults(facetSelections) {
-            // If there are variables used in the constraint option (see above),
-            // you can also give getResults another parameter that is the sort
-            // order of the results (as a valid SPARQL ORDER BY sequence, e.g. "?id").
-            // The results are sorted by URI (?id) by default.
-            return resultHandler.getResults(facetSelections).then(function(pager) {
-                // We'll also query for the total number of results, and load the
-                // first page of results.
-                return pager.getTotalCount().then(function(count) {
-                    pager.totalCount = count;
-                    return pager.getPage(0);
-                }).then(function() {
-                    return pager;
+            // FacetResultHandler is a service that queries the endpoint with
+            // the query and maps the results to objects.
+            var resultHandler = new FacetResultHandler(endpointUrl, resultOptions);
+            
+            // This function receives the facet selections from the controller
+            // and gets the results from DBpedia.
+            // Returns a promise.
+            function getResults(facetSelections) {
+                // If there are variables used in the constraint option (see above),
+                // you can also give getResults another parameter that is the sort
+                // order of the results (as a valid SPARQL ORDER BY sequence, e.g. "?id").
+                // The results are sorted by URI (?id) by default.
+                return resultHandler.getResults(facetSelections).then(function(pager) {
+                    // We'll also query for the total number of results, and load the
+                    // first page of results.
+                    return pager.getTotalCount().then(function(count) {
+                        pager.totalCount = count;
+                        return pager.getPage(0);
+                    }).then(function() {
+                        return pager;
+                    });
                 });
-            });
-        }
+            }
 
-        // Getter for the facet definitions.
-        function getFacets() {
-            return facets;
+            // Getter for the facet definitions.
+            function getFacets() {
+                return facets;
+            }
+            
+            // Getter for the facet options.
+            function getFacetOptions() {
+                return facetOptions;
+            }
+            return result;
         }
-
-        // Getter for the facet options.
-        function getFacetOptions() {
-            return facetOptions;
-        }
+        return instanceFacetService;
     });
-
+    
     /*
      * The controller.
      */
-    app.controller('InstanceFacetController', function($scope, FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
-        var vm = this;
+    app.directive("instanceFacets", [
+        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http',
+        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
+	    return {
+                scope: {
+                    type : "=",
+                    constraints : "=?",
+                    title : "=?"
+                },
+                transclude : {
+                    "actions" : "?actions"
+                },
+                templateUrl: ROOT_URL+'static/html/instanceFacets.html',
+	        restrict: "E",
+                link: function(scope, element, attrs) {
+                    var vm = scope;
+                    
+                    var updateId = 0;
 
-        var updateId = 0;
-
-        // page is the current page of results.
-        vm.page = [];
-        vm.pageNo = 0;
-        vm.getPage = getPage;
-        vm.makeArray = makeArray;
-        vm.getLabel = getLabel;
-
-        vm.disableFacets = disableFacets;
-
-        // Listen for the facet events
-        // This event is triggered when a facet's selection has changed.
-        $scope.$on('sf-facet-constraints', updateResults);
-        // This is the initial configuration event
-        var initListener = $scope.$on('sf-initial-constraints', function(event, cons) {
-            updateResults(event, cons);
-            // Only listen once, then unregister
-            initListener();
-        });
-
-        // Get the facet configurations from dbpediaService.
-        vm.facets = instanceFacetService.getFacets();
-        // Initialize the facet handler
-        vm.handler = new FacetHandler(getFacetOptions());
-
-        // Disable the facets while results are being retrieved.
-        function disableFacets() {
-            return vm.isLoadingResults;
-        }
-
-        // Setup the FacetHandler options.
-        function getFacetOptions() {
-            var options = instanceFacetService.getFacetOptions();
-            options.scope = $scope;
-
-            // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
-            options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
-            return options;
-        }
-
-
-        // Get results based on facet selections (each time the selections change).
-        function updateResults(event, facetSelections) {
-            // As the facets are not locked while the results are loading,
-            // this function may be called again before the results have been
-            // retrieved. This creates a race condition where the later call
-            // may return before the first one, which leads to an inconsistent
-            // state once the first returns. To avoid this we'll have a counter
-            // that is incremented each time update is called, and we'll abort
-            // the update if the counter has been incremented before it finishes.
-            var uid = ++updateId;
-            // As the user can also change the page via pagination, and introduce
-            // a race condition that way, we'll want to discard any pending
-            // page changes if a facet value changes. So set a boolean flag for
-            // this purpose.
-            vm.lock = true;
-            // This variable is used to disable page selection, and display the
-            // spinner animation.
-            vm.isLoadingResults = true;
-
-            // Update the URL parameters based on facet selections
-            facetUrlStateHandlerService.updateUrlParams(facetSelections);
-
-            // The dbpediaService returns a (promise of a) pager object.
-            return instanceFacetService.getResults(facetSelections)
-            .then(function(pager) {
-                if (uid === updateId) {
-                    vm.pager = pager;
-                    vm.totalCount = pager.totalCount;
-                    vm.pageNo = 1;
-                    getPage(uid).then(function() {
-                        vm.lock = false;
-                        return vm.page;
+                    instanceFacets = instanceFacetService(scope.type, scope.constraints);
+                    
+                    // page is the current page of results.
+                    vm.page = [];
+                    vm.pageNo = 0;
+                    vm.getPage = getPage;
+                    vm.makeArray = makeArray;
+                    vm.getLabel = getLabel;
+                    
+                    vm.disableFacets = disableFacets;
+                    
+                    // Listen for the facet events
+                    // This event is triggered when a facet's selection has changed.
+                    scope.$on('sf-facet-constraints', updateResults);
+                    // This is the initial configuration event
+                    var initListener = scope.$on('sf-initial-constraints', function(event, cons) {
+                        updateResults(event, cons);
+                        // Only listen once, then unregister
+                        initListener();
                     });
-                }
-            });
-        }
 
-        // Get a page of mapped objects.
-        // Angular-UI pagination handles the page number changes.
-        function getPage(uid) {
-            vm.isLoadingResults = true;
-            // Get the page.
-            // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
-            return vm.pager.getPage(vm.pageNo-1).then(function(page) {
-                // Check if it's ok to change the page
-                if (!vm.lock || (uid === updateId)) {
-                    vm.page = page;
-                    vm.page.forEach(function(d) {
-                        $http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'label'}})
-                            .then(function(response) {
-                                d.label = response.data;
+                    // Get the facet configurations from dbpediaService.
+                    vm.facets = instanceFacets.getFacets();
+                    // Initialize the facet handler
+                    vm.handler = new FacetHandler(getFacetOptions());
+                    
+                    // Disable the facets while results are being retrieved.
+                    function disableFacets() {
+                        return vm.isLoadingResults;
+                    }
+                    
+                    // Setup the FacetHandler options.
+                    function getFacetOptions() {
+                        var options = instanceFacets.getFacetOptions();
+                        options.scope = scope;
+                        
+                        // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
+                        options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
+                        return options;
+                    }
+                    
+                    
+                    // Get results based on facet selections (each time the selections change).
+                    function updateResults(event, facetSelections) {
+                        // As the facets are not locked while the results are loading,
+                        // this function may be called again before the results have been
+                        // retrieved. This creates a race condition where the later call
+                        // may return before the first one, which leads to an inconsistent
+                        // state once the first returns. To avoid this we'll have a counter
+                        // that is incremented each time update is called, and we'll abort
+                        // the update if the counter has been incremented before it finishes.
+                        var uid = ++updateId;
+                        // As the user can also change the page via pagination, and introduce
+                        // a race condition that way, we'll want to discard any pending
+                        // page changes if a facet value changes. So set a boolean flag for
+                        // this purpose.
+                        vm.lock = true;
+                        // This variable is used to disable page selection, and display the
+                        // spinner animation.
+                        vm.isLoadingResults = true;
+                        
+                        // Update the URL parameters based on facet selections
+                        facetUrlStateHandlerService.updateUrlParams(facetSelections);
+                    
+                        // The dbpediaService returns a (promise of a) pager object.
+                        return instanceFacets.getResults(facetSelections)
+                            .then(function(pager) {
+                                if (uid === updateId) {
+                                    vm.pager = pager;
+                                    vm.totalCount = pager.totalCount;
+                                    vm.pageNo = 1;
+                                    getPage(uid).then(function() {
+                                        vm.lock = false;
+                                        return vm.page;
+                                    });
+                                }
                             });
-                        $http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
-                            .then(function(response) {
-                                d.summary = response.data;
-                            });
-                        d.type.forEach(function(type) {
-                            getLabel(type.id).then(function(d) { type.label = d});
+                    }
+                    
+                    // Get a page of mapped objects.
+                    // Angular-UI pagination handles the page number changes.
+                    function getPage(uid) {
+                        vm.isLoadingResults = true;
+                        // Get the page.
+                        // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
+                        return vm.pager.getPage(vm.pageNo-1).then(function(page) {
+                            // Check if it's ok to change the page
+                            if (!vm.lock || (uid === updateId)) {
+                                vm.page = page;
+                                vm.page.forEach(function(d) {
+                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'label'}})
+                                    //    .then(function(response) {
+                                    //        d.label = response.data;
+                                    //    });
+                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
+                                    //    .then(function(response) {
+                                    //        d.summary = response.data;
+                                    //    });
+                                    //d.type.forEach(function(type) {
+                                    //    getLabel(type.id).then(function(d) { type.label = d});
+                                    //});
+                                });
+                                vm.isLoadingResults = false;
+                            }
+                        }).catch(function(error) {
+                            vm.error = error;
+                            vm.isLoadingResults = false;
                         });
-                    });
-                    vm.isLoadingResults = false;
+                    }
+                    
+                    function makeArray(val) {
+                        return angular.isArray(val) ? val : [val];
+                    }
                 }
-            }).catch(function(error) {
-                vm.error = error;
-                vm.isLoadingResults = false;
-            });
-        }
-
-        function makeArray(val) {
-            return angular.isArray(val) ? val : [val];
-        }
-    });
-
+            };
+        }]);
+                                  
     app.service('makeID',function() {
         var ID = function () {
             // Math.random should be unique because of its seeding algorithm.

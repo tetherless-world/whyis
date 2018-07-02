@@ -1,0 +1,9 @@
+{{'''
+select ?s ?p ?o ?assertion where {
+  { graph ?np { ?np sio:isAbout ?e.}}
+  UNION
+  {graph ?assertion { ?e ?x ?y.}}
+  ?np a np:Nanopublication;
+        np:hasAssertion ?assertion.
+  graph ?assertion { ?s ?p ?o. }
+}'''| construct(values={"e":this.identifier}) | serialize(format="json-ld") }}

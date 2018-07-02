@@ -32,6 +32,8 @@ def configure(app):
 
     @app.template_filter('labelize')
     def labelize(entry, key='about', label_key='label', fetch=False):
+        if key not in entry:
+            return
         resource = None
         if fetch:
             resource = app.get_resource(URIRef(entry[key]))
@@ -73,6 +75,30 @@ def configure(app):
         if values is not None:
             params['initBindings'] = values
         return [x.asdict() for x in graph.query(query, **params)]
+
+    
+    @app.template_filter('construct')
+    def construct_filter(query, graph=app.db, prefixes={}, values=None):
+
+        def remap_bnode(x):
+            if isinstance(x, URIRef) and x.startswith('bnode:'):
+                return BNode(x.replace('bnode:',''))
+            else:
+                return x
+        namespaces = dict(app.NS.prefixes)
+        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+        params = { 'initNs': namespaces}
+        if values is not None:
+            params['initBindings'] = values
+        g = ConjunctiveGraph()
+        for stmt in graph.query(query, **params):
+            g.add(tuple([remap_bnode(x) for x in stmt]))
+        print len(g)
+        return g
+
+    @app.template_filter('serialize')
+    def serialize_filter(graph, **kwargs):
+        return graph.serialize(**kwargs)
 
     @app.template_filter('attributes')
     def attributes(query, this):
