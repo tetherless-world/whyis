@@ -524,7 +524,8 @@
                     //toast
                     scope.showHideToast = function (message) {
                         $mdToast.show({
-                                        template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">X</md-button></md-toast>`,
+                                        // template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">X</md-button></md-toast>`,
+                                        template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()"><md-icon class="material-icons md-48" style="color:#d4d5db !important;">clear</md-icon></md-button></md-toast>`,
                                         hideDelay : 0,
                                         parent    : angular.element(document.getElementById('toast-container')),
                                         controller: "toastController",
