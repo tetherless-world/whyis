@@ -20,7 +20,7 @@
   } union {
     ?superClass owl:onProperty ?property.
     ?superClass owl:minCardinality|owl:maxCardinality|owl:exactCardinality ?cardinality.
-    ?superClass ?extent ?cardinality
+    ?superClass ?extent ?cardinality.
     optional { ?property rdf:type ?propertyType }
   } union {
     ?property rdfs:domain ?superClass;

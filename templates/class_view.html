@@ -207,55 +207,17 @@
   </div>
 </div>
 
-<section ng-cloak md-whiteframe="2" ng-controller="InstanceFacetController as vm">
-  <md-toolbar>
-    <div class="md-toolbar-tools" layout="row">
-      <h2 flex>Instances</h2>
-      <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create">
-        <md-icon>add</md-icon>
-      </md-button>
-    </div>
-  </md-toolbar>
-  <md-progress-linear ng-show="vm.isLoadingResults" md-mode="indeterminate"></md-progress-linear>
-  <uib-alert flex ng-if="vm.error" type="danger"><span ng-bind="vm.error"></span></uib-alert>
-  <div layout="row" >
-    <div flex="auto"  style="max-width: 30em">
-        <!-- Facets are defined here using the configurations defined in the controller -->
-        <div ng-repeat="facet in vm.facets" ng-switch="facet.type">
-          <seco-text-facet ng-switch-when="text" data-options="facet"></seco-text-facet>
-          <seco-basic-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
-          <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
-          <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
-          <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
-        </div>
-    </div>
-
-    <!-- Results view -->
-    <div flex="grow">
-      <div layout-fill layout="column" ng-hide="vm.isLoadingResults">
-        <md-subheader ng-hide="vm.page.length > 0" >No results found.</md-subheader>
-        <kg-card  ng-repeat="entity in vm.page"  compact="true" src="entity.id">
-        </kg-card>
-      </div>
-      <!-- Pagination -->
-      <div layout="row" layout-align="center">
-        <ul uib-pagination
-            ng-hide="vm.isLoadingResults"
-            max-size="10"
-            boundary-links="true"
-            rotate="false"
-            total-items="vm.totalCount"
-            ng-model="vm.pageNo"
-            ng-disabled="vm.isLoadingResults"
-            ng-change="vm.getPage()">
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+<instance-facets title="'Instances'" type="'{{this.identifier}}'">
+  <actions>
+    <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create">
+      <md-icon>add</md-icon>
+    </md-button>
+  </actions>
+</instance-facets>
 
 <div md-whiteframe="2">
   <nanopubs resource="{{this.description().identifier}}"/>
 </div>
 </div>
 {%endblock%}
+

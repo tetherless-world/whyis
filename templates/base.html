@@ -61,7 +61,6 @@
       <div class="md-toolbar-tools">
 
         <a href="{{url_for('view',name='')}}">Home</a>
-        
 	<!-- Form for Search -->
 	<form 
 	      class="navbar-form"
@@ -73,9 +72,12 @@
           <search-autocomplete flex></search-autocomplete>
 	</form><!-- /search form -->
 
+        {% block nav %}
+        {% endblock %}
+        {% include "nav.html" %}
         <h3>
         {% if not current_user or current_user.is_anonymous %}
-        <a flex="none" href="{{config['site_url_path']}}login">Log in <span class="glyphicon glyphicon-log-in"></span></a>
+        <md-button ng-href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
         {% else %}
         <div flex="none" class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
@@ -134,8 +136,10 @@
         {% block content %}
         {% endblock %}
       </div>
-    </div>
+      </div>
+      {% include "footer.html" %}
     {% endblock %}
+    
     <script>
       LOD_PREFIX = '{{config.lod_prefix}}';
       {% if 'base_rate_probability' in config %}
