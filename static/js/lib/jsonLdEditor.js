@@ -491,7 +491,8 @@
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`)
+                                    let warningDialog = `Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`;
+                                    scope.showHideToast(warningDialog);
                                     console.log('Warning 2, lengthObject is:', lengthObject);
                                     console.log('Warning 2 property is:', property)
                                     
@@ -499,6 +500,7 @@
                                     let closest = targetEl.closest('tr');
                                     console.log('closest is: ', closest);
                                     closest.css('background-color','lightyellow');
+                                    //closest.append(`<div class="alert alert-danger" role="alert">${warningDialog}</div>`)
                                 }
                                 //must have at least the number that's in cardinality 
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
