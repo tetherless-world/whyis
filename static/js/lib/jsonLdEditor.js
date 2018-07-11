@@ -435,8 +435,9 @@
                         let backgroundColor = targetEl.closest('tr').css('background-color');
                         console.log('background-color is:', backgroundColor);
                         
-                        //reset background color 
+                        //reset background color and delete alert
                         targetEl.closest('tr').css('background-color', 'white');
+                        targetEl.closest('tr').find('div.alert.alert-danger').remove();
                         console.log("jsonLdEditor validateEditor resource:", resource);
                         console.log("jsonLdEditor validateEditor property:", property);
                         let constraints = scope.retrieveConstraints(resource, property);
@@ -499,8 +500,18 @@
                                     //background color yellow for row if it's not meeting this constraint
                                     let closest = targetEl.closest('tr');
                                     console.log('closest is: ', closest);
+                                    console.log('targetEl.closest("tr").find("json-ld-editor").first() is:', targetEl.closest('tr').find('json-ld-editor').first() );
                                     closest.css('background-color','lightyellow');
-                                    //closest.append(`<div class="alert alert-danger" role="alert">${warningDialog}</div>`)
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                                    <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                                        <span>${warningDialog}</span>
+                                                    </div>
+                                                    `);
+                                                    // <md-button ng-click="showAlert = !showAlert">
+                                                    //     <md-icon class="material-icons md-48">clear</md-icon>
+                                                    // </md-button>
+
+
                                 }
                                 //must have at least the number that's in cardinality 
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
@@ -528,7 +539,7 @@
                         $mdToast.show({
                                         // template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">X</md-button></md-toast>`,
                                         template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()"><md-icon class="material-icons md-48" style="color:#d4d5db !important;">clear</md-icon></md-button></md-toast>`,
-                                        hideDelay : 0,
+                                        hideDelay : 5000,
                                         parent    : angular.element(document.getElementById('toast-container')),
                                         controller: "toastController",
                                       });
