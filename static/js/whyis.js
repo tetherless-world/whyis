@@ -2917,17 +2917,27 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
 
         function populateJsonObject(currentObject) {
+            //console.log("currentObject:", currentObject);
             if (currentObject["@id"]) {
                 $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":currentObject["@id"]} })
                 .then(function(data) {
                     let elements = data.data;
-                    console.log("describe:", elements)
+                    //console.log("describe:", elements)
                     for (element of elements) {
-                        if (element["@id"] === NODE_URI) {
+                        if (element["@id"] === currentObject["@id"]) {
                             for (property in element) {
                                 let newObject = {};
-                                newObject[property] = element[property];
-                                currentObject[property] = newObject[property];
+                                currentObject[property] = element[property];
+                                if (property !== "@id") {
+                                    for (id of element[property]) {
+                                        for (key in id) {
+                                            if (key === "@id") {
+                                                populateJsonObject(id);
+                                            }
+                                        }
+                                    }
+                                }
+                                //console.log("currentObject[property]:", currentObject[property]);
                             }
                         }
                     }
