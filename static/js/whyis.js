@@ -2849,15 +2849,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
                 'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
             },
-            "@id" : "urn:"+np_id,
+            //"@id" : "urn:"+np_id,
+            "@id" : NODE_URI,
             "@graph" : {
-                "@id" : "urn:"+np_id,
+                //"@id" : "urn:"+np_id,
+                "@id" : NODE_URI,
                 "@type": "np:Nanopublication",
                 "np:hasAssertion" : {
-                    "@id" : "urn:"+np_id+"_assertion",
+                    //"@id" : "urn:"+np_id+"_assertion",
+                    "@id" : NODE_URI+"_assertion",
                     "@type" : "np:Assertion",
                     "@graph" : {
-                        "@id": makeID(),
+                        //"@id": makeID(),
+                        "@id": NODE_URI,
+                        /*
                         "@type" : [NODE_URI],
                         'label' : {
                             "@value": ""
@@ -2865,23 +2870,28 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         'description' : {
                             "@value": ""
                         }
+                        */
                     }
                 },
                 "np:hasProvenance" : {
-                    "@id" : "urn:"+np_id+"_provenance",
+                    //"@id" : "urn:"+np_id+"_provenance",
+                    "@id" : NODE_URI+"_provenance",
                     "@type" : "np:Provenance",
                     "@graph" : {
-                        "@id": "urn:"+np_id+"_assertion",
+                        //"@id": "urn:"+np_id+"_assertion",
+                        "@id" : NODE_URI+"_assertion",
                         "references": [],
                         'quoted from' : [],
                         'derived from' : []
                     }
                 },
                 "np:hasPublicationInfo" : {
-                    "@id" : "urn:"+np_id+"_pubinfo",
+                    //"@id" : "urn:"+np_id+"_pubinfo",
+                    "@id" : NODE_URI+"_pubinfo",
                     "@type" : "np:PublicationInfo",
                     "@graph" : {
-                        "@id": "urn:"+np_id,
+                        //"@id": "urn:"+np_id,
+                        "@id" : NODE_URI,
                     }
                 }
             }
@@ -2907,48 +2917,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
 
         function populateJsonObject(currentObject) {
-            
             if (currentObject["@id"]) {
-                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":NODE_URI} })
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":currentObject["@id"]} })
                 .then(function(data) {
                     let elements = data.data;
                     console.log("describe:", elements)
-                    for (property in elements[0]) {
-                        for (propertyObject of elements[0][property]) {
-                            let newObject = {};
-                            newObject["@value"] = propertyObject["@value"];
-                            console.log("currentObject:", currentObject);
-                            currentObject[property] = [];
-                            currentObject[property].push(newObject);
+                    for (element of elements) {
+                        if (element["@id"] === NODE_URI) {
+                            for (property in element) {
+                                let newObject = {};
+                                newObject[property] = element[property];
+                                currentObject[property] = newObject[property];
+                            }
                         }
-
-                        //if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                            /*
-                            let newObject = {};
-                            newObject["@id"] = makeID();
-                            newObject["@type"] = [constraint.range];
-                            populateJsonObject(newObject);
-                            currentObject[constraint.propertyLabel].push(newObject);
-                            */
-                        //} else {
-                            
-                        //}
-                        /*
-                        populateContext(constraint);
-                        if ((!currentObject[constraint.propertyLabel])) {
-                            currentObject[constraint.propertyLabel] = [];
-                        }
-                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                            let newObject = {};
-                            newObject["@id"] = makeID();
-                            newObject["@type"] = [constraint.range];
-                            populateJsonObject(newObject);
-                            currentObject[constraint.propertyLabel].push(newObject);
-                        } else {
-                            let newObject = {};
-                            newObject["@value"] = "";
-                            currentObject[constraint.propertyLabel].push(newObject);
-                        }*/
                     }
                     return;
                 }, function(error){
