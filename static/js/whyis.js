@@ -2673,7 +2673,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     /*
      * The controller - New Instance.
      */
-    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI, $mdToast) {
+    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
         var np_id = makeID();
         // let contextString = "";

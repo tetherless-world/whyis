@@ -35,9 +35,17 @@
             </li>
           </ul>
         </div>
+        <!-- expand/collapse button-->
+        <div class="btn-group">
+          <md-button class="md-icon-button" ng-click="isCollapsed = !isCollapsed">
+            <md-icon ng-if="isCollapsed == false" class="material-icons md-light md-48">expand_more</md-icon>
+            <md-icon ng-if="isCollapsed == true" class="material-icons md-light md-48">expand_less</md-icon>
+          </md-button>
+        </div>
       </div>
     </div>
-        <table width="100%" flex="100">
+        <!--collapse/expand here -->
+        <table width="100%" flex="100" uib-collapse="isCollapsed">
             <tr ng-if="resource['@type'] !== undefined">
                 <th style="vertical-align:top; padding: 0px;">type</th>
                 <td width="100%">
@@ -57,6 +65,7 @@
                 </td>
             </tr>
             <!-- add ng-addclass below -->
+            <!-- collapse here -->
             <tr data-ng-repeat="property in getProperties(resource) track by $index">
                 <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
                 <td width="100%">

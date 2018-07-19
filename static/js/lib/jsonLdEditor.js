@@ -1,8 +1,6 @@
 (function (angular) {
 
-    var module = angular.module('jsonLdEditor', [
-         'ngMaterial'
-    ]);
+    var module = angular.module('jsonLdEditor', ['ngMaterial', 'ui.bootstrap']);
 
     module.directive("contenteditable", function() {
         return {
@@ -156,6 +154,7 @@
             },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
+                    scope.isCollapsed = false;
                     scope.openMenu = function(ev) {
                         originatorEv = ev;
                         $mdMenu.show(ev);
@@ -503,10 +502,10 @@
                                     console.log('targetEl.closest("tr").find("json-ld-editor").first() is:', targetEl.closest('tr').find('json-ld-editor').first() );
                                     closest.css('background-color','lightyellow');
                                     targetEl.closest('tr').find('json-ld-editor').first().append(`
-                                                    <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
-                                                        <span>${warningDialog}</span>
-                                                    </div>
-                                                    `);
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog}</span>
+                                        </div>
+                                    `);
                                                     // <md-button ng-click="showAlert = !showAlert">
                                                     //     <md-icon class="material-icons md-48">clear</md-icon>
                                                     // </md-button>
