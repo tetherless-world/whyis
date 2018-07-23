@@ -435,7 +435,7 @@
                         console.log('background-color is:', backgroundColor);
                         
                         //reset background color and delete alert
-                        targetEl.closest('tr').css('background-color', 'white');
+                        targetEl.closest('tr').css('background-color', 'rgb(255,255,255)');
                         targetEl.closest('tr').find('div.alert.alert-danger').remove();
                         console.log("jsonLdEditor validateEditor resource:", resource);
                         console.log("jsonLdEditor validateEditor property:", property);
@@ -485,14 +485,27 @@
                             if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
                                 if (lengthObject[constraint["@range"]] < 1) {
                                     console.log("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Must have exactly 1 or more of ${constraint["@propertyLabel"]}`)
+                                    let warningDialog1 = `Must have exactly 1 or more of ${constraint["@propertyLabel"]}`
+                                    scope.showHideToast(warningDialog1);
+                                    console.log('Warning 1, lengthObject is:', lengthObject);
+                                    console.log('Warning 1 property is:', property);
+
+                                    //background color yellow for rowif it's not meeting this constraint
+                                    targetEl.closest('tr').css('background-color','lightyellow');
+                                    //warning dialog also!
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog1}</span>
+                                        </div>
+                                    `);
+
                                 }
                                 //must have the number specified in cardinality (no more no less)
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    let warningDialog = `Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`;
-                                    scope.showHideToast(warningDialog);
+                                    let warningDialog2 = `Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`;
+                                    scope.showHideToast(warningDialog2);
                                     console.log('Warning 2, lengthObject is:', lengthObject);
                                     console.log('Warning 2 property is:', property)
                                     
@@ -503,7 +516,7 @@
                                     closest.css('background-color','lightyellow');
                                     targetEl.closest('tr').find('json-ld-editor').first().append(`
                                         <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
-                                            <span>${warningDialog}</span>
+                                            <span>${warningDialog2}</span>
                                         </div>
                                     `);
                                                     // <md-button ng-click="showAlert = !showAlert">
@@ -516,14 +529,27 @@
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Doesn't satisfy minimum amount for "${constraint['@propertyLabel']}"`)
+                                    let warningDialog3 = `Doesn't satisfy minimum amount for "${constraint['@propertyLabel']}"`;
+                                    targetEl.closest('tr').css('background-color', 'lightyellow');
+                                    scope.showHideToast(warningDialog3);
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog3}</span>
+                                        </div>
+                                    `);
                                 }
                                 //must have no more than this amount
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    let warningDialog4 = `Gone over maximum (${constraint["@cardinality"]}) for "${constraint['@propertyLabel']}"`;
                                     targetEl.closest('tr').css('background-color', 'lightyellow');
-                                    scope.showHideToast(`Gone over maximum (${constraint["@cardinality"]}) for "${constraint['@propertyLabel']}"`);
+                                    scope.showHideToast(warningDialog4);
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog4}</span>
+                                        </div>
+                                    `);
                                 }
                             }
                             //constraint["@extent"]
