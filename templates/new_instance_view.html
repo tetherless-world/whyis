@@ -3,7 +3,8 @@
 
 {% block title %}New {{this.description().value(ns.RDFS.label)}}{% endblock %}
 {% block pageheader %}
-<div class="container" ng-cloak ng-controller="NewInstanceController as vm">
+<!-- style:max-content to fix css issue for footer on chrome -->
+<div class="container" ng-cloak ng-controller="NewInstanceController as vm" style="height:max-content;">
   <global-json-context/>
   <div class="page-header" layout="row">
     <h1 flex property="rdfs:label">{{ title() }}<small ng-show="vm.instance.label.length != 0" ng-bind="vm.instance.label[0]['@value']"></small><small ng-show="vm.instance.label.length == 0" ng-bind="vm.instance['@id']"></small>
