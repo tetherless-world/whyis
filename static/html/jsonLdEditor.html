@@ -37,9 +37,9 @@
         </div>
         <!-- expand/collapse button-->
         <div class="btn-group">
-          <md-button class="md-icon-button" ng-click="isCollapsed = !isCollapsed">
-            <md-icon ng-if="isCollapsed == false" class="material-icons md-light md-48">expand_more</md-icon>
-            <md-icon ng-if="isCollapsed == true" class="material-icons md-light md-48">expand_less</md-icon>
+          <md-button class="md-icon-button" ng-click="isCollapsed = !isCollapsed" aria-label="expand/collapse">
+            <md-icon ng-if="isCollapsed == false" class="material-icons md-light md-48">expand_less</md-icon>
+            <md-icon ng-if="isCollapsed == true" class="material-icons md-light md-48">expand_more</md-icon>
           </md-button>
         </div>
       </div>
@@ -65,7 +65,6 @@
                 </td>
             </tr>
             <!-- add ng-addclass below -->
-            <!-- collapse here -->
             <tr data-ng-repeat="property in getProperties(resource) track by $index">
                 <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
                 <td width="100%">
