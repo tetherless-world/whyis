@@ -1,12 +1,27 @@
 <md-card data-ng-if="!isArray(resource) && isResource(resource, property)">
   <md-card-content layout="column">
-    <div layout="row">
+    <div layout="row" layout-align="start end">
+      <div style="width:130px; font-size:1.2em;padding-top:10px; padding-bottom:10px;"><strong>type</strong></div>
+      <md-chips flex ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
+        <md-autocomplete
+            md-selected-item="selectedTypeItem"
+            md-search-text="searchTypeText"
+            md-items="item in querySearch(searchTypeText)"
+            md-item-text="getLabel(item)"
+            placeholder="+ Type">
+          <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+        </md-autocomplete>
+        <md-chip-template>
+          <span>{{getLabel($chip)}}</span>
+        </md-chip-template>
+      </md-chips>
       <span class="md-title" flex="auto" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}} </span>
-      <md-input-container class="md-subhead" flex="auto" md-no-float>
+      <md-input-container flex class="md-subhead" flex="auto" md-no-float>
         <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']" ng-change="validateEditor(parent, property)"></input>
       </md-input-container>
+      
       <div flex="none">
         <div class="btn-group">
           <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -43,27 +58,29 @@
           </md-button>
         </div>
       </div>
-    </div>
+    </div> 
         <!--collapse/expand here -->
         <table width="100%" flex="100" uib-collapse="isCollapsed">
-            <tr ng-if="resource['@type'] !== undefined">
-                <th style="vertical-align:top; padding: 0px;">type</th>
-                <td width="100%">
-                  <md-chips ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
-                    <md-autocomplete
-                       md-selected-item="selectedTypeItem"
-                       md-search-text="searchTypeText"
-                       md-items="item in querySearch(searchTypeText)"
-                       md-item-text="getLabel(item)"
-                       placeholder="+ Type">
-                      <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
-                    </md-autocomplete>
-                    <md-chip-template>
-                      <span>{{getLabel($chip)}}</span>
-                    </md-chip-template>
-                  </md-chips>
-                </td>
-            </tr>
+          <!-- moved this up to first line -->
+            <!-- <tr ng-if="resource['@type'] !== undefined">
+              <th style="vertical-align:top; padding: 0px;">type</th>
+              <td width="100%">
+                <md-chips ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
+                  <md-autocomplete
+                      md-selected-item="selectedTypeItem"
+                      md-search-text="searchTypeText"
+                      md-items="item in querySearch(searchTypeText)"
+                      md-item-text="getLabel(item)"
+                      placeholder="+ Type">
+                    <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+                  </md-autocomplete>
+                  <md-chip-template>
+                    <span>{{getLabel($chip)}}</span>
+                  </md-chip-template>
+                </md-chips>
+              </td>
+            </tr> -->
+            
             <!-- add ng-addclass below -->
             <tr data-ng-repeat="property in getProperties(resource) track by $index">
                 <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
