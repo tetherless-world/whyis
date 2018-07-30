@@ -176,7 +176,7 @@
                     };
 
                     scope.querySearch = function(text) {
-                        console.log(text);
+                        console.log("querySearch text", text);
                         var results = [];
                         var resultMap = {};
                         [scope.context, scope.globalContext].forEach(function(A) {
@@ -202,6 +202,29 @@
                         console.log(results);
                         return results;
                     };
+
+                    scope.querySearchType = function(text) {
+                        console.log("querySearch text", text);
+                        var results = [];
+                        var resultMap = {};
+                        
+                        resolveEntity(text).then(function(hits) {
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                    console.log("d.node", d.node);
+                                }
+                            });
+                        });
+
+                        //resultMap["teste"] = true;
+                        //results.push("teste");
+
+                        console.log(results);
+                        return results;
+                    };
+
                     function labelize(uri) {
                         if (uri == null || uri.length == 0) return uri;
                         var localPart = uri.split("#").filter(function(d) {return d.length > 0});

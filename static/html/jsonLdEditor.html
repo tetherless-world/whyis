@@ -6,7 +6,7 @@
         <md-autocomplete
             md-selected-item="selectedTypeItem"
             md-search-text="searchTypeText"
-            md-items="item in querySearch(searchTypeText)"
+            md-items="item in querySearchType(searchTypeText)"
             md-item-text="getLabel(item)"
             placeholder="+ Type">
           <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
