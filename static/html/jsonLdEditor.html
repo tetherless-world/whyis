@@ -4,11 +4,12 @@
       <div style="width:130px; font-size:1.2em;padding-top:10px; padding-bottom:10px;"><strong>type</strong></div>
       <md-chips flex ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
         <md-autocomplete
-            md-selected-item="selectedTypeItem"
-            md-search-text="searchTypeText"
-            md-items="item in querySearchType(searchTypeText)"
-            md-item-text="getLabel(item)"
-            placeholder="+ Type">
+          md-selected-item="selectedTypeItem"
+          md-search-text="searchTypeText"
+          md-items="item in querySearchType(searchTypeText)"
+          md-item-text="getLabel(item)"
+          placeholder="+ Type"
+        >
           <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
         </md-autocomplete>
         <md-chip-template>
@@ -16,6 +17,7 @@
         </md-chip-template>
       </md-chips>
       <span class="md-title" flex="auto" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}} </span>
+      <div style="width:50px;"><strong style="float:right; padding-right:15px;font-size:1.75rem;">ID</strong></div>
       <md-input-container flex class="md-subhead" flex="auto" md-no-float>
         <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
