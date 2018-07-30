@@ -227,6 +227,30 @@
                         return results;
                     };
 
+                    scope.querySearchID = function(text) {
+                        console.log("querySearch text", text);
+                        var results = [];
+                        var resultMap = {};
+
+                        resultMap["Loading..."] = true;
+                        results.push("Loading...");
+                        
+                        resolveEntity(text).then(function(hits) {
+                            delete resultMap["Loading..."];
+                            results.splice(0, 1);
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                    console.log("d.node", d.node);
+                                }
+                            });
+                        });
+
+                        console.log(results);
+                        return results;
+                    };
+
                     function labelize(uri) {
                         if (uri == null || uri.length == 0) return uri;
                         var localPart = uri.split("#").filter(function(d) {return d.length > 0});

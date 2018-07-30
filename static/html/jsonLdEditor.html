@@ -18,11 +18,20 @@
       </md-chips>
       <span class="md-title" flex="auto" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}} </span>
       <div style="width:50px;"><strong style="float:right; padding-right:15px;font-size:1.75rem;">ID</strong></div>
-      <md-input-container flex class="md-subhead" flex="auto" md-no-float>
+      <!--md-input-container flex class="md-subhead" flex="auto" md-no-float>
         <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']" ng-change="validateEditor(parent, property)"></input>
-      </md-input-container>
+      </md-input-container-->
+      <md-autocomplete data-ng-if="!isString(resource)" flex class="md-subhead" flex="auto" md-no-float
+        md-selected-item="selectedTypeItem"
+        md-search-text="searchTypeText"
+        md-items="item in querySearchID(searchTypeText)"
+        md-item-text="getLabel(item)"
+        ng-init="searchTypeText=resource['@id']"
+        placeholder="+ ID">
+        <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+      </md-autocomplete>
       
       <div flex="none">
         <div class="btn-group">
