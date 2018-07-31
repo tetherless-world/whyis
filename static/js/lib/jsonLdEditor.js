@@ -215,8 +215,13 @@
                         console.log("querySearch text", text);
                         var results = [];
                         var resultMap = {};
+
+                        resultMap["Loading..."] = true;
+                        results.push("Loading...");
                         
                         resolveEntity(text).then(function(hits) {
+                            delete resultMap["Loading..."];
+                            results.splice(0, 1);
                             hits.forEach(function(d) {
                                 if (!resultMap[d.node]) {
                                     resultMap[d.node] = true;
@@ -226,8 +231,29 @@
                             });
                         });
 
-                        //resultMap["teste"] = true;
-                        //results.push("teste");
+                        console.log(results);
+                        return results;
+                    };
+
+                    scope.querySearchID = function(text) {
+                        console.log("querySearch text", text);
+                        var results = [];
+                        var resultMap = {};
+
+                        resultMap["Loading..."] = true;
+                        results.push("Loading...");
+                        
+                        resolveEntity(text).then(function(hits) {
+                            delete resultMap["Loading..."];
+                            results.splice(0, 1);
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                    console.log("d.node", d.node);
+                                }
+                            });
+                        });
 
                         console.log(results);
                         return results;
