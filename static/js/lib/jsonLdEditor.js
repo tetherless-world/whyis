@@ -154,7 +154,15 @@
             },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
-                    scope.isCollapsed = false;
+                    // when loading page
+                    // collapse all after the policy type
+                    if (scope.resource['@type'] && scope.resource['@type'][0] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/Policy") {
+                        scope.isCollapsed = false;
+                    } else {
+                        scope.isCollapsed = true;
+                    }
+                        
+                    
                     scope.openMenu = function(ev) {
                         originatorEv = ev;
                         $mdMenu.show(ev);
