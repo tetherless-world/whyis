@@ -23,13 +23,20 @@
         <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
         <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']" ng-change="validateEditor(parent, property)"></input>
       </md-input-container-->
-      <md-autocomplete data-ng-if="!isString(resource)" flex class="md-subhead" flex="auto" md-no-float
+      <md-autocomplete 
+        data-ng-if="!isString(resource)" 
+        flex 
+        class="md-subhead hide-label" 
+        flex="auto" 
+        md-no-float
         md-selected-item="selectedTypeItem"
         md-search-text="searchTypeText"
         md-items="item in querySearchID(searchTypeText)"
         md-item-text="getLabel(item)"
         ng-init="searchTypeText=resource['@id']"
-        placeholder="+ ID">
+        placeholder="+ ID"
+        md-floating-label="hide this label"
+        >
         <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
       </md-autocomplete>
       
@@ -227,6 +234,10 @@
 </div>
 
 <style>
+    /* hide the label on autocomplete */
+    .hide-label label {
+      visibility: hidden;
+    }
     #toast-container {
         position: fixed;
         left: 0;
