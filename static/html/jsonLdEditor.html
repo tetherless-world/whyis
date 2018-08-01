@@ -31,7 +31,7 @@
         md-no-float
         md-selected-item="selectedTypeItem"
         md-search-text="searchTypeText"
-        md-items="item in querySearchID(searchTypeText)"
+        md-items="item in querySearchID(searchTypeText,resource['@type'][0])"
         md-item-text="getLabel(item)"
         ng-init="searchTypeText=resource['@id']"
         placeholder="+ ID"

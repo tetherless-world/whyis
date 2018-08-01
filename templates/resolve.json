@@ -1,1 +1,1 @@
-{{search.resolve(this.graph, g, args['term'], args.get('context',None))|tojson}}
+{{search.resolve(this.graph, g, args['term'], args.get('type',None), args.get('context',None))|tojson}}

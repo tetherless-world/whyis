@@ -1159,14 +1159,25 @@ $( function() {
 	/**
 	 * Search for nodes.
 	 */
-	function resolveEntity (query) {
-            return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
+	function resolveEntity (query, type) {
+            if (type === undefined) {
+                return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
                 .then(function(response) {
                     return response.data.map(function(hit) {
                         hit.value = angular.lowercase(hit.label);
                         return hit;
                     });
                 });
+            } else {
+                return $http.get('',{params: {view:'resolve',term:query+"*",type:type}, responseType:'json'})
+                .then(function(response) {
+                    return response.data.map(function(hit) {
+                        hit.value = angular.lowercase(hit.label);
+                        return hit;
+                    });
+                });
+            }
+            
 	}
         return resolveEntity;
     }]);

@@ -139,7 +139,7 @@
     }]);
     
     module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID','resolveEntity', '$mdToast',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID,resolveEntity, $mdToast) {
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID, resolveEntity, $mdToast) {
         return {
             templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
@@ -235,7 +235,7 @@
                         return results;
                     };
 
-                    scope.querySearchID = function(text) {
+                    scope.querySearchID = function(text, type) {
                         console.log("querySearch text", text);
                         var results = [];
                         var resultMap = {};
@@ -243,7 +243,7 @@
                         resultMap["Loading..."] = true;
                         results.push("Loading...");
                         
-                        resolveEntity(text).then(function(hits) {
+                        resolveEntity(text, type).then(function(hits) {
                             delete resultMap["Loading..."];
                             results.splice(0, 1);
                             hits.forEach(function(d) {

@@ -7,7 +7,7 @@ prefixes = dict(
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
         )
 
-def resolve(graph, g, term, context=None):
+def resolve(graph, g, term, type=None, context=None):
     context_query = ''
     if context is not None:
         context_query = """
@@ -19,7 +19,15 @@ def resolve(graph, g, term, context=None):
          bds:minRelevance 0.4.
   }
 """ % context
-        
+
+    type_query = ''
+    if type is not None:
+        type_query = """
+  ?node rdf:type <%s> .
+""" % type
+    print type
+    print type_query
+
     query = """
 select distinct
 ?node
@@ -33,7 +41,7 @@ where {
 		 bds:relevance ?relevance .
   
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
-  
+  %s
 #  optional {
 #    ?node rdf:type/rdfs:subClassOf* ?type.
 #  }
@@ -67,7 +75,7 @@ where {
   filter not exists {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
-} group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10""" % (term, context_query)
+} group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10""" % (term, type_query, context_query)
     print query
     results = []
     for hit in graph.query(query, initNs=prefixes):
@@ -126,4 +134,4 @@ def latest(graph, g):
         #    entities[entry['about']]['types'] = [g.labelize(dict(uri=x),'uri','label')
         #                                         for x in entry['types'].split('||') if len(x) > 0]
     return results
-                                
+
