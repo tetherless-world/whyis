@@ -35,12 +35,12 @@ select distinct
 #(group_concat(distinct ?type; separator="||") as ?types)
 (coalesce(?relevance+?cr, ?relevance) as ?score)
 where {
-  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
+  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier ?label.
   ?label bds:search '''%s''';
          bds:matchAllTerms "false";
 		 bds:relevance ?relevance .
   
-  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
+  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier ?label.
   %s
 #  optional {
 #    ?node rdf:type/rdfs:subClassOf* ?type.
