@@ -126,7 +126,7 @@ def configure(app):
                     value['@id'] = value['value']
                     labelize(value, key='@id', label_key='value')
                 if 'unit' in value:
-                    labelize(vaue, key='unit', label_key='unit_label')
+                    labelize(value, key='unit', label_key='unit_label')
                 del value['property']
         result['attributes'] = [x for x in result['attributes'].values() if len(x['values']) > 0]
         return result
