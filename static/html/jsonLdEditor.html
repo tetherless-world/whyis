@@ -103,17 +103,15 @@
             <tr data-ng-repeat="property in getProperties(resource) track by $index">
                 <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
                 <td width="100%">
-
-                    
-                    <json-ld-editor 
-                      resource="resource[property]" 
-                      property="property" 
-                      parent="resource" 
-                      context="localContext" 
-                      global-context="globalContext"
-                      collapse-all="collapseAll" 
-                    >
-                    </json-ld-editor>
+                  <json-ld-editor 
+                    resource="resource[property]" 
+                    property="property" 
+                    parent="resource" 
+                    context="localContext" 
+                    global-context="globalContext"
+                    collapse-all="collapseAll" 
+                  >
+                  </json-ld-editor>
                 </td>
                 <td style="vertical-align:top">
                     <div class="btn-group">
