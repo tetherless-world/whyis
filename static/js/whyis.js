@@ -2809,6 +2809,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
 
+        vm.collapseAll = true;
         
     });
     

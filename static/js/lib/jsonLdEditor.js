@@ -119,10 +119,10 @@
 
     module.service('resolveEntity', ["$http", function($http) {
         var promises = {};
-	/**
-	 * Search for nodes.
-	 */
-	function resolveEntity (query) {
+        /**
+         * Search for nodes.
+         */
+	    function resolveEntity (query) {
             if (!promises[query]) {
                 promises[query] = $q.defer();
                 $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
@@ -134,7 +134,7 @@
                     });
                 return promises[query].promise;
             }
-	}
+	    }
         return resolveEntity;
     }]);
     
@@ -150,19 +150,41 @@
                 context: '=',
                 index: "=",
                 globalContext: '=',
-                // showHideToast2: '&',
+                collapseAll: '='
             },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
                     // when loading page
                     // collapse all after the policy type
+                    scope.isCollapsed = null;
+                    
                     if (scope.resource['@type'] && scope.resource['@type'][0] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/Policy") {
                         scope.isCollapsed = false;
                     } else {
                         scope.isCollapsed = true;
                     }
-                        
                     
+                    scope.collapseToggle = function() {
+                        scope.isCollapsed = !scope.isCollapsed;
+                    }
+
+                    scope.$watch('collapseAll', function(){
+                        console.log("running collapseAll function");
+                        console.log("scope.collapseAll is:", scope.collapseAll)
+                        if (scope.collapseAll === true) {
+                            console.log("collapseAll is true")
+                            if (scope.resource['@type'] && scope.resource['@type'][0] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/Policy") {
+                                scope.isCollapsed = false;
+                            } else {
+                                console.log("collapseAll is true")
+                                scope.isCollapsed = true;
+                            }
+                        } else {
+                            console.log("collapseAll is false")
+                            scope.isCollapsed = false;
+                        }
+                    });
+
                     scope.openMenu = function(ev) {
                         originatorEv = ev;
                         $mdMenu.show(ev);
