@@ -2661,11 +2661,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
     app.service("resolveURI", function() {
         function resolveURI(uri, context) {
+            console.log("context[uri]:", context[uri]);
             if (context[uri]) {
                 return resolveURI(context[uri]);
             } else if (uri.indexOf(':') != -1) {
-                var i = s.indexOf(':');
-                var parts = [s.slice(0,i), s.slice(i+1)];
+                console.log("uri:", uri);
+                var i = uri.indexOf(':');
+                var parts = [uri.slice(0,i), uri.slice(i+1)];
                 var prefix = parts[0];
                 var local = parts[1];
                 if (context[prefix]) {
@@ -2680,6 +2682,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return resolveURI;
     });
+
+    app.controller('DsaController', ['$scope', function($scope) {
+        var vm = this;
+        vm.names = ["Emil", "Tobias", "Linus", "Hannah"];
+        console.log("vm:", vm);
+        console.log("vm.names[0]", vm.names[0]);
+    }]);
     
     /*
      * The controller - New Instance.

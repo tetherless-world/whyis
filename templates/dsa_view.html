@@ -1,3 +1,17 @@
 {% extends "base.html" %}
+<!-- {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %} -->
 
+{% block title %}DSA {{this.description().value(ns.RDFS.label)}}{% endblock %}
+{% block pageheader %}
 <h1>DSA View Test</h1>
+
+<div class="container" ng-cloak ng-controller="DsaController as vm" style="height:max-content;">
+    <select>
+        <option ng-repeat="x in vm.names" ng-model="x"></option>
+    </select>
+    <ul>
+        <li ng-repeat="x in vm.names"> {{ x }}</li>
+    </ul>
+</div>
+{%endblock%}
+
