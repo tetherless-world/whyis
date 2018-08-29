@@ -2661,11 +2661,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
     app.service("resolveURI", function() {
         function resolveURI(uri, context) {
+            console.log("context[uri]:", context[uri]);
             if (context[uri]) {
                 return resolveURI(context[uri]);
             } else if (uri.indexOf(':') != -1) {
-                var i = s.indexOf(':');
-                var parts = [s.slice(0,i), s.slice(i+1)];
+                console.log("uri:", uri);
+                var i = uri.indexOf(':');
+                var parts = [uri.slice(0,i), uri.slice(i+1)];
                 var prefix = parts[0];
                 var local = parts[1];
                 if (context[prefix]) {
@@ -2679,6 +2681,30 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return uri;
         }
         return resolveURI;
+    });
+
+    app.controller('DsaController', function($scope, $compile) {
+        $scope.sources = [
+            "Redbook",
+            "FCC"
+        ];
+        $scope.attributes = [
+            "Frequency range",
+            "System",
+            "Affiliation",
+            "Location"
+        ];
+        $scope.effects = [
+            "Permit",
+            "Permit w/ obligations",
+            "Deny"
+        ];
+        $scope.appendDirective = function(attributes) {
+            console.log("appendDirective");
+            let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`
+            let el = document.getElementById('characteristics')
+            angular.element(el).append( $compile(html)($scope) );
+        }
     });
     
     /*
@@ -2967,6 +2993,25 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
+
+    app.directive('dsaAttribute', function(){
+        return {
+            template: `
+                <div layout="row">
+                    <md-input-container style="margin-right: 10px;">
+                        <label>Attribute</label>
+                        <md-select ng-model="attribute">
+                            <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
+                        </md-select>
+                    </md-input-container>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                attributes: "="
+            }
+        }
+    })
     
     angular.bootstrap(document, ['App']);
 

@@ -1,3 +1,51 @@
 {% extends "base.html" %}
+<!-- {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %} -->
 
-<h1>DSA View Test</h1>
+{% block title %}DSA {{this.description().value(ns.RDFS.label)}}{% endblock %} {% block pageheader %}
+<h1>Create policy</h1>
+
+<div ng-controller="DsaController" class="md-padding" ng-cloak>
+    <div>
+        <h1 class="md-title">Policy info</h1>
+        <div layout="row">
+            <md-input-container style="margin-right: 10px;">
+                <label>Source</label>
+                <md-select ng-model="source">
+                    <md-option ng-repeat="source in sources" ng-value="source">{[{source}]}</md-option>
+                </md-select>
+            </md-input-container>
+            <md-input-container style="margin-right: 10px;">
+                <label>Policy ID</label>
+                <input ng-model="id">
+            </md-input-container>
+        </div>
+
+        <md-input-container class="md-block">
+            <label>Policy description</label>
+            <textarea ng-model="description" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
+        </md-input-container>
+
+        <div id="characteristics">
+            <h1 class="md-title">Characteristics</h1>
+            <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="appendDirective(attributes)">+</md-button>
+            <dsa-attribute attributes="attributes"></dsa-attribute>
+        </div>
+
+        <h1 class="md-title">Effect</h1>
+        <div layout="row">
+            <md-input-container style="margin-right: 10px;">
+                <label>Effect</label>
+                <md-select ng-model="effect">
+                    <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
+                </md-select>
+            </md-input-container>
+        </div>
+
+        <h1 class="md-title">Obligations</h1>
+        <md-input-container class="md-block">
+            <label>Obligations</label>
+            <textarea ng-model="obligations" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
+        </md-input-container>
+    </div>
+</div>
+{%endblock%}
