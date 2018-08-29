@@ -3004,12 +3004,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
                         </md-select>
                     </md-input-container>
+                    <md-button aria-label="Remove" ng-click="remove()">Remove</md-button>
                 </div>
             `,
             restrict: "E",
             scope: {
                 attributes: "="
-            }
+            },
+            //Remove the dsaAttribute directive
+            link: function (scope, element, attributes) {
+                scope.remove = function () {
+                   //remove this element
+                    element.remove();
+                }
+            } 
         }
     })
     
