@@ -2683,12 +2683,29 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return resolveURI;
     });
 
-    app.controller('DsaController', ['$scope', function($scope) {
-        var vm = this;
-        vm.names = ["Emil", "Tobias", "Linus", "Hannah"];
-        console.log("vm:", vm);
-        console.log("vm.names[0]", vm.names[0]);
-    }]);
+    app.controller('DsaController', function($scope, $compile) {
+        $scope.sources = [
+            "Redbook",
+            "FCC"
+        ];
+        $scope.attributes = [
+            "Frequency range",
+            "System",
+            "Affiliation",
+            "Location"
+        ];
+        $scope.effects = [
+            "Permit",
+            "Permit w/ obligations",
+            "Deny"
+        ];
+        $scope.appendDirective = function(attributes) {
+            console.log("appendDirective");
+            let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`
+            let el = document.getElementById('characteristics')
+            angular.element(el).append( $compile(html)($scope) );
+        }
+    });
     
     /*
      * The controller - New Instance.
@@ -2976,6 +2993,25 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
+
+    app.directive('dsaAttribute', function(){
+        return {
+            template: `
+                <div layout="row">
+                    <md-input-container style="margin-right: 10px;">
+                        <label>Attribute</label>
+                        <md-select ng-model="attribute">
+                            <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
+                        </md-select>
+                    </md-input-container>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                attributes: "="
+            }
+        }
+    })
     
     angular.bootstrap(document, ['App']);
 
