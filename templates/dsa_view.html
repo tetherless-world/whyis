@@ -26,10 +26,10 @@
             <textarea ng-model="description" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
         </md-input-container>
 
-        <div id="characteristics">
-            <h1 class="md-title">Characteristics</h1>
-            <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="appendDirective(attributes)">+</md-button>
-            <dsa-attribute attributes="attributes"></dsa-attribute>
+        <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
+
+        <div id="rules">
+            <dsa-rule attributes="attributes"></dsa-rule>
         </div>
 
         <h1 class="md-title">Effect</h1>
