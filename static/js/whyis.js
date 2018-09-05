@@ -3024,9 +3024,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.directive('dsaRule', function($compile) {
         return {
             template: `
-                <div>
+                <div class="rule">
                     <h1 class="md-title">Characteristics</h1>
-                    <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="addAttribute(attributes)">+</md-button>
+                    <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="addAttribute(attributes, $event.target)">+</md-button>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Rule ID</label>
@@ -3042,11 +3042,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             },
             link: function (scope, element, attributes) {
                 console.log("attributes", attributes);
-                scope.addAttribute = function(attributes) {
+                scope.addAttribute = function(attributes, target) {
+                    console.log("event", event);
                     console.log("appendDirective");
                     console.log("scope", scope);
                     let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`;
-                    element.append( $compile(html)(scope) );
+                    angular.element(target).parent().append( $compile(html)(scope) );
                 };
             }
         }

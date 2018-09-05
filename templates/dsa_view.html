@@ -7,6 +7,15 @@
 html, body {
     background-color: #fff;   
 }
+div.rule {
+    border: 1px solid grey;
+    border-radius: 5px;
+    margin: 4px;
+}
+div.rules {
+    border: 1px solid grey;
+    border-radius: 5px;
+}
 </style>
 <h1>Create policy</h1>
 
@@ -31,9 +40,8 @@ html, body {
             <textarea ng-model="description" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
         </md-input-container>
 
-        <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
-
-        <div id="rules">
+        <div id="rules" class="rules">
+                <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
             <dsa-rule attributes="attributes"></dsa-rule>
         </div>
 
