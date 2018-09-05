@@ -41,6 +41,10 @@
 <link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
 
     <style>
+      /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
+      html, body {
+        background-color: #fff;   
+      } 
       .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
       div.container {
       width: 100%;
