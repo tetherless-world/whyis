@@ -2699,12 +2699,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             "Permit w/ obligations",
             "Deny"
         ];
-        $scope.appendDirective = function(attributes) {
-            console.log("appendDirective");
-            let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`
-            let el = document.getElementById('characteristics')
+        $scope.addRule = function(element) {
+            console.log("appendRule");
+            let html = `<dsa-rule attributes="attributes"></dsa-rule>`
+            let el = document.getElementById(element)
             angular.element(el).append( $compile(html)($scope) );
-        }
+        };
     });
     
     /*
@@ -2994,7 +2994,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         $scope.globalContext = vm.nanopub['@context'];
     });
 
-    app.directive('dsaAttribute', function(){
+    app.directive('dsaAttribute', function() {
         return {
             template: `
                 <div layout="row">
@@ -3004,7 +3004,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
                         </md-select>
                     </md-input-container>
-                    <md-button aria-label="Remove" ng-click="remove()">Remove</md-button>
+                    <md-button aria-label="Remove" ng-click="removeAttribute()">Remove</md-button>
                 </div>
             `,
             restrict: "E",
@@ -3013,13 +3013,44 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             },
             //Remove the dsaAttribute directive
             link: function (scope, element, attributes) {
-                scope.remove = function () {
+                scope.removeAttribute = function () {
                    //remove this element
                     element.remove();
-                }
-            } 
+                };
+            }
         }
-    })
+    });
+
+    app.directive('dsaRule', function($compile) {
+        return {
+            template: `
+                <div>
+                    <h1 class="md-title">Characteristics</h1>
+                    <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="addAttribute(attributes)">+</md-button>
+                    <div layout="row">
+                        <md-input-container style="margin-right: 10px;">
+                            <label>Rule ID</label>
+                            <input ng-model="id">
+                        </md-input-container>
+                    </div>
+                    <dsa-attribute attributes="attributes"></dsa-attribute>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                attributes: "="
+            },
+            link: function (scope, element, attributes) {
+                console.log("attributes", attributes);
+                scope.addAttribute = function(attributes) {
+                    console.log("appendDirective");
+                    console.log("scope", scope);
+                    let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`;
+                    element.append( $compile(html)(scope) );
+                };
+            }
+        }
+    });
     
     angular.bootstrap(document, ['App']);
 
