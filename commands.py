@@ -209,7 +209,7 @@ class Test(Command):
 
     def get_options(self):
         return [
-            Option('--verbosity', '-v', dest='verbose',
+            Option('--verbosity', '-v', dest='verbosity',
                     type=int, default=self.verbosity),
             Option('--failfast', dest='failfast',
                     default=self.failfast, action='store_false')

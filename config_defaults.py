@@ -222,7 +222,8 @@ Dev.update(dict(
     MAIL_DEBUG = True,
     # Works for the development virtual machine.
 #    lod_prefix = "http://localhost:5000",
-    DEBUG_TB_INTERCEPT_REDIRECTS = False
+    DEBUG_TB_INTERCEPT_REDIRECTS = False,
+    WTF_CSRF_ENABLED = False
 ))
 
 # config class used during tests
@@ -236,6 +237,7 @@ Test.update(dict(
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },
 
+    DEFAULT_ANONYMOUS_READ = False,
     file_archive = {
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },
