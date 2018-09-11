@@ -2683,7 +2683,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return resolveURI;
     });
 
-    app.controller('DsaController', function($scope, $compile) {
+    app.controller('DsaController', function($scope, $compile, makeID, Nanopub, resolveURI) {
+        var vm = this;
+        var np_id = makeID();
+        vm.resolveURI = resolveURI;
+
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+
         $scope.sources = [
             "Redbook",
             "FCC"
@@ -2705,6 +2717,66 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             let el = document.getElementById(element)
             angular.element(el).append( $compile(html)($scope) );
         };
+
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : {
+                            "@value": ""
+                        },
+                        'description' : {
+                            "@value": ""
+                        }
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        $scope.globalContext = vm.nanopub['@context'];
     });
     
     /*
@@ -2994,14 +3066,48 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         $scope.globalContext = vm.nanopub['@context'];
     });
 
-    app.directive('dsaAttribute', function() {
+    app.directive('dsaAttributeValue', function() {
+        return {
+            template: `
+                <md-input-container style="margin-right: 10px;">
+                    <label>Temp label</label>
+                    <input>
+                </md-input-container>
+            `,
+            restrict: "E",
+            scope: {
+                options: "=",
+                value: "="
+            }
+        }/*
+        <input ng-model="value">
+                    <md-select ng-model="option">
+                        <md-option ng-repeat="option in options" ng-value="option">{[{option}]}</md-option>
+                    </md-select>*/
+    });
+
+    app.directive('dsaAttribute', function($compile) {
         return {
             template: `
                 <div layout="row">
                     <md-input-container style="margin-right: 10px;">
                         <label>Attribute</label>
-                        <md-select ng-model="attribute">
+                        <md-select ng-model="attribute" ng-change="attributeChange(attribute)">
                             <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
+                        </md-select>
+                    </md-input-container>
+                    <md-input-container style="margin-right: 10px;">
+                        <label ng-if="showInput">Minimum</label>
+                        <input ng-if="showInput" ng-model="min">
+                    </md-input-container>
+                    <md-input-container style="margin-right: 10px;">
+                        <label ng-if="showInput">Maximum</label>
+                        <input ng-if="showInput" ng-model="max">
+                    </md-input-container>
+                    <md-input-container style="margin-right: 10px;">
+                        <label ng-if="showSelect">Select</label>
+                        <md-select ng-if="showSelect" ng-model="option">
+                            <md-option ng-repeat="option in options" ng-value="option">{[{option}]}</md-option>
                         </md-select>
                     </md-input-container>
                     <md-button aria-label="Remove" ng-click="removeAttribute()">Remove</md-button>
@@ -3011,11 +3117,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             scope: {
                 attributes: "="
             },
-            //Remove the dsaAttribute directive
             link: function (scope, element, attributes) {
-                scope.removeAttribute = function () {
+                scope.removeAttribute = function() {
                    //remove this element
                     element.remove();
+                };
+                scope.attributeChange = function(attribute) {
+                    scope.showInput = false;
+                    scope.showSelect = false;
+                    if (attribute === "Affiliation") {
+                        scope.showSelect = true;
+                    } else if (attribute === "Frequency range") {
+                        scope.showInput = true;
+                    }
                 };
             }
         }
@@ -3041,11 +3155,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 attributes: "="
             },
             link: function (scope, element, attributes) {
-                console.log("attributes", attributes);
                 scope.addAttribute = function(attributes, target) {
-                    console.log("event", event);
-                    console.log("appendDirective");
-                    console.log("scope", scope);
+                    console.log("addAttribute target", target);
                     let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`;
                     angular.element(target).parent().append( $compile(html)(scope) );
                 };

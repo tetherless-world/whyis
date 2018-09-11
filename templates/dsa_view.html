@@ -11,6 +11,7 @@ div.rule {
     border: 1px solid grey;
     border-radius: 5px;
     margin: 4px;
+    padding: 8px;
 }
 div.rules {
     border: 1px solid grey;
@@ -19,47 +20,70 @@ div.rules {
 </style>
 <h1>Create policy</h1>
 
-<div ng-controller="DsaController" class="md-padding" ng-cloak>
-    <div>
-        <h1 class="md-title">Policy info</h1>
-        <div layout="row">
-            <md-input-container style="margin-right: 10px;">
-                <label>Source</label>
-                <md-select ng-model="source">
-                    <md-option ng-repeat="source in sources" ng-value="source">{[{source}]}</md-option>
-                </md-select>
-            </md-input-container>
-            <md-input-container style="margin-right: 10px;">
-                <label>Policy ID</label>
-                <input ng-model="id">
-            </md-input-container>
-        </div>
+<div class="container" ng-controller="DsaController as vm" class="md-padding" ng-cloak>
+    <div class="page-header" layout="row">
+        <global-json-context/>
+        <h1 flex property="rdfs:label">{{ title() }}<small ng-show="vm.instance.label.length != 0" ng-bind="vm.instance.label[0]['@value']"></small><small ng-show="vm.instance.label.length == 0" ng-bind="vm.instance['@id']"></small>
+        </h1>
+        <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
+            <md-switch ng-model="vm.showCode" aria-label="Show JSON-LD Code">Show JSON-LD</md-switch>
+            <span/>
+            <md-button ng-click="vm.submit()" class="md-icon-button" aria-label="Create" title="Create">
+                <md-icon>check_circle</md-icon>
+            </md-button>
+            <md-button md-secondary ng-href="{{url_for('view',view='view', uri=this.identifier)}}" class="md-icon-button" aria-label="Cancel" title="Cancel">
+                <md-icon>cancel</md-icon>
+            </md-button>
+        </section>
+    </div>
 
-        <md-input-container class="md-block">
-            <label>Policy description</label>
-            <textarea ng-model="description" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
-        </md-input-container>
+    <form>
+        <div>
+            <h1 class="md-title">Policy info</h1>
+            <div layout="row">
+                <md-input-container style="margin-right: 10px;">
+                    <label>Source</label>
+                    <md-select ng-model="vm.instance['source']['@value']">
+                        <md-option ng-repeat="source in sources" ng-value="source" ng-model="vm.instance['source']['@value']">{[{source}]}</md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container style="margin-right: 10px;">
+                    <label>Policy ID</label>
+                    <input ng-model="vm.instance['@id']">
+                </md-input-container>
+            </div>
 
-        <div id="rules" class="rules">
+            <md-input-container class="md-block">
+                <label>Policy description</label>
+                <textarea ng-model="vm.instance['description']['@value']" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
+            </md-input-container>
+
+            <div id="rules" class="rules">
                 <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
-            <dsa-rule attributes="attributes"></dsa-rule>
-        </div>
+                <dsa-rule attributes="attributes"></dsa-rule>
+            </div>
 
-        <h1 class="md-title">Effect</h1>
-        <div layout="row">
-            <md-input-container style="margin-right: 10px;">
-                <label>Effect</label>
-                <md-select ng-model="effect">
-                    <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
-                </md-select>
+            <h1 class="md-title">Effect</h1>
+            <div layout="row">
+                <md-input-container style="margin-right: 10px;">
+                    <label>Effect</label>
+                    <md-select ng-model="effect">
+                        <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+
+            <h1 class="md-title">Obligations</h1>
+            <md-input-container class="md-block">
+                <label>Obligations</label>
+                <textarea ng-model="obligations" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
             </md-input-container>
         </div>
-
-        <h1 class="md-title">Obligations</h1>
-        <md-input-container class="md-block">
-            <label>Obligations</label>
-            <textarea ng-model="obligations" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
-        </md-input-container>
+    </form>
+    <div layout="column">
+        <div layout="row">
+            <pre flex ng-show="vm.showCode" ng-bind="vm.nanopub | json"></pre>
+        </div>
     </div>
 </div>
 {%endblock%}
