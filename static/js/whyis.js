@@ -3110,7 +3110,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             <md-option ng-repeat="option in options" ng-value="option">{[{option}]}</md-option>
                         </md-select>
                     </md-input-container>
-                    <md-button aria-label="Remove" ng-click="removeAttribute()">Remove</md-button>
+                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeAttribute()">-</md-button
                 </div>
             `,
             restrict: "E",
@@ -3135,16 +3135,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
     });
 
-    app.directive('dsaRule', function($compile) {
+    app.directive('dsaStatement', function($compile) {
         return {
             template: `
                 <div class="rule">
-                    <h1 class="md-title">Characteristics</h1>
-                    <md-button class="md-fab md-mini md-primary" aria-label="Add attribute" ng-click="addAttribute(attributes, $event.target)">+</md-button>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, $event.target)">Add statement</md-button>
+                    <md-button class="md-raised md-warn" ng-click="removeStatement()">Remove statement</md-button>
+                    <md-button class="md-raised" ng-click="addAttribute(attributes, $event.target)">Add attribute</md-button>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
-                            <label>Rule ID</label>
-                            <input ng-model="id">
+                            <label>Statement type</label>
+                            <md-select ng-model="armor" placeholder="Statement type" required md-no-asterisk="false">
+                                <md-option value="conjunctive">Conjunctive sequence</md-option>
+                                <md-option value="disjunctive">Disjunctive sequence</md-option>
+                            </md-select>
                         </md-input-container>
                     </div>
                     <dsa-attribute attributes="attributes"></dsa-attribute>
@@ -3158,6 +3162,44 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.addAttribute = function(attributes, target) {
                     console.log("addAttribute target", target);
                     let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`;
+                    angular.element(target).parent().append( $compile(html)(scope) );
+                };
+                scope.addStatement = function(attributes, target) {
+                    console.log("addStatement target", target);
+                    let html = `<dsa-statement attributes="attributes"></dsa-statement>`;
+                    angular.element(target).parent().append( $compile(html)(scope) );
+                };
+                scope.removeStatement = function() {
+                    //remove this element
+                     element.remove();
+                };
+            }
+        }
+    });
+
+    app.directive('dsaRule', function($compile) {
+        return {
+            template: `
+                <div class="rule">
+                    <h1 class="md-title">Characteristics</h1>                    
+                    <div layout="row">
+                        <md-input-container style="margin-right: 10px;">
+                            <label>Rule ID</label>
+                            <input ng-model="id">
+                        </md-input-container>
+                    </div>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, $event.target)">Add statement</md-button>
+                    <dsa-statement attributes="attributes"></dsa-statement>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                attributes: "="
+            },
+            link: function (scope, element, attributes) {
+                scope.addStatement = function(attributes, target) {
+                    console.log("addStatement target", target);
+                    let html = `<dsa-statement attributes="attributes"></dsa-statement>`;
                     angular.element(target).parent().append( $compile(html)(scope) );
                 };
             }
