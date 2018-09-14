@@ -2711,11 +2711,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             "Permit w/ obligations",
             "Deny"
         ];
+        $scope.options = [
+            "Advanced Wireless System (AWS)",
+            "Joint Tactical Radio System (JTRS)",
+            "Tropospheric Scatter System"
+        ];
         $scope.addRule = function(element) {
             console.log("appendRule");
-            let html = `<dsa-rule attributes="attributes"></dsa-rule>`
-            let el = document.getElementById(element)
-            angular.element(el).append( $compile(html)($scope) );
+            let rule = {};
+            rule['@id'] = makeID();
+            rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
+            vm.instance['hasRule'].push(rule);
         };
 
         vm.nanopub = {
@@ -2751,7 +2757,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         },
                         'description' : {
                             "@value": ""
-                        }
+                        },
+                        'hasRule' : [
+                            {
+                                "@id": makeID(),
+                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"]
+                            }
+                        ]
                     }
                 },
                 "np:hasProvenance" : {
@@ -3115,9 +3127,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             `,
             restrict: "E",
             scope: {
-                attributes: "="
+                attributes: "=",
+                options: "="
             },
-            link: function (scope, element, attributes) {
+            link: function (scope, element, attributes, options) {
                 scope.removeAttribute = function() {
                    //remove this element
                     element.remove();
@@ -3125,7 +3138,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.attributeChange = function(attribute) {
                     scope.showInput = false;
                     scope.showSelect = false;
-                    if (attribute === "Affiliation") {
+                    if (attribute === "System") {
                         scope.showSelect = true;
                     } else if (attribute === "Frequency range") {
                         scope.showInput = true;
@@ -3139,9 +3152,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div class="rule">
-                    <md-button class="md-raised" ng-click="addStatement(attributes, $event.target)">Add statement</md-button>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, options, $event.target)">Add statement</md-button>
                     <md-button class="md-raised md-warn" ng-click="removeStatement()">Remove statement</md-button>
-                    <md-button class="md-raised" ng-click="addAttribute(attributes, $event.target)">Add attribute</md-button>
+                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, $event.target)">Add attribute</md-button>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Statement type</label>
@@ -3151,22 +3164,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             </md-select>
                         </md-input-container>
                     </div>
-                    <dsa-attribute attributes="attributes"></dsa-attribute>
+                    <dsa-attribute attributes="attributes" options="options"></dsa-attribute>
                 </div>
             `,
             restrict: "E",
             scope: {
-                attributes: "="
+                attributes: "=",
+                options: "="
             },
-            link: function (scope, element, attributes) {
-                scope.addAttribute = function(attributes, target) {
+            link: function (scope, element, attributes, options) {
+                scope.addAttribute = function(attributes, options, target) {
                     console.log("addAttribute target", target);
-                    let html = `<dsa-attribute attributes="attributes"></dsa-attribute>`;
+                    let html = `<dsa-attribute attributes="attributes" options="options"></dsa-attribute>`;
                     angular.element(target).parent().append( $compile(html)(scope) );
                 };
-                scope.addStatement = function(attributes, target) {
+                scope.addStatement = function(attributes, options, target) {
                     console.log("addStatement target", target);
-                    let html = `<dsa-statement attributes="attributes"></dsa-statement>`;
+                    let html = `<dsa-statement attributes="attributes" options="options"></dsa-statement>`;
                     angular.element(target).parent().append( $compile(html)(scope) );
                 };
                 scope.removeStatement = function() {
@@ -3185,21 +3199,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Rule ID</label>
-                            <input ng-model="id">
+                            <input ng-model="rule['@id']">
                         </md-input-container>
                     </div>
-                    <md-button class="md-raised" ng-click="addStatement(attributes, $event.target)">Add statement</md-button>
-                    <dsa-statement attributes="attributes"></dsa-statement>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, options, $event.target)">Add statement</md-button>
+                    <dsa-statement attributes="attributes" options="options"></dsa-statement>
                 </div>
             `,
             restrict: "E",
             scope: {
-                attributes: "="
+                attributes: "=",
+                options: "=",
+                rule: "="
             },
-            link: function (scope, element, attributes) {
-                scope.addStatement = function(attributes, target) {
+            link: function (scope, element, attributes, options, rule) {
+                scope.addStatement = function(attributes, options, target) {
                     console.log("addStatement target", target);
-                    let html = `<dsa-statement attributes="attributes"></dsa-statement>`;
+                    let html = `<dsa-statement attributes="attributes" options="options"></dsa-statement>`;
                     angular.element(target).parent().append( $compile(html)(scope) );
                 };
             }
