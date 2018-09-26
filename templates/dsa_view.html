@@ -60,7 +60,7 @@ div.rules {
 
             <div id="rules" class="rules">
                 <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
-                <dsa-rule ng-repeat="rule in vm.instance['hasRule']" attributes="attributes" options="options" rule="rule"></dsa-rule>
+                <dsa-rule ng-repeat="rule in vm.instance['xacml:includes']" attributes="attributes" options="options" rule="rule"></dsa-rule>
             </div>
 
             <h1 class="md-title">Effect</h1>

@@ -2683,7 +2683,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return resolveURI;
     });
 
-    app.controller('DsaController', function($scope, $compile, makeID, Nanopub, resolveURI) {
+    app.controller('DsaController', function($scope, $compile, makeID, Nanopub, resolveURI, queryAttributes, queryOptions) {
         var vm = this;
         var np_id = makeID();
         vm.resolveURI = resolveURI;
@@ -2700,28 +2700,24 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             "Redbook",
             "FCC"
         ];
-        $scope.attributes = [
-            "Frequency range",
-            "System",
-            "Affiliation",
-            "Location"
-        ];
+        $scope.attributes = queryAttributes();
+        $scope.options = queryOptions("http://purl.org/twc/dsa/SystemType");
         $scope.effects = [
             "Permit",
             "Permit w/ obligations",
             "Deny"
         ];
-        $scope.options = [
-            "Advanced Wireless System (AWS)",
-            "Joint Tactical Radio System (JTRS)",
-            "Tropospheric Scatter System"
-        ];
         $scope.addRule = function(element) {
-            console.log("appendRule");
+            console.log("addRule");
             let rule = {};
             rule['@id'] = makeID();
             rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
-            vm.instance['hasRule'].push(rule);
+            rule['xacml:hasTarget'] = {
+                "@id" : makeID(),
+                "@type" : "xacml:Target",
+                "sio:hasAttribute" : []
+            };
+            vm.instance['xacml:includes'].push(rule);
         };
 
         vm.nanopub = {
@@ -2736,6 +2732,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
+                'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
+                'dsa' : 'http://purl.org/twc/dsa/',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
                 'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
                 'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
@@ -2758,10 +2756,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         'description' : {
                             "@value": ""
                         },
-                        'hasRule' : [
+                        'xacml:includes' : [
                             {
                                 "@id": makeID(),
-                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"]
+                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"],
+                                "xacml:hasTarget" : {
+                                    "@id" : makeID(),
+                                    "@type" : "xacml:Target",
+                                    "sio:hasAttribute" : [
+                                        {
+                                            "@id": makeID(),
+                                            "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
+                                            "sio:hasAttribute" : []
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     }
@@ -2790,6 +2799,103 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
+
+    app.service("queryAttributes", ["$http", function($http) {
+        function queryAttributes() {
+            var results = {};
+            var query = `
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                PREFIX dsa: <http://purl.org/twc/dsa/>
+                SELECT ?resource ?label
+                WHERE {
+                    ?resource rdfs:subClassOf+ dsa:TempAttribute
+                }
+            `;
+            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+                .then(function(data) {
+                    console.log("data.data.results.bindings", data.data.results.bindings);
+                    return data.data.results.bindings.map(function(row) {
+                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
+                            .then(function(data) {
+                                results[data.data] = row.resource.value;
+                                return results;
+                            });
+                            /*
+                        results["System Type"] = "http://purl.org/twc/dsa/SystemType";
+                        results["System Role"] = "http://purl.org/twc/dsa/SystemRole";
+                        results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
+                        results["Location"] = "http://purl.org/twc/dsa/Location";
+                        return results;
+                        */
+                    });
+                });
+            return results;
+        }
+        return queryAttributes;
+    }]);
+
+    app.service("queryOptions", ["$http", function($http) {
+        function queryOptions(attribute) {
+            console.log("queryOptions has just started:", attribute);
+
+            var results = {};
+            if (attribute === "http://purl.org/twc/dsa/SystemType") {
+                results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+            } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
+                results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
+                results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
+                results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
+            } else if (attribute === "http://purl.org/twc/dsa/Location") {
+                results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+            }
+            return results;
+            /*
+            var results = {};
+            var query = `
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                SELECT ?resource ?label
+                WHERE {
+                    ?resource rdfs:subClassOf+ xacml:Attribute
+                }
+            `;
+            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+                .then(function(data) {
+                    console.log("data.data.results.bindings", data.data.results.bindings);
+                    return data.data.results.bindings.map(function(row) {
+                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
+                            .then(function(data) {
+                                //results[data.data] = row.resource.value;
+                            });
+                        if (attribute === "http://purl.org/twc/dsa/SystemType") {
+                            results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                            results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                            results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                            results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+                        } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
+                            results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
+                            results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
+                            results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
+                        } else if (attribute === "http://purl.org/twc/dsa/Location") {
+                            results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                            results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                            results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                            results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                        }
+                        return results;
+                    });
+                });
+            return results;*/
+        }
+        return queryOptions;
+    }]);
     
     /*
      * The controller - New Instance.
@@ -3078,132 +3184,183 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         $scope.globalContext = vm.nanopub['@context'];
     });
 
-    app.directive('dsaAttributeValue', function() {
+    app.directive('dsaAttribute', function($compile, $http, makeID, queryOptions) {
+        return {
+            template: `
+                <div layout="row">
+                    <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange({attr:attribute['@type'][0]})" label="'Attribute'"></dsa-select>
+                    <dsa-input ng-if="showInput" model="" label="'Min'"></dsa-input>
+                    <dsa-input ng-if="showInput" model="" label="'Max'"></dsa-input>
+                    <dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select>
+                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeAttribute(attribute)">-</md-button>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                attributes: "=",
+                options: "=",
+                attribute: "="
+            },
+            link: function (scope, element, attributes, options, attribute) {
+                scope.removeAttribute = function(attribute) {
+                    for (let i in attribute) {
+                        delete attribute[i];
+                    }
+                };
+                scope.attributeChange = function(attr) {
+                    console.log("attributeChange", attr);
+                    scope.showInput = false;
+                    scope.showSelect = false;
+                    if (attr === "http://purl.org/twc/dsa/SystemRole" ||
+                        attr === "http://purl.org/twc/dsa/SystemType" ||
+                        attr === "http://purl.org/twc/dsa/Location") {
+                        scope.showSelect = true;
+                    } else if (attr === "http://purl.org/twc/dsa/FrequencyRange") {
+                        scope.showInput = true;
+                    }
+                    scope.options = scope.queryAV(attr);
+                };
+                scope.queryAV = function(attr) {
+                    console.log("queryAV", attr);
+                    var results = {};
+                    if (attr === "http://purl.org/twc/dsa/SystemType") {
+                        results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                        results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                        results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                        results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+                    } else if (attr === "http://purl.org/twc/dsa/SystemRole") {
+                        results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
+                        results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
+                        results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
+                    } else if (attr === "http://purl.org/twc/dsa/Location") {
+                        results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                        results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                        results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                        results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                    }
+                    return results;
+                };
+            }
+        }
+    });
+
+    app.directive('dsaSelect', function($compile, makeID) {
         return {
             template: `
                 <md-input-container style="margin-right: 10px;">
-                    <label>Temp label</label>
-                    <input>
+                    <label>{[{label}]}</label>
+                    <md-select ng-model="model" ng-change="change()">
+                        <md-option ng-repeat="(label, value) in options" ng-value="value">{[{label}]}</md-option>
+                    </md-select>
                 </md-input-container>
             `,
             restrict: "E",
             scope: {
+                label: "=",
                 options: "=",
-                value: "="
-            }
-        }/*
-        <input ng-model="value">
-                    <md-select ng-model="option">
-                        <md-option ng-repeat="option in options" ng-value="option">{[{option}]}</md-option>
-                    </md-select>*/
-    });
-
-    app.directive('dsaAttribute', function($compile) {
-        return {
-            template: `
-                <div layout="row">
-                    <md-input-container style="margin-right: 10px;">
-                        <label>Attribute</label>
-                        <md-select ng-model="attribute" ng-change="attributeChange(attribute)">
-                            <md-option ng-repeat="attribute in attributes" ng-value="attribute">{[{attribute}]}</md-option>
-                        </md-select>
-                    </md-input-container>
-                    <md-input-container style="margin-right: 10px;">
-                        <label ng-if="showInput">Minimum</label>
-                        <input ng-if="showInput" ng-model="min">
-                    </md-input-container>
-                    <md-input-container style="margin-right: 10px;">
-                        <label ng-if="showInput">Maximum</label>
-                        <input ng-if="showInput" ng-model="max">
-                    </md-input-container>
-                    <md-input-container style="margin-right: 10px;">
-                        <label ng-if="showSelect">Select</label>
-                        <md-select ng-if="showSelect" ng-model="option">
-                            <md-option ng-repeat="option in options" ng-value="option">{[{option}]}</md-option>
-                        </md-select>
-                    </md-input-container>
-                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeAttribute()">-</md-button
-                </div>
-            `,
-            restrict: "E",
-            scope: {
-                attributes: "=",
-                options: "="
-            },
-            link: function (scope, element, attributes, options) {
-                scope.removeAttribute = function() {
-                   //remove this element
-                    element.remove();
-                };
-                scope.attributeChange = function(attribute) {
-                    scope.showInput = false;
-                    scope.showSelect = false;
-                    if (attribute === "System") {
-                        scope.showSelect = true;
-                    } else if (attribute === "Frequency range") {
-                        scope.showInput = true;
-                    }
-                };
+                model: "=",
+                change: "&"
             }
         }
     });
 
-    app.directive('dsaStatement', function($compile) {
+    app.directive('dsaInput', function($compile, makeID) {
+        return {
+            template: `
+                <md-input-container style="margin-right: 10px;">
+                    <label>{[{label}]}</label>
+                    <input ng-model="model">
+                </md-input-container>
+            `,
+            restrict: "E",
+            scope: {
+                label: "=",
+                model: "="
+            }
+        }
+    });
+
+    app.directive('dsaStatement', function($compile, makeID) {
         return {
             template: `
                 <div class="rule">
-                    <md-button class="md-raised" ng-click="addStatement(attributes, options, $event.target)">Add statement</md-button>
-                    <md-button class="md-raised md-warn" ng-click="removeStatement()">Remove statement</md-button>
-                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, $event.target)">Add attribute</md-button>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, options, statement, $event.target)">Add statement</md-button>
+                    <md-button class="md-raised md-warn" ng-click="removeStatement(statement)">Remove statement</md-button>
+                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, statement, $event.target)">Add attribute</md-button>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Statement type</label>
-                            <md-select ng-model="armor" placeholder="Statement type" required md-no-asterisk="false">
-                                <md-option value="conjunctive">Conjunctive sequence</md-option>
-                                <md-option value="disjunctive">Disjunctive sequence</md-option>
+                            <md-select ng-model="statement['@type'][0]" placeholder="Statement type" required md-no-asterisk="false">
+                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence">Conjunctive sequence</md-option>
+                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/DisjunctiveSequence">Disjunctive sequence</md-option>
                             </md-select>
                         </md-input-container>
                     </div>
-                    <dsa-attribute attributes="attributes" options="options"></dsa-attribute>
+                    <dsa-attribute ng-repeat="attribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="attribute"></dsa-attribute>
+                    <dsa-statement ng-repeat="statement in getAttributes(statement, 'statement')" attributes="attributes" options="options" statement="statement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
             scope: {
                 attributes: "=",
-                options: "="
+                options: "=",
+                statement: "="
             },
-            link: function (scope, element, attributes, options) {
-                scope.addAttribute = function(attributes, options, target) {
+            link: function (scope, element, attributes, options, statement) {
+                scope.addAttribute = function(attributes, options, statement, target) {
                     console.log("addAttribute target", target);
-                    let html = `<dsa-attribute attributes="attributes" options="options"></dsa-attribute>`;
-                    angular.element(target).parent().append( $compile(html)(scope) );
+                    var attribute = {};
+                    attribute['@id'] = makeID();
+                    attribute['@type'] = ["http://purl.org/twc/dsa/SystemRole"];
+                    attribute['sio:hasValue'] = "";
+                    statement['sio:hasAttribute'].push(attribute);
                 };
-                scope.addStatement = function(attributes, options, target) {
-                    console.log("addStatement target", target);
-                    let html = `<dsa-statement attributes="attributes" options="options"></dsa-statement>`;
-                    angular.element(target).parent().append( $compile(html)(scope) );
+                scope.addStatement = function(attributes, options, statement, target) {
+                    console.log("addStatement", statement);
+                    var innerStatement = {};
+                    innerStatement['@id'] = makeID();
+                    innerStatement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    innerStatement['sio:hasAttribute'] = [];
+                    statement['sio:hasAttribute'].push(innerStatement);
                 };
-                scope.removeStatement = function() {
-                    //remove this element
-                     element.remove();
+                scope.removeStatement = function(statement) {
+                    for (let i in statement) {
+                        delete statement[i];
+                    }
+                };
+                scope.getAttributes = function(object, type) {
+                    var attributes = [];
+                    var statements = [];
+
+                    for (let i in object['sio:hasAttribute']) {
+                        for (let j in object['sio:hasAttribute'][i]['@type']) {
+                            if (object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence") {
+                                statements.push(object['sio:hasAttribute'][i]);
+                            } else {
+                                attributes.push(object['sio:hasAttribute'][i]);
+                            }
+                        }
+                    }
+                    if (type === "statement") return statements;
+                    else return attributes;
                 };
             }
         }
     });
 
-    app.directive('dsaRule', function($compile) {
+    app.directive('dsaRule', function($compile, makeID) {
         return {
             template: `
                 <div class="rule">
-                    <h1 class="md-title">Characteristics</h1>                    
+                    <h1 class="md-title">Characteristics</h1>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Rule ID</label>
                             <input ng-model="rule['@id']">
                         </md-input-container>
                     </div>
-                    <md-button class="md-raised" ng-click="addStatement(attributes, options, $event.target)">Add statement</md-button>
-                    <dsa-statement attributes="attributes" options="options"></dsa-statement>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
+                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['sio:hasAttribute']" attributes="attributes" options="options" statement="statement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
@@ -3213,10 +3370,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 rule: "="
             },
             link: function (scope, element, attributes, options, rule) {
-                scope.addStatement = function(attributes, options, target) {
-                    console.log("addStatement target", target);
-                    let html = `<dsa-statement attributes="attributes" options="options"></dsa-statement>`;
-                    angular.element(target).parent().append( $compile(html)(scope) );
+                scope.addStatement = function(attributes, options, rule, target) {
+                    console.log("addStatement");
+                    let statement = {};
+                    statement['@id'] = makeID();
+                    statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    statement['sio:hasAttribute'] = [];
+                    rule['xacml:hasTarget']['sio:hasAttribute'].push(statement);
                 };
             }
         }
