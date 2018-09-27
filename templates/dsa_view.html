@@ -60,24 +60,8 @@ div.rules {
 
             <div id="rules" class="rules">
                 <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
-                <dsa-rule ng-repeat="rule in vm.instance['xacml:includes']" attributes="attributes" options="options" rule="rule"></dsa-rule>
+                <dsa-rule ng-repeat="rule in vm.instance['xacml:includes']" attributes="attributes" options="options" rule="rule" effects="effects"></dsa-rule>
             </div>
-
-            <h1 class="md-title">Effect</h1>
-            <div layout="row">
-                <md-input-container style="margin-right: 10px;">
-                    <label>Effect</label>
-                    <md-select ng-model="effect">
-                        <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
-                    </md-select>
-                </md-input-container>
-            </div>
-
-            <h1 class="md-title">Obligations</h1>
-            <md-input-container class="md-block">
-                <label>Obligations</label>
-                <textarea ng-model="obligations" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
-            </md-input-container>
         </div>
     </form>
     <div layout="column">

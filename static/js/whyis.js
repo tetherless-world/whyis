@@ -2704,7 +2704,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         $scope.options = queryOptions("http://purl.org/twc/dsa/SystemType");
         $scope.effects = [
             "Permit",
-            "Permit w/ obligations",
             "Deny"
         ];
         $scope.addRule = function(element) {
@@ -2770,7 +2769,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                             "sio:hasAttribute" : []
                                         }
                                     ]
-                                }
+                                },
+                                "xacml:includes" : [
+                                    {
+                                        "@id" : makeID(),
+                                        "@type" : "dsa:ObligationStatement",
+                                        "sio:hasValue" : ""
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -3188,7 +3194,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div layout="row">
-                    <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange({attr:attribute['@type'][0]})" label="'Attribute'"></dsa-select>
+                    <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
                     <dsa-input ng-if="showInput" model="" label="'Min'"></dsa-input>
                     <dsa-input ng-if="showInput" model="" label="'Max'"></dsa-input>
                     <dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select>
@@ -3202,6 +3208,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 attribute: "="
             },
             link: function (scope, element, attributes, options, attribute) {
+                scope.showSelect = true;
                 scope.removeAttribute = function(attribute) {
                     for (let i in attribute) {
                         delete attribute[i];
@@ -3239,7 +3246,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
                     }
                     return results;
-                };
+                }
             }
         }
     });
@@ -3249,7 +3256,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             template: `
                 <md-input-container style="margin-right: 10px;">
                     <label>{[{label}]}</label>
-                    <md-select ng-model="model" ng-change="change()">
+                    <md-select ng-model="model" ng-change="change({attr:model})">
                         <md-option ng-repeat="(label, value) in options" ng-value="value">{[{label}]}</md-option>
                     </md-select>
                 </md-input-container>
@@ -3276,6 +3283,44 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             scope: {
                 label: "=",
                 model: "="
+            }
+        }
+    });
+
+    app.directive('dsaObligation', function($compile, makeID) {
+        return {
+            template: `
+                <div layout="row">
+                    <dsa-input label="'Obligation'" model="obligation['sio:hasValue']"></dsa-input>
+                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeObligation(obligation)">-</md-button>
+                </div>
+            `,
+            restrict: "E",
+            scope: {
+                obligation : "="
+            }
+        }
+    });
+
+    app.directive('dsaObligationStatement', function($compile, makeID) {
+        return {
+            template: `
+                <md-button class="md-raised" ng-click="addObligation(rule)">Add obligation</md-button>
+                <dsa-obligation ng-repeat="obligation in obligations" obligation="obligation"></dsa-obligation>
+            `,
+            restrict: "E",
+            scope: {
+                rule : "=",
+                obligations : "="
+            },
+            link: function (scope, rule) {
+                scope.addObligation = function(rule) {
+                    var obligation = {};
+                    obligation['@id'] = makeID();
+                    obligation['@type'] = ["dsa:ObligationStatement"];
+                    obligation['sio:hasValue'] = "";
+                    rule['xacml:includes'].push(obligation);
+                };
             }
         }
     });
@@ -3311,7 +3356,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     console.log("addAttribute target", target);
                     var attribute = {};
                     attribute['@id'] = makeID();
-                    attribute['@type'] = ["http://purl.org/twc/dsa/SystemRole"];
+                    attribute['@type'] = ["http://purl.org/twc/dsa/SystemType"];
                     attribute['sio:hasValue'] = "";
                     statement['sio:hasAttribute'].push(attribute);
                 };
@@ -3334,7 +3379,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     for (let i in object['sio:hasAttribute']) {
                         for (let j in object['sio:hasAttribute'][i]['@type']) {
-                            if (object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence") {
+                            if (object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence" ||
+                                object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/DisjunctiveSequence") {
                                 statements.push(object['sio:hasAttribute'][i]);
                             } else {
                                 attributes.push(object['sio:hasAttribute'][i]);
@@ -3361,13 +3407,27 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     </div>
                     <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
                     <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['sio:hasAttribute']" attributes="attributes" options="options" statement="statement"></dsa-statement>
+
+                    <h1 class="md-title">Effect</h1>
+                    <div layout="row">
+                        <md-input-container style="margin-right: 10px;">
+                            <label>Effect</label>
+                            <md-select ng-model="rule['xacml:hasEffect']">
+                                <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+
+                    <h1 class="md-title">Obligations</h1>
+                    <dsa-obligation-statement rule="rule" obligations="rule['xacml:includes']"></dsa-obligation-statement>
                 </div>
             `,
             restrict: "E",
             scope: {
                 attributes: "=",
                 options: "=",
-                rule: "="
+                rule: "=",
+                effects: "="
             },
             link: function (scope, element, attributes, options, rule) {
                 scope.addStatement = function(attributes, options, rule, target) {
