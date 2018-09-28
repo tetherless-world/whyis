@@ -2773,7 +2773,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "xacml:includes" : [
                                     {
                                         "@id" : makeID(),
-                                        "@type" : "dsa:ObligationStatement",
+                                        "@type" : ["dsa:ObligationStatement"],
                                         "sio:hasValue" : ""
                                     }
                                 ]
@@ -3287,17 +3287,33 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
     });
 
+    app.filter('dsaObligationFilter', function() {
+        return function(input) {
+            return input.filter(function(v) {
+                if (v['@type'] !== undefined && v['@type'].indexOf("dsa:ObligationStatement") !== -1)
+                return v;
+            });
+        };
+    });
+
     app.directive('dsaObligation', function($compile, makeID) {
         return {
             template: `
                 <div layout="row">
                     <dsa-input label="'Obligation'" model="obligation['sio:hasValue']"></dsa-input>
-                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeObligation(obligation)">-</md-button>
+                    <md-button class="md-fab md-mini" aria-label="Delete obligation" ng-click="removeObligation(obligation)">-</md-button>
                 </div>
             `,
             restrict: "E",
             scope: {
                 obligation : "="
+            },
+            link: function (scope, obligation) {
+                scope.removeObligation = function(obligation) {
+                    for (let i in obligation) {
+                        delete obligation[i];
+                    }
+                };
             }
         }
     });
@@ -3306,7 +3322,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <md-button class="md-raised" ng-click="addObligation(rule)">Add obligation</md-button>
-                <dsa-obligation ng-repeat="obligation in obligations" obligation="obligation"></dsa-obligation>
+                <dsa-obligation ng-repeat="obligation in obligations | dsaObligationFilter" obligation="obligation"></dsa-obligation>
             `,
             restrict: "E",
             scope: {
