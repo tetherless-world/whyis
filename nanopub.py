@@ -118,11 +118,12 @@ class NanopublicationManager:
             mappings = {}
         new_nps = list(graph.subjects(rdflib.RDF.type, np.Nanopublication))
         if len(new_nps) == 0:
-            new_np = Nanopublication(store=graph.store)
-            new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
-            new_np.add((new_np.identifier, np.hasAssertion, graph.identifier))
-            new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
-            new_nps = [new_np.identifier]
+            for context in list(graph.contexts()):
+                new_np = Nanopublication(store=context.store)
+                new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
+                new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
+                new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+                new_nps.append(new_np.identifier)
         for nanopub in new_nps:
             if self.prefix not in nanopub:
                 fileid = self._reserve_id()
@@ -277,7 +278,7 @@ class NanopublicationManager:
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
                 #data.flush()
-                print data.name
+                #print data.name
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
                 #data.flush()

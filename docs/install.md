@@ -25,8 +25,6 @@ To install using the development branch of Whyis, use the master install script:
 bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh)
 ```
 
-
-
 ## Layer 3: Install into a vagrant virtual machine 
 
 This is useful for developers who want to isolate their development environment so that builds are repeatable, and for developers of multiple knowledge graphs.
@@ -54,6 +52,34 @@ If you are setting up more than one whyis vm (maybe for multiple projects), be s
 ```
   config.vm.network "private_network", ip: "192.168.33.36"
 ```
+
+### Installing on Virtual Box without Vagrant
+It is possible to install Whyis without using Vagrant by installing a Ubuntu Desktop via an ISO file on Virtual Box, and then installing Whyis on the Virtual Machine following the "Layer 2: Install into an Ubuntu system" instructions
+
+Download ISO file
+
+```
+Download the latest Ubuntu ISO file from: https://www.ubuntu.com/download/desktop
+```
+Create a new Ubuntu Virtual Machine
+
+```
+From VM VirtualBox Manager, Select "New" to create a new VM
+```
+```
+In the following window, name your VM and select Type Linux and Version Ubuntu
+```
+```
+Choose the desired memory and space settings, and complete the VM creation
+```
+Load the ISO
+```
+Before starting the newly created VM, right click the VM and go to its Settings
+```
+```
+Under Storage, select Controller IDE and specify your ISO file. Press Ok to save the settings.
+```
+Now, when you start the VM, it should install a new Ubuntu desktop. You can now just follow the instructions for installing Whyis onto a Ubuntu system.
 
 # Administrative Tasks
 
