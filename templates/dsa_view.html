@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 <!-- {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %} -->
 
-{% block title %}DSA {{this.description().value(ns.RDFS.label)}}{% endblock %} {% block pageheader %}
+{% block title %}DSA {{this.description().value(ns.RDFS.label)}}{% endblock %}
 
+{% block styles %}
 <style>
 html, body {
     background-color: #fff;   
@@ -18,6 +19,15 @@ div.rules {
     border-radius: 5px;
 }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/whyis.js')}}"></script>
+{% endblock %}
+
+{% block pageheader %}{% endblock %}
+
+{% block content %}
 <h1>Create policy</h1>
 
 <div class="container" ng-controller="DsaController as vm" class="md-padding" ng-cloak>

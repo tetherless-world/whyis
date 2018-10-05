@@ -3195,23 +3195,25 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             template: `
                 <div layout="row">
                     <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
-                    <dsa-input ng-if="showInput" model="" label="'Min'"></dsa-input>
-                    <dsa-input ng-if="showInput" model="" label="'Max'"></dsa-input>
-                    <dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select>
-                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="removeAttribute(attribute)">-</md-button>
+                    <dsa-input ng-repeat="constraint in constraints" model="attribute[constraint['property']]" label="constraint['rangeLabel']"></dsa-input>
+                    <!--dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select-->
+                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement['sio:hasAttribute'], '@id', attribute['@id'])">-</md-button>
                 </div>
             `,
             restrict: "E",
             scope: {
+                statement: "=",
                 attributes: "=",
                 options: "=",
                 attribute: "="
             },
-            link: function (scope, element, attributes, options, attribute) {
+            link: function (scope, element, statement, attributes, options, attribute) {
                 scope.showSelect = true;
-                scope.removeAttribute = function(attribute) {
-                    for (let i in attribute) {
-                        delete attribute[i];
+                scope.remove = function(array, property, value) {
+                    for (i in array) {
+                        if(array[i][property] === value) {
+                            array.splice(i, 1);
+                        }
                     }
                 };
                 scope.attributeChange = function(attr) {
@@ -3226,6 +3228,98 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         scope.showInput = true;
                     }
                     scope.options = scope.queryAV(attr);
+                    scope.constraints = scope.queryConstraints(attr);
+                };
+                scope.attributeSync = function(attribute) {
+                    for (constraint of scope.constraints) {
+                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            var newObject;
+                            newObject['@id'] = makeID();
+                            newObject['@type'] = constraint.range;
+                            attribute['sio:hasAttribute'].push(newObject);
+                        }
+                    }
+                };
+                scope.queryConstraints = function(attribute) {
+                    console.log("queryConstraints attribute", attribute);
+                    /*
+                    $http.get(ROOT_URL+"about",{ 'params': { "view":"constraints", "uri":attribute},'resultType': 'json' })
+                        .then(function(data) {
+                            let constraints = data.data;
+                            for (constraint in constraints) {
+                                console.log("CONSTRAINT:", constraint, constraint.propertyLabel, constraint.propertyType, constraint.range);
+                            }
+                            console.log("CONSTRAINTS at GET:", data.data);
+                            //return data.data;
+                            constraints = data.data;
+                            console.log("CONSTRAINTS inside GET at queryConstraints:", constraints);
+                        });
+                    console.log("CONSTRAINTS at queryConstraints:", constraints);
+                    return constraints;
+                    */
+                    if (attribute === "http://purl.org/twc/dsa/FrequencyRange") {
+                        return  [
+                                    {
+                                        "class": "http://purl.org/twc/dsa/FrequencyRange",
+                                        "extent": "http://www.w3.org/2002/07/owl#someValuesFrom",
+                                        "property": "http://semanticscience.org/resource/hasPart",
+                                        "propertyLabel": "Has Part",
+                                        "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                        "range": "http://purl.org/twc/dsa/FrequencyMinimum",
+                                        "rangeLabel": "Frequency Minimum",
+                                        "superClass": "bnode:a8b4ddb9dc974e8282476beda1563ea0"
+                                    },
+                                    {
+                                        "class": "http://purl.org/twc/dsa/FrequencyRange",
+                                        "extent": "http://www.w3.org/2002/07/owl#someValuesFrom",
+                                        "property": "http://semanticscience.org/resource/hasPart",
+                                        "propertyLabel": "Has Part",
+                                        "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                        "range": "http://purl.org/twc/dsa/FrequencyMaximum",
+                                        "rangeLabel": "Frequency Maximum",
+                                        "superClass": "bnode:c5227e1ae0214cd19e94465ed4a046fe"
+                                    }
+                                ];
+                    } else if (attribute === "http://purl.org/twc/dsa/SystemType") {
+                        return  [
+                                    {
+                                        "class": "http://purl.org/twc/dsa/SystemType",
+                                        "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                        "property": "http://purl.org/twc/dsa/hasSystemType",
+                                        "propertyLabel": "Has System Type",
+                                        "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                        "range": "http://purl.org/twc/dsa/SystemType",
+                                        "rangeLabel": "System Type",
+                                        "superClass": "bnode:edea31997ce34bfdaed303949ca6ba03"
+                                    }
+                                ];
+                    } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
+                        return  [
+                                    {
+                                        "class": "http://purl.org/twc/dsa/SystemRole",
+                                        "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                        "property": "http://purl.org/twc/dsa/hasSystemRole",
+                                        "propertyLabel": "Has System Role",
+                                        "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                        "range": "http://purl.org/twc/dsa/SystemRole",
+                                        "rangeLabel": "System Role",
+                                        "superClass": "bnode:30e62b423f8945c9adf8ee4e781ac81f"
+                                    }
+                                ];
+                    } else if (attribute === "http://purl.org/twc/dsa/Location") {
+                        return  [
+                                    {
+                                        "class": "http://purl.org/twc/dsa/Location",
+                                        "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                        "property": "http://semanticscience.org/resource/isLocatedIn",
+                                        "propertyLabel": "Is Located In",
+                                        "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                        "range": "http://purl.org/twc/dsa/LocationList",
+                                        "rangeLabel": "Location List",
+                                        "superClass": "bnode:79f15b0954134ec2a0277dca89cee821"
+                                    }
+                                ];
+                    }
                 };
                 scope.queryAV = function(attr) {
                     console.log("queryAV", attr);
@@ -3357,8 +3451,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             </md-select>
                         </md-input-container>
                     </div>
-                    <dsa-attribute ng-repeat="attribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="attribute"></dsa-attribute>
-                    <dsa-statement ng-repeat="statement in getAttributes(statement, 'statement')" attributes="attributes" options="options" statement="statement"></dsa-statement>
+                    <dsa-attribute ng-repeat="innerAttribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="innerAttribute" statement="statement"></dsa-attribute>
+                    <dsa-statement ng-repeat="innerStatement in getAttributes(statement, 'statement')" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
@@ -3457,6 +3551,193 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             }
         }
     });
+
+    app.service("queryConstraints", ["$http", function($http) {
+        function queryConstraints(type) {
+            console.log("queryConstraints service type", type);
+            if (type === "http://purl.org/twc/dsa/FrequencyRange") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/FrequencyRange",
+                                "extent": "http://www.w3.org/2002/07/owl#someValuesFrom",
+                                "property": "http://semanticscience.org/resource/hasPart",
+                                "propertyLabel": "Has Part",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.org/twc/dsa/FrequencyMinimum",
+                                "rangeLabel": "Frequency Minimum",
+                                "superClass": "bnode:a8b4ddb9dc974e8282476beda1563ea0"
+                            },
+                            {
+                                "class": "http://purl.org/twc/dsa/FrequencyRange",
+                                "extent": "http://www.w3.org/2002/07/owl#someValuesFrom",
+                                "property": "http://semanticscience.org/resource/hasPart",
+                                "propertyLabel": "Has Part",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.org/twc/dsa/FrequencyMaximum",
+                                "rangeLabel": "Frequency Maximum",
+                                "superClass": "bnode:c5227e1ae0214cd19e94465ed4a046fe"
+                            }
+                        ];
+            } else if (type === "http://purl.org/twc/dsa/SystemType") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/SystemType",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://purl.org/twc/dsa/hasSystemType",
+                                "propertyLabel": "Has System Type",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.org/twc/dsa/SystemType",
+                                "rangeLabel": "System Type",
+                                "superClass": "bnode:edea31997ce34bfdaed303949ca6ba03"
+                            }
+                        ];
+            } else if (type === "http://purl.org/twc/dsa/SystemRole") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/SystemRole",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://purl.org/twc/dsa/hasSystemRole",
+                                "propertyLabel": "Has System Role",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.org/twc/dsa/SystemRole",
+                                "rangeLabel": "System Role",
+                                "superClass": "bnode:30e62b423f8945c9adf8ee4e781ac81f"
+                            }
+                        ];
+            } else if (type === "http://purl.org/twc/dsa/Location") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/Location",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://semanticscience.org/resource/isLocatedIn",
+                                "propertyLabel": "Is Located In",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.org/twc/dsa/LocationList",
+                                "rangeLabel": "Location List",
+                                "superClass": "bnode:79f15b0954134ec2a0277dca89cee821"
+                            }
+                        ];
+            } else if (type === "http://purl.org/twc/dsa/FrequencyMinimum") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/FrequencyMinimum",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://semanticscience.org/resource/hasUnit",
+                                "propertyLabel": "Has Unit",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000105",
+                                "rangeLabel": "Uo Uo 0000105",
+                                "superClass": "bnode:61e4b8bb7499499bbdb49d1682a0ccb4"
+                            },
+                            {
+                                "class": "http://purl.org/twc/dsa/FrequencyMinimum",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://semanticscience.org/resource/hasValue",
+                                "propertyLabel": "Has Value",
+                                "propertyType": "http://www.w3.org/2002/07/owl#DatatypeProperty",
+                                "range": "http://www.w3.org/2001/XMLSchema#decimal",
+                                "rangeLabel": "Decimal",
+                                "superClass": "bnode:4919a395245d4fa3803d8e223634938e"
+                            }
+                        ];
+            } else if (type === "http://purl.org/twc/dsa/FrequencyMaximum") {
+                return  [
+                            {
+                                "class": "http://purl.org/twc/dsa/FrequencyMaximum",
+                                "extent": "http://www.w3.org/2002/07/owl#allValuesFrom",
+                                "property": "http://semanticscience.org/resource/hasUnit",
+                                "propertyLabel": "Has Unit",
+                                "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
+                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000105",
+                                "rangeLabel": "Uo Uo 0000105",
+                                "superClass": "bnode:4551b2957e7c4202b2c64f0da3671f52"
+                            },
+                            {
+                                "cardinality": "1",
+                                "class": "http://purl.org/twc/dsa/FrequencyMaximum",
+                                "extent": "http://www.w3.org/2002/07/owl#qualifiedCardinality",
+                                "property": "http://semanticscience.org/resource/hasValue",
+                                "propertyLabel": "Has Value",
+                                "propertyType": "http://www.w3.org/2002/07/owl#DatatypeProperty",
+                                "range": "http://www.w3.org/2001/XMLSchema#decimal",
+                                "rangeLabel": "Decimal",
+                                "superClass": "bnode:947bb1f11da042ada459d77c46a53f3f"
+                            }
+                        
+                        ];
+            }
+        }
+        return queryConstraints;
+    }]);
+/*
+    app.service("createAttribute", ["$http", function($http, queryConstraints) {
+        function createResource(resource) {
+            resource['@id'] = makeID();
+        }
+        function createAttribute(resource, type) {
+            var constraints = queryConstraints(type);
+            resource['@id'] = makeID();
+            resource['@type'] = type;
+            for (let constraint of constraints) {
+                if (resource[constraint.property] === undefined) {
+                    resource[constraint.property] = [];
+                }
+                if (constraint.propertyType === "http://www.w3.org/2002/07/owl#DatatypeProperty") {
+                    resource[constraint.property].push("");
+                } else {
+                    let innerResource = {};
+                    createAttribute(innerResource, constraint.range);
+                    resource[constraint.property].push(innerResource);
+                }
+            }
+
+            if (type === "http://purl.org/twc/dsa/SystemType") {
+                attribute['@id'] = makeID();
+                attribute['@type'] = "http://purl.org/twc/dsa/System";
+                attribute['http://purl.org/twc/dsa/hasSystemType'] = "";
+            }
+            
+            {
+                "@id": "w2p8sy53w6",
+                "@type": [
+                    "http://purl.org/twc/dsa/System"
+                ],
+                "dsa:hasSystemRole": dsa:NonFederalSystemRole
+            }
+            
+            {
+                "@id": "w2p8sy53w6",
+                "@type": [
+                    "http://purl.org/twc/dsa/Location"
+                ],
+                "sio:isLocatedIn": dsa:list91-2-a
+            }
+            
+            {
+                "@id": "w2p8sy53w6",
+                "@type": [
+                    "http://purl.org/twc/dsa/FrequencyRange"
+                ],
+                "sio:hasAttribute": {
+                    "@id": "asjhdasdd",
+                    "@type": [
+                        "http://purl.org/twc/dsa/FrequencyMinimum"
+                    ],
+                    "sio:hasValue": "1761"
+                    "sio:hasUnit": uo:0000105
+                },
+                "sio:hasAttribute": {
+                    "@id": "asjhdasdd",
+                    "@type": [
+                        "http://purl.org/twc/dsa/FrequencyMaximum"
+                    ],
+                    "sio:hasValue": "1780"
+                    "sio:hasUnit": uo:0000105
+                }
+            }
+        }
+        return createAttribute;
+    }]);*/
     
     angular.bootstrap(document, ['App']);
 
