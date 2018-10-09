@@ -31,4 +31,4 @@ keepalive
 filedepot
 bibtexparser
 python-magic
-javabridge==1.0.17
+javabridge
