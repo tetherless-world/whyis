@@ -2752,8 +2752,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         'label' : {
                             "@value": ""
                         },
-                        'description' : {
-                            "@value": ""
+                        "description": {
+                            "@value": "Policy description"
                         },
                         'xacml:includes' : [
                             {
@@ -2766,17 +2766,41 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                         {
                                             "@id": makeID(),
                                             "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
-                                            "sio:hasAttribute" : []
+                                            "sio:hasAttribute" : [
+                                                {
+                                                    "@id" : makeID(),
+                                                    "@type" : ["http://purl.org/twc/dsa/SystemType"],
+                                                    "sio:hasValue" : "http://purl.org/twc/dsa/JointTacticalRadioSystem"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
+                                /*
                                 "xacml:includes" : [
                                     {
                                         "@id" : makeID(),
                                         "@type" : ["dsa:ObligationStatement"],
                                         "sio:hasValue" : ""
                                     }
-                                ]
+                                ]*/
+                                "xacml:includes": [
+                                    {
+                                      "@id": "2n01gzs3v0",
+                                      "@type": [
+                                        "dsa:ObligationStatement"
+                                      ],
+                                      "sio:hasValue": "olbi1"
+                                    },
+                                    {
+                                      "@id": "o5r788tizx",
+                                      "@type": [
+                                        "dsa:ObligationStatement"
+                                      ],
+                                      "sio:hasValue": "bol2"
+                                    }
+                                ],
+                                "xacml:hasEffect": "Permit"                    
                             }
                         ]
                     }
@@ -3195,8 +3219,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             template: `
                 <div layout="row">
                     <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
-                    <dsa-input ng-repeat="constraint in constraints" model="attribute[constraint['property']]" label="constraint['rangeLabel']"></dsa-input>
-                    <!--dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select-->
+                    <dsa-input ng-if="showInput" model="attribute['sio:hasValue']" label="'Value'"></dsa-input>
+                    <dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select>
                     <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement['sio:hasAttribute'], '@id', attribute['@id'])">-</md-button>
                 </div>
             `,
@@ -3208,7 +3232,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 attribute: "="
             },
             link: function (scope, element, statement, attributes, options, attribute) {
-                scope.showSelect = true;
+                //scope.showSelect = true;
                 scope.remove = function(array, property, value) {
                     for (i in array) {
                         if(array[i][property] === value) {
@@ -3224,11 +3248,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         attr === "http://purl.org/twc/dsa/SystemType" ||
                         attr === "http://purl.org/twc/dsa/Location") {
                         scope.showSelect = true;
-                    } else if (attr === "http://purl.org/twc/dsa/FrequencyRange") {
+                    } else if (attr === "http://purl.org/twc/dsa/FrequencyMaximum" ||
+                               attr === "http://purl.org/twc/dsa/FrequencyMinimum") {
                         scope.showInput = true;
                     }
                     scope.options = scope.queryAV(attr);
-                    scope.constraints = scope.queryConstraints(attr);
+                    //scope.constraints = scope.queryConstraints(attr);
                 };
                 scope.attributeSync = function(attribute) {
                     for (constraint of scope.constraints) {
