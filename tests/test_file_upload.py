@@ -45,10 +45,10 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(content.mimetype, "text/plain")
         self.assertEquals(content.data, text)
 
-        metadata = self.client.get("/about",query_string={"uri":uri, 'view':'describe'},headers={"Accept":"text/turtle"},follow_redirects=True)
+        metadata = self.client.get("/about",query_string={"uri":uri, 'view':'describe'},headers={"Accept":"application/ld+json"},follow_redirects=True)
         g = Graph()
-        g.parse(data=metadata.data, format="turtle")
-        self.assertEquals(g.value(URIRef(uri), RDF.type), URIRef('http://purl.org/net/provenance/ns#File'))
+        g.parse(data=metadata.data, format="json-ld")
+        self.assertTrue(g.resource(URIRef(uri))[RDF.type : URIRef('http://purl.org/net/provenance/ns#File')])
 
         
     def test_linked_data(self):
