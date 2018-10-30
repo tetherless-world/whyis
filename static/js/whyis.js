@@ -2682,250 +2682,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return resolveURI;
     });
-
-    app.controller('DsaController', function($scope, $compile, makeID, Nanopub, resolveURI, queryAttributes, queryOptions) {
-        var vm = this;
-        var np_id = makeID();
-        vm.resolveURI = resolveURI;
-
-        vm.submit = function() {
-            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
-            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
-            Nanopub.save(vm.nanopub).then(function() {
-                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
-            });
-        }
-
-        $scope.sources = [
-            "Redbook",
-            "FCC"
-        ];
-        $scope.attributes = queryAttributes();
-        $scope.options = queryOptions("http://purl.org/twc/dsa/SystemType");
-        $scope.effects = [
-            "Permit",
-            "Deny"
-        ];
-        $scope.addRule = function(element) {
-            console.log("addRule");
-            let rule = {};
-            rule['@id'] = makeID();
-            rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
-            rule['xacml:hasTarget'] = {
-                "@id" : makeID(),
-                "@type" : "xacml:Target",
-                "sio:hasAttribute" : []
-            };
-            vm.instance['xacml:includes'].push(rule);
-        };
-
-        vm.nanopub = {
-            "@context" : {
-                "@vocab": LOD_PREFIX+'/',
-                "@base": LOD_PREFIX+'/',
-                "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "whyis" : "http://vocab.rpi.edu/whyis/",
-                "np" : "http://www.nanopub.org/nschema#",
-                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
-                'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
-                'dc' : 'http://purl.org/dc/terms/',
-                'prov' : 'http://www.w3.org/ns/prov#',
-                'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
-                'dsa' : 'http://purl.org/twc/dsa/',
-                'references' : {"@id" : 'dc:references', "@type": "@uri"},
-                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
-                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
-                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
-                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
-            },
-            "@id" : "urn:"+np_id,
-            "@graph" : {
-                "@id" : "urn:"+np_id,
-                "@type": "np:Nanopublication",
-                "np:hasAssertion" : {
-                    "@id" : "urn:"+np_id+"_assertion",
-                    "@type" : "np:Assertion",
-                    "@graph" : {
-                        "@id": makeID(),
-                        "@type" : [NODE_URI],
-                        'label' : {
-                            "@value": ""
-                        },
-                        "description": {
-                            "@value": "Policy description"
-                        },
-                        'xacml:includes' : [
-                            {
-                                "@id": makeID(),
-                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"],
-                                "xacml:hasTarget" : {
-                                    "@id" : makeID(),
-                                    "@type" : "xacml:Target",
-                                    "sio:hasAttribute" : [
-                                        {
-                                            "@id": makeID(),
-                                            "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
-                                            "sio:hasAttribute" : [
-                                                {
-                                                    "@id" : makeID(),
-                                                    "@type" : ["http://purl.org/twc/dsa/SystemType"],
-                                                    "sio:hasValue" : "http://purl.org/twc/dsa/JointTacticalRadioSystem"
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                /*
-                                "xacml:includes" : [
-                                    {
-                                        "@id" : makeID(),
-                                        "@type" : ["dsa:ObligationStatement"],
-                                        "sio:hasValue" : ""
-                                    }
-                                ]*/
-                                "xacml:includes": [
-                                    {
-                                      "@id": "2n01gzs3v0",
-                                      "@type": [
-                                        "dsa:ObligationStatement"
-                                      ],
-                                      "sio:hasValue": "olbi1"
-                                    },
-                                    {
-                                      "@id": "o5r788tizx",
-                                      "@type": [
-                                        "dsa:ObligationStatement"
-                                      ],
-                                      "sio:hasValue": "bol2"
-                                    }
-                                ],
-                                "xacml:hasEffect": "Permit"                    
-                            }
-                        ]
-                    }
-                },
-                "np:hasProvenance" : {
-                    "@id" : "urn:"+np_id+"_provenance",
-                    "@type" : "np:Provenance",
-                    "@graph" : {
-                        "@id": "urn:"+np_id+"_assertion",
-                        "references": [],
-                        'quoted from' : [],
-                        'derived from' : []
-                    }
-                },
-                "np:hasPublicationInfo" : {
-                    "@id" : "urn:"+np_id+"_pubinfo",
-                    "@type" : "np:PublicationInfo",
-                    "@graph" : {
-                        "@id": "urn:"+np_id,
-                    }
-                }
-            }
-        };
-        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
-        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
-
-        $scope.globalContext = vm.nanopub['@context'];
-    });
-
-    app.service("queryAttributes", ["$http", function($http) {
-        function queryAttributes() {
-            var results = {};
-            var query = `
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
-                PREFIX dsa: <http://purl.org/twc/dsa/>
-                SELECT ?resource ?label
-                WHERE {
-                    ?resource rdfs:subClassOf+ dsa:TempAttribute
-                }
-            `;
-            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
-                .then(function(data) {
-                    console.log("data.data.results.bindings", data.data.results.bindings);
-                    return data.data.results.bindings.map(function(row) {
-                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
-                            .then(function(data) {
-                                results[data.data] = row.resource.value;
-                                return results;
-                            });
-                            /*
-                        results["System Type"] = "http://purl.org/twc/dsa/SystemType";
-                        results["System Role"] = "http://purl.org/twc/dsa/SystemRole";
-                        results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
-                        results["Location"] = "http://purl.org/twc/dsa/Location";
-                        return results;
-                        */
-                    });
-                });
-            return results;
-        }
-        return queryAttributes;
-    }]);
-
-    app.service("queryOptions", ["$http", function($http) {
-        function queryOptions(attribute) {
-            console.log("queryOptions has just started:", attribute);
-
-            var results = {};
-            if (attribute === "http://purl.org/twc/dsa/SystemType") {
-                results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
-                results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
-                results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
-                results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
-            } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
-                results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
-                results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
-                results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
-            } else if (attribute === "http://purl.org/twc/dsa/Location") {
-                results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
-                results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
-                results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
-                results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
-            }
-            return results;
-            /*
-            var results = {};
-            var query = `
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
-                SELECT ?resource ?label
-                WHERE {
-                    ?resource rdfs:subClassOf+ xacml:Attribute
-                }
-            `;
-            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
-                .then(function(data) {
-                    console.log("data.data.results.bindings", data.data.results.bindings);
-                    return data.data.results.bindings.map(function(row) {
-                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
-                            .then(function(data) {
-                                //results[data.data] = row.resource.value;
-                            });
-                        if (attribute === "http://purl.org/twc/dsa/SystemType") {
-                            results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
-                            results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
-                            results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
-                            results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
-                        } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
-                            results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
-                            results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
-                            results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
-                        } else if (attribute === "http://purl.org/twc/dsa/Location") {
-                            results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
-                            results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
-                            results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
-                            results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
-                        }
-                        return results;
-                    });
-                });
-            return results;*/
-        }
-        return queryOptions;
-    }]);
     
     /*
      * The controller - New Instance.
@@ -3218,10 +2974,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div layout="row">
-                    <dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
-                    <dsa-input ng-if="showInput" model="attribute['sio:hasValue']" label="'Value'"></dsa-input>
-                    <dsa-select ng-if="showSelect" model="attribute['sio:hasValue']" options="options" label="'Value'"></dsa-select>
-                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement['sio:hasAttribute'], '@id', attribute['@id'])">-</md-button>
+                    <dsa-select model="attribute" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
+                    <!--dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select-->
+                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="model[0][property]" label="'Value'"></dsa-input>
+                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="model[1][property]" label="'Value'"></dsa-input>
+                    <dsa-select ng-if="showSelect" ng-repeat="value in statement[attribute]" model="statement[attribute][$index]" options="options" label="'Value'"></dsa-select>
+                    <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement, attribute)">-</md-button>
                 </div>
             `,
             restrict: "E",
@@ -3232,28 +2990,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 attribute: "="
             },
             link: function (scope, element, statement, attributes, options, attribute) {
-                //scope.showSelect = true;
-                scope.remove = function(array, property, value) {
-                    for (i in array) {
-                        if(array[i][property] === value) {
-                            array.splice(i, 1);
-                        }
-                    }
+                scope.showSelect = true;
+                scope.remove = function(statement, attribute) {
+                    delete statement[attribute];
                 };
                 scope.attributeChange = function(attr) {
-                    console.log("attributeChange", attr);
-                    scope.showInput = false;
                     scope.showSelect = false;
-                    if (attr === "http://purl.org/twc/dsa/SystemRole" ||
-                        attr === "http://purl.org/twc/dsa/SystemType" ||
-                        attr === "http://purl.org/twc/dsa/Location") {
+                    if (attr === "dsa:utilizesNetwork") {
                         scope.showSelect = true;
-                    } else if (attr === "http://purl.org/twc/dsa/FrequencyMaximum" ||
-                               attr === "http://purl.org/twc/dsa/FrequencyMinimum") {
-                        scope.showInput = true;
+                    } else if (attr === "dsa:isLocatedIn") {
+                        scope.showSelect = true;
                     }
                     scope.options = scope.queryAV(attr);
-                    //scope.constraints = scope.queryConstraints(attr);
                 };
                 scope.attributeSync = function(attribute) {
                     for (constraint of scope.constraints) {
@@ -3349,23 +3097,24 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.queryAV = function(attr) {
                     console.log("queryAV", attr);
                     var results = {};
-                    if (attr === "http://purl.org/twc/dsa/SystemType") {
-                        results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
-                        results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
-                        results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
-                        results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
-                    } else if (attr === "http://purl.org/twc/dsa/SystemRole") {
-                        results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
-                        results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
-                        results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
-                    } else if (attr === "http://purl.org/twc/dsa/Location") {
-                        results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
-                        results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
-                        results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
-                        results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                    if (attr === "dsa:utilizesNetwork") {
+                        results["Advanced Wireless System (AWS)"] = "dsa:AdvancedWirelessService";
+                        results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
+                        results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
+                        results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
+                    } else if (attr === "dsa:Affiliation") {
+                        results["Federal Affiliation"] = "dsa:FederalAffiliation";
+                        results["Military Affiliation"] = "dsa:MilitaryAffiliation";
+                        results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
+                    } else if (attr === "dsa:isLocatedIn") {
+                        results["list91-2-a"] = "dsa:list91-2-a";
+                        results["list91-2-b"] = "dsa:list91-2-b";
+                        results["list91-2-c"] = "dsa:list91-2-c";
+                        results["US91EWBaseList"] = "dsa:US91EWBaseList";
                     }
                     return results;
                 }
+                scope.options = scope.queryAV(scope.attribute);
             }
         }
     });
@@ -3464,20 +3213,33 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div class="rule">
-                    <md-button class="md-raised" ng-click="addStatement(attributes, options, statement, $event.target)">Add statement</md-button>
+                    <md-button class="md-raised" ng-click="addStatement(attributes, options, statement)">Add statement</md-button>
                     <md-button class="md-raised md-warn" ng-click="removeStatement(statement)">Remove statement</md-button>
-                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, statement, $event.target)">Add attribute</md-button>
+                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, statement)">Add attribute</md-button>
+                    <md-menu>
+                        <md-button aria-label="Open phone interactions menu" class="md-icon-button" ng-click="openMenu($mdMenu, $event)">
+                            Add
+                        </md-button>
+                        <md-menu-content width="4">
+                            <md-menu-item ng-repeat="(label, uri) in attributes">
+                                <md-button ng-click="addAttribute(uri)">
+                                    {{label}}
+                                </md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Statement type</label>
                             <md-select ng-model="statement['@type'][0]" placeholder="Statement type" required md-no-asterisk="false">
-                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence">Conjunctive sequence</md-option>
-                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/DisjunctiveSequence">Disjunctive sequence</md-option>
+                                <md-option value="xacml:ConjunctiveSequence">Conjunctive sequence</md-option>
+                                <md-option value="xacml:DisjunctiveSequence">Disjunctive sequence</md-option>
                             </md-select>
                         </md-input-container>
                     </div>
+                    
                     <dsa-attribute ng-repeat="innerAttribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="innerAttribute" statement="statement"></dsa-attribute>
-                    <dsa-statement ng-repeat="innerStatement in getAttributes(statement, 'statement')" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
+                    <dsa-statement ng-repeat="innerStatement in statement['xacml:includes']" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
@@ -3487,21 +3249,25 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 statement: "="
             },
             link: function (scope, element, attributes, options, statement) {
-                scope.addAttribute = function(attributes, options, statement, target) {
-                    console.log("addAttribute target", target);
-                    var attribute = {};
-                    attribute['@id'] = makeID();
-                    attribute['@type'] = ["http://purl.org/twc/dsa/SystemType"];
-                    attribute['sio:hasValue'] = "";
-                    statement['sio:hasAttribute'].push(attribute);
+                console.log("dsaStatement", scope.attributes);
+                var originatorEv;
+                scope.addAttribute = function(uri) {
+                    //var attribute = {};
+                    //attribute['@id'] = makeID();
+                    //attribute['@type'] = [""];
+                    //attribute['sio:hasValue'] = "";
+                    if (scope.statement[uri] === undefined) {
+                        scope.statement[uri] = [];
+                    }
+                    scope.statement[uri].push("");
                 };
-                scope.addStatement = function(attributes, options, statement, target) {
+                scope.addStatement = function(attributes, options, statement) {
                     console.log("addStatement", statement);
                     var innerStatement = {};
                     innerStatement['@id'] = makeID();
-                    innerStatement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
-                    innerStatement['sio:hasAttribute'] = [];
-                    statement['sio:hasAttribute'].push(innerStatement);
+                    innerStatement['@type'] = ["xacml:ConjunctiveSequence"];
+                    innerStatement['xacml:includes'] = [];
+                    statement['xacml:includes'].push(innerStatement);
                 };
                 scope.removeStatement = function(statement) {
                     for (let i in statement) {
@@ -3510,20 +3276,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 };
                 scope.getAttributes = function(object, type) {
                     var attributes = [];
-                    var statements = [];
 
-                    for (let i in object['sio:hasAttribute']) {
-                        for (let j in object['sio:hasAttribute'][i]['@type']) {
-                            if (object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence" ||
-                                object['sio:hasAttribute'][i]['@type'][j] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/DisjunctiveSequence") {
-                                statements.push(object['sio:hasAttribute'][i]);
-                            } else {
-                                attributes.push(object['sio:hasAttribute'][i]);
-                            }
+                    for (let i in object) {
+                        if (i !== "@id" && i !== "@type" && i !== "xacml:includes" && i !== "$$hashKey") {
+                            attributes.push(i);
                         }
                     }
-                    if (type === "statement") return statements;
-                    else return attributes;
+                    return attributes;
+                };
+                scope.openMenu = function($mdMenu, ev) {
+                    originatorEv = ev;
+                    $mdMenu.open(ev);
                 };
             }
         }
@@ -3541,8 +3304,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         </md-input-container>
                     </div>
                     <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
-                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['sio:hasAttribute']" attributes="attributes" options="options" statement="statement"></dsa-statement>
-
+                    
+                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['xacml:includes']['xacml:includes']" attributes="attributes" options="options" statement="statement"></dsa-statement>
+                    
                     <h1 class="md-title">Effect</h1>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
@@ -3565,13 +3329,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 effects: "="
             },
             link: function (scope, element, attributes, options, rule) {
+                console.log("dsaRule", scope.attributes);
                 scope.addStatement = function(attributes, options, rule, target) {
                     console.log("addStatement");
                     let statement = {};
                     statement['@id'] = makeID();
-                    statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
-                    statement['sio:hasAttribute'] = [];
-                    rule['xacml:hasTarget']['sio:hasAttribute'].push(statement);
+                    statement['@type'] = ["xacml:ConjunctiveSequence"];
+                    //statement['sio:hasAttribute'] = [];
+                    rule['xacml:hasTarget']['xacml:includes']['xacml:includes'].push(statement);
                 };
             }
         }
@@ -3694,6 +3459,277 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return queryConstraints;
     }]);
+
+    app.service("queryAttributes", ["$http", function($http) {
+        function queryAttributes() {
+            /*
+            var results = {};
+            var query = `
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                PREFIX dsa: <http://purl.org/twc/dsa/>
+                SELECT ?resource ?label
+                WHERE {
+                    ?resource rdfs:subClassOf+ dsa:TempAttribute
+                }
+            `;
+            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+                .then(function(data) {
+                    console.log("data.data.results.bindings", data.data.results.bindings);
+                    return data.data.results.bindings.map(function(row) {
+                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
+                            .then(function(data) {
+                                results[data.data] = row.resource.value;
+                                return results;
+                            });
+                            
+                        results["System Type"] = "http://purl.org/twc/dsa/SystemType";
+                        results["System Role"] = "http://purl.org/twc/dsa/SystemRole";
+                        results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
+                        results["Location"] = "http://purl.org/twc/dsa/Location";
+                        return results;
+                        
+                    });
+                });
+            return results;
+            */
+            var results = {};
+            results["System"] = "dsa:utilizesNetwork";
+            //results["Affiliation"] = "http://purl.org/twc/dsa/Affiliation";
+            results["Location"] = "dsa:isLocatedIn";
+            //results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
+            return results;
+        }
+        return queryAttributes;
+    }]);
+
+    app.service("queryOptions", ["$http", function($http) {
+        function queryOptions(attribute) {
+            console.log("queryOptions has just started:", attribute);
+
+            var results = {};
+            if (attribute === "dsa:utilizesNetwork") {
+                results["Advanced Wireless System (AWS)"] = "dsa:AdvancedWirelessService";
+                results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
+                results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
+                results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
+            } else if (attribute === "dsa:Affiliation") {
+                results["Federal Affiliation"] = "dsa:FederalAffiliation";
+                results["Military Affiliation"] = "dsa:MilitaryAffiliation";
+                results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
+            } else if (attribute === "dsa:isLocatedIn") {
+                results["list91-2-a"] = "dsa:list91-2-a";
+                results["list91-2-b"] = "dsa:list91-2-b";
+                results["list91-2-c"] = "dsa:list91-2-c";
+                results["US91EWBaseList"] = "dsa:US91EWBaseList";
+            }
+            return results;
+            /*
+            var results = {};
+            var query = `
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                SELECT ?resource ?label
+                WHERE {
+                    ?resource rdfs:subClassOf+ xacml:Attribute
+                }
+            `;
+            $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+                .then(function(data) {
+                    console.log("data.data.results.bindings", data.data.results.bindings);
+                    return data.data.results.bindings.map(function(row) {
+                        $http.get(ROOT_URL+'about', {params : {uri : row.resource.value, view : 'label'}})
+                            .then(function(data) {
+                                //results[data.data] = row.resource.value;
+                            });
+                        if (attribute === "http://purl.org/twc/dsa/SystemType") {
+                            results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                            results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                            results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                            results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+                        } else if (attribute === "http://purl.org/twc/dsa/SystemRole") {
+                            results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalSystemRole";
+                            results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitarySystemRole";
+                            results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalSystemRole";
+                        } else if (attribute === "http://purl.org/twc/dsa/Location") {
+                            results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                            results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                            results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                            results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                        }
+                        return results;
+                    });
+                });
+            return results;*/
+        }
+        return queryOptions;
+    }]);
+
+    app.controller('DsaController', function($scope, $compile, makeID, Nanopub, resolveURI, queryAttributes, queryOptions) {
+        var vm = this;
+        var np_id = makeID();
+        vm.resolveURI = resolveURI;
+
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+
+        $scope.sources = [
+            "Redbook",
+            "FCC"
+        ];
+        $scope.attributes = queryAttributes();
+        $scope.options = queryOptions("dsa:utilizesNetwork");
+        $scope.effects = [
+            "Permit",
+            "Deny"
+        ];
+        $scope.addRule = function(element) {
+            console.log("addRule");
+            let rule = {};
+            rule['@id'] = makeID();
+            rule['@type'] = ["dsa:DynamicSpectrumAllocationRule"];
+            rule['xacml:hasTarget'] = {
+                "@id" : makeID(),
+                "@type" : "xacml:Target"
+                //"sio:hasAttribute" : []
+            };
+            vm.instance['xacml:includes'].push(rule);
+        };
+
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
+                'dsa' : 'http://purl.org/twc/dsa/',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : {
+                            "@value": ""
+                        },
+                        "description": {
+                            "@value": "Policy description"
+                        },
+                        'xacml:includes' : [
+                            {
+                                "@id": makeID(),
+                                "@type" : ["das:DynamicSpectrumAllocationRule"],
+                                "xacml:hasTarget" : {
+                                    "@id" : makeID(),
+                                    "@type" : "xacml:Target",
+                                    "xacml:includes" : {
+                                        "@id": makeID(),
+                                        "@type" : ["xacml:ConjunctiveSequence"],
+                                        "xacml:includes" : [
+                                            {
+                                                "@id": makeID(),
+                                                "@type" : [
+                                                    "xacml:ConjunctiveSequence",
+                                                    "dsa:Requestor"
+                                                ],
+                                                "dsa:utilizesNetwork" : [
+                                                    "dsa:JointTacticalRadioSystem"
+                                                ],
+                                                "dsa:isLocatedIn" : [
+                                                    "dsa:list91-2-a"
+                                                ]
+                                            },
+                                            {
+                                                "@id": makeID(),
+                                                "@type" : [
+                                                    "xacml:ConjunctiveSequence",
+                                                    "dsa:Requestor"
+                                                ],
+                                                "dsa:utilizesNetwork" : [
+                                                    "dsa:AdvancedWirelessService"
+                                                ],
+                                                "dsa:isLocatedIn" : [
+                                                    "dsa:list91-2-b"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                /*
+                                "xacml:includes" : [
+                                    {
+                                        "@id" : makeID(),
+                                        "@type" : ["dsa:ObligationStatement"],
+                                        "sio:hasValue" : ""
+                                    }
+                                ]*/
+                                "xacml:includes": [
+                                    {
+                                      "@id": "2n01gzs3v0",
+                                      "@type": [
+                                        "dsa:ObligationStatement"
+                                      ],
+                                      "sio:hasValue": "olbi1"
+                                    },
+                                    {
+                                      "@id": "o5r788tizx",
+                                      "@type": [
+                                        "dsa:ObligationStatement"
+                                      ],
+                                      "sio:hasValue": "bol2"
+                                    }
+                                ],
+                                "xacml:hasEffect": "Permit"                    
+                            }
+                        ]
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        $scope.globalContext = vm.nanopub['@context'];
+    });
 /*
     app.service("createAttribute", ["$http", function($http, queryConstraints) {
         function createResource(resource) {
