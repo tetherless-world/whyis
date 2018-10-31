@@ -2974,11 +2974,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div layout="row">
-                    <dsa-select model="attribute" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
+                    <dsa-select model="model" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
                     <!--dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select-->
-                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="model[0][property]" label="'Value'"></dsa-input>
-                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="model[1][property]" label="'Value'"></dsa-input>
-                    <dsa-select ng-if="showSelect" ng-repeat="value in statement[attribute]" model="statement[attribute][$index]" options="options" label="'Value'"></dsa-select>
+                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="modelValue[0][property]" label="'Value'"></dsa-input>
+                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="modelValue[1][property]" label="'Value'"></dsa-input>
+                    <dsa-select ng-if="showSelect" ng-repeat="value in statement[attribute]" model="modelValue[$index]" options="options" label="'Value'"></dsa-select>
                     <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement, attribute)">-</md-button>
                 </div>
             `,
@@ -2991,6 +2991,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             },
             link: function (scope, element, statement, attributes, options, attribute) {
                 scope.showSelect = true;
+                
+                if (angular.isObject(scope.attribute) === true) {
+                    scope.model = scope.attribute["@type"][0];
+                    scope.modelValue = scope.attribute["sio:hasAttribute"];
+                    scope.property = "sio:hasValue";
+                } else {
+                    scope.model = scope.attribute;
+                    scope.modelValue = scope.statement[scope.attribute];
+                }
+
                 scope.remove = function(statement, attribute) {
                     delete statement[attribute];
                 };
@@ -3095,14 +3105,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                 };
                 scope.queryAV = function(attr) {
-                    console.log("queryAV", attr);
                     var results = {};
                     if (attr === "dsa:utilizesNetwork") {
                         results["Advanced Wireless System (AWS)"] = "dsa:AdvancedWirelessService";
                         results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
                         results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
                         results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
-                    } else if (attr === "dsa:Affiliation") {
+                        results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
+                        results["Licensee System"] = "dsa:LicenseeSystem";
+                        results["Military Station"] = "dsa:MilitaryStation";
+                    } else if (attr === "dsa:hasAffiliation") {
                         results["Federal Affiliation"] = "dsa:FederalAffiliation";
                         results["Military Affiliation"] = "dsa:MilitaryAffiliation";
                         results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
@@ -3239,7 +3251,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     </div>
                     
                     <dsa-attribute ng-repeat="innerAttribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="innerAttribute" statement="statement"></dsa-attribute>
-                    <dsa-statement ng-repeat="innerStatement in statement['xacml:includes']" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
+                    <dsa-statement ng-repeat="innerStatement in getStatements(statement['xacml:includes'], 'attribute')" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
@@ -3249,17 +3261,40 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 statement: "="
             },
             link: function (scope, element, attributes, options, statement) {
-                console.log("dsaStatement", scope.attributes);
                 var originatorEv;
                 scope.addAttribute = function(uri) {
-                    //var attribute = {};
-                    //attribute['@id'] = makeID();
-                    //attribute['@type'] = [""];
-                    //attribute['sio:hasValue'] = "";
-                    if (scope.statement[uri] === undefined) {
-                        scope.statement[uri] = [];
+                    var property, value;
+                    if (uri === "dsa:FrequencyRange") {
+                        var object = {};
+                        property = "xacml:includes";
+                        object["@id"] = makeID();
+                        object["@type"] = [
+                            uri
+                        ];
+                        object["sio:hasAttribute"] = [
+                            {
+                                "@id" : makeID(),
+                                "@type" : ["dsa:FrequencyMinimum"],
+                                "sio:hasValue" : "",
+                                "sio:hasUnit" : "uo:0000105"
+                            },
+                            {
+                                "@id" : makeID(),
+                                "@type" : ["dsa:FrequencyMaximum"],
+                                "sio:hasValue" : "",
+                                "sio:hasUnit" : "uo:0000105"
+                            },
+                        ];
+                        value = object;
+                    } else {
+                        property = uri;
+                        value = "";
                     }
-                    scope.statement[uri].push("");
+
+                    if (scope.statement[property] === undefined) {
+                        scope.statement[property] = [];
+                    }
+                    scope.statement[property].push(value);
                 };
                 scope.addStatement = function(attributes, options, statement) {
                     console.log("addStatement", statement);
@@ -3280,9 +3315,28 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     for (let i in object) {
                         if (i !== "@id" && i !== "@type" && i !== "xacml:includes" && i !== "$$hashKey") {
                             attributes.push(i);
+                        } else if (i === "xacml:includes") {
+                            for (let j in object[i]) {
+                                if (object[i][j]["@type"] !== "dsa:ConjunctiveSequence" &&
+                                    object[i][j]["@type"] !== "dsa:DisjunctiveSequence") {
+                                        attributes.push(object[i][j]);
+                                    }
+                            }
                         }
                     }
                     return attributes;
+                };
+                scope.getStatements = function(object, type) {
+                    var statements = [];
+
+                    for (let i in object) {
+                        /*
+                        if (i !== "@id" && i !== "@type" && i !== "xacml:includes" && i !== "$$hashKey") {
+                            attributes.push(i);
+                        }
+                        */
+                    }
+                    return statements;
                 };
                 scope.openMenu = function($mdMenu, ev) {
                     originatorEv = ev;
@@ -3495,9 +3549,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             */
             var results = {};
             results["System"] = "dsa:utilizesNetwork";
-            //results["Affiliation"] = "http://purl.org/twc/dsa/Affiliation";
+            results["Affiliation"] = "dsa:hasAffiliation";
             results["Location"] = "dsa:isLocatedIn";
-            //results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
+            results["Frequency Range"] = "dsa:FrequencyRange";
             return results;
         }
         return queryAttributes;
@@ -3513,7 +3567,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
                 results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
                 results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
-            } else if (attribute === "dsa:Affiliation") {
+                results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
+                results["Licensee System"] = "dsa:LicenseeSystem";
+                results["Military Station"] = "dsa:MilitaryStation";
+            } else if (attribute === "dsa:hasAffiliation") {
                 results["Federal Affiliation"] = "dsa:FederalAffiliation";
                 results["Military Affiliation"] = "dsa:MilitaryAffiliation";
                 results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
@@ -3615,6 +3672,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
                 'dsa' : 'http://purl.org/twc/dsa/',
+                'uo' : 'http://purl.obolibrary.org/obo/UO_',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
                 'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
                 'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
