@@ -5,6 +5,9 @@
 
 - title: Installing Whyis
   url: /install
+  sublinks:
+    - title: Docker Installation
+      url: /docker
 
 - title: Whyis Views
   url: /views
