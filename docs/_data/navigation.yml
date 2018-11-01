@@ -3,12 +3,11 @@
 - title: Home
   url: /
 
-- title: Installing Whyis
-  sublinks:
-    - title: Basic Installation
-      url: /install
-    - title: Docker Installation
-      url: /docker
+- title: Basic Installation
+  url: /install
+  
+- title: Docker Installation
+  url: /docker
 
 - title: Whyis Views
   url: /views
