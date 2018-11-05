@@ -69,7 +69,12 @@ div.rules {
             </md-input-container>
 
             <div id="rules" class="rules">
-                <md-button class="md-raised" ng-click="addRule('rules')">Add rule</md-button>
+                <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
+                <dsa-statement ng-repeat="statement in vm.instance['xacml:hasTarget']['xacml:includes']['xacml:includes']" attributes="attributes" options="options" statement="statement"></dsa-statement>
+            </div>
+
+            <div id="rules" class="rules">
+                <md-button class="md-raised" ng-click="addRule()">Add Provision</md-button>
                 <dsa-rule ng-repeat="rule in vm.instance['xacml:includes']" attributes="attributes" options="options" rule="rule" effects="effects"></dsa-rule>
             </div>
         </div>

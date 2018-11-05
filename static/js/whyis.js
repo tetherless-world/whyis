@@ -3000,7 +3000,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     scope.model = scope.attribute;
                     scope.modelValue = scope.statement[scope.attribute];
                 }
-
                 scope.remove = function(statement, attribute) {
                     delete statement[attribute];
                 };
@@ -3113,7 +3112,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
                         results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
                         results["Licensee System"] = "dsa:LicenseeSystem";
+                        results["Federal System"] = "dsa:FederalSystem";
+                        results["Licensee System"] = "dsa:LicenseeSystem";
+                        results["Licensee Non-federal System"] = "dsa:LicenseeNonFederalSystem";
                         results["Military Station"] = "dsa:MilitaryStation";
+                        results["WCS Base Station"] = "dsa:WCSBaseStation";
+                        results["Fixed Service"] = "dsa:FixedService";
+                        results["Mobile Service"] = "dsa:MobileService";
                     } else if (attr === "dsa:hasAffiliation") {
                         results["Federal Affiliation"] = "dsa:FederalAffiliation";
                         results["Military Affiliation"] = "dsa:MilitaryAffiliation";
@@ -3123,6 +3128,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         results["list91-2-b"] = "dsa:list91-2-b";
                         results["list91-2-c"] = "dsa:list91-2-c";
                         results["US91EWBaseList"] = "dsa:US91EWBaseList";
+                        results["Space"] = "dsa:Space";
                     }
                     return results;
                 }
@@ -3251,11 +3257,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     </div>
                     
                     <dsa-attribute ng-repeat="innerAttribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="innerAttribute" statement="statement"></dsa-attribute>
-                    <dsa-statement ng-repeat="innerStatement in getStatements(statement['xacml:includes'], 'attribute')" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
+                    <dsa-statement ng-repeat="innerStatement in getStatements(statement['xacml:includes'], 'attribute')" rule="rule" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
             scope: {
+                rule: "=",
                 attributes: "=",
                 options: "=",
                 statement: "="
@@ -3303,6 +3310,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     innerStatement['@type'] = ["xacml:ConjunctiveSequence"];
                     innerStatement['xacml:includes'] = [];
                     statement['xacml:includes'].push(innerStatement);
+                };
+                scope.remove = function(rule, statement) {
+                    delete statement[attribute];
                 };
                 scope.removeStatement = function(statement) {
                     for (let i in statement) {
@@ -3359,7 +3369,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     </div>
                     <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
                     
-                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['xacml:includes']['xacml:includes']" attributes="attributes" options="options" statement="statement"></dsa-statement>
+                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['xacml:includes']['xacml:includes']" rule="rule" attributes="attributes" options="options" statement="statement"></dsa-statement>
                     
                     <h1 class="md-title">Effect</h1>
                     <div layout="row">
@@ -3568,8 +3578,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
                 results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
                 results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
+                results["Federal System"] = "dsa:FederalSystem";
                 results["Licensee System"] = "dsa:LicenseeSystem";
+                results["Licensee Non-federal System"] = "dsa:LicenseeNonFederalSystem";
                 results["Military Station"] = "dsa:MilitaryStation";
+                results["WCS Base Station"] = "dsa:WCSBaseStation";
+                results["Fixed Service"] = "dsa:FixedService";
+                results["Fixed Service"] = "dsa:MobileService";
             } else if (attribute === "dsa:hasAffiliation") {
                 results["Federal Affiliation"] = "dsa:FederalAffiliation";
                 results["Military Affiliation"] = "dsa:MilitaryAffiliation";
@@ -3579,6 +3594,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 results["list91-2-b"] = "dsa:list91-2-b";
                 results["list91-2-c"] = "dsa:list91-2-c";
                 results["US91EWBaseList"] = "dsa:US91EWBaseList";
+                results["Space"] = "dsa:Space";
             }
             return results;
             /*
@@ -3645,16 +3661,53 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             "Permit",
             "Deny"
         ];
-        $scope.addRule = function(element) {
+        $scope.addStatement = function() {
+            console.log("addStatement");
+            let statement = {};
+            statement['@id'] = makeID();
+            statement['@type'] = ["xacml:ConjunctiveSequence"];
+            statement['xacml:includes'] = [
+                {
+                    "@id" : makeID(),
+                    "@type" : [
+                        "xacml:ConjunctiveSequence",
+                        "dsa:Requestor"
+                    ]
+                }
+            ];
+            vm.instance['xacml:hasTarget']['xacml:includes']['xacml:includes'].push(statement);
+        };
+        $scope.addRule = function() {
             console.log("addRule");
             let rule = {};
             rule['@id'] = makeID();
             rule['@type'] = ["dsa:DynamicSpectrumAllocationRule"];
             rule['xacml:hasTarget'] = {
                 "@id" : makeID(),
-                "@type" : "xacml:Target"
-                //"sio:hasAttribute" : []
+                "@type" : "xacml:Target",
+                "xacml:includes" : {
+                    "@id" : makeID(),
+                    "@type" : [
+                        "xacml:ConjunctiveSequence"
+                    ],
+                    "xacml:includes" : [
+                        {
+                            "@id": makeID(),
+                            "@type" : [
+                                "xacml:ConjunctiveSequence",
+                                "dsa:Requestor"
+                            ]
+                        }
+                    ]
+                }
             };
+            rule['xacml:includes'] = [
+                {
+                    "@id" : makeID(),
+                    "@type" : ["dsa:ObligationStatement"]
+                    //"sio:hasAttribute" : []
+                }
+            ];
             vm.instance['xacml:includes'].push(rule);
         };
 
@@ -3695,10 +3748,53 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "description": {
                             "@value": "Policy description"
                         },
+                        "xacml:hasTarget" : {
+                            "@id" : makeID(),
+                            "@type" : "xacml:Target",
+                            "xacml:includes" : {
+                                "@id": makeID(),
+                                "@type" : ["xacml:ConjunctiveSequence"],
+                                "xacml:includes": [
+                                    {
+                                        "@id": makeID(),
+                                        "@type" : [
+                                            "xacml:ConjunctiveSequence",
+                                            "dsa:Requestor"
+                                        ],
+                                        "xacml:includes": [
+                                            {
+                                              "@id": "z1jwmo1lw9",
+                                              "@type": [
+                                                "dsa:FrequencyRange"
+                                              ],
+                                              "sio:hasAttribute": [
+                                                {
+                                                  "@id": "ws1bwfmtwf",
+                                                  "@type": [
+                                                    "dsa:FrequencyMinimum"
+                                                  ],
+                                                  "sio:hasValue": "1900",
+                                                  "sio:hasUnit": "uo:0000105"
+                                                },
+                                                {
+                                                  "@id": "gehkfmqzzg",
+                                                  "@type": [
+                                                    "dsa:FrequencyMaximum"
+                                                  ],
+                                                  "sio:hasValue": "1950",
+                                                  "sio:hasUnit": "uo:0000105"
+                                                }
+                                              ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
                         'xacml:includes' : [
                             {
                                 "@id": makeID(),
-                                "@type" : ["das:DynamicSpectrumAllocationRule"],
+                                "@type" : ["dsa:DynamicSpectrumAllocationRule"],
                                 "xacml:hasTarget" : {
                                     "@id" : makeID(),
                                     "@type" : "xacml:Target",
@@ -3711,26 +3807,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                                 "@type" : [
                                                     "xacml:ConjunctiveSequence",
                                                     "dsa:Requestor"
-                                                ],
+                                                ]/*,
                                                 "dsa:utilizesNetwork" : [
                                                     "dsa:JointTacticalRadioSystem"
                                                 ],
                                                 "dsa:isLocatedIn" : [
                                                     "dsa:list91-2-a"
-                                                ]
-                                            },
-                                            {
-                                                "@id": makeID(),
-                                                "@type" : [
-                                                    "xacml:ConjunctiveSequence",
-                                                    "dsa:Requestor"
-                                                ],
-                                                "dsa:utilizesNetwork" : [
-                                                    "dsa:AdvancedWirelessService"
-                                                ],
-                                                "dsa:isLocatedIn" : [
-                                                    "dsa:list91-2-b"
-                                                ]
+                                                ]*/
                                             }
                                         ]
                                     }
