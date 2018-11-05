@@ -151,6 +151,7 @@ $ sudo service celeryd restart
 ### Add a User
 
 Registration is available on the website for users, but it's easy to add a user to the knowledge graph from the command line. 
+Perform this task as the `whyis` user from the `/apps/whyis` directory.
 Use `--roles=admin` to make the user an administrator.
 
 ```
