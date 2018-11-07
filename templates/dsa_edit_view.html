@@ -30,7 +30,7 @@ div.rules {
 {% block content %}
 <h1>Create policy</h1>
 
-<div class="container" ng-controller="DsaController as vm" class="md-padding" ng-cloak>
+<div class="container" ng-controller="DsaEditController as vm" class="md-padding" ng-cloak>
     <div class="page-header" layout="row">
         <global-json-context/>
         <h1 flex property="rdfs:label">{{ title() }}<small ng-show="vm.instance.label.length != 0" ng-bind="vm.instance.label[0]['@value']"></small><small ng-show="vm.instance.label.length == 0" ng-bind="vm.instance['@id']"></small>

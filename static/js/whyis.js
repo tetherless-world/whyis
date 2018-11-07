@@ -2709,7 +2709,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "np" : "http://www.nanopub.org/nschema#",
                 "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
                 'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
@@ -2854,7 +2854,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "np" : "http://www.nanopub.org/nschema#",
                 "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
                 'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
@@ -2976,9 +2976,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 <div layout="row">
                     <dsa-select model="model" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select>
                     <!--dsa-select model="attribute['@type'][0]" options="attributes" change="attributeChange(attr)" label="'Attribute'"></dsa-select-->
-                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="modelValue[0][property]" label="'Value'"></dsa-input>
-                    <dsa-input ng-if="attribute['@type'][0] === 'dsa:FrequencyRange'" model="modelValue[1][property]" label="'Value'"></dsa-input>
-                    <dsa-select ng-if="showSelect" ng-repeat="value in statement[attribute]" model="modelValue[$index]" options="options" label="'Value'"></dsa-select>
+                    <dsa-input ng-if="attribute['@type'][0] === 'http://purl.org/twc/dsa/FrequencyRange'" model="modelValue[0][property][0]['@value']" label="'Value'"></dsa-input>
+                    <dsa-input ng-if="attribute['@type'][0] === 'http://purl.org/twc/dsa/FrequencyRange'" model="modelValue[1][property][0]['@value']" label="'Value'"></dsa-input>
+                    <dsa-select ng-if="showSelect" ng-repeat="value in statement[attribute]" model="modelValue[$index]['@id']" options="options" label="'Value'"></dsa-select>
                     <md-button class="md-fab md-mini" aria-label="Delete attribute" ng-click="remove(statement, attribute)">-</md-button>
                 </div>
             `,
@@ -2994,8 +2994,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 
                 if (angular.isObject(scope.attribute) === true) {
                     scope.model = scope.attribute["@type"][0];
-                    scope.modelValue = scope.attribute["sio:hasAttribute"];
-                    scope.property = "sio:hasValue";
+                    scope.modelValue = scope.attribute["http://semanticscience.org/resource/hasAttribute"];
+                    scope.property = "http://semanticscience.org/resource/hasValue";
                 } else {
                     scope.model = scope.attribute;
                     scope.modelValue = scope.statement[scope.attribute];
@@ -3005,9 +3005,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 };
                 scope.attributeChange = function(attr) {
                     scope.showSelect = false;
-                    if (attr === "dsa:utilizesNetwork") {
+                    if (attr === "http://purl.org/twc/dsa/utilizesNetwork") {
                         scope.showSelect = true;
-                    } else if (attr === "dsa:isLocatedIn") {
+                    } else if (attr === "http://purl.org/twc/dsa/isLocatedIn") {
                         scope.showSelect = true;
                     }
                     scope.options = scope.queryAV(attr);
@@ -3018,7 +3018,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             var newObject;
                             newObject['@id'] = makeID();
                             newObject['@type'] = constraint.range;
-                            attribute['sio:hasAttribute'].push(newObject);
+                            attribute['http://semanticscience.org/resource/hasAttribute'].push(newObject);
                         }
                     }
                 };
@@ -3105,30 +3105,30 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 };
                 scope.queryAV = function(attr) {
                     var results = {};
-                    if (attr === "dsa:utilizesNetwork") {
-                        results["Advanced Wireless System (AWS)"] = "dsa:AdvancedWirelessService";
-                        results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
-                        results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
-                        results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
-                        results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
-                        results["Licensee System"] = "dsa:LicenseeSystem";
-                        results["Federal System"] = "dsa:FederalSystem";
-                        results["Licensee System"] = "dsa:LicenseeSystem";
-                        results["Licensee Non-federal System"] = "dsa:LicenseeNonFederalSystem";
-                        results["Military Station"] = "dsa:MilitaryStation";
-                        results["WCS Base Station"] = "dsa:WCSBaseStation";
-                        results["Fixed Service"] = "dsa:FixedService";
-                        results["Mobile Service"] = "dsa:MobileService";
-                    } else if (attr === "dsa:hasAffiliation") {
-                        results["Federal Affiliation"] = "dsa:FederalAffiliation";
-                        results["Military Affiliation"] = "dsa:MilitaryAffiliation";
-                        results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
-                    } else if (attr === "dsa:isLocatedIn") {
-                        results["list91-2-a"] = "dsa:list91-2-a";
-                        results["list91-2-b"] = "dsa:list91-2-b";
-                        results["list91-2-c"] = "dsa:list91-2-c";
-                        results["US91EWBaseList"] = "dsa:US91EWBaseList";
-                        results["Space"] = "dsa:Space";
+                    if (attr === "http://purl.org/twc/dsa/utilizesNetwork") {
+                        results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                        results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                        results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                        results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+                        results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
+                        results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
+                        results["Federal System"] = "http://purl.org/twc/dsa/FederalSystem";
+                        results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
+                        results["Licensee Non-federal System"] = "http://purl.org/twc/dsa/LicenseeNonFederalSystem";
+                        results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
+                        results["WCS Base Station"] = "http://purl.org/twc/dsa/WCSBaseStation";
+                        results["Fixed Service"] = "http://purl.org/twc/dsa/FixedService";
+                        results["Mobile Service"] = "http://purl.org/twc/dsa/MobileService";
+                    } else if (attr === "http://purl.org/twc/dsa/hasAffiliation") {
+                        results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalAffiliation";
+                        results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
+                        results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
+                    } else if (attr === "http://purl.org/twc/dsa/isLocatedIn") {
+                        results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                        results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                        results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                        results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                        results["Space"] = "http://purl.org/twc/dsa/Space";
                     }
                     return results;
                 }
@@ -3176,7 +3176,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.filter('dsaObligationFilter', function() {
         return function(input) {
             return input.filter(function(v) {
-                if (v['@type'] !== undefined && v['@type'].indexOf("dsa:ObligationStatement") !== -1)
+                if (v['@type'] !== undefined && v['@type'].indexOf("http://purl.org/twc/dsa/ObligationStatement") !== -1)
                 return v;
             });
         };
@@ -3186,19 +3186,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div layout="row">
-                    <dsa-input label="'Obligation'" model="obligation['sio:hasValue']"></dsa-input>
+                    <dsa-input label="'Obligation'" model="obligation['http://semanticscience.org/resource/hasValue'][0]['@value']"></dsa-input>
                     <md-button class="md-fab md-mini" aria-label="Delete obligation" ng-click="removeObligation(obligation)">-</md-button>
                 </div>
             `,
             restrict: "E",
             scope: {
-                obligation : "="
+                obligations : "=",
+                obligation : "=",
+                index : "="
             },
             link: function (scope, obligation) {
                 scope.removeObligation = function(obligation) {
-                    for (let i in obligation) {
-                        delete obligation[i];
-                    }
+                    scope.obligations.splice(scope.index, 1);
                 };
             }
         }
@@ -3208,7 +3208,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <md-button class="md-raised" ng-click="addObligation(rule)">Add obligation</md-button>
-                <dsa-obligation ng-repeat="obligation in obligations | dsaObligationFilter" obligation="obligation"></dsa-obligation>
+                <dsa-obligation ng-repeat="obligation in obligations | dsaObligationFilter" obligations="obligations" obligation="obligation" index="$index"></dsa-obligation>
             `,
             restrict: "E",
             scope: {
@@ -3219,9 +3219,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.addObligation = function(rule) {
                     var obligation = {};
                     obligation['@id'] = makeID();
-                    obligation['@type'] = ["dsa:ObligationStatement"];
-                    obligation['sio:hasValue'] = "";
-                    rule['xacml:includes'].push(obligation);
+                    obligation['@type'] = ["http://purl.org/twc/dsa/ObligationStatement"];
+                    obligation['http://semanticscience.org/resource/hasValue'] = [];
+                    rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(obligation);
                 };
             }
         }
@@ -3250,14 +3250,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         <md-input-container style="margin-right: 10px;">
                             <label>Statement type</label>
                             <md-select ng-model="statement['@type'][0]" placeholder="Statement type" required md-no-asterisk="false">
-                                <md-option value="xacml:ConjunctiveSequence">Conjunctive sequence</md-option>
-                                <md-option value="xacml:DisjunctiveSequence">Disjunctive sequence</md-option>
+                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence">Conjunctive sequence</md-option>
+                                <md-option value="https://tw.rpi.edu/web/projects/DSA/xacml-core/DisjunctiveSequence">Disjunctive sequence</md-option>
                             </md-select>
                         </md-input-container>
                     </div>
                     
                     <dsa-attribute ng-repeat="innerAttribute in getAttributes(statement, 'attribute')" attributes="attributes" options="options" attribute="innerAttribute" statement="statement"></dsa-attribute>
-                    <dsa-statement ng-repeat="innerStatement in getStatements(statement['xacml:includes'], 'attribute')" rule="rule" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
+                    <dsa-statement ng-repeat="innerStatement in getStatements(statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'], 'attribute')" rule="rule" attributes="attributes" options="options" statement="innerStatement"></dsa-statement>
                 </div>
             `,
             restrict: "E",
@@ -3271,25 +3271,33 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 var originatorEv;
                 scope.addAttribute = function(uri) {
                     var property, value;
-                    if (uri === "dsa:FrequencyRange") {
+                    if (uri === "http://purl.org/twc/dsa/FrequencyRange") {
                         var object = {};
-                        property = "xacml:includes";
+                        property = "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes";
                         object["@id"] = makeID();
                         object["@type"] = [
                             uri
                         ];
-                        object["sio:hasAttribute"] = [
+                        object["http://semanticscience.org/resource/hasAttribute"] = [
                             {
                                 "@id" : makeID(),
-                                "@type" : ["dsa:FrequencyMinimum"],
-                                "sio:hasValue" : "",
-                                "sio:hasUnit" : "uo:0000105"
+                                "@type" : ["http://purl.org/twc/dsa/FrequencyMinimum"],
+                                "http://semanticscience.org/resource/hasValue" : [],
+                                "http://semanticscience.org/resource/hasUnit" : [
+                                    {
+                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                    }
+                                ]
                             },
                             {
                                 "@id" : makeID(),
-                                "@type" : ["dsa:FrequencyMaximum"],
-                                "sio:hasValue" : "",
-                                "sio:hasUnit" : "uo:0000105"
+                                "@type" : ["http://purl.org/twc/dsa/FrequencyMaximum"],
+                                "http://semanticscience.org/resource/hasValue" : [],
+                                "http://semanticscience.org/resource/hasUnit" : [
+                                    {
+                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                    }
+                                ]
                             },
                         ];
                         value = object;
@@ -3307,9 +3315,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     console.log("addStatement", statement);
                     var innerStatement = {};
                     innerStatement['@id'] = makeID();
-                    innerStatement['@type'] = ["xacml:ConjunctiveSequence"];
-                    innerStatement['xacml:includes'] = [];
-                    statement['xacml:includes'].push(innerStatement);
+                    innerStatement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    innerStatement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [];
+                    statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(innerStatement);
                 };
                 scope.remove = function(rule, statement) {
                     delete statement[attribute];
@@ -3323,12 +3331,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     var attributes = [];
 
                     for (let i in object) {
-                        if (i !== "@id" && i !== "@type" && i !== "xacml:includes" && i !== "$$hashKey") {
+                        if (i !== "@id" && i !== "@type" && i !== "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" && i !== "$$hashKey") {
                             attributes.push(i);
-                        } else if (i === "xacml:includes") {
+                        } else if (i === "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes") {
                             for (let j in object[i]) {
-                                if (object[i][j]["@type"] !== "dsa:ConjunctiveSequence" &&
-                                    object[i][j]["@type"] !== "dsa:DisjunctiveSequence") {
+                                if (object[i][j]["@type"] !== "http://purl.org/twc/dsa/ConjunctiveSequence" &&
+                                    object[i][j]["@type"] !== "http://purl.org/twc/dsa/DisjunctiveSequence") {
                                         attributes.push(object[i][j]);
                                     }
                             }
@@ -3341,7 +3349,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     for (let i in object) {
                         /*
-                        if (i !== "@id" && i !== "@type" && i !== "xacml:includes" && i !== "$$hashKey") {
+                        if (i !== "@id" && i !== "@type" && i !== "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" && i !== "$$hashKey") {
                             attributes.push(i);
                         }
                         */
@@ -3369,20 +3377,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     </div>
                     <md-button class="md-raised" ng-click="addStatement(attributes, options, rule, $event.target)">Add statement</md-button>
                     
-                    <dsa-statement ng-repeat="statement in rule['xacml:hasTarget']['xacml:includes']['xacml:includes']" rule="rule" attributes="attributes" options="options" statement="statement"></dsa-statement>
+                    <dsa-statement ng-repeat="statement in rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']" rule="rule" attributes="attributes" options="options" statement="statement"></dsa-statement>
                     
                     <h1 class="md-title">Effect</h1>
                     <div layout="row">
                         <md-input-container style="margin-right: 10px;">
                             <label>Effect</label>
-                            <md-select ng-model="rule['xacml:hasEffect']">
+                            <md-select ng-model="rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasEffect'][0]['@value']">
                                 <md-option ng-repeat="effect in effects" ng-value="effect">{[{effect}]}</md-option>
                             </md-select>
                         </md-input-container>
                     </div>
 
                     <h1 class="md-title">Obligations</h1>
-                    <dsa-obligation-statement rule="rule" obligations="rule['xacml:includes']"></dsa-obligation-statement>
+                    <dsa-obligation-statement rule="rule" obligations="rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']"></dsa-obligation-statement>
                 </div>
             `,
             restrict: "E",
@@ -3398,9 +3406,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     console.log("addStatement");
                     let statement = {};
                     statement['@id'] = makeID();
-                    statement['@type'] = ["xacml:ConjunctiveSequence"];
-                    //statement['sio:hasAttribute'] = [];
-                    rule['xacml:hasTarget']['xacml:includes']['xacml:includes'].push(statement);
+                    statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    //statement['http://semanticscience.org/resource/hasAttribute'] = [];
+                    rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
                 };
             }
         }
@@ -3530,11 +3538,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             var results = {};
             var query = `
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
-                PREFIX dsa: <http://purl.org/twc/dsa/>
+                PREFIX https://tw.rpi.edu/web/projects/DSA/xacml-core/ <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                PREFIX http://purl.org/twc/dsa/ <http://purl.org/twc/dsa/>
                 SELECT ?resource ?label
                 WHERE {
-                    ?resource rdfs:subClassOf+ dsa:TempAttribute
+                    ?resource rdfs:subClassOf+ http://purl.org/twc/dsa/TempAttribute
                 }
             `;
             $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
@@ -3558,10 +3566,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return results;
             */
             var results = {};
-            results["System"] = "dsa:utilizesNetwork";
-            results["Affiliation"] = "dsa:hasAffiliation";
-            results["Location"] = "dsa:isLocatedIn";
-            results["Frequency Range"] = "dsa:FrequencyRange";
+            results["System"] = "http://purl.org/twc/dsa/utilizesNetwork";
+            results["Affiliation"] = "http://purl.org/twc/dsa/hasAffiliation";
+            results["Location"] = "http://purl.org/twc/dsa/isLocatedIn";
+            results["Frequency Range"] = "http://purl.org/twc/dsa/FrequencyRange";
             return results;
         }
         return queryAttributes;
@@ -3572,39 +3580,39 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             console.log("queryOptions has just started:", attribute);
 
             var results = {};
-            if (attribute === "dsa:utilizesNetwork") {
-                results["Advanced Wireless System (AWS)"] = "dsa:AdvancedWirelessService";
-                results["Joint Tactical Radio System (JTRS)"] = "dsa:JointTacticalRadioSystem";
-                results["Tropospheric Scatter System"] = "dsa:TroposphericScatterSystem";
-                results["Earth to Space System"] = "dsa:EarthToSpaceSystem";
-                results["Space to Earth System"] = "dsa:SpaceToEarthSystem";
-                results["Federal System"] = "dsa:FederalSystem";
-                results["Licensee System"] = "dsa:LicenseeSystem";
-                results["Licensee Non-federal System"] = "dsa:LicenseeNonFederalSystem";
-                results["Military Station"] = "dsa:MilitaryStation";
-                results["WCS Base Station"] = "dsa:WCSBaseStation";
-                results["Fixed Service"] = "dsa:FixedService";
-                results["Fixed Service"] = "dsa:MobileService";
-            } else if (attribute === "dsa:hasAffiliation") {
-                results["Federal Affiliation"] = "dsa:FederalAffiliation";
-                results["Military Affiliation"] = "dsa:MilitaryAffiliation";
-                results["Non-Federal Affiliation"] = "dsa:NonFederalAffiliation";
-            } else if (attribute === "dsa:isLocatedIn") {
-                results["list91-2-a"] = "dsa:list91-2-a";
-                results["list91-2-b"] = "dsa:list91-2-b";
-                results["list91-2-c"] = "dsa:list91-2-c";
-                results["US91EWBaseList"] = "dsa:US91EWBaseList";
-                results["Space"] = "dsa:Space";
+            if (attribute === "http://purl.org/twc/dsa/utilizesNetwork") {
+                results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
+                results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
+                results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
+                results["Federal System"] = "http://purl.org/twc/dsa/FederalSystem";
+                results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
+                results["Licensee Non-federal System"] = "http://purl.org/twc/dsa/LicenseeNonFederalSystem";
+                results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
+                results["WCS Base Station"] = "http://purl.org/twc/dsa/WCSBaseStation";
+                results["Fixed Service"] = "http://purl.org/twc/dsa/FixedService";
+                results["Fixed Service"] = "http://purl.org/twc/dsa/MobileService";
+            } else if (attribute === "http://purl.org/twc/dsa/hasAffiliation") {
+                results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalAffiliation";
+                results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
+                results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
+            } else if (attribute === "http://purl.org/twc/dsa/isLocatedIn") {
+                results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
+                results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
+                results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
+                results["Space"] = "http://purl.org/twc/dsa/Space";
             }
             return results;
             /*
             var results = {};
             var query = `
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                PREFIX xacml: <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
+                PREFIX https://tw.rpi.edu/web/projects/DSA/xacml-core/ <https://tw.rpi.edu/web/projects/DSA/xacml-core/>
                 SELECT ?resource ?label
                 WHERE {
-                    ?resource rdfs:subClassOf+ xacml:Attribute
+                    ?resource rdfs:subClassOf+ https://tw.rpi.edu/web/projects/DSA/xacml-core/Attribute
                 }
             `;
             $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
@@ -3656,7 +3664,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             "FCC"
         ];
         $scope.attributes = queryAttributes();
-        $scope.options = queryOptions("dsa:utilizesNetwork");
+        $scope.options = queryOptions("http://purl.org/twc/dsa/utilizesNetwork");
         $scope.effects = [
             "Permit",
             "Deny"
@@ -3665,50 +3673,50 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             console.log("addStatement");
             let statement = {};
             statement['@id'] = makeID();
-            statement['@type'] = ["xacml:ConjunctiveSequence"];
-            statement['xacml:includes'] = [
+            statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+            statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
                 {
                     "@id" : makeID(),
                     "@type" : [
-                        "xacml:ConjunctiveSequence",
-                        "dsa:Requestor"
+                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                        "http://purl.org/twc/dsa/Requestor"
                     ]
                 }
             ];
-            vm.instance['xacml:hasTarget']['xacml:includes']['xacml:includes'].push(statement);
+            vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
         };
         $scope.addRule = function() {
             console.log("addRule");
             let rule = {};
             rule['@id'] = makeID();
-            rule['@type'] = ["dsa:DynamicSpectrumAllocationRule"];
-            rule['xacml:hasTarget'] = {
+            rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
+            rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget'] = {
                 "@id" : makeID(),
-                "@type" : "xacml:Target",
-                "xacml:includes" : {
+                "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
                     "@id" : makeID(),
                     "@type" : [
-                        "xacml:ConjunctiveSequence"
+                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"
                     ],
-                    "xacml:includes" : [
+                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
                         {
                             "@id": makeID(),
                             "@type" : [
-                                "xacml:ConjunctiveSequence",
-                                "dsa:Requestor"
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                                "http://purl.org/twc/dsa/Requestor"
                             ]
                         }
                     ]
                 }
             };
-            rule['xacml:includes'] = [
+            rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
                 {
                     "@id" : makeID(),
-                    "@type" : ["dsa:ObligationStatement"]
-                    //"sio:hasAttribute" : []
+                    "@type" : ["http://purl.org/twc/dsa/ObligationStatement"]
+                    //"http://semanticscience.org/resource/hasAttribute" : []
                 }
             ];
-            vm.instance['xacml:includes'].push(rule);
+            vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(rule);
         };
 
         vm.nanopub = {
@@ -3720,7 +3728,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "np" : "http://www.nanopub.org/nschema#",
                 "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
                 'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
@@ -3748,41 +3756,57 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "description": {
                             "@value": "Policy description"
                         },
-                        "xacml:hasTarget" : {
+                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget" : {
                             "@id" : makeID(),
-                            "@type" : "xacml:Target",
-                            "xacml:includes" : {
+                            "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                            "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
                                 "@id": makeID(),
-                                "@type" : ["xacml:ConjunctiveSequence"],
-                                "xacml:includes": [
+                                "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
                                     {
                                         "@id": makeID(),
                                         "@type" : [
-                                            "xacml:ConjunctiveSequence",
-                                            "dsa:Requestor"
+                                            "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                                            "http://purl.org/twc/dsa/Requestor"
                                         ],
-                                        "xacml:includes": [
+                                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
                                             {
                                               "@id": "z1jwmo1lw9",
                                               "@type": [
-                                                "dsa:FrequencyRange"
+                                                "http://purl.org/twc/dsa/FrequencyRange"
                                               ],
-                                              "sio:hasAttribute": [
+                                              "http://semanticscience.org/resource/hasAttribute": [
                                                 {
                                                   "@id": "ws1bwfmtwf",
                                                   "@type": [
-                                                    "dsa:FrequencyMinimum"
+                                                    "http://purl.org/twc/dsa/FrequencyMinimum"
                                                   ],
-                                                  "sio:hasValue": "1900",
-                                                  "sio:hasUnit": "uo:0000105"
+                                                  "http://semanticscience.org/resource/hasValue": [
+                                                      {
+                                                          "@value" : "1900"
+                                                      }
+                                                  ],
+                                                  "http://semanticscience.org/resource/hasUnit": [
+                                                      {
+                                                          "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                                      }
+                                                  ]
                                                 },
                                                 {
                                                   "@id": "gehkfmqzzg",
                                                   "@type": [
-                                                    "dsa:FrequencyMaximum"
+                                                    "http://purl.org/twc/dsa/FrequencyMaximum"
                                                   ],
-                                                  "sio:hasValue": "1950",
-                                                  "sio:hasUnit": "uo:0000105"
+                                                  "http://semanticscience.org/resource/hasValue": [
+                                                    {
+                                                        "@value" : "1900"
+                                                    }
+                                                  ],
+                                                  "http://semanticscience.org/resource/hasUnit": [
+                                                    {
+                                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                                    }
+                                                ]
                                                 }
                                               ]
                                             }
@@ -3791,58 +3815,70 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 ]
                             }
                         },
-                        'xacml:includes' : [
+                        'https://tw.rpi.edu/web/projects/DSA/xacml-core/includes' : [
                             {
                                 "@id": makeID(),
-                                "@type" : ["dsa:DynamicSpectrumAllocationRule"],
-                                "xacml:hasTarget" : {
+                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"],
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget" : {
                                     "@id" : makeID(),
-                                    "@type" : "xacml:Target",
-                                    "xacml:includes" : {
+                                    "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
                                         "@id": makeID(),
-                                        "@type" : ["xacml:ConjunctiveSequence"],
-                                        "xacml:includes" : [
+                                        "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
+                                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
                                             {
                                                 "@id": makeID(),
                                                 "@type" : [
-                                                    "xacml:ConjunctiveSequence",
-                                                    "dsa:Requestor"
+                                                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                                                    "http://purl.org/twc/dsa/Requestor"
                                                 ]/*,
-                                                "dsa:utilizesNetwork" : [
-                                                    "dsa:JointTacticalRadioSystem"
+                                                "http://purl.org/twc/dsa/utilizesNetwork" : [
+                                                    "http://purl.org/twc/dsa/JointTacticalRadioSystem"
                                                 ],
-                                                "dsa:isLocatedIn" : [
-                                                    "dsa:list91-2-a"
+                                                "http://purl.org/twc/dsa/isLocatedIn" : [
+                                                    "http://purl.org/twc/dsa/list91-2-a"
                                                 ]*/
                                             }
                                         ]
                                     }
                                 },
                                 /*
-                                "xacml:includes" : [
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
                                     {
                                         "@id" : makeID(),
-                                        "@type" : ["dsa:ObligationStatement"],
-                                        "sio:hasValue" : ""
+                                        "@type" : ["http://purl.org/twc/dsa/ObligationStatement"],
+                                        "http://semanticscience.org/resource/hasValue" : ""
                                     }
                                 ]*/
-                                "xacml:includes": [
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
                                     {
                                       "@id": "2n01gzs3v0",
                                       "@type": [
-                                        "dsa:ObligationStatement"
+                                        "http://purl.org/twc/dsa/ObligationStatement"
                                       ],
-                                      "sio:hasValue": "olbi1"
+                                      "http://semanticscience.org/resource/hasValue": [
+                                          {
+                                              "@value" : "obligation 1"
+                                          }
+                                      ]
                                     },
                                     {
                                       "@id": "o5r788tizx",
                                       "@type": [
-                                        "dsa:ObligationStatement"
+                                        "http://purl.org/twc/dsa/ObligationStatement"
                                       ],
-                                      "sio:hasValue": "bol2"
+                                      "http://semanticscience.org/resource/hasValue": [
+                                        {
+                                            "@value" : "obligation 2"
+                                        }
+                                    ]
                                     }
                                 ],
-                                "xacml:hasEffect": "Permit"                    
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasEffect": [
+                                    {
+                                        "@value" : "Permit"
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -3868,6 +3904,175 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         };
         vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
         vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        $scope.globalContext = vm.nanopub['@context'];
+    });
+
+    app.controller('DsaEditController', function($scope, $http, $compile, makeID, Nanopub, resolveURI, queryAttributes, queryOptions) {
+        var vm = this;
+        var np_id = makeID();
+        vm.resolveURI = resolveURI;
+
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+
+        $scope.sources = [
+            "Redbook",
+            "FCC"
+        ];
+        $scope.attributes = queryAttributes();
+        $scope.options = queryOptions("http://purl.org/twc/dsa/utilizesNetwork");
+        $scope.effects = [
+            "Permit",
+            "Deny"
+        ];
+        $scope.addStatement = function() {
+            console.log("addStatement");
+            let statement = {};
+            statement['@id'] = makeID();
+            statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+            statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
+                {
+                    "@id" : makeID(),
+                    "@type" : [
+                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                        "http://purl.org/twc/dsa/Requestor"
+                    ]
+                }
+            ];
+            vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
+        };
+        $scope.addRule = function() {
+            console.log("addRule");
+            let rule = {};
+            rule['@id'] = makeID();
+            rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
+            rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget'] = {
+                "@id" : makeID(),
+                "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
+                    "@id" : makeID(),
+                    "@type" : [
+                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"
+                    ],
+                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
+                        {
+                            "@id": makeID(),
+                            "@type" : [
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                                "http://purl.org/twc/dsa/Requestor"
+                            ]
+                        }
+                    ]
+                }
+            };
+            rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
+                {
+                    "@id" : makeID(),
+                    "@type" : ["http://purl.org/twc/dsa/ObligationStatement"]
+                    //"http://semanticscience.org/resource/hasAttribute" : []
+                }
+            ];
+            vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(rule);
+        };
+
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'xacml' : 'https://tw.rpi.edu/web/projects/DSA/xacml-core/',
+                'dsa' : 'http://purl.org/twc/dsa/',
+                'uo' : 'http://purl.obolibrary.org/obo/UO_',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        //"@id" : "urn:"+np_id,
+                        "@id" : NODE_URI,
+                        "@type": []
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        function populateJsonObject(currentObject) {
+            //console.log("currentObject:", currentObject);
+            if (currentObject["@id"]) {
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":currentObject["@id"]} })
+                .then(function(data) {
+                    let elements = data.data;
+                    //console.log("describe:", elements)
+                    for (element of elements) {
+                        if (element["@id"] === currentObject["@id"]) {
+                            for (property in element) {
+                                let newObject = {};
+                                currentObject[property] = element[property];
+                                if (property !== "@id") {
+                                    for (id of element[property]) {
+                                        for (key in id) {
+                                            if (key === "@id") {
+                                                populateJsonObject(id);
+                                            }
+                                        }
+                                    }
+                                }
+                                //console.log("currentObject[property]:", currentObject[property]);
+                            }
+                        }
+                    }
+                    return;
+                }, function(error){
+                    console.log(error);
+                    return;
+                });
+            } else {
+                return;
+            }
+        }
+        
+        populateJsonObject(vm.instance);
 
         $scope.globalContext = vm.nanopub['@context'];
     });
@@ -3904,7 +4109,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "@type": [
                     "http://purl.org/twc/dsa/System"
                 ],
-                "dsa:hasSystemRole": dsa:NonFederalSystemRole
+                "http://purl.org/twc/dsa/hasSystemRole": http://purl.org/twc/dsa/NonFederalSystemRole
             }
             
             {
@@ -3912,7 +4117,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "@type": [
                     "http://purl.org/twc/dsa/Location"
                 ],
-                "sio:isLocatedIn": dsa:list91-2-a
+                "http://semanticscience.org/resource/isLocatedIn": http://purl.org/twc/dsa/list91-2-a
             }
             
             {
@@ -3920,21 +4125,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "@type": [
                     "http://purl.org/twc/dsa/FrequencyRange"
                 ],
-                "sio:hasAttribute": {
+                "http://semanticscience.org/resource/hasAttribute": {
                     "@id": "asjhdasdd",
                     "@type": [
                         "http://purl.org/twc/dsa/FrequencyMinimum"
                     ],
-                    "sio:hasValue": "1761"
-                    "sio:hasUnit": uo:0000105
+                    "http://semanticscience.org/resource/hasValue": "1761"
+                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000105
                 },
-                "sio:hasAttribute": {
+                "http://semanticscience.org/resource/hasAttribute": {
                     "@id": "asjhdasdd",
                     "@type": [
                         "http://purl.org/twc/dsa/FrequencyMaximum"
                     ],
-                    "sio:hasValue": "1780"
-                    "sio:hasUnit": uo:0000105
+                    "http://semanticscience.org/resource/hasValue": "1780"
+                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000105
                 }
             }
         }
