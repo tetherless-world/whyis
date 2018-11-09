@@ -3106,23 +3106,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.queryAV = function(attr) {
                     var results = {};
                     if (attr === "http://purl.org/twc/dsa/utilizesNetwork") {
-                        results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
-                        results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                        results["Advanced Wireless System"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                        results["Joint Tactical Radio System"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
                         results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
                         results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
                         results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
+                        results["Airborne System"] = "http://purl.org/twc/dsa/AirborneSystem";
                         results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
-                        results["Federal System"] = "http://purl.org/twc/dsa/FederalSystem";
-                        results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
-                        results["Licensee Non-federal System"] = "http://purl.org/twc/dsa/LicenseeNonFederalSystem";
                         results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
                         results["WCS Base Station"] = "http://purl.org/twc/dsa/WCSBaseStation";
                         results["Fixed Service"] = "http://purl.org/twc/dsa/FixedService";
                         results["Mobile Service"] = "http://purl.org/twc/dsa/MobileService";
                     } else if (attr === "http://purl.org/twc/dsa/hasAffiliation") {
-                        results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalAffiliation";
-                        results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
-                        results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
+                        results["Federal"] = "http://purl.org/twc/dsa/FederalAffiliation";
+                        results["Military"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
+                        results["Non-Federal"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
                     } else if (attr === "http://purl.org/twc/dsa/isLocatedIn") {
                         results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
                         results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
@@ -3581,22 +3579,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
             var results = {};
             if (attribute === "http://purl.org/twc/dsa/utilizesNetwork") {
-                results["Advanced Wireless System (AWS)"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
-                results["Joint Tactical Radio System (JTRS)"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
+                results["Advanced Wireless System"] = "http://purl.org/twc/dsa/AdvancedWirelessService";
+                results["Joint Tactical Radio System"] = "http://purl.org/twc/dsa/JointTacticalRadioSystem";
                 results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
                 results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
                 results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
-                results["Federal System"] = "http://purl.org/twc/dsa/FederalSystem";
+                results["Airborne System"] = "http://purl.org/twc/dsa/AirborneSystem";
                 results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
-                results["Licensee Non-federal System"] = "http://purl.org/twc/dsa/LicenseeNonFederalSystem";
                 results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
                 results["WCS Base Station"] = "http://purl.org/twc/dsa/WCSBaseStation";
                 results["Fixed Service"] = "http://purl.org/twc/dsa/FixedService";
-                results["Fixed Service"] = "http://purl.org/twc/dsa/MobileService";
+                results["Mobile Service"] = "http://purl.org/twc/dsa/MobileService";
             } else if (attribute === "http://purl.org/twc/dsa/hasAffiliation") {
-                results["Federal Affiliation"] = "http://purl.org/twc/dsa/FederalAffiliation";
-                results["Military Affiliation"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
-                results["Non-Federal Affiliation"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
+                results["Federal"] = "http://purl.org/twc/dsa/FederalAffiliation";
+                results["Military"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
+                results["Non-Federal"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
             } else if (attribute === "http://purl.org/twc/dsa/isLocatedIn") {
                 results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
                 results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
