@@ -1,24 +1,34 @@
 #!/bin/bash
 
+curl -O https://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb
+sudo dpkg -i puppetlabs-release-pc1-xenial.deb
 sudo apt-get update
 
 echo "Installing puppet..."
-sudo apt-get install -y puppet 
+sudo apt-get install -y puppet-agent libaugeas0
 
 #echo "Installing virtualenv..."
 #sudo apt-get install -y python-virtualenv
 
-
+export PATH=/opt/puppetlabs/bin/:$PATH
 echo "Installing puppetlabs-stdlib --version 4.14.0..."
-sudo puppet module install puppetlabs-stdlib --version 4.14.0
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-stdlib
 
 echo "Installing puppetlabs-vcsrepo --version 4.14.0..."
-sudo puppet module install puppetlabs-vcsrepo --version 2.0.0
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo 
 
 echo "Installing maestrodev-wget --version 1.7.3..."
-sudo puppet module install maestrodev-wget --version 1.7.3
+sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 
-sudo puppet module install stankevich-python --version 1.18.2
+sudo /opt/puppetlabs/bin/puppet module install stankevich-python
+
+sudo /opt/puppetlabs/bin/puppet module install elastic-elastic_stack
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
+sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
+
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
+
+sudo /opt/puppetlabs/bin/puppet module install elastic-elasticsearch
 
 curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
 
@@ -26,7 +36,7 @@ if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
 fi
 
-sudo puppet apply /tmp/install_whyis.pp
+sudo /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
 
 echo ""
 echo "Please configure Whyis at /apps/whyis/config.py to ensure correct customization."
