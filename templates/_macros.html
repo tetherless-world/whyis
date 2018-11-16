@@ -1,5 +1,5 @@
 {% macro render_resource_link(resource) %}
-  <a href="/about?uri={{resource.identifier | urlencode }}">{{get_label(resource)}}</a>
+  <a href="{{url_for('view', uri=resource.identifier)}}">{{get_label(resource)}}</a>
 {% endmacro %}
 
 {% macro render_rdfa_resource_link(resource, predicate) %}
@@ -25,7 +25,7 @@
         <h2 class="panel-title">{{get_label(resource.graph.resource(property))}}</h2>
       </div>
       <div class="panel-body" property="{{property}}">
-        {{value}}
+        {{value | safe}}
       </div>
     </div>
     {% endfor %}  
@@ -33,7 +33,8 @@
 
 {% macro facts_list(resource) %}
         {% for predicate, objects in resource.predicate_objects() | groupby(0) | sort(attribute=0) %}
-        {% if predicate != g.ns.sioc.content %}
+        {% if predicate.identifier != g.ns.sioc.content  %}
+    
         <dl class="dl-horizontal clearfix">
           <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
           <dd>
@@ -59,6 +60,12 @@
         <h2 class="panel-title">Facts</h2>
       </div>
       <div class="panel-body">
+        <dl class="dl-horizontal clearfix">
+          <dt style="font-weight:bold">Identifier</dt>
+          <dd>
+            <p>{{resource.identifier}}</p>
+          </dd>
+        </dl>
         {{facts_list(resource)}}
       </div>
     </div>

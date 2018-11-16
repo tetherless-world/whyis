@@ -356,22 +356,38 @@ whyis:hasRelated dc:identifier "related";
 whyis:hasLabel dc:identifier "label";
   rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasSummary dc:identifier "summary";
+  rdfs:subPropertyOf whyis:hasView.
+
 rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
   whyis:hasIncoming "incoming_resource.json";
+  whyis:hasAttributes "attributes.json";
+  whyis:cardView "card.html";
   whyis:hasExplore "explore.html";
   whyis:hasDescribe "describe.json";
   whyis:hasNanopublications "nanopublications.json";
-  whyis:hasLabel "label_view.html".
+  whyis:hasLabel "label_view.html";
+  whyis:editInstanceView "edit_instance_view.html";
+  whyis:hasSummary "summary_view.json".
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
 
 owl:Class rdfs:label "Class";
-    whyis:hasView "class_view.html".
+  whyis:hasConstraints "class_constraints.json";
+  whyis:hasOutgoing "outgoing_class.json";
+  whyis:hasIncoming "incoming_class.json";
+  whyis:newInstanceView "new_instance_view.html";
+  whyis:hasView "class_view.html".
 
+whyis:hasConstraints dc:identifier "constraints";
+  rdfs:subPropertyOf whyis:hasView.
 
 owl:Ontology rdfs:label "Ontology";
+    whyis:hasOutgoing "outgoing_ontology.json";
+    whyis:hasIncoming "incoming_ontology.json";
+    whyis:hasDescribe "describe_ontology.json";
     whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;
@@ -408,8 +424,17 @@ whyis:HomePage a owl:Class;
   whyis:latestView "latest.json";
   whyis:resolveView "resolve.json".
 
+whyis:cardView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "card".
+
 whyis:latestView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "latest".
+
+whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "new".
+
+whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "edit".
 
 <https://www.iana.org/assignments/media-types/text/csv>
   whyis:bipartiteView "bipartite_graph.svg".
@@ -426,3 +451,5 @@ whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
   dc:identifier "outgoing".
 whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
   dc:identifier "incoming".
+whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "attributes".

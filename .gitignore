@@ -69,3 +69,28 @@ blazegraph.jar
 blazegraph.jnl
 
 nanopublications/
+
+# Java, Maven, Eclipse
+whyis-java/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.metadata
+.settings
+bin
+.classpath
+.project
+.loadpath
+.recommenders
+
+# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
+!/.mvn/wrapper/maven-wrapper.jar
+
+# macOS temp files
+.DS_Store
+._.DS_Store

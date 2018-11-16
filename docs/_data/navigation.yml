@@ -3,14 +3,20 @@
 - title: Home
   url: /
 
-- title: Installing Whyis
+- title: Basic Installation
   url: /install
+  
+- title: Docker Installation
+  url: /docker
 
 - title: Whyis Views
   url: /views
 
 - title: Inference Agents
   url: /inference
+
+- title: Use Cases
+  url: /usecases
 
 - title: Community
   url: /community

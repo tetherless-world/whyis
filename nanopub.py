@@ -118,11 +118,12 @@ class NanopublicationManager:
             mappings = {}
         new_nps = list(graph.subjects(rdflib.RDF.type, np.Nanopublication))
         if len(new_nps) == 0:
-            new_np = Nanopublication(store=graph.store)
-            new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
-            new_np.add((new_np.identifier, np.hasAssertion, graph.identifier))
-            new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
-            new_nps = [new_np.identifier]
+            for context in list(graph.contexts()):
+                new_np = Nanopublication(store=context.store)
+                new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
+                new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
+                new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+                new_nps.append(new_np.identifier)
         for nanopub in new_nps:
             if self.prefix not in nanopub:
                 fileid = self._reserve_id()
@@ -217,43 +218,77 @@ class NanopublicationManager:
         dir_name_length = 3
         path = [ident[i:i+dir_name_length] for i in range(0, len(ident), dir_name_length)]
         return [self.archive_path] + path[:-1] + [ident]
+
+    def _get_nanopubs(self, graph):
+        for nanopub_uri in graph.subjects(rdflib.RDF.type, np.Nanopublication):
+            i += 1
+            nanopub = Nanopublication(identifier=nanopub_uri)
+            nanopub += graph.get_context(nanopub.identifier)
+            #print "Nanopub", len(nanopub), len(output_graph.get_context(identifier=nanopub_uri))
+            for assertion in graph.objects(nanopub.identifier, np.hasAssertion):
+                a = nanopub.assertion
+                a += graph.get_context(identifier=assertion)
+                #print "Assertion", len(a), len(output_graph.get_context(identifier=assertion))
+            for pubinfo in output_graph.objects(nanopub.identifier, np.hasPublicationInfo):
+                p = nanopub.pubinfo
+                p += graph.get_context(identifier=pubinfo)
+                #print "PubInfo", len(p), len(output_graph.get_context(identifier=pubinfo))
+            for provenance in output_graph.objects(nanopub.identifier, np.hasProvenance):
+                p = nanopub.provenance
+                p += graph.get_context(identifier=provenance)
+                #print "Provenance", len(p), len(output_graph.get_context(identifier=provenance))
+            yield nanopub
         
     def publish(self, *nanopubs):
         #self.db.store.nsBindings = {}
-        with tempfile.TemporaryFile() as data:
+        full_list = []
+        with tempfile.NamedTemporaryFile(delete=False) as data:
             to_retire = []
-            for nanopub in nanopubs:
-                fileid = nanopub.identifier.replace(self.prefix, "")
-                r = False
-                now = rdflib.Literal(datetime.utcnow())
-                for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
-                    for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
-                        nanopub.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
-                        to_retire.append(nanopub_uri)
-                        r = True
-                        print "Retiring", nanopub_uri
-                if r:
-                    nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
-                else:
-                    nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
-                g = rdflib.ConjunctiveGraph(store=nanopub.store)
-                for graph_part in [nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo]:
-                    g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
-                    g_part.addN([(s,p,o,g_part) for s,p,o in graph_part.triples((None,None,None))])
-                serialized = g.serialize(format="trig")
-                print "Adding %s bytes to the load file." % len(serialized)
-                del g
-                self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-                data.write(serialized)
-                data.write('\n')
-                data.flush()
+            for np_graph in nanopubs:
+                for context in np_graph.contexts():
+                    if (context.identifier,rdflib.RDF.type, np.Nanopublication) in context:
+                        nanopub_uri = context.identifier
+                    else:
+                        continue
+                    fileid = nanopub_uri.replace(self.prefix, "")
+                    r = False
+                    now = rdflib.Literal(datetime.utcnow())
+                    nanopub = Nanopublication(identifier=nanopub_uri, store=np_graph.store)
+                    for revised in nanopub.pubinfo.objects(nanopub.assertion.identifier, prov.wasRevisionOf):
+                        for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                            nanopub.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
+                            to_retire.append(nanopub_uri)
+                            r = True
+                            print "Retiring", nanopub_uri
+                    if r:
+                        nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
+                    else:
+                        nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
+                    g = rdflib.ConjunctiveGraph()
+                    for graph_part in [rdflib.Graph(identifier=x.identifier, store=x.store) for x in nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo]:
+                        g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
+                        for s,p,o in graph_part:
+                            g_part.add((s,p,o))
+                    serialized = g.serialize(format="trig")
+                    self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
+                    data.write(serialized)
+                    data.write('\n')
+                    data.flush()
+                    full_list.append(nanopub.identifier)
+                #np_graph.serialize(data, format="trig")
+                #data.write('\n')
+                #data.flush()
+                #print data.name
+                #np_graph.serialize(data, format="trig")
+                #data.write('\n')
+                #data.flush()
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data, *nanopubs)
-            print "Published %s nanopubs" % len(nanopubs)
+            print "Published %s nanopubs" % len(full_list)
             
-        for nanopub in nanopubs:
-            self.update_listener(nanopub.identifier)
+        for n in full_list:
+            self.update_listener(n)
 
     _idmap = {}
         

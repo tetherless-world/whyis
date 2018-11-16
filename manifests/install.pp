@@ -8,7 +8,7 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"]:
+package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty8", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
@@ -206,3 +206,28 @@ exec { "create_knowledge_namespace":
   cwd => "/apps/whyis",
 }
 
+exec { "compile_java": 
+  command => "mvn clean compile assembly:single -PwhyisProfile",
+  creates => "/apps/whyis/java_compile.log",
+  user => "whyis",
+  cwd => "/apps/whyis/whyis-java",
+}
+
+
+
+include java
+
+class { 'elasticsearch':
+  restart_on_change => true,
+  api_protocol            => 'http',
+  api_host                => 'localhost',
+  api_port                => 9200,
+  api_timeout             => 10,
+  api_basic_auth_username => undef,
+  api_basic_auth_password => undef,
+  api_ca_file             => undef,
+  api_ca_path             => undef,
+  validate_tls            => true,  
+}
+
+elasticsearch::instance { 'es-01': }

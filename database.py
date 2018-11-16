@@ -8,6 +8,7 @@ from SPARQLWrapper import *
 
 import requests
 
+import collections
 
 def node_to_sparql(node):
     if isinstance(node, BNode):
@@ -28,6 +29,8 @@ def create_query_store(store):
     new_store._defaultReturnFormat=JSON
     new_store.setReturnFormat(JSON)
     return new_store
+
+memory_graphs = collections.defaultdict(ConjunctiveGraph)
         
 def engine_from_config(config, prefix):
     defaultgraph = None
@@ -46,7 +49,6 @@ def engine_from_config(config, prefix):
                             data=data,
 #                            params={"context-uri":graph.identifier},
                             headers={'Content-Type':'application/x-trig'})
-            print store.endpoint, result.content
 
         store.publish = publish
 
@@ -58,11 +60,12 @@ def engine_from_config(config, prefix):
         graph.store.batch_unification = False
         graph.store.open(config[prefix+"store"], create=True)
     else:
-        graph = ConjunctiveGraph(identifier=defaultgraph)
+        graph = memory_graphs[prefix]
         def publish(data, *graphs):
             for nanopub in graphs:
                 graph.addN(nanopub.quads())
         graph.store.publish = publish
 
+        
     return graph
 

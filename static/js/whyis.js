@@ -408,7 +408,7 @@ $( function() {
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
-    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'seco.facetedSearch']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch','jsonLdEditor']);
     console.log("Here's the app",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
@@ -697,7 +697,7 @@ $( function() {
                 uri: "=",
                 label: "="
             },
-            template: '<a href="{{uri}}"><span ng-if="label">{{label}}</span><span ng-if="label == null">{{getLabel(uri)}}</span></a>',
+            template: '<a href="'+ROOT_URL+'about?uri={{uri}}"><span ng-if="label">{{label}}</span><span ng-if="label == null">{{getLabel(uri)}}</span></a>',
             link: function (scope, element, attrs) {
                 scope.getLabel = getLabel;
                 //scope.$watch("uri", function(){
@@ -720,21 +720,45 @@ $( function() {
                     localPart = localPart.split("/").filter(function(d) {return d.length > 0});
                     localPart = localPart[localPart.length-1];
                     getLabel.labels[uri] = localPart;
-                    promises[uri] = $http.get('/about?uri='+encodeURI(uri)+"&view=label")
-                    .then(function(data, status, headers, config) {
-                        if (status == 200) {
-                            var label = data.data;
-                            getLabel.labels[uri] = data.data;
-                        }
-                    });
+                    promises[uri] = $q.defer();
+                    $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
+                        .then(function(data, status, headers, config) {
+                            if (status == 200) {
+                                var label = data.data;
+                                getLabel.labels[uri] = data.data;
+                                promises[uri].resolve(getLabel.labels[uri]);
+                            }
+                        });
                 }
             }
-            return getLabel.labels[uri];
+            return promises[uri].promise;
         };
         getLabel.labels = {};
         return getLabel;
     }]);
 
+    app.filter("label", ["$http", '$q', function($http, $q) {
+        function label(uri) {
+            if (getLabel.labels[uri] === undefined) {
+                var localPart = uri.split("#").filter(function(d) {return d.length > 0});
+                localPart = localPart[localPart.length-1];
+                localPart = localPart.split("/").filter(function(d) {return d.length > 0});
+                localPart = localPart[localPart.length-1];
+                label.labels[uri] = {"label": localPart};
+                $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
+                    .then(function(data, status, headers, config) {
+                        if (status == 200) {
+                            var label = data.data;
+                            getLabel.labels[uri].label = data.data;
+                        }
+                    });
+            }
+            return getLabel.labels[uri];
+        };
+        label.labels = {};
+        return label;
+    }]);
+    
     app.factory("Nanopub", ["$http", "Graph", "Resource", function($http, Graph, Resource) {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');
@@ -873,7 +897,7 @@ $( function() {
         }
         Nanopub.get = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0]
-            return $http.get('/pub/'+npID, 
+            return $http.get(ROOT_URL+'pub/'+npID, 
                                         {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
                 .then(function(response, error) {
                     nanopub.graph = processNanopub(response);
@@ -893,7 +917,7 @@ $( function() {
                 });
         };
         Nanopub.list = function(about) {
-            return $http.get("/about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
+            return $http.get(ROOT_URL+"about", {params: {"uri": about, view:"nanopublications"}, responseType:"json"})
                 .then(processNanopubs, function (response, error) {
                     console.log(response);
                     console.log(error);
@@ -902,25 +926,27 @@ $( function() {
         Nanopub.update = function(nanopub) {
             // console.log("nanopub inside Nanopub.update: ",nanopub);
             var npID = nanopub.np.split("/").slice(-1)[0];
-            return $http.put('/pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
+            return $http.put(ROOT_URL+'pub/'+npID, nanopub.graph,{headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         };
         Nanopub.save = function(nanopub) {
             //remove null values from nanopub.resource.provenance and assertion
             function notNull (value) {
                 return value["@value"] === null ? false : ( value["@id"] === null ? false : true );
             }
-            nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
-            nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
-            nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
-            nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            if (nanopub.resource) {
+                nanopub.resource.provenance["http://www.w3.org/ns/prov#value"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#value"].filter(notNull);
+                nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.provenance["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+                nanopub.resource.assertion["http://www.w3.org/ns/prov#value"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#value"].filter(notNull);
+                nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"] = nanopub.resource.assertion["http://www.w3.org/ns/prov#wasQuotedFrom"].filter(notNull);
+            }
 
-            return $http.post('/pub', nanopub,
+            return $http.post(ROOT_URL+'pub', nanopub,
                               {headers:{'ContentType':"application/ld+json"}, responseType:"json"});
         }
         Nanopub.delete = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0];
             // console.log("Nanopub.delete: " + npID);
-            return $http.delete('/pub/'+npID);
+            return $http.delete(ROOT_URL+'pub/'+npID);
         }
         return Nanopub;
     }]);
@@ -935,7 +961,7 @@ $( function() {
                 save: "&onSave",
                 editing: "@"
             },
-            templateUrl: '/static/html/newNanopub.html',
+            templateUrl: ROOT_URL+'static/html/newNanopub.html',
             link: function (scope, element, attrs, nanopubsCtrl) {
                 scope.currentGraph = "assertion";
                 scope.formats = formats;
@@ -985,15 +1011,14 @@ $( function() {
                 resource: "@",
                 disableNanopubing: "="
             },
-            templateUrl: '/static/html/nanopubs.html',
+            templateUrl: ROOT_URL+'static/html/nanopubs.html',
             controller: ['Resource','$scope', '$http', function (Resource, $scope, $http) {
                 $scope.current_user = USER;
                 $scope.Nanopub = Nanopub;
                 $scope.getLabel = getLabel;
                 $scope.canEdit = function(nanopub) {
                     //console.log( USER.uri, nanopub.resource.pubinfo);
-                    return true;//USER.admin == "True"; ||
-                        //nanopub.resource.pubinfo.resource.assertion.has('http://purl.org/dc/terms/contributor', {'@id':USER.uri});
+                    return USER.uri != null && (USER.admin == "True" || nanopub.contributor == USER.uri);
                 };
                 //$scope.$watch('resource', function(newval) {
                 //    if ($scope.about != null) {
@@ -1045,7 +1070,7 @@ $( function() {
     app.directive("searchResult", ["$http", function($http) {
         return {
             restrict: "E",
-            templateUrl: '/static/html/searchResult.html',
+            templateUrl: ROOT_URL+'static/html/searchResult.html',
 
             //add scope: {} into directive so that I can bind query={{ args['query'] }}
             //from inside <search-result> in the search-view.html jinja template
@@ -1054,17 +1079,22 @@ $( function() {
                 query: "@"
             },
             link: function(scope, element, attrs) {//was scope
+                scope.ROOT_URL = ROOT_URL;
                 console.log('attrs: ', attrs);
                 console.log('scope.query is: ', scope.query);
-                $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
-                    'params': {'query': scope.query },
-                    'resultType': 'json'
-                    // 'headers' : {'Accept' : 'application/json'}
-                }).then(function(response) {
-                    console.log('response data: ', response.data);
-                    console.log('attrs is: ', attrs)
-                    scope.entities = response.data;  
-                });
+                if (RESULTS) {
+                    scope.entities = RESULTS;
+                } else {
+                    $http.get("searchApi", { //either "?view=searchApi" or "searchApi"
+                        'params': {'query': scope.query },
+                        'resultType': 'json'
+                        // 'headers' : {'Accept' : 'application/json'}
+                    }).then(function(response) {
+                        console.log('response data: ', response.data);
+                        console.log('attrs is: ', attrs)
+                        scope.entities = response.data;  
+                    });
+                }
             }
         }
     }]);
@@ -1079,7 +1109,7 @@ $( function() {
                 searchTextChange : "&?",
                 newNode : "&?"
             },
-	    templateUrl: '/static/html/searchAutocomplete.html',
+	    templateUrl: ROOT_URL+'static/html/searchAutocomplete.html',
             link: function(scope, element, attrs) {
 	        var self = scope;
 
@@ -1093,7 +1123,7 @@ $( function() {
 	        //self.searchTextChange   = searchTextChange;
 
 	        newNode = function(nodeid) {
-	            window.location.href = '/'+nodeid.replace(' ','_');
+	            window.location.href = ROOT_URL+nodeid.replace(' ','_');
 	        }
 
                 self.searchText = getParameterByName("query");
@@ -1107,7 +1137,7 @@ $( function() {
 	        }
 
 	        function selectedItemChange(item) {
-	            window.location.href = '/about?uri='+window.encodeURIComponent(item.node);
+	            window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(item.node);
 	        }
 
 	        /**
@@ -1144,10 +1174,11 @@ $( function() {
     app.directive("latest", ["$http", 'getLabel', function($http, getLabel) {
 	return {
 	    restrict: "E",
-	    templateUrl: '/static/html/latest.html',
+	    templateUrl: ROOT_URL+'static/html/latest.html',
             link: function(scope, element, attrs) {
 		scope.getLabel = getLabel;
-		$http.get("/?view=latest").then(function(response) {
+                scope.ROOT_URL = ROOT_URL;
+		$http.get(ROOT_URL+"?view=latest").then(function(response) {
 		    scope.entities = response.data;
 		    scope.entities.forEach(function (e) {
 //			e.types = e.types.split('||').map(function(t) {
@@ -1158,6 +1189,7 @@ $( function() {
 		    });
 		    console.log(response);
 		});
+                scope.getURLs = function(d) { return d.about};
 	    }
 	}
     }]);
@@ -1179,7 +1211,7 @@ select distinct ?id where {\n\
   FILTER ( !strstarts(str(?id), "bnode:") )\n\
 }\n\
 ';
-            return $http.get('/sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
+            return $http.get(ROOT_URL+'sparql', {params : {query : query, output: 'json'}, responseType: 'json'})
                 .then(function(data) {
                     return data.data.results.bindings.map(function(row) {
                         return row.id.value;
@@ -1241,7 +1273,7 @@ select distinct ?id where {\n\
             };
         });
         
-        var endpointUrl = '/sparql';
+        var endpointUrl = ROOT_URL+'sparql';
 
         // We are building a faceted search for classes.
         var rdfClass = '<http://www.w3.org/2002/07/owl#Class>';
@@ -1552,10 +1584,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "filter": false
             },
             "other": {
-                "shape": "none",
+                "shape": "triangle",
                 "color": "#888",
                 "uris": [],
-                "filter": false
+                "filter": false,
+                'label' : true
             }
         }
     });
@@ -1594,10 +1627,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "uris": ["http://semanticscience.org/resource/Drug"]
             },
             "other" : {
-                "shape": "octagon",
+                "shape": "ellipse",
                 "size": "50",
                 "color": "#FF7F50",
-                "uris": []
+                "uris": [],
             }
         }
     });
@@ -1667,7 +1700,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             processTypes();
                         } else {
                             nodeEntry.data.described = true;
-                            $http.get('/about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
+                            $http.get(ROOT_URL+'about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
                                 .then(function(response) {
                                     response.data.forEach(function(x) {
                                         console.log(x);
@@ -1681,7 +1714,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 });
                         }
                         if (! nodeEntry.data.label) {
-                            $http.get('/about',{ params: {uri:uri,view:'label'}})
+                            $http.get(ROOT_URL+'about',{ params: {uri:uri,view:'label'}})
                                 .then(function(response) {
                                     nodeEntry.data.label = response.data;
                                     if (update) update();
@@ -1708,6 +1741,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             edgeEntry.classes = types.join(' ');
                             edgeEntry.data.shape = getEdgeFeature("shape", types); 
                             edgeEntry.data.color = getEdgeFeature("color", types);
+                            if (getEdgeFeature("label",types) && types.length > 0) {
+                                edgeEntry.data.label = types[0].label;
+                            }
                         }
                         if (edgeEntry.data.zscore)
                             edgeEntry.data.width = Math.abs(edgeEntry.data.zscore) + 1;
@@ -1722,7 +1758,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 elements.edge = edge;
             }
 
-            var p = $http.get('/about',{ params: {uri:entity,view:view, }, responseType:'json'})
+            var p = $http.get(ROOT_URL+'about',{ params: {uri:entity,view:view, }, responseType:'json'})
                 .then(function(response) {
                     response.data.forEach(function(edge) {
                         if (edge.probability < maxP) {
@@ -1772,34 +1808,98 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         function getSummary(ldEntity) {
             console.log(ldEntity);
             for (var i=0; i<summaryProperties.length; i++) {
-                console.log(summaryProperties[i], ldEntity[summaryProperties[i]]);
                 if (ldEntity[summaryProperties[i]] != null) {
-                    return listify(ldEntity[summaryProperties[i]])[0];
+                    var summary =  listify(ldEntity[summaryProperties[i]])[0];
+                    if (summary['@value']) summary = summary['@value'];
+                    return summary;
                 }
             }
         };
         return getSummary;
     }]);
-                
+
+    app.service('generateLink', function() {
+        return function(uri, view) {
+            uri = window.encodeURIComponent(uri);
+            var result = ROOT_URL+"about?";
+            if (view) result += 'view='+view+'&';
+            result += 'uri='+uri;
+            return result;
+        };
+    });
     
-    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary',
-                              function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary) {
+    app.filter('kglink', function(generateLink) {
+        return generateLink;
+    });
+
+    app.service("getView", [ '$http', '$q', function($http, $q) {
+        var promises = {};
+        function getView(uri, view, responseType) {
+            if (!promises[uri]) promises[uri] = {};
+            if (!promises[uri][view]) {
+                promises[uri][view] = $q.defer();
+                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType:'json'})
+                    .then(function(response) {
+                        promises[uri][view].resolve(response.data);
+                    });
+            }
+            return promises[uri][view].promise;
+        };
+        return getView;
+    }]);
+
+    app.directive("kgCard", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary', 'getView',
+                             function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary, getView) {
+	return {
+            scope: {
+                src : "=?",
+                entity : "=?",
+                compact : "=?",
+            },
+            transclude: true,
+            templateUrl: ROOT_URL+'static/html/card.html',
+	    restrict: "E",
+            link: function(scope, element, attrs) {
+                scope.cache = {};
+                if (scope.entity == null) {
+                    if (scope.src == null) {
+                        scope.src = NODE_URI;
+                    }
+                    if (scope.src == NODE_URI) {
+                        scope.entity = ATTRIBUTES;
+                    } else {
+                        getView(scope.src, 'attributes')
+                            .then(function(attributes) {
+                                scope.entity = attributes;
+                            });
+                    }
+                }
+            }
+        }
+    }]);
+    
+    app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary', 'getView',
+                              function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary, getView) {
 	return {
             scope: {
                 elements : "=?",
                 style : "=?",
                 layout : "=?",
-                start: "@?"
+                title : "=?",
+                start: "@?",
+                startList: "=?"
             },
-            templateUrl: '/static/html/explore.html',
+            templateUrl: ROOT_URL+'static/html/explore.html',
 	    restrict: "E",
             link: function(scope, element, attrs) {
                 scope.toggleSidebar = function() {
                     $mdSidenav("explore").toggle();
                 }
-                $mdSidenav("explore").open();
+                $mdSidenav("explore").close();
+                $mdSidenav("explore_details").close();
                 scope.selectedEntities = null;
                 scope.searchText = null;
+                scope.ROOT_URL = ROOT_URL;
 
                 scope.searchTextChange = function(text) {
                     scope.searchText = text;
@@ -1844,6 +1944,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         });
                     })
                 }
+                scope.incomingOutgoing = incomingOutgoing;
                 scope.add = function() {
                     if (scope.selectedEntities) {
                         incomingOutgoing(scope.selectedEntities.map(function(d) { return d.node}))
@@ -1891,15 +1992,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'border-width': 0,
                             'cursor': 'pointer',
                             'color' : 'white',
-                            'font-size' : '8px',
+                            'font-size': 'mapData(rank,0,1,8,16)',
+//                            'font-size' : '8px',
                             'text-wrap': 'wrap',
-                            'text-max-width' : '5em',
+                            'text-max-width': 'mapData(rank,0,1,100,200)',
                             //'text-outline-width' : 3,
                             //'text-outline-opacity' : 1,
                             'text-background-opacity' : 1,
                             'text-background-shape' : 'roundrectangle',
                             'text-background-padding' : '1px',
-                            'width': '5em'
+                            'width': 'mapData(rank,0,1,100,200)',
+                            'height': 'mapData(rank,0,1,30,60)',
                         })
                         .selector('node[color]')
                         .css({
@@ -1922,6 +2025,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'curve-style' : 'bezier',
                             'target-arrow-color': 'data(color)',
                             'line-color': 'data(color)'
+                        })
+                        .selector('edge[label]')
+                        .css({
+                            'font-size' : '6px',
+                            'source-text-offset': '0.5em',
+                            'text-wrap':'wrap',
+                            'text-max-width':'5em',
+                            'source-label': 'data(label)',
                         })
                         .selector('edge[negation]')
                         .css({
@@ -1964,10 +2075,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     scope.layout = {
                         name: 'cose-bilkent',
                         animate: false,
-                        randomize: true,
+                        //randomize: true,
                         nodeDimensionsIncludeLabels: true,
                         //fit: false,
                         //padding: [20,20,20,20],
+                        idealEdgeLength: 60,
                         //circle: true,
                         //concentric: function(){ 
                             //var rank = scope.pageRank.rank(this);
@@ -1980,6 +2092,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     };
 
                 scope.selected = [];
+                scope.selectedNodes = [];
+                scope.selectedEdges = [];
                 
                 scope.cy = cytoscape({
                     container: $(element).find('.graph'),
@@ -2004,9 +2118,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         cy.on('select unselect', function(e){
                             scope.$apply(function() {
                                 scope.selected =  scope.cy.$(':selected');
-                                scope.selected.forEach(function(d) {
+                                scope.selectedNodes =  scope.cy.$('node:selected');
+                                scope.selectedEdges =  scope.cy.$('edge:selected');
+                                scope.selectedEdges.forEach(function(d) {
                                     updateDetails(d.data());
                                 });
+                                if (scope.selected.length != 0) $mdSidenav("explore_details").open();
+                                if (scope.selected.length == 0) $mdSidenav("explore_details").close();
                                 console.log(scope.selected.map(function(d) {return d.data()}));
                             });
                         });
@@ -2018,7 +2136,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     data.loaded = 0;
                     if (! data.label) {
                         data.loading += 1;
-                        $http.get('/about',{ params: {uri:data.uri,view:'label'}})
+                        $http.get('about',{ params: {uri:data.uri,view:'label'}})
                             .then(function(response) {
                                 data.label = response.data;
                                 data.loaded += 1;
@@ -2033,7 +2151,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             };
                             console.log(d);
                             data.loading += 1;
-                            $http.get('/about',{ params: {uri:d,view:'label'}})
+                            $http.get(ROOT_URL+'about',{ params: {uri:d,view:'label'}})
                                 .then(function(response) {
                                     result.label = response.data;
                                     data.loaded += 1; 
@@ -2044,7 +2162,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (! data.described) {
                         data.described = true;
                         data.loading += 1;
-                        $http.get('/about',{ params: {uri:data.uri,view:'describe'}, responseType:'json'})
+                        $http.get(ROOT_URL+'about',{ params: {uri:data.uri,view:'describe'}, responseType:'json'})
                             .then(function(response) {
                                 response.data.forEach(function(x) {
                                     if (x['@id'] == data.uri) {
@@ -2052,7 +2170,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                     }
                                 });
                                 data.summary = getSummary(data);
-                                if (data.summary['@value']) data.summary = data.summary['@value'];
                                 updateTypes(data);
                                 data.loaded += 1;
                                 render();
@@ -2061,7 +2178,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         if (data.types == null)
                             updateTypes(data);
                         data.summary = getSummary(data);
-                        if (data.summary['@value']) data.summary = data.summary['@value'];
+                        if (data.summary && data.summary['@value']) data.summary = data.summary['@value'];
                     }
                 }
 
@@ -2073,7 +2190,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.bfsrun = false;
                 scope.numSearch = 1;
                 scope.numLayout = 20;
-                scope.probThreshold = 0.95;
+                scope.probThreshold = BASE_RATE;
                 scope.found = -1;
                 scope.once = false;
                 scope.query = "none";     
@@ -2121,7 +2238,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                 // Gets the details of a node by opening the uri in a new window.
                 scope.getDetails = function(query) {
-                    query.forEach(function(uri) { window.open('/about?uri='+uri); });
+                    query.forEach(function(uri) { window.open(ROOT_URL+'about?uri='+uri); });
                 };
                 // Shows BFS animation starting from selected nodes
                 scope.showBFS = function(query) {
@@ -2155,18 +2272,33 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (!scope.elements) scope.elements = {};
 
 
+                function updateCentrality() {
+                    var nodes = scope.cy.nodes();
+                    var pr = nodes.betweennessCentrality({weight:function(edge) {
+                        return edge.data("probability");
+                    }} );
+                    nodes.forEach(function(node) {
+                        var rank = pr.betweennessNormalized(node);
+                        node.data("rank",rank);
+                        console.log(node.data(), rank);
+                    });
+                }
+                
                 scope.update = update;
                 function render() {
                     elements = scope.elements.all();
                     var eles = scope.cy.add(elements);
+                    updateCentrality();
                     scope.cy.style().update();
                 }
                 function update() {
                     var elements = [];
                     if (scope.elements && scope.elements.all) {
+                        scope.thisElement = scope.cy.$id(scope.start);
                         elements = scope.elements.all();
                         var eles = scope.cy.add(elements);
                         //setTimeout(function(){
+                        updateCentrality();
                         scope.cy.style().update();
                         scope.cy.layout(scope.layout).run();
                         //    scope.$apply(function(){ scope.loading = false; });
@@ -2181,10 +2313,658 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (scope.start) {
                     incomingOutgoing([scope.start]);
                 }
+                scope.$watch("startList",function() {
+                    incomingOutgoing(scope.startList);
+                });
+                
             }
         }
     }]);
+
+    /*
+     * DBpedia service
+     * Handles SPARQL queries and defines facet configurations.
+     */
+    app.service('instanceFacetService', function(FacetResultHandler, $http) {
+
+        function instanceFacetService(type, constraints) {
+            /* Public API */
+            var result = {
+            };
+
+            // Get the results from DBpedia based on the facet selections.
+            result.getResults = getResults;
+            // Get the facet definitions.
+            result.getFacets = getFacets;
+            // Get the facet options.
+            result.getFacetOptions = getFacetOptions;
+
+            /* Implementation */
+            
+            // Facet definitions
+            // 'facetId' is a "friendly" identifier for the facet,
+            //  and should be unique within the set of facets.
+            // 'predicate' is the property that defines the facet (can also be
+            //  a property path, for example).
+            // 'name' is the title of the facet to show to the user.
+            // If 'enabled' is not true, the facet will be disabled by default.
+            var facets = [
+                // Text search facet for names
+                {
+                    facetId: 'label',
+                    predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
+                    enabled: true,
+                    name: 'Label',
+                    type: 'text'
+                },
+                // Text search facet for descriptions
+                {
+                    facetId: 'description',
+                    predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
+                    enabled: true,
+                    name: 'Description',
+                    type: 'text'
+                },
+                // Text search facet for types
+                {
+                    facetId: 'type',
+                    predicate:'rdf:type/rdfs:subClassOf*',
+                    specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
+                    preferredLang: "en",
+                    enabled: true,
+                    type: 'basic',
+                    name: 'Type'
+                }
+            ];
+
+            function processConstraints(response) {
+                response.data.forEach(function (d) {
+                    d.name = d.propertyLabel;
+                    if (d.rangeLabel && d.name.indexOf(d.rangeLabel) == -1)
+                        d.name += " " + d.rangeLabel;
+                    d.facetId = d.property;
+                    if (d.range)
+                        d.facetId += " " + d.range;
+                    d.predicate = '<'+d.property+'>';
+                    if (d.propertyType == "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                        d.predicate = d.predicate + "/rdf:type";
+                    }
+                    if (d.range) {
+                        d.specifier = '?value rdfs:subClassOf* <'+d.range + ">";
+                    }
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                    facets.push(d);
+                });
+            }
+            if (constraints != null) processConstraints({data: constraints});
+            else {
+                $http.get(ROOT_URL+'about', { params: {uri:type,view:'constraints'}, responseType:'json'})
+                    .then(processConstraints);
+            }
+            
+            var endpointUrl = ROOT_URL+'sparql';
+
+            // We are building a faceted search for classes.
+            var rdfClass = '<'+type+'>';
+
+            // The facet configuration also accept a 'constraint' option.
+            // The value should be a valid SPARQL pattern.
+            // One could restrict the results further, e.g., to writers in the
+            // science fiction genre by using the 'constraint' option:
+            //
+            // var constraint = '?id <http://dbpedia.org/ontology/genre> <http://dbpedia.org/resource/Science_fiction> .';
+            //
+            // Note that the variable representing a result in the constraint should be "?id".
+            //
+            // 'rdfClass' is just a shorthand constraint for '?id a <rdfClass> .'
+            // Both rdfClass and constraint are optional, but you should define at least
+            // one of them, or you might get bad results when there are no facet selections.
+            var facetOptions = {
+                endpointUrl: endpointUrl, // required
+                rdfClass: rdfClass, // optional
+                constraint: 'FILTER (!ISBLANK(?id))\n\
+FILTER ( !strstarts(str(?id), "bnode:") )\n\
+',
+                preferredLang : 'en' // required
+            };
+
+            var prefixes =
+                ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n' +
+                ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
+                ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
+                ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
+                ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n' +
+                ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
+            
+            // This is the result query, with <RESULT_SET> as a placeholder for
+            // the result set subquery that is formed from the facet selections.
+            // The variable names used in the query will be the property names of
+            // the reusulting mapped objects.
+            // Note that ?id is the variable used for the result resource here,
+            // as in the constraint option.
+            // Variable names with a '__' (double underscore) in them will results in
+            // an object. I.e. here ?work__id, ?work__label, and ?work__link will be
+            // combined into an object:
+            // writer.work = { id: '[work id]', label: '[work label]', link: '[work link]' }
+            var queryTemplate =
+                ' SELECT * WHERE {\n' +
+                '  <RESULT_SET> \n' +
+                ' }';
+
+            var resultOptions = {
+                prefixes: prefixes, // required if the queryTemplate uses prefixes
+                queryTemplate: queryTemplate, // required
+                resultsPerPage: 10, // optional (default is 10)
+                pagesPerQuery: 1, // optional (default is 1)
+                paging: true // optional (default is true), if true, enable paging of the results
+            };
+
+            // FacetResultHandler is a service that queries the endpoint with
+            // the query and maps the results to objects.
+            var resultHandler = new FacetResultHandler(endpointUrl, resultOptions);
+            
+            // This function receives the facet selections from the controller
+            // and gets the results from DBpedia.
+            // Returns a promise.
+            function getResults(facetSelections) {
+                // If there are variables used in the constraint option (see above),
+                // you can also give getResults another parameter that is the sort
+                // order of the results (as a valid SPARQL ORDER BY sequence, e.g. "?id").
+                // The results are sorted by URI (?id) by default.
+                return resultHandler.getResults(facetSelections).then(function(pager) {
+                    // We'll also query for the total number of results, and load the
+                    // first page of results.
+                    return pager.getTotalCount().then(function(count) {
+                        pager.totalCount = count;
+                        return pager.getPage(0);
+                    }).then(function() {
+                        return pager;
+                    });
+                });
+            }
+
+            // Getter for the facet definitions.
+            function getFacets() {
+                return facets;
+            }
+            
+            // Getter for the facet options.
+            function getFacetOptions() {
+                return facetOptions;
+            }
+            return result;
+        }
+        return instanceFacetService;
+    });
+    
+    /*
+     * The controller.
+     */
+    app.directive("instanceFacets", [
+        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http',
+        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
+	    return {
+                scope: {
+                    type : "=",
+                    constraints : "=?",
+                    title : "=?"
+                },
+                transclude : {
+                    "actions" : "?actions"
+                },
+                templateUrl: ROOT_URL+'static/html/instanceFacets.html',
+	        restrict: "E",
+                link: function(scope, element, attrs) {
+                    var vm = scope;
+                    
+                    var updateId = 0;
+
+                    instanceFacets = instanceFacetService(scope.type, scope.constraints);
+                    
+                    // page is the current page of results.
+                    vm.page = [];
+                    vm.pageNo = 0;
+                    vm.getPage = getPage;
+                    vm.makeArray = makeArray;
+                    vm.getLabel = getLabel;
+                    
+                    vm.disableFacets = disableFacets;
+                    
+                    // Listen for the facet events
+                    // This event is triggered when a facet's selection has changed.
+                    scope.$on('sf-facet-constraints', updateResults);
+                    // This is the initial configuration event
+                    var initListener = scope.$on('sf-initial-constraints', function(event, cons) {
+                        updateResults(event, cons);
+                        // Only listen once, then unregister
+                        initListener();
+                    });
+
+                    // Get the facet configurations from dbpediaService.
+                    vm.facets = instanceFacets.getFacets();
+                    // Initialize the facet handler
+                    vm.handler = new FacetHandler(getFacetOptions());
+                    
+                    // Disable the facets while results are being retrieved.
+                    function disableFacets() {
+                        return vm.isLoadingResults;
+                    }
+                    
+                    // Setup the FacetHandler options.
+                    function getFacetOptions() {
+                        var options = instanceFacets.getFacetOptions();
+                        options.scope = scope;
+                        
+                        // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
+                        options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
+                        return options;
+                    }
+                    
+                    
+                    // Get results based on facet selections (each time the selections change).
+                    function updateResults(event, facetSelections) {
+                        // As the facets are not locked while the results are loading,
+                        // this function may be called again before the results have been
+                        // retrieved. This creates a race condition where the later call
+                        // may return before the first one, which leads to an inconsistent
+                        // state once the first returns. To avoid this we'll have a counter
+                        // that is incremented each time update is called, and we'll abort
+                        // the update if the counter has been incremented before it finishes.
+                        var uid = ++updateId;
+                        // As the user can also change the page via pagination, and introduce
+                        // a race condition that way, we'll want to discard any pending
+                        // page changes if a facet value changes. So set a boolean flag for
+                        // this purpose.
+                        vm.lock = true;
+                        // This variable is used to disable page selection, and display the
+                        // spinner animation.
+                        vm.isLoadingResults = true;
+                        
+                        // Update the URL parameters based on facet selections
+                        facetUrlStateHandlerService.updateUrlParams(facetSelections);
+                    
+                        // The dbpediaService returns a (promise of a) pager object.
+                        return instanceFacets.getResults(facetSelections)
+                            .then(function(pager) {
+                                if (uid === updateId) {
+                                    vm.pager = pager;
+                                    vm.totalCount = pager.totalCount;
+                                    vm.pageNo = 1;
+                                    getPage(uid).then(function() {
+                                        vm.lock = false;
+                                        return vm.page;
+                                    });
+                                }
+                            });
+                    }
+                    
+                    // Get a page of mapped objects.
+                    // Angular-UI pagination handles the page number changes.
+                    function getPage(uid) {
+                        vm.isLoadingResults = true;
+                        // Get the page.
+                        // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
+                        return vm.pager.getPage(vm.pageNo-1).then(function(page) {
+                            // Check if it's ok to change the page
+                            if (!vm.lock || (uid === updateId)) {
+                                vm.page = page;
+                                vm.page.forEach(function(d) {
+                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'label'}})
+                                    //    .then(function(response) {
+                                    //        d.label = response.data;
+                                    //    });
+                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
+                                    //    .then(function(response) {
+                                    //        d.summary = response.data;
+                                    //    });
+                                    //d.type.forEach(function(type) {
+                                    //    getLabel(type.id).then(function(d) { type.label = d});
+                                    //});
+                                });
+                                vm.isLoadingResults = false;
+                            }
+                        }).catch(function(error) {
+                            vm.error = error;
+                            vm.isLoadingResults = false;
+                        });
+                    }
+                    
+                    function makeArray(val) {
+                        return angular.isArray(val) ? val : [val];
+                    }
+                }
+            };
+        }]);
+                                  
+    app.service('makeID',function() {
+        var ID = function () {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return Math.random().toString(36).substr(2, 10);
+        };
+        return ID;
+    });
+
+    app.service("resolveURI", function() {
+        function resolveURI(uri, context) {
+            if (context[uri]) {
+                return resolveURI(context[uri]);
+            } else if (uri.indexOf(':') != -1) {
+                var i = s.indexOf(':');
+                var parts = [s.slice(0,i), s.slice(i+1)];
+                var prefix = parts[0];
+                var local = parts[1];
+                if (context[prefix]) {
+                    c = context[prefix];
+                    if (c['@id']) c = c['@id'];
+                    return resolveURI(c+local);
+                }
+            } else if (context['@vocab']) {
+                return context['@vocab'] + uri;
+            }
+            return uri;
+        }
+        return resolveURI;
+    });
+    
+    /*
+     * The controller - New Instance.
+     */
+    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI, $mdToast) {
+        var vm = this;
+        var np_id = makeID();
+        // let contextString = "";
+        vm.resolveURI = resolveURI;
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+
         
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : {
+                            "@value": ""
+                        },
+                        'description' : {
+                            "@value": ""
+                        }
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        function populateContext(constraint) {
+            if (!vm.nanopub["@context"][constraint.propertyLabel]) {
+                vm.nanopub["@context"][constraint.propertyLabel] = [];
+            }
+            var newProperty = {};
+            newProperty["@superClass"] = constraint.superClass;
+            newProperty["@range"] = constraint.range;
+            newProperty["@rangeLabel"] = constraint.rangeLabel;
+            newProperty["@extent"] = constraint.extent;
+            newProperty["@cardinality"] = constraint.cardinality;
+            newProperty["@class"] = constraint.class;
+            newProperty["@property"] = constraint.property;
+            newProperty["@propertyLabel"] = constraint.propertyLabel;
+            newProperty["@propertyType"] = constraint.propertyType;
+            vm.nanopub["@context"][constraint.propertyLabel].push(newProperty);
+        }
+
+        function populateJsonObject(currentObject) {
+            if (currentObject["@id"]) {
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"constraints", "uri":currentObject["@type"]},'resultType': 'json' })
+                .then(function(data) {
+                    let constraints = data.data;
+                    for (constraint of constraints) {
+                        populateContext(constraint);
+                        if ((!currentObject[constraint.propertyLabel])) {
+                            currentObject[constraint.propertyLabel] = [];
+                        }
+                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            let newObject = {};
+                            newObject["@id"] = makeID();
+                            newObject["@type"] = [constraint.range];
+                            populateJsonObject(newObject);
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        } else {
+                            let newObject = {};
+                            newObject["@value"] = "";
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        }
+                    }
+                    return;
+                }, function(error){
+                    console.log(error);
+                    return;
+                });
+            } else {
+                return;
+            }
+        }
+        
+        populateJsonObject(vm.instance);
+
+        $scope.globalContext = vm.nanopub['@context'];
+
+        
+    });
+    
+    /*
+     * New Directive for new_instance_view.html and edit_instance_view.html
+     */
+    app.directive('globalJsonContext',  function(){
+        return {
+            restrict: 'EA',
+            scope: false,
+            link: function(data){
+                console.log('global context is: ', data.globalContext );
+            }
+        }
+    });
+
+    /*
+     * The controller - Edit Instance.
+     */
+    
+    app.controller('EditInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
+        var vm = this;
+        var np_id = makeID();
+        // let contextString = "";
+        vm.resolveURI = resolveURI;
+        vm.submit = function() {
+            vm.nanopub['@graph'].isAbout = {"@id": vm.instance['@id']};
+            var entityURI = resolveURI(vm.instance['@id'],vm.nanopub['@context']);
+            Nanopub.save(vm.nanopub).then(function() {
+                window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
+            });
+        }
+        
+        vm.nanopub = {
+            "@context" : {
+                "@vocab": LOD_PREFIX+'/',
+                "@base": LOD_PREFIX+'/',
+                "xsd": "http://www.w3.org/2001/XMLSchema#",
+                "whyis" : "http://vocab.rpi.edu/whyis/",
+                "np" : "http://www.nanopub.org/nschema#",
+                "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                'sio' : 'http://semanticscience.org/resource/',
+                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'dc' : 'http://purl.org/dc/terms/',
+                'prov' : 'http://www.w3.org/ns/prov#',
+                'references' : {"@id" : 'dc:references', "@type": "@uri"},
+                'quoted from' : {"@id" : 'prov:wasQuotedFrom', "@type": "@uri"},
+                'derived from' : {"@id" : 'prov:wasDerivedFrom', "@type": "@uri"},
+                'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
+                'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
+            },
+            "@id" : "urn:"+np_id,
+            "@graph" : {
+                "@id" : "urn:"+np_id,
+                "@type": "np:Nanopublication",
+                "np:hasAssertion" : {
+                    "@id" : "urn:"+np_id+"_assertion",
+                    "@type" : "np:Assertion",
+                    "@graph" : {
+                        "@id": makeID(),
+                        "@type" : [NODE_URI],
+                        'label' : {
+                            "@value": ""
+                        },
+                        'description' : {
+                            "@value": ""
+                        }
+                    }
+                },
+                "np:hasProvenance" : {
+                    "@id" : "urn:"+np_id+"_provenance",
+                    "@type" : "np:Provenance",
+                    "@graph" : {
+                        "@id": "urn:"+np_id+"_assertion",
+                        "references": [],
+                        'quoted from' : [],
+                        'derived from' : []
+                    }
+                },
+                "np:hasPublicationInfo" : {
+                    "@id" : "urn:"+np_id+"_pubinfo",
+                    "@type" : "np:PublicationInfo",
+                    "@graph" : {
+                        "@id": "urn:"+np_id,
+                    }
+                }
+            }
+        };
+        vm.instance = vm.nanopub['@graph']['np:hasAssertion']['@graph'];
+        vm.provenance = vm.nanopub['@graph']['np:hasProvenance']['@graph'];
+
+        function populateContext(constraint) {
+            if (!vm.nanopub["@context"][constraint.propertyLabel]) {
+                vm.nanopub["@context"][constraint.propertyLabel] = [];
+            }
+            var newProperty = {};
+            newProperty["@superClass"] = constraint.superClass;
+            newProperty["@range"] = constraint.range;
+            newProperty["@rangeLabel"] = constraint.rangeLabel;
+            newProperty["@extent"] = constraint.extent;
+            newProperty["@cardinality"] = constraint.cardinality;
+            newProperty["@class"] = constraint.class;
+            newProperty["@property"] = constraint.property;
+            newProperty["@propertyLabel"] = constraint.propertyLabel;
+            newProperty["@propertyType"] = constraint.propertyType;
+            vm.nanopub["@context"][constraint.propertyLabel].push(newProperty);
+        }
+
+        function populateJsonObject(currentObject) {
+            
+            if (currentObject["@id"]) {
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":NODE_URI} })
+                .then(function(data) {
+                    let elements = data.data;
+                    console.log("describe:", elements)
+                    for (property in elements[0]) {
+                        for (propertyObject of elements[0][property]) {
+                            let newObject = {};
+                            newObject["@value"] = propertyObject["@value"];
+                            console.log("currentObject:", currentObject);
+                            currentObject[property] = [];
+                            currentObject[property].push(newObject);
+                        }
+
+                        //if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            /*
+                            let newObject = {};
+                            newObject["@id"] = makeID();
+                            newObject["@type"] = [constraint.range];
+                            populateJsonObject(newObject);
+                            currentObject[constraint.propertyLabel].push(newObject);
+                            */
+                        //} else {
+                            
+                        //}
+                        /*
+                        populateContext(constraint);
+                        if ((!currentObject[constraint.propertyLabel])) {
+                            currentObject[constraint.propertyLabel] = [];
+                        }
+                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
+                            let newObject = {};
+                            newObject["@id"] = makeID();
+                            newObject["@type"] = [constraint.range];
+                            populateJsonObject(newObject);
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        } else {
+                            let newObject = {};
+                            newObject["@value"] = "";
+                            currentObject[constraint.propertyLabel].push(newObject);
+                        }*/
+                    }
+                    return;
+                }, function(error){
+                    console.log(error);
+                    return;
+                });
+            } else {
+                return;
+            }
+        }
+        
+        populateJsonObject(vm.instance);
+
+        $scope.globalContext = vm.nanopub['@context'];
+    });
+    
     angular.bootstrap(document, ['App']);
 
 });

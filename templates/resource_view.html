@@ -1,35 +1,26 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
-{% block subtitle %}
-{% if this.description().value(ns.RDF.type) %} a
-  {% for superClass in this.description()[ns.RDF.type] %}
-  {% if loop.index > 1 and loop.last %} and {% endif %}
-  {{ render_resource_link(superClass) }}{% if loop.revindex > 2 %}, {% endif %}
-{% endfor %}
-{% endif %}
-{% endblock %}
 {% block content %}
-<div class="row" >
-  <div class="col-md-8" >
-    {{ summary_panel(this.description()) }}
+<div layout="row" >
+  <div flex="66" layout="column">
     {{ content(this.description()) }}
-    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
-      <explore flex start="{{this.identifier}}"></explore>
-    </section>
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h2 class="panel-title">Nanopublications for {{get_label(this.description())}}</h2>
-      </div>
-      <div class="panel-body">
-        <nanopubs resource="{{this.identifier}}"/>
-      </div>
+    <div md-whiteframe="2" layout="column" style="height: 50em">
+      <explore flex layout-fill start="{{this.identifier}}"></explore>
     </div>
   </div>
-  <div class="col-md-4">
-    {{ facts_panel(this.description()) }}
+  <div flex="33" layout="column">
+    <kg-card src="'{{this.identifier}}'"></kg-card>
+    <md-card >
+      <md-card-header>
+        <md-card-header-text>
+          <span class="md-title">Nanopublications for {{get_label(this.description())}}</span>
+        </md-card-header-text>
+      </md-card-header>
+      <md-card-content>
+        <nanopubs resource="{{this.identifier}}"/>
+      </md-card-content>
+    </md-card>
   </div>
-  <!-- <p>this is from resource_view.html!</p> -->
-  <!-- for debugging purposes -->
-
+</div>
 {% endblock %}

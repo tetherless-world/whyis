@@ -9,6 +9,7 @@ import importer
 
 import autonomic
 import agents.nlp as nlp
+import agents.hermit as hermit
 import rdflib
 from datetime import datetime
 
@@ -96,6 +97,7 @@ Config = dict(
     ADMIN_EMAIL_RECIPIENTS = [],
     db_defaultGraph = LOD_PREFIX + '/',
 
+    java_classpath = "{{cookiecutter.location}}/jars",
 
     admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
@@ -143,6 +145,7 @@ Config = dict(
     ],
     inferencers = {
         "SETLr": autonomic.SETLr(),
+        "Consistency Check" : hermit.ConsistencyCheck()
 #        "HTML2Text" : nlp.HTML2Text(),
 #        "EntityExtractor" : nlp.EntityExtractor(),
 #        "EntityResolver" : nlp.EntityResolver(),

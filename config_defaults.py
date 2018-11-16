@@ -9,6 +9,7 @@ import importer
 
 import autonomic
 import agents.nlp as nlp
+import agents.hermit as hermit
 import rdflib
 from datetime import datetime
 
@@ -33,6 +34,8 @@ Config = dict(
 
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
+    
+    site_url_path = '/',
 
     nanopub_archive = {
         'depot.storage_path' : "/data/nanopublications",
@@ -42,13 +45,16 @@ Config = dict(
         'cache_max_age' : 3600*24*7,
         'depot.storage_path' : '/data/files'
     },
-    vocab_file = "vocab.ttl",
+    vocab_file = "default_vocab.ttl",
     WHYIS_TEMPLATE_DIR = None,
     WHYIS_CDN_DIR = None,
 
     DEFAULT_ANONYMOUS_READ = False,
 
     site_header_image = '/static/images/random_network.png',
+
+    # JAVA
+    JAVA_CLASSPATH = '/apps/whyis/jars',
     
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
@@ -90,6 +96,7 @@ Config = dict(
     ADMIN_EMAIL_RECIPIENTS = [],
     db_defaultGraph = LOD_PREFIX + '/',
 
+    java_classpath = "/apps/whyis/jars",
 
     admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
@@ -132,7 +139,19 @@ Config = dict(
                 }
             }
             '''
-        )
+        ),
+        importer.LinkedData(
+            prefix = LOD_PREFIX+'/dbpedia/ontolgy/',
+            url = 'http://dbpedia.org/ontology/%s',
+            headers={'Accept':'text/turtle'},
+            format='turtle',
+        ),
+#        importer.LinkedData(
+#            prefix = LOD_PREFIX+'/dbpedia/class/',
+#            url = 'http://dbpedia.org/class/%s',
+#            access_url = 'http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=DESCRIBE+<%s>&format=application/json-ld',
+#            format='json-ld',
+#        )
     ],
     inferencers = {
         "SETLr": autonomic.SETLr(),
@@ -178,6 +197,7 @@ Config = dict(
             where = "\t?resource ?p ?o .\n\t?p owl:inverseOf ?inverseProperty .", 
             construct="?o ?inverseProperty ?resource .",
             explanation="The properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."),
+        "Consistency Check" : hermit.ConsistencyCheck()
         #"Some Values From": autonomic.Deductor(resource="?resource", prefixes="", where = "", construct="", explanation=""),
         #"Property Path Closure": autonomic.Deductor(resource="?resource", prefixes="", where = "", construct="", explanation=""),
 #        "HTML2Text" : nlp.HTML2Text(),
@@ -202,7 +222,8 @@ Dev.update(dict(
     MAIL_DEBUG = True,
     # Works for the development virtual machine.
 #    lod_prefix = "http://localhost:5000",
-    DEBUG_TB_INTERCEPT_REDIRECTS = False
+    DEBUG_TB_INTERCEPT_REDIRECTS = False,
+    WTF_CSRF_ENABLED = False
 ))
 
 # config class used during tests
@@ -216,6 +237,7 @@ Test.update(dict(
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },
 
+    DEFAULT_ANONYMOUS_READ = False,
     file_archive = {
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },

@@ -27,14 +27,14 @@ Vagrant.configure(2) do |config|
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   config.vm.provider "virtualbox" do |vb|
-       vb.name = "whyis-dev"
+       vb.name = "whyis-install-dev"
        # VM HARDWARE SPECS
 
        vb.customize ["modifyvm", :id, "--memory", "6144"]
        vb.customize ["modifyvm", :id, "--cpus", "2"]
        vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
-       vb.customize ["modifyvm", :id, "--vram", "256"]       
+       vb.customize ["modifyvm", :id, "--vram", "256"]
   end
   config.vm.network "private_network", ip: "192.168.33.36"
   config.ssh.forward_agent = true

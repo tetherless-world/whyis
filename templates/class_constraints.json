@@ -1,0 +1,31 @@
+{{'''SELECT distinct ?class ?superClass ?property ?range ?propertyType ?extent ?cardinality WHERE {
+  ?class (rdfs:subClassOf|owl:equivalentClass|(owl:intersectionOf/rdf:rest*/rdf:first))* ?superClass.
+  {
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:someValuesFrom|owl:allValuesFrom ?range.
+    ?superClass ?extent ?range.
+    optional { ?property rdf:type ?propertyType }
+  } union {
+    ?superClass owl:onDataRange ?range.
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minQualifiedCardinality|owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinality.
+    ?superClass ?extent ?cardinality.
+    bind(owl:DatatypeProperty as ?propertyType)
+  } union {
+    ?superClass owl:onClass ?range.
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minQualifiedCardinality|owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinality.
+    ?superClass ?extent ?cardinality.
+    bind(owl:ObjectProperty as ?propertyType)
+  } union {
+    ?superClass owl:onProperty ?property.
+    ?superClass owl:minCardinality|owl:maxCardinality|owl:exactCardinality ?cardinality.
+    ?superClass ?extent ?cardinality.
+    optional { ?property rdf:type ?propertyType }
+  } union {
+    ?property rdfs:domain ?superClass;
+              rdfs:range ?range.
+    optional { ?property rdf:type ?propertyType }
+  }
+}
+LIMIT 100'''|query(values={"class":this.identifier}) | iter_labelize('property','propertyLabel') | iter_labelize('range','rangeLabel')| tojson }}

@@ -6,7 +6,10 @@ from nanopub import Nanopublication
 import flask_ld as ld
 import flask
 from flask import render_template
+from flask import render_template_string
 import logging
+
+import sys, traceback
 
 import database
 
@@ -63,14 +66,16 @@ class Service(sadi.Service):
             print "Processing", i.identifier, self
             output_nanopub = Nanopublication()
             o = output_nanopub.assertion.resource(i.identifier) # OutputClass(i.identifier)
+            error = False
             try:
                 result = self.process_nanopub(i, o, output_nanopub)
             except Exception as e:
                 output_nanopub.add((output_nanopub.assertion.identifier,self.app.NS.sioc.content, rdflib.Literal(str(e))))
                 logging.exception("Error processing resource %s in nanopub %s"%(i.identifier, inputGraph.identifier))
+                error = True
             print "Output Graph", output_nanopub.identifier, len(output_nanopub)
             for new_np in self.app.nanopub_manager.prepare(rdflib.ConjunctiveGraph(store=output_nanopub.store)):
-                if len(new_np.assertion) == 0:
+                if len(new_np.assertion) == 0 and not error:
                     continue
                 self.explain(new_np, i, o)
                 new_np.add((new_np.identifier, sio.isAbout, i.identifier))
@@ -140,6 +145,41 @@ class Crawler(UpdateChangeService):
                 for p in self.predicates:
                     todo.extend([(x.identifier, depth-1) for x in node[p]])
 
+
+class EmailNotifier(UpdateChangeService):
+
+    activity_class = whyis.EmailNotification
+
+    def __init__(self, input_type, subject_template, body_template=None, html_template=None, user_predicate=prov.wasAssociatedWith, output_type=whyis.Notified):
+        self.body_template = body_template
+        self.html_template = html_template
+        self.input_type = input_type
+        self.output_type = output_type
+        self.user_predicate = user_predicate
+
+    def getInputClass(self):
+        return self.input_type
+
+    def getOutputClass(self):
+        return self.output_type
+
+    def process(self, i, o):
+        with self.app.mail.connect() as conn:
+            for u in i[self.user_predicate]:
+                user = self.datastore.find_user(id=u.identifier)
+                parameters = dict(user=user, resource=i)
+                args = {
+                    'recipients':[user.email],
+                    'subject' : render_template_string(self.subject_template, user=user, resource=i)
+                }
+                if self.body_template is not None:
+                    args['body'] = render_template_string(self.body_template, user=user, resource=i)
+                if self.html_template is not None:
+                    args['html'] = render_template_string(self.html_template, user=user, resource=i)
+                msg = Message(**args)
+                conn.send(msg)
+
+                    
 class ImporterCrawler(UpdateChangeService):
     activity_class = whyis.ImporterGraphCrawl
 
@@ -199,16 +239,13 @@ class DatasetImporter(UpdateChangeService):
         node = self.app.run_importer(i.identifier)
                     
                             
-class OntologyImporter(GlobalChangeService):
+class OntologyImporter(UpdateChangeService):
 
     activity_class = whyis.OntologyImport
     
     def get_query(self):
         return '''select ?resource where {
     ?ontology owl:imports ?resource.
-    filter not exists {
-      ?resource a whyis:ImportedOntology.
-    }
 }'''
             
     def getInputClass(self):
@@ -218,11 +255,23 @@ class OntologyImporter(GlobalChangeService):
         return whyis.ImportedOntology
 
     def process_nanopub(self, i, o, new_np):
+        if (i.identifier, rdflib.RDF.type, whyis.ImportedOntology) in self.app.db:
+            print "Skipping already imported ontology:", i.identifier
+            return
+        print "Attempting to import", i.identifier
         file_format = rdflib.util.guess_format(i.identifier)
         try: # Try the best guess at a format.
-            new_np.assertion.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+            g = rdflib.Graph()
+            g.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+            g.serialize() # to test that parsing was actually successful.
+            for s,p,o in g:
+                new_np.assertion.add((s,p,o))
             logging.debug("%s was parsed as %s"%(i.identifier,file_format))
+            print "%s was parsed as %s"%(i.identifier,file_format)
+            print len(new_np.assertion), len(g)
         except Exception: # If that doesn't work, brute force it with all possible RDF formats, most likely first.
+            print "Could not parse %s as %s" %(i.identifier,file_format)
+            #traceback.print_exc(file=sys.stdout)
             parsed = False
             for f in ['xml', 'turtle', 'trig', # Most likely
                       'n3','nquads','nt', # rarely used for ontologies, but sometimes
@@ -231,14 +280,26 @@ class OntologyImporter(GlobalChangeService):
                       'rdfa1.1','rdfa1.0','rdfa', # rare, but I've seen them.
                       'mdata','microdata','html']: # wow, there are a lot of RDF formats...
                 try:
-                    new_np.assertion.parse(location=i.identifier, format=f, publicID=self.app.NS.local)
+                    #print "Trying", f
+                    g = rdflib.Graph()
+                    g.parse(location=i.identifier, format=f, publicID=self.app.NS.local)
+                    g.serialize() # to test that parsing was actually successful.
+                    for s,p,o in g:
+                        new_np.assertion.add((s,p,o))
                     logging.debug("%s was parsed as %s"%(i.identifier, f))
+                    print "%s was parsed as %s"%(i.identifier, f)
                     parsed = True
                     break
                 except Exception:
+                    print "BF: Could not parse %s as %s" %(i.identifier,f)
+                    #traceback.print_exc(file=sys.stdout)
                     pass
             if not parsed: # probably the best guess anyways, retry to throw the best possible exception.
-                new_np.assertion.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+                print "Could not import ontology %s" % i.identifier
+                return
+                #g = rdflib.Graph()
+                #g.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
+                #g.serialize() # to test that parsing was actually successful.
         
         new_np.pubinfo.add((new_np.assertion.identifier, self.app.NS.prov.wasQuotedFrom, i.identifier))
         new_np.add((new_np.identifier, self.app.NS.sio.isAbout, i.identifier))
@@ -396,49 +457,59 @@ class SETLr(UpdateChangeService):
         db_graph = rdflib.ConjunctiveGraph(store=query_store)
         db_graph.NS = self.app.NS
         setlr.actions[whyis.sparql] = db_graph
+        setlr.actions[whyis.NanopublicationManager] = self.app.nanopub_manager
+        setlr.actions[whyis.Nanopublication] = self.app.nanopub_manager.new
         setl_graph = i.graph
-        #setlr.run_samples = True
+#        setlr.run_samples = True
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
-        for new_np, assertion, orig in  self.app.db.query('''select distinct ?np ?assertion ?original_uri where {
+        to_retire = []
+        for new_np, assertion, orig in self.app.db.query('''select distinct ?np ?assertion ?original_uri where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion;
         prov:wasGeneratedBy/a ?setl;
         prov:wasQuotedFrom ?original_uri.
 }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
             old_np_map[orig] = assertion
-            self.app.nanopub_manager.retire(new_np)
+            to_retire.append(new_np)
+            if len(to_retire) > 100:
+                self.app.nanopub_manager.retire(*to_retire)
+                to_retire = []
+        self.app.nanopub_manager.retire(*to_retire)
             #print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
-            out = resources[output_graph]
-            out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
-            #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
-            nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
-            nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
-            nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
+            if setl_graph.resource(output_graph)[rdflib.RDF.type:whyis.NanopublicationCollection]:
+                self.app.nanopub_manager.publish(resources[output_graph])
+            else:
+                out = resources[output_graph]
+                out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
+                #print "Generated graph", out.identifier, len(out), len(out_conjunctive)
+                nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
+                nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
+                nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
+    
+                mappings = {}
 
-            mappings = {}
-
-            to_publish = []
-            triples = 0
-            for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
-                self.explain(new_np, i, o)
-                orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
-                if len(orig) == 0:
-                    continue
-                orig = orig[0]
-                print orig
-                if isinstance(orig, rdflib.URIRef):
-                    new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
-                    if orig in old_np_map:
-                        new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
-                print "Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion))
-                to_publish.append(new_np)
+                to_publish = []
+                triples = 0
+                for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
+                    self.explain(new_np, i, o)
+                    orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
+                    if len(orig) == 0:
+                        continue
+                    orig = orig[0]
+                    print orig
+                    if isinstance(orig, rdflib.URIRef):
+                        new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
+                        if orig in old_np_map:
+                            new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
+                    print "Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion))
+                    to_publish.append(new_np)
             
-            #triples += len(new_np)
-            #if triples > 10000:
-            self.app.nanopub_manager.publish(*to_publish)
+                #triples += len(new_np)
+                #if triples > 10000:
+                self.app.nanopub_manager.publish(*to_publish)
             print 'Published'
 
 class Deductor(UpdateChangeService):
@@ -479,4 +550,3 @@ class Deductor(UpdateChangeService):
 
     def __str__(self):
         return "Deductor Instance: " + str(self.__dict__)
-

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+
+{% block title %}New {{this.description().value(ns.RDFS.label)}}{% endblock %}
+{% block pageheader %}
+<div class="container" ng-cloak ng-controller="NewInstanceController as vm">
+  <global-json-context/>
+  <div class="page-header" layout="row">
+    <h1 flex property="rdfs:label">{{ title() }}<small ng-show="vm.instance.label.length != 0" ng-bind="vm.instance.label[0]['@value']"></small><small ng-show="vm.instance.label.length == 0" ng-bind="vm.instance['@id']"></small>
+    </h1>
+    <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
+      
+      <md-switch ng-model="vm.showCode" aria-label="Show JSON-LD Code">
+        Show JSON-LD
+      </md-switch>
+      <span/>
+      <md-button ng-click="vm.submit()" class="md-icon-button" aria-label="Create" title="Create">
+        <md-icon>check_circle</md-icon>
+      </md-button>
+      <md-button md-secondary ng-href="{{url_for('view',view='view', uri=this.identifier)}}" class="md-icon-button" aria-label="Cancel" title="Cancel">
+        <md-icon>cancel</md-icon>
+      </md-button>
+    </section>
+  </div>
+{% endblock %}
+{% block content %}
+<div layout="column">
+  <div ng-bind="vm.resolveURI(vm.instance['@id'],vm.nanopub['@context'])"></div>
+  <uib-alert flex ng-if="vm.error" type="danger"><span ng-bind="vm.error"></span></uib-alert>
+  <uib-alert flex ng-if="vm.warning" type="warning"><span ng-bind="vm.warning"></span></uib-alert>
+
+  <div layout="row">
+    <json-ld-editor flex resource="vm.instance" global-context="globalContext"></json-ld-editor>
+    <pre flex ng-show="vm.showCode" ng-bind="vm.nanopub | json"></pre>
+  </div>
+
+</div>
+{%endblock%}

@@ -14,6 +14,7 @@ from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
 import pytz
+from dataurl import DataURLStorage
 
 from werkzeug.exceptions import Unauthorized
 from werkzeug.datastructures import FileStorage
@@ -116,6 +117,8 @@ NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
 NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
 NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
+NS.sd = rdflib.Namespace('http://www.w3.org/ns/sparql-service-description#')
+NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
@@ -313,6 +316,7 @@ class App(Empty):
         app = self
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
         def run_importer(self, entity_name):
+            entity_name = URIRef(entity_name)
             counter = app.redis.incr(("import",entity_name))
             if counter > 1:
                 return
@@ -427,7 +431,7 @@ class App(Empty):
 #                try:
                 result = Graph()
 #                try:
-                for s,p,o,c in self._graph.query('''
+                for quad in self._graph.query('''
 construct {
     ?e ?p ?o.
     ?o rdfs:label ?label.
@@ -461,6 +465,10 @@ construct {
       ?o foaf:name ?name.
     }
 }''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+                    if len(quad) == 3:
+                        s,p,o = quad
+                    else:
+                        s,p,o,c = quad
                     result.add((s,p,o))
 #                except:
 #                    pass
@@ -482,14 +490,10 @@ construct {
             print entity, importer
 
             if importer is not None:
-                print 10
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-                print 11
                 if modified is None or async is False:
-                    print 12
                     self.run_importer(entity)
-                    print 13
-                else:
+                elif not importer.import_once:
                     print "Type of modified is",type(modified)
                     self.run_importer.delay(entity)
                     
@@ -499,6 +503,7 @@ construct {
         filters.configure(self)
 
     def add_file(self, f, entity, nanopub):
+        entity = rdflib.URIRef(entity)
         old_nanopubs = []
         for np_uri, np_assertion, in self.db.query('''select distinct ?np ?assertion where {
     hint:Query hint:optimizer "Runtime" .
@@ -535,7 +540,7 @@ construct {
 }''', initNs=NS.prefixes, initBindings=dict(e=entity)):
             if not self._can_edit(np_uri):
                 raise Unauthorized()
-        self.nanopub_manager.retire(np_uri)
+            self.nanopub_manager.retire(np_uri)
         
                 
     def add_files(self, uri, files, upload_type=NS.pv.File):
@@ -618,7 +623,7 @@ construct {
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name, URIRef('http://schema.org/name')]
 
         @lru
         def get_remote_label(uri):
@@ -692,7 +697,7 @@ construct {
                 #    return None
             else:
                 return None
-            
+
         extensions = {
             "rdf": "application/rdf+xml",
             "jsonld": "application/ld+json",
@@ -714,6 +719,9 @@ construct {
             "application/n-quads" : "nquads",
             "application/n-triples" : "nt",
             "application/rdf+json" : "json",
+            "text/html" : None,
+            "application/xhtml+xml" : None,
+            "application/xhtml" : None,
             None: "json-ld"
         }
 
@@ -810,6 +818,8 @@ construct {
                 self.NS.prov.value,
                 self.NS.sio.hasValue
             ]
+            if 'summary_properties' in self.config:
+                summary_properties.extend(self.config['summary_properties'])
             for property in summary_properties:
                 terms = self.lang_filter(resource[property])
                 for term in terms:
@@ -869,13 +879,15 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.route('/about', methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
+        @self.route('/home', methods=['GET','POST','DELETE'])
+        @self.route('/about', methods=['GET','POST','DELETE'])
         @conditional_login_required
         def view(name=None, format=None, view=None):
             self.db.store.nsBindings = {}
+            content_type = None
             if format is not None:
                 if format in extensions:
                     content_type = extensions[format]
@@ -905,19 +917,34 @@ construct {
                 return '', 204
             elif request.method == 'GET':
                 resource = self.get_resource(entity)
+
+                # 'view' is the default view
+                fileid = resource.value(self.NS.whyis.hasFileID)
+                if fileid is not None and 'view' not in request.args:
+                    f = self.file_depot.get(fileid)
+                    fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
+                    return fsa
             
-                content_type = request.headers['Accept'] if 'Accept' in request.headers else '*/*'
+                if content_type is None:
+                    content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
-                htmls = set(['application/xhtml','text/html'])
-                if 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
+                htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
+                fmt = sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)
+                if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
+                elif fmt in dataFormats:
+                    print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
+                    output_graph = ConjunctiveGraph()
+                    result, status, headers = render_view(resource, view='describe')
+                    output_graph.parse(data=result, format="json-ld")
+                    return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
+                #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
-                    fmt = dataFormats[sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)]
-                    return resource.this().graph.serialize(format=fmt)
-
+                    return render_view(resource)
+                
         views = {}
-        def render_view(resource):
+        def render_view(resource, view=None, args=None):
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(
@@ -925,7 +952,8 @@ construct {
                 this=resource, g=g,
                 current_user=current_user,
                 isinstance=isinstance,
-                args=request.args,
+                args=request.args if args is None else args,
+                url_for=url_for,
                 get_entity=get_entity,
                 get_summary=get_summary,
                 search = search,
@@ -933,15 +961,8 @@ construct {
                 config=self.config,
                 hasattr=hasattr,
                 set=set))
-            view = None
-            if 'view' in request.args:
+            if view is None and 'view' in request.args:
                 view = request.args['view']
-            # 'view' is the default view
-            fileid = resource.value(self.NS.whyis.hasFileID)
-            if fileid is not None and view is None:
-                f = self.file_depot.get(fileid)
-                fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
-                return fsa
 
             if view is None:
                 view = 'view'
@@ -955,7 +976,6 @@ construct {
                 types.extend([(x.identifier, 1) for x in resource[RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
-            print types
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
             view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
     values (?c ?priority ?id) { %s }
@@ -969,7 +989,6 @@ construct {
 
             #print view_query
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
-            print views
             if len(views) == 0:
                 abort(404)
 
@@ -982,6 +1001,7 @@ construct {
             # if available, replace with class view
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
+        self.render_view = render_view
 
         def render_nanopub(data, code, headers=None):
             if data is None:
@@ -1054,14 +1074,22 @@ construct {
                     app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
-            def _prep_nanopub(self, nanopub_uri, graph):
-                nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
+            def _prep_nanopub(self, nanopub):
+                #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
                 about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
                 #print nanopub.assertion_resource.identifier, about
-                self._prep_graph(nanopub.assertion_resource, about.identifier)
+                self._prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
                 #self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
                 self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
                 nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
+
+                for entity in nanopub.assertion.subjects(app.NS.whyis.hasContent):
+                    localpart = app.db.qname(entity).split(":")[1]
+                    filename = secure_filename(localpart)
+                    f = DataURLStorage(nanopub.assertion.value(entity, app.NS.whyis.hasContent), filename=filename)
+                    app.add_file(f, entity, nanopub)
+                    nanopub.assertion.remove((entity, app.NS.whyis.hasContent, None))
+                
                 return nanopub
 
             @login_required
@@ -1069,10 +1097,10 @@ construct {
                 if ident is not None:
                     return self.put(ident)
                 inputGraph = self._get_graph()
-                for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
-                    nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                     #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    self._prep_nanopub(nanopub)
                     app.nanopub_manager.publish(nanopub)
 
                 return '', 201
