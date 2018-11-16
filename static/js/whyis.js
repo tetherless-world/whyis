@@ -3298,7 +3298,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "http://semanticscience.org/resource/hasValue" : [],
                                 "http://semanticscience.org/resource/hasUnit" : [
                                     {
-                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000325"
                                     }
                                 ]
                             },
@@ -3313,7 +3313,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "http://semanticscience.org/resource/hasValue" : [],
                                 "http://semanticscience.org/resource/hasUnit" : [
                                     {
-                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
+                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000325"
                                     }
                                 ]
                             },
@@ -3354,7 +3354,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     var attributes = [];
 
                     for (let i in object) {
-                        if (i !== "@id" && i !== "@type" && i !== "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" && i !== "$$hashKey") {
+                        if (i !== "@id" && i !== "@type" && i !== "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" && i !== "http://www.w3.org/2000/01/rdf-schema#label" && i !== "$$hashKey") {
                             attributes.push(i);
                         } else if (i === "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes") {
                             for (let j in object[i]) {
@@ -3515,8 +3515,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "property": "http://semanticscience.org/resource/hasUnit",
                                 "propertyLabel": "Has Unit",
                                 "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
-                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000105",
-                                "rangeLabel": "Uo Uo 0000105",
+                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000325",
+                                "rangeLabel": "Uo Uo 0000325",
                                 "superClass": "bnode:61e4b8bb7499499bbdb49d1682a0ccb4"
                             },
                             {
@@ -3538,8 +3538,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "property": "http://semanticscience.org/resource/hasUnit",
                                 "propertyLabel": "Has Unit",
                                 "propertyType": "http://www.w3.org/2002/07/owl#ObjectProperty",
-                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000105",
-                                "rangeLabel": "Uo Uo 0000105",
+                                "range": "http://purl.obolibrary.org/obo/UO_UO_0000325",
+                                "rangeLabel": "Uo Uo 0000325",
                                 "superClass": "bnode:4551b2957e7c4202b2c64f0da3671f52"
                             },
                             {
@@ -3700,19 +3700,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             console.log("addStatement");
             let statement = {};
             statement['@id'] = makeID();
-            statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+            statement['@type'] = [
+                "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
+                "http://purl.org/twc/dsa/Requestor"
+            ];
             statement['http://www.w3.org/2000/01/rdf-schema#label'] = [
                 {
-                    "@value" : "Conjuctive Sequence"
-                }
-            ];
-            statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
-                {
-                    "@id" : makeID(),
-                    "@type" : [
-                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
-                        "http://purl.org/twc/dsa/Requestor"
-                    ]
+                    "@value" : "Requestor"
                 }
             ];
             vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
@@ -3770,6 +3764,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //"http://semanticscience.org/resource/hasAttribute" : []
                 }
             ];
+            rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasEffect'] = [];
             vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(rule);
         };
 
@@ -3811,128 +3806,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget" : {
                             "@id" : makeID(),
                             "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                            "http://www.w3.org/2000/01/rdf-schema#label" : [
+                                {
+                                    "@value" : "Target"
+                                }
+                            ],
                             "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
                                 "@id": makeID(),
                                 "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
-                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
+                                "http://www.w3.org/2000/01/rdf-schema#label" : [
                                     {
-                                        "@id": makeID(),
-                                        "@type" : [
-                                            "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
-                                            "http://purl.org/twc/dsa/Requestor"
-                                        ],
-                                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
-                                            {
-                                              "@id": "z1jwmo1lw9",
-                                              "@type": [
-                                                "http://purl.org/twc/dsa/FrequencyRange"
-                                              ],
-                                              "http://semanticscience.org/resource/hasAttribute": [
-                                                {
-                                                  "@id": "ws1bwfmtwf",
-                                                  "@type": [
-                                                    "http://purl.org/twc/dsa/FrequencyMinimum"
-                                                  ],
-                                                  "http://semanticscience.org/resource/hasValue": [
-                                                      {
-                                                          "@value" : "1900"
-                                                      }
-                                                  ],
-                                                  "http://semanticscience.org/resource/hasUnit": [
-                                                      {
-                                                          "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
-                                                      }
-                                                  ]
-                                                },
-                                                {
-                                                  "@id": "gehkfmqzzg",
-                                                  "@type": [
-                                                    "http://purl.org/twc/dsa/FrequencyMaximum"
-                                                  ],
-                                                  "http://semanticscience.org/resource/hasValue": [
-                                                    {
-                                                        "@value" : "1900"
-                                                    }
-                                                  ],
-                                                  "http://semanticscience.org/resource/hasUnit": [
-                                                    {
-                                                        "@id" : "http://purl.obolibrary.org/obo/UO_0000105"
-                                                    }
-                                                ]
-                                                }
-                                              ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        },
-                        'https://tw.rpi.edu/web/projects/DSA/xacml-core/includes' : [
-                            {
-                                "@id": makeID(),
-                                "@type" : ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"],
-                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget" : {
-                                    "@id" : makeID(),
-                                    "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
-                                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
-                                        "@id": makeID(),
-                                        "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
-                                        "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
-                                            {
-                                                "@id": makeID(),
-                                                "@type" : [
-                                                    "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
-                                                    "http://purl.org/twc/dsa/Requestor"
-                                                ]/*,
-                                                "http://purl.org/twc/dsa/utilizesNetwork" : [
-                                                    "http://purl.org/twc/dsa/JointTacticalRadioSystem"
-                                                ],
-                                                "http://purl.org/twc/dsa/isLocatedIn" : [
-                                                    "http://purl.org/twc/dsa/list91-2-a"
-                                                ]*/
-                                            }
-                                        ]
-                                    }
-                                },
-                                /*
-                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
-                                    {
-                                        "@id" : makeID(),
-                                        "@type" : ["http://purl.org/twc/dsa/ObligationStatement"],
-                                        "http://semanticscience.org/resource/hasValue" : ""
-                                    }
-                                ]*/
-                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": [
-                                    {
-                                      "@id": "2n01gzs3v0",
-                                      "@type": [
-                                        "http://purl.org/twc/dsa/ObligationStatement"
-                                      ],
-                                      "http://semanticscience.org/resource/hasValue": [
-                                          {
-                                              "@value" : "obligation 1"
-                                          }
-                                      ]
-                                    },
-                                    {
-                                      "@id": "o5r788tizx",
-                                      "@type": [
-                                        "http://purl.org/twc/dsa/ObligationStatement"
-                                      ],
-                                      "http://semanticscience.org/resource/hasValue": [
-                                        {
-                                            "@value" : "obligation 2"
-                                        }
-                                    ]
+                                        "@value" : "Conjuctive Sequence"
                                     }
                                 ],
-                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasEffect": [
-                                    {
-                                        "@value" : "Permit"
-                                    }
-                                ]
+                                "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": []
                             }
-                        ]
+                        },
+                        'https://tw.rpi.edu/web/projects/DSA/xacml-core/includes' : []
                     }
                 },
                 "np:hasProvenance" : {
@@ -4183,7 +4073,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "http://purl.org/twc/dsa/FrequencyMinimum"
                     ],
                     "http://semanticscience.org/resource/hasValue": "1761"
-                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000105
+                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000325
                 },
                 "http://semanticscience.org/resource/hasAttribute": {
                     "@id": "asjhdasdd",
@@ -4191,7 +4081,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "http://purl.org/twc/dsa/FrequencyMaximum"
                     ],
                     "http://semanticscience.org/resource/hasValue": "1780"
-                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000105
+                    "http://semanticscience.org/resource/hasUnit": http://purl.obolibrary.org/obo/UO_0000325
                 }
             }
         }
