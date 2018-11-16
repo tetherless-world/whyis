@@ -3218,6 +3218,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     var obligation = {};
                     obligation['@id'] = makeID();
                     obligation['@type'] = ["http://purl.org/twc/dsa/ObligationStatement"];
+                    obligation['http://www.w3.org/2000/01/rdf-schema#label'] = [
+                        {
+                            "@value" : "Obligation " + obligation['@id']
+                        }
+                    ]
                     obligation['http://semanticscience.org/resource/hasValue'] = [];
                     rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(obligation);
                 };
@@ -3231,10 +3236,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 <div class="rule">
                     <md-button class="md-raised" ng-click="addStatement(attributes, options, statement)">Add statement</md-button>
                     <md-button class="md-raised md-warn" ng-click="removeStatement(statement)">Remove statement</md-button>
-                    <md-button class="md-raised" ng-click="addAttribute(attributes, options, statement)">Add attribute</md-button>
+                    <!--md-button class="md-raised" ng-click="addAttribute(attributes, options, statement)">Add attribute</md-button-->
                     <md-menu>
-                        <md-button aria-label="Open phone interactions menu" class="md-icon-button" ng-click="openMenu($mdMenu, $event)">
-                            Add
+                        <md-button aria-label="Add attribute" class="md-raised" ng-click="openMenu($mdMenu, $event)">
+                            Add attribute
                         </md-button>
                         <md-menu-content width="4">
                             <md-menu-item ng-repeat="(label, uri) in attributes">
@@ -3276,10 +3281,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         object["@type"] = [
                             uri
                         ];
+                        object["http://www.w3.org/2000/01/rdf-schema#label"] = [
+                            {
+                                "@value" : "Frequency Range"
+                            }
+                        ];
                         object["http://semanticscience.org/resource/hasAttribute"] = [
                             {
                                 "@id" : makeID(),
                                 "@type" : ["http://purl.org/twc/dsa/FrequencyMinimum"],
+                                'http://www.w3.org/2000/01/rdf-schema#label' : [
+                                    {
+                                        "@value" : 'Frequency Minimum'
+                                    }
+                                ],
                                 "http://semanticscience.org/resource/hasValue" : [],
                                 "http://semanticscience.org/resource/hasUnit" : [
                                     {
@@ -3290,6 +3305,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             {
                                 "@id" : makeID(),
                                 "@type" : ["http://purl.org/twc/dsa/FrequencyMaximum"],
+                                'http://www.w3.org/2000/01/rdf-schema#label' : [
+                                    {
+                                        "@value" : 'Frequency Maximum'
+                                    }
+                                ],
                                 "http://semanticscience.org/resource/hasValue" : [],
                                 "http://semanticscience.org/resource/hasUnit" : [
                                     {
@@ -3314,6 +3334,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     var innerStatement = {};
                     innerStatement['@id'] = makeID();
                     innerStatement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    innerStatement['http://www.w3.org/2000/01/rdf-schema#label'] = [
+                        {
+                            "@value" : "Conjuctive Sequence"
+                        }
+                    ];
                     innerStatement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [];
                     statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(innerStatement);
                 };
@@ -3405,6 +3430,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     let statement = {};
                     statement['@id'] = makeID();
                     statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+                    statement['http://www.w3.org/2000/01/rdf-schema#label'] = [
+                        {
+                            "@value" : "Conjuctive Sequence"
+                        }
+                    ];
                     //statement['http://semanticscience.org/resource/hasAttribute'] = [];
                     rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
                 };
@@ -3671,6 +3701,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             let statement = {};
             statement['@id'] = makeID();
             statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
+            statement['http://www.w3.org/2000/01/rdf-schema#label'] = [
+                {
+                    "@value" : "Conjuctive Sequence"
+                }
+            ];
             statement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
                 {
                     "@id" : makeID(),
@@ -3682,18 +3717,34 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             ];
             vm.instance['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes']['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'].push(statement);
         };
+        $scope.provisionCount = 1;
         $scope.addRule = function() {
             console.log("addRule");
             let rule = {};
-            rule['@id'] = makeID();
+            rule['@id'] = vm.instance["@id"] + '-' + $scope.provisionCount++;//makeID();
             rule['@type'] = ["http://purl.org/twc/dsa/DynamicSpectrumAllocationRule"];
+            rule['http://www.w3.org/2000/01/rdf-schema#label'] = [
+                {
+                    "@value" : "DSA Rule " + rule['@id']
+                }
+            ];
             rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget'] = {
                 "@id" : makeID(),
                 "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",
+                "http://www.w3.org/2000/01/rdf-schema#label" : [
+                    {
+                        "@value" : "DSA Target " + rule['@id']
+                    }
+                ],
                 "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : {
                     "@id" : makeID(),
                     "@type" : [
                         "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"
+                    ],
+                    "http://www.w3.org/2000/01/rdf-schema#label" : [
+                        {
+                            "@value" : "Conjuctive Sequence " + rule['@id']
+                        }
                     ],
                     "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
                         {
@@ -3702,6 +3753,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence",
                                 "http://purl.org/twc/dsa/Requestor"
                             ]
+                            //"http://www.w3.org/2000/01/rdf-schema#label" : "Requestor " + rule['@id']
                         }
                     ]
                 }
@@ -3709,7 +3761,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             rule['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [
                 {
                     "@id" : makeID(),
-                    "@type" : ["http://purl.org/twc/dsa/ObligationStatement"]
+                    "@type" : ["http://purl.org/twc/dsa/ObligationStatement"],
+                    "http://www.w3.org/2000/01/rdf-schema#label" : [
+                        {
+                            "@value" : "Obligation " + rule['@id']
+                        }
+                    ],
                     //"http://semanticscience.org/resource/hasAttribute" : []
                 }
             ];
@@ -3747,12 +3804,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     "@graph" : {
                         "@id": makeID(),
                         "@type" : [NODE_URI],
-                        'label' : {
-                            "@value": ""
-                        },
                         "description": {
                             "@value": "Policy description"
                         },
+                        "http://www.w3.org/2000/01/rdf-schema#label" : [],
                         "https://tw.rpi.edu/web/projects/DSA/xacml-core/hasTarget" : {
                             "@id" : makeID(),
                             "@type" : "https://tw.rpi.edu/web/projects/DSA/xacml-core/Target",

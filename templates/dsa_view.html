@@ -64,6 +64,11 @@ div.rules {
             </div>
 
             <md-input-container class="md-block">
+                <label>Policy name</label>
+                <input ng-model="vm.instance['http://www.w3.org/2000/01/rdf-schema#label'][0]['@value']">
+            </md-input-container>
+
+            <md-input-container class="md-block">
                 <label>Policy description</label>
                 <textarea ng-model="vm.instance['description']['@value']" md-maxlength="1500" rows="3" md-select-on-focus></textarea>
             </md-input-container>
