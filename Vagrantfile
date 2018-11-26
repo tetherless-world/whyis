@@ -27,7 +27,7 @@ Vagrant.configure(2) do |config|
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   config.vm.provider "virtualbox" do |vb|
-       vb.name = "whyis-dev"
+       vb.name = "whyis-install-dev"
        # VM HARDWARE SPECS
 
        vb.customize ["modifyvm", :id, "--memory", "6144"]
