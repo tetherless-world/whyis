@@ -3111,6 +3111,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
                         results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
                         results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
+                        results["Air Combat Training System"] = "http://purl.org/twc/dsa/AirCombatTrainingSystem";
                         results["Airborne System"] = "http://purl.org/twc/dsa/AirborneSystem";
                         results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
                         results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
@@ -3122,9 +3123,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         results["Military"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
                         results["Non-Federal"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
                     } else if (attr === "http://purl.org/twc/dsa/isLocatedIn") {
+                        results["list91-1-a"] = "http://purl.org/twc/dsa/list91-1-a";
+                        results["list91-1-b"] = "http://purl.org/twc/dsa/list91-1-b";
                         results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
                         results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
                         results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                        results["list97-2-a"] = "http://purl.org/twc/dsa/list97-2-a";
                         results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
                         results["Space"] = "http://purl.org/twc/dsa/Space";
                     }
@@ -3184,7 +3188,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         return {
             template: `
                 <div layout="row">
-                    <dsa-input label="'Obligation'" model="obligation['http://semanticscience.org/resource/hasValue'][0]['@value']"></dsa-input>
+                    <dsa-input label="'Obligation'" model="obligation['http://semanticscience.org/resource/hasValue']['@value']"></dsa-input>
                     <md-button class="md-fab md-mini" aria-label="Delete obligation" ng-click="removeObligation(obligation)">-</md-button>
                 </div>
             `,
@@ -3336,7 +3340,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     innerStatement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
                     innerStatement['http://www.w3.org/2000/01/rdf-schema#label'] = [
                         {
-                            "@value" : "Conjuctive Sequence"
+                            "@value" : "Conjunctive Sequence"
                         }
                     ];
                     innerStatement['https://tw.rpi.edu/web/projects/DSA/xacml-core/includes'] = [];
@@ -3432,7 +3436,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     statement['@type'] = ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"];
                     statement['http://www.w3.org/2000/01/rdf-schema#label'] = [
                         {
-                            "@value" : "Conjuctive Sequence"
+                            "@value" : "Conjunctive Sequence"
                         }
                     ];
                     //statement['http://semanticscience.org/resource/hasAttribute'] = [];
@@ -3625,9 +3629,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 results["Military"] = "http://purl.org/twc/dsa/MilitaryAffiliation";
                 results["Non-Federal"] = "http://purl.org/twc/dsa/NonFederalAffiliation";
             } else if (attribute === "http://purl.org/twc/dsa/isLocatedIn") {
+                results["list91-1-a"] = "http://purl.org/twc/dsa/list91-1-a";
+                results["list91-1-b"] = "http://purl.org/twc/dsa/list91-1-b";
                 results["list91-2-a"] = "http://purl.org/twc/dsa/list91-2-a";
                 results["list91-2-b"] = "http://purl.org/twc/dsa/list91-2-b";
                 results["list91-2-c"] = "http://purl.org/twc/dsa/list91-2-c";
+                results["list97-2-a"] = "http://purl.org/twc/dsa/list97-2-a";
                 results["US91EWBaseList"] = "http://purl.org/twc/dsa/US91EWBaseList";
                 results["Space"] = "http://purl.org/twc/dsa/Space";
             }
@@ -3737,7 +3744,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     ],
                     "http://www.w3.org/2000/01/rdf-schema#label" : [
                         {
-                            "@value" : "Conjuctive Sequence " + rule['@id']
+                            "@value" : "Conjunctive Sequence " + rule['@id']
                         }
                     ],
                     "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes" : [
@@ -3816,7 +3823,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "@type" : ["https://tw.rpi.edu/web/projects/DSA/xacml-core/ConjunctiveSequence"],
                                 "http://www.w3.org/2000/01/rdf-schema#label" : [
                                     {
-                                        "@value" : "Conjuctive Sequence"
+                                        "@value" : "Conjunctive Sequence"
                                     }
                                 ],
                                 "https://tw.rpi.edu/web/projects/DSA/xacml-core/includes": []
