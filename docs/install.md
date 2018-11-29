@@ -58,18 +58,18 @@ It is possible to install Whyis without using Vagrant by installing a Ubuntu Des
 
 ### Download ISO file
 
-Download the latest Ubuntu ISO file from: https://www.ubuntu.com/download/desktop
+Download the latest Ubuntu ISO file from: https://www.ubuntu.com/download/desktop.
 
 ### Create a new Ubuntu Virtual Machine
 
-From VM VirtualBox Manager, Select "New" to create a new VM
+From VM VirtualBox Manager, Select "New" to create a new VM.
 
-In the following window, name your VM and select Type Linux and Version Ubuntu
+In the following window, name your VM and select Type Linux and Version Ubuntu.
 
-Choose the desired memory and space settings, and complete the VM creation
+Choose the desired memory and space settings, and complete the VM creation.
 
 ### Load the ISO
-Before starting the newly created VM, right click the VM and go to its Settings
+Before starting the newly created VM, right click the VM and go to its Settings.
 
 Under Storage, select Controller IDE and specify your ISO file. Press Ok to save the settings.
 
