@@ -6,7 +6,7 @@ The Whyis installer is layered, which allows for maximum flexibility. Each layer
 - **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Whyis onto an Ubuntu server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
 - **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
 
-Choose a layer to install. Most developers working with Whyis for the first time will want to install into a virtual machine, and should choose Layer 1.
+Choose a layer to install. Most developers working with Whyis for the first time will want to install into a virtual machine, and should choose Layer 3.
 Users who are willing to configure a machine directly for use by Whyis should choose Layer 2.
 Whyis installations are currently supported on Ubuntu >= 14.04. 
 
@@ -53,32 +53,26 @@ If you are setting up more than one whyis vm (maybe for multiple projects), be s
   config.vm.network "private_network", ip: "192.168.33.36"
 ```
 
-### Installing on Virtual Box without Vagrant
+## Installing on Virtual Box without Vagrant
 It is possible to install Whyis without using Vagrant by installing a Ubuntu Desktop via an ISO file on Virtual Box, and then installing Whyis on the Virtual Machine following the "Layer 2: Install into an Ubuntu system" instructions
 
-Download ISO file
+### Download ISO file
 
-```
 Download the latest Ubuntu ISO file from: https://www.ubuntu.com/download/desktop
-```
-Create a new Ubuntu Virtual Machine
 
-```
+### Create a new Ubuntu Virtual Machine
+
 From VM VirtualBox Manager, Select "New" to create a new VM
-```
-```
+
 In the following window, name your VM and select Type Linux and Version Ubuntu
-```
-```
+
 Choose the desired memory and space settings, and complete the VM creation
-```
-Load the ISO
-```
+
+### Load the ISO
 Before starting the newly created VM, right click the VM and go to its Settings
-```
-```
+
 Under Storage, select Controller IDE and specify your ISO file. Press Ok to save the settings.
-```
+
 Now, when you start the VM, it should install a new Ubuntu desktop. You can now just follow the instructions for installing Whyis onto a Ubuntu system.
 
 # Administrative Tasks
