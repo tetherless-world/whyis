@@ -271,9 +271,10 @@ class NanopublicationManager:
                             g_part.add((s,p,o))
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-                    data.write(serialized)
-                    data.write('\n')
-                    data.flush()
+                    if self.db.store.publish.serialize:
+                        data.write(serialized)
+                        data.write('\n')
+                        data.flush()
                     full_list.append(nanopub.identifier)
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
@@ -314,3 +315,4 @@ class NanopublicationManager:
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
         nanopub.parse(f, format="trig")
         return nanopub
+

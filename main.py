@@ -428,48 +428,47 @@ class App(Empty):
 
         def description(self):
             if self._description is None:
-#                try:
-                result = Graph()
-#                try:
-                for quad in self._graph.query('''
-construct {
-    ?e ?p ?o.
-    ?o rdfs:label ?label.
-    ?o skos:prefLabel ?prefLabel.
-    ?o dc:title ?title.
-    ?o foaf:name ?name.
-    ?o ?pattr ?oatter.
-    ?oattr rdfs:label ?oattrlabel
-} where {
-    graph ?g {
-      ?e ?p ?o.
-    }
-    ?g a np:Assertion.
-    optional {
-      ?e sio:hasAttribute|sio:hasPart ?o.
-      ?o ?pattr ?oattr.
-      optional {
-        ?oattr rdfs:label ?oattrlabel.
-      }
-    }
-    optional {
-      ?o rdfs:label ?label.
-    }
-    optional {
-      ?o skos:prefLabel ?prefLabel.
-    }
-    optional {
-      ?o dc:title ?title.
-    }
-    optional {
-      ?o foaf:name ?name.
-    }
-}''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
-                    if len(quad) == 3:
-                        s,p,o = quad
-                    else:
-                        s,p,o,c = quad
-                    result.add((s,p,o))
+                result = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } })
+#                 result = Graph()
+#                 for quad in self._graph.query('''
+# construct {
+#     ?e ?p ?o.
+#     ?o rdfs:label ?label.
+#     ?o skos:prefLabel ?prefLabel.
+#     ?o dc:title ?title.
+#     ?o foaf:name ?name.
+#     ?o ?pattr ?oatter.
+#     ?oattr rdfs:label ?oattrlabel
+# } where {
+#     graph ?g {
+#       ?e ?p ?o.
+#     }
+#     ?g a np:Assertion.
+#     optional {
+#       ?e sio:hasAttribute|sio:hasPart ?o.
+#       ?o ?pattr ?oattr.
+#       optional {
+#         ?oattr rdfs:label ?oattrlabel.
+#       }
+#     }
+#     optional {
+#       ?o rdfs:label ?label.
+#     }
+#     optional {
+#       ?o skos:prefLabel ?prefLabel.
+#     }
+#     optional {
+#       ?o dc:title ?title.
+#     }
+#     optional {
+#       ?o foaf:name ?name.
+#     }
+# }''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+#                     if len(quad) == 3:
+#                         s,p,o = quad
+#                     else:
+#                         s,p,o,c = quad
+#                     result.add((s,p,o))
 #                except:
 #                    pass
                 self._description = result.resource(self.identifier)
@@ -839,20 +838,7 @@ construct {
             if request.method == 'GET' and not has_query:
                 return redirect(url_for('sparql_form'))
             #print self.db.store.query_endpoint
-            if request.method == 'GET':
-                headers = {}
-                headers.update(request.headers)
-                if 'Content-Length' in headers:
-                    del headers['Content-Length']
-                req = requests.get(self.db.store.query_endpoint,
-                                   headers = headers, params=request.args)
-            elif request.method == 'POST':
-                if 'application/sparql-update' in request.headers['content-type']:
-                    return "Update not allowed.", 403
-                req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
-                                    headers = request.headers, params=request.args)
-            #print self.db.store.query_endpoint
-            #print req.status_code
+            req = self.db.store.sparql(self.db.store, request)
             response = Response(req.content, content_type = req.headers['content-type'])
             #response.headers[con(req.headers)
             return response, req.status_code
@@ -935,7 +921,7 @@ construct {
                     return render_view(resource)
                 elif fmt in dataFormats:
                     print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
-                    output_graph = ConjunctiveGraph()
+                    output_graph = Graph()
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}

@@ -3,10 +3,13 @@ from six.moves.urllib.request import pathname2url
 from six import iteritems
 
 from rdflib.store import Store, VALID_STORE, NO_STORE
-from rdflib.term import URIRef
+from rdflib.term import URIRef, BNode
+
+from rdflib.graph import Graph
 
 import requests
 from uuid import uuid4
+from urllib import quote_plus
 
 import rdflib
 
@@ -19,6 +22,19 @@ __all__ = ['ElasticSearchStore']
 import pkg_resources
 
 elastic_index_settings = pkg_resources.resource_string(__name__, "elastic_index_settings.json")
+
+from rdflib.plugins.sparql import CUSTOM_EVALS
+from rdflib.plugins.sparql.sparql import Query, AlreadyBound
+
+from rdflib.plugins.sparql.parser import parseQuery, parseUpdate
+from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
+
+from rdflib.plugins.sparql.evalutils import (
+    _filter, _eval, _join, _diff, _minus, _fillTemplate, _ebv, _val)
+
+from rdflib.plugins.sparql.evaluate import evalPart
+from rdflib.plugins.sparql.evaluate import evalBGP as evalBGP_orig
+from rdflib.plugins.sparql.evaluate import evalGraph as evalGraph_orig
 
 def lru(original_function, maxsize=1000):
     mapping = {}
@@ -107,14 +123,7 @@ class ElasticSearchStore(Store):
         assert context != self, "Can not add triple directly to store"
         self.addN([(subject,predicate,object,context)])
 
-    def addN(self, quads, docid = None):
-        """
-        Adds each item in the list of statements to a specific context. The
-        quoted argument is interpreted by formula-aware stores to indicate this
-        statement is quoted/hypothetical.
-        """
-        assert self.__open, "The Store must be open."
-
+    def prep_graph(self, quads):
         graphs = {}
         resources = {}
         json_ld = []
@@ -152,16 +161,32 @@ class ElasticSearchStore(Store):
             resource['@object'].append(obj)
 
         json_ld = json.dumps({ "graphs": json_ld })
+        return json_ld
+        
+    def addN(self, quads, docid=None):
+        """
+        Adds each item in the list of statements to a specific context. The
+        quoted argument is interpreted by formula-aware stores to indicate this
+        statement is quoted/hypothetical.
+        """
+        assert self.__open, "The Store must be open."
+
+        json_ld = self.prep_graph(quads)
 
         if docid is None:
             docid = uuid4().hex
+        else:
+            docid = quote_plus(docid)
+            
         r = self.session.put(self.url+'/nanopublication/'+docid,
                              headers={"Content-Type":"application/json"},
                              data=json_ld)
         if r.status_code != 201:
             print r.status_code
             print r.content
+
     
+                
     def remove(self, spo, context, txn=None):
         subject, predicate, object = spo
         assert False, "remove() is not implemented."
@@ -180,40 +205,41 @@ class ElasticSearchStore(Store):
                                      headers={"Content-Type":"application/json"})
 
         return response.json()
-        
+
+    def subgraph(self, query):
+        json_response = self.elastic_query(query)
+        g = rdflib.ConjunctiveGraph()
+
+        g.addN(self.json_ld_triples(json_response))
+        return g
+
     def triples(self, spo, context=None, txn=None):
         """A generator over all the triples matching """
         assert self.__open, "The Store must be open."
 
         subject, predicate, object = spo
 
-        if context is not None:
-            if context == self:
+        if context is not None and not isinstance(context, URIRef):
+            if context == self or isinstance(context, BNode):
                 context = None
             else:
                 context = context.identifier
-
+                
+        if context == self or isinstance(context, BNode):
+            context = None
         query = {
-            "query": {
-                "nested" : {
-                    "path" : "graphs.@graph",
-                    "score_mode" : "avg",
-                    "query" : {
-                        "bool" : {
-                            "must" : [
-                            ]
-                        }
-                    }
-                }
+            "bool" : {
+                "must" : [
+                ]
             }
         }
         match_all = True
         if subject is not None:
             match_all = False
-            query['query']['nested']['query']['bool']['must'].append( { "term" : { "graphs.@graph.@id" : str(subject) } } )
+            query['bool']['must'].append( { "term" : { "graphs.@graph.@id" : str(subject) } } )
         if predicate is not None and object is None:
             match_all = False
-            query['query']['nested']['query']['bool']['must'].append( { "exists" : { 'field': "graphs.@graph."+str(predicate) } } )
+            query['bool']['must'].append( { "exists" : { 'field': "graphs.@graph."+str(predicate) } } )
         if object is not None:
             match_all = False
             obj_path = ''
@@ -222,31 +248,39 @@ class ElasticSearchStore(Store):
             else:
                 obj_path = obj_path + '.@id'
             if predicate is not None:
-                query['query']['nested']['query']['bool']['must'].append( { "term" : {
+                query['bool']['must'].append( { "term" : {
                       "graphs.@graph."+str(predicate) +obj_path : str(object)
                     } } )
             else:
-                query['query']['nested']['query']['bool']['must'].append( { "term" : {
+                query['bool']['must'].append( { "term" : {
                      "graphs.@graph.@object" +obj_path : str(object)
                     } } )
         if context is not None:
             match_all = False
-            query['query']['nested']['query']['bool']['must'].append( { "exists" : {
-                 'field': "graphs.@id."+str(context.identifier)
+            query['bool']['must'].append( { "term" : {
+                 "graphs.@id" : str(context)
                 } } )
 
         if match_all:
-            query['query']['nested']['query'] = {'match_all': {}}
+            query = {'match_all': {}}
 
-        response = self.session.post(self.url+"/_search",data=json.dumps(query),
-                                     headers={"Content-Type":"application/json"})
+        #print json.dumps(query)
+        json_response = self.elastic_query(query)
 
-        json_response = response.json()
-        
+        if isinstance(context, Graph):
+            context = context.identifier
+        for s, p, o, g in self.json_ld_triples(json_response,
+                                               subject, predicate, object, context):
+            yield (s, p, o), Graph(store=self, identifier=g)
+
+    def json_ld_triples(self, json_response, subject=None, predicate=None, object=None, context=None):
+        #print json_response
+        if 'hits' not in json_response:
+            return
         for hit in json_response['hits']['hits']:
             for graph in hit['_source']['graphs']:
                 graphid = rdflib.URIRef(graph['@id'])
-                if context is not None and context.identifier != graphid:
+                if context is not None and context != graphid:
                     continue
                 for resource in graph['@graph']:
                     resourceid = rdflib.URIRef(resource['@id'])
@@ -279,8 +313,8 @@ class ElasticSearchStore(Store):
                                 o = rdflib.Literal(obj['@value'],**args)
                             if object is not None and o != object:
                                 continue
-                            yield (resourceid, rdflib.URIRef(pred), o), graphid
-
+                            yield resourceid, rdflib.URIRef(pred), o, graphid
+                            
     def __len__(self, context=None):
         assert self.__open, "The Store must be open."
         assert False, "Not implemented."
@@ -312,3 +346,111 @@ class ElasticSearchStore(Store):
 
     def remove_graph(self, graph):
         self.remove((None, None, None), graph)
+
+
+def evalBGP(ctx, part=None, bgp=None):
+
+    """
+    A basic graph pattern
+    """
+
+    # Top-level BGP calls pass in a part, but recursive calls into BGP pass in the triples list (bgp).
+    if bgp is None:
+        bgp = part.triples
+        #bgp = sorted(part.triples, key=lambda t: len([n for n in t if ctx[n] is None]))
+
+    # If we're not working with ElasticSearch, then just do the original function.
+    if not isinstance(ctx.dataset.store, ElasticSearchStore):
+        for x in evalBGP_orig(ctx, bgp):
+            yield x
+        return
+
+    # If there are no graph patterns left, then we've bottomed out and the solution is filled as much as possible.
+    if not bgp or len(bgp) == 0:
+        yield ctx.solution()
+        return
+
+    s, p, o = bgp[0]
+
+    _s = ctx[s]
+    _p = ctx[p]
+    _o = ctx[o]
+    _g = ctx.graph
+
+    # 
+    #if hasattr(ctx, 'graph_term'):
+    #    print ctx.graph_term
+    #    if ctx[ctx.graph_term] is not None:
+    #        _g = None
+            
+    
+    #print _s, _p, _o, _g, ctx.dataset.store
+    for (ss, sp, so), sg in ctx.dataset.store.triples((_s, _p, _o), _g):
+        if None in (_s, _p, _o):
+            c = ctx.pushGraph(sg)
+            if hasattr(ctx, 'graph_term'):
+                c.graph_term = ctx.graph_term
+                c[c.graph_term] = sg.identifier
+                #print c.graph_term, sg.identifier
+        else:
+            c = ctx
+                    
+        if _s is None:
+            c[s] = ss
+
+        try:
+            if _p is None:
+                c[p] = sp
+        except AlreadyBound:
+            continue
+
+        try:
+            if _o is None:
+                c[o] = so
+        except AlreadyBound:
+            continue
+
+        # if hasattr(c, 'graph_term'):
+        #     try:
+        #         c[c.graph_term] = sg
+        #         cx.graph_term = c.graph_term
+        #         c = cx
+        #     except AlreadyBound:
+        #         continue
+            
+            #graphSolution = [{part.graph_term: sg}]
+        #    for x in evalBGP(c, bgp=bgp[1:]):
+        #        #result =  x #_join(x, graphSolution)
+        #        #print graphSolution
+        #        print x
+        #        yield x
+        #else:
+        for x in evalBGP(c, bgp = bgp[1:]):
+            yield x
+
+def evalGraph(ctx, part):
+
+    if not isinstance(ctx.dataset.store, ElasticSearchStore):
+        for x in evalGraph_orig(ctx, part):
+            yield x
+        return
+    
+    if ctx.dataset is None:
+        raise Exception(
+            "Non-conjunctive-graph doesn't know about " +
+            "graphs. Try a query without GRAPH.")
+
+    ctx = ctx.clone()
+    graph = ctx[part.term]
+    ctx.graph_term = part.term
+    if graph is None:
+        for x in evalPart(ctx, part.p):
+            yield x
+
+    else:
+        c = ctx.pushGraph(ctx.dataset.get_context(graph))
+        for x in evalPart(c, part.p):
+            yield x
+
+CUSTOM_EVALS['BGP'] = evalBGP
+CUSTOM_EVALS['Graph'] = evalGraph
