@@ -408,7 +408,7 @@ $( function() {
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
-    app = angular.module('App');
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch','jsonLdEditor']);
     console.log("Here's the app at whyis.js",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
@@ -2969,7 +2969,4 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
-    
-    angular.bootstrap(document, ['App']);
-
 });
