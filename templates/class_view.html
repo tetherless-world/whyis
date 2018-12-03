@@ -115,22 +115,26 @@
 }
 </style>
 <div class="row" >
-  <div class="col-md-5">
+  <div class="col-md-5" width="auto">
     {{ summary_panel(this.description()) }}
     {{ content(this.description()) }}
-              <h2>Super Classes</h2>
-              <p>Super class definitions also apply to this class.</p>
               <div class="panel panel-default">
-                    <ul class="list-group">
-                      {% for superClass in this.description()[ns.RDFS.subClassOf] %}
-                        <li class="list-group-item">
-                          {{render_resource_link(superClass)}}
-                          {% if superClass.value(ns.skos.definition) %}
-                          <span>{{superClass.value(ns.skos.definition)}}</span>
-                          {% endif %}
-                        </li>
-                      {% endfor %}
-                    </ul>
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Super Classes</h2>
+                    </div>
+                    <div class="panel-body">
+                        <p>Super class definitions also apply to this class.</p>
+                        <ul class="list-group">
+                          {% for superClass in this.description()[ns.RDFS.subClassOf] %}
+                            <li class="list-group-item">
+                              {{render_resource_link(superClass)}}
+                              {% if superClass.value(ns.skos.definition) %}
+                              <span>{{superClass.value(ns.skos.definition)}}</span>
+                              {% endif %}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                    </div>
                 </div>
                <div class="panel panel-default">
                     <div class="panel-heading">
@@ -198,7 +202,21 @@
                         {%endif%}
                     </div>
                 </div>               
-
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Nanopublications</h2>
+                    </div>
+                    <div class="panel-body">
+                    <ul id="nanopubs" class="list-group">
+                        <!---Populate the nanopublications-->
+                        {% set q = ['select distinct ?g where { graph ?g { <' , this.description().identifier , '> ?p ?o . } }']  %}
+                        <!---note.. need to update hrefs to point to pages in whyis-->
+                        {% for resource in this.graph.query(q|join) %}
+                            <li class="list-group-item"><a href={{resource[0]}}>{{resource[0]}}</a></li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </div>
   </div>
   <div class="col-md-7" >
     <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
