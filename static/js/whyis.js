@@ -3618,6 +3618,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 results["Tropospheric Scatter System"] = "http://purl.org/twc/dsa/TroposphericScatterSystem";
                 results["Earth to Space System"] = "http://purl.org/twc/dsa/EarthToSpaceSystem";
                 results["Space to Earth System"] = "http://purl.org/twc/dsa/SpaceToEarthSystem";
+                results["Air Combat Training System"] = "http://purl.org/twc/dsa/AirCombatTrainingSystem";
                 results["Airborne System"] = "http://purl.org/twc/dsa/AirborneSystem";
                 results["Licensee System"] = "http://purl.org/twc/dsa/LicenseeSystem";
                 results["Military Station"] = "http://purl.org/twc/dsa/MilitaryStation";
