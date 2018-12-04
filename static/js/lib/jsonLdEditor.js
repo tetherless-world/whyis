@@ -1,8 +1,6 @@
 (function (angular) {
 
-    var module = angular.module('jsonLdEditor', [
-         'ngMaterial'
-    ]);
+    var module = angular.module('jsonLdEditor', ['ngMaterial', 'ui.bootstrap']);
 
     module.directive("contenteditable", function() {
         return {
@@ -121,10 +119,10 @@
 
     module.service('resolveEntity', ["$http", function($http) {
         var promises = {};
-	/**
-	 * Search for nodes.
-	 */
-	function resolveEntity (query) {
+        /**
+         * Search for nodes.
+         */
+	    function resolveEntity (query) {
             if (!promises[query]) {
                 promises[query] = $q.defer();
                 $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
@@ -136,12 +134,12 @@
                     });
                 return promises[query].promise;
             }
-	}
+	    }
         return resolveEntity;
     }]);
     
     module.directive('jsonLdEditor', ['context', 'RecursionHelper', 'contextualize', "$mdMenu", 'datatypes', 'makeID','resolveEntity', '$mdToast',
-                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID,resolveEntity, $mdToast) {
+                                      function(context, RecursionHelper, contextualize, $mdMenu, datatypes, makeID, resolveEntity, $mdToast) {
         return {
             templateUrl: ROOT_URL+"static/html/jsonLdEditor.html",
             restrict: 'EAC',
@@ -152,10 +150,41 @@
                 context: '=',
                 index: "=",
                 globalContext: '=',
-                // showHideToast2: '&',
+                collapseAll: '='
             },
             compile: function(element) {
                 return RecursionHelper.compile(element, function(scope) {
+                    // when loading page
+                    // collapse all after the policy type
+                    scope.isCollapsed = null;
+                    
+                    if (scope.resource['@type'] && scope.resource['@type'][0] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/Policy") {
+                        scope.isCollapsed = false;
+                    } else {
+                        scope.isCollapsed = true;
+                    }
+                    
+                    scope.collapseToggle = function() {
+                        scope.isCollapsed = !scope.isCollapsed;
+                    }
+
+                    scope.$watch('collapseAll', function(){
+                        console.log("running collapseAll function");
+                        console.log("scope.collapseAll is:", scope.collapseAll)
+                        if (scope.collapseAll === true) {
+                            console.log("collapseAll is true")
+                            if (scope.resource['@type'] && scope.resource['@type'][0] === "https://tw.rpi.edu/web/projects/DSA/xacml-core/Policy") {
+                                scope.isCollapsed = false;
+                            } else {
+                                console.log("collapseAll is true")
+                                scope.isCollapsed = true;
+                            }
+                        } else {
+                            console.log("collapseAll is false")
+                            scope.isCollapsed = false;
+                        }
+                    });
+
                     scope.openMenu = function(ev) {
                         originatorEv = ev;
                         $mdMenu.show(ev);
@@ -177,7 +206,7 @@
                     };
 
                     scope.querySearch = function(text) {
-                        console.log(text);
+                        console.log("querySearch text", text);
                         var results = [];
                         var resultMap = {};
                         [scope.context, scope.globalContext].forEach(function(A) {
@@ -203,6 +232,55 @@
                         console.log(results);
                         return results;
                     };
+
+                    scope.querySearchType = function(text) {
+                        console.log("querySearch text", text);
+                        var results = [];
+                        var resultMap = {};
+
+                        resultMap["Loading..."] = true;
+                        results.push("Loading...");
+                        
+                        resolveEntity(text).then(function(hits) {
+                            delete resultMap["Loading..."];
+                            results.splice(0, 1);
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                    console.log("d.node", d.node);
+                                }
+                            });
+                        });
+
+                        console.log(results);
+                        return results;
+                    };
+
+                    scope.querySearchID = function(text, type) {
+                        console.log("querySearch text", text);
+                        var results = [];
+                        var resultMap = {};
+
+                        resultMap["Loading..."] = true;
+                        results.push("Loading...");
+                        
+                        resolveEntity(text, type).then(function(hits) {
+                            delete resultMap["Loading..."];
+                            results.splice(0, 1);
+                            hits.forEach(function(d) {
+                                if (!resultMap[d.node]) {
+                                    resultMap[d.node] = true;
+                                    results.push(d.node);
+                                    console.log("d.node", d.node);
+                                }
+                            });
+                        });
+
+                        console.log(results);
+                        return results;
+                    };
+
                     function labelize(uri) {
                         if (uri == null || uri.length == 0) return uri;
                         var localPart = uri.split("#").filter(function(d) {return d.length > 0});
@@ -435,8 +513,9 @@
                         let backgroundColor = targetEl.closest('tr').css('background-color');
                         console.log('background-color is:', backgroundColor);
                         
-                        //reset background color 
-                        targetEl.closest('tr').css('background-color', 'white');
+                        //reset background color and delete alert
+                        targetEl.closest('tr').css('background-color', 'rgb(255,255,255)');
+                        targetEl.closest('tr').find('div.alert.alert-danger').remove();
                         console.log("jsonLdEditor validateEditor resource:", resource);
                         console.log("jsonLdEditor validateEditor property:", property);
                         let constraints = scope.retrieveConstraints(resource, property);
@@ -485,35 +564,71 @@
                             if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#someValuesFrom") {
                                 if (lengthObject[constraint["@range"]] < 1) {
                                     console.log("scope.validateEditor [WARNING 1]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Must have exactly 1 or more of ${constraint["@propertyLabel"]}`)
+                                    let warningDialog1 = `Must have exactly 1 or more of ${constraint["@propertyLabel"]}`
+                                    scope.showHideToast(warningDialog1);
+                                    console.log('Warning 1, lengthObject is:', lengthObject);
+                                    console.log('Warning 1 property is:', property);
+
+                                    //background color yellow for rowif it's not meeting this constraint
+                                    targetEl.closest('tr').css('background-color','lightyellow');
+                                    //warning dialog also!
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog1}</span>
+                                        </div>
+                                    `);
+
                                 }
                                 //must have the number specified in cardinality (no more no less)
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#qualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] != constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 2]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    let warningDialog = `Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`;
-                                    scope.showHideToast(warningDialog);
+                                    let warningDialog2 = `Must have exactly ${constraint['@cardinality']} ${constraint["@propertyLabel"]}`;
+                                    scope.showHideToast(warningDialog2);
                                     console.log('Warning 2, lengthObject is:', lengthObject);
                                     console.log('Warning 2 property is:', property)
                                     
                                     //background color yellow for row if it's not meeting this constraint
                                     let closest = targetEl.closest('tr');
                                     console.log('closest is: ', closest);
+                                    console.log('targetEl.closest("tr").find("json-ld-editor").first() is:', targetEl.closest('tr').find('json-ld-editor').first() );
                                     closest.css('background-color','lightyellow');
-                                    //closest.append(`<div class="alert alert-danger" role="alert">${warningDialog}</div>`)
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog2}</span>
+                                        </div>
+                                    `);
+                                                    // <md-button ng-click="showAlert = !showAlert">
+                                                    //     <md-icon class="material-icons md-48">clear</md-icon>
+                                                    // </md-button>
+
+
                                 }
                                 //must have at least the number that's in cardinality 
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#minQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] < constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 3]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
-                                    scope.showHideToast(`Doesn't satisfy minimum amount for "${constraint['@propertyLabel']}"`)
+                                    let warningDialog3 = `Doesn't satisfy minimum amount for "${constraint['@propertyLabel']}"`;
+                                    targetEl.closest('tr').css('background-color', 'lightyellow');
+                                    scope.showHideToast(warningDialog3);
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog3}</span>
+                                        </div>
+                                    `);
                                 }
                                 //must have no more than this amount
                             } else if (constraint["@extent"] === "http://www.w3.org/2002/07/owl#maxQualifiedCardinality") {
                                 if (lengthObject[constraint["@range"]] > constraint["@cardinality"]) {
                                     console.log("scope.validateEditor [WARNING 4]: " + constraint["@class"] + "---" + constraint["@extent"] + "---" + constraint["@range"] + "--- NOT SATISFIED");
+                                    let warningDialog4 = `Gone over maximum (${constraint["@cardinality"]}) for "${constraint['@propertyLabel']}"`;
                                     targetEl.closest('tr').css('background-color', 'lightyellow');
-                                    scope.showHideToast(`Gone over maximum (${constraint["@cardinality"]}) for "${constraint['@propertyLabel']}"`);
+                                    scope.showHideToast(warningDialog4);
+                                    targetEl.closest('tr').find('json-ld-editor').first().append(`
+                                        <div layout="row" layout-align="space-between center" class="alert alert-danger" ng-show="showAlert">
+                                            <span>${warningDialog4}</span>
+                                        </div>
+                                    `);
                                 }
                             }
                             //constraint["@extent"]
@@ -528,7 +643,7 @@
                         $mdToast.show({
                                         // template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()">X</md-button></md-toast>`,
                                         template  : `<md-toast id="toast-container"><span flex>${message}</span><md-button ng-click="closeToast()"><md-icon class="material-icons md-48" style="color:#d4d5db !important;">clear</md-icon></md-button></md-toast>`,
-                                        hideDelay : 0,
+                                        hideDelay : 5000,
                                         parent    : angular.element(document.getElementById('toast-container')),
                                         controller: "toastController",
                                       });

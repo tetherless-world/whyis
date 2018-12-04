@@ -370,7 +370,7 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasNanopublications "nanopublications.json";
   whyis:hasLabel "label_view.html";
   whyis:editInstanceView "edit_instance_view.html";
-  whyis:hasSummary "summary_view.json".
+  whyis:hasSummary "summary_view.json" .
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
 

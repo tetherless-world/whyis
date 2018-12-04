@@ -3,12 +3,15 @@
 
 {% block title %}Edit {{this.description().value(ns.RDFS.label)}}{% endblock %}
 {% block pageheader %}
-<div class="container" ng-cloak ng-controller="EditInstanceController as vm">
+<div class="container" ng-cloak ng-controller="EditInstanceController as vm" style="height:max-content;">
   <div class="page-header" layout="row">
     <h1 flex property="rdfs:label">{{ title() }}<small ng-show="vm.instance.label.length != 0" ng-bind="vm.instance.label[0]['@value']"></small><small ng-show="vm.instance.label.length == 0" ng-bind="vm.instance['@id']"></small>
     </h1>
     <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
-      
+      <!--Add in collapseAll buttons -->
+      <md-button ng-click="vm.collapseAll = true">Collapse All</md-button>
+      <md-button ng-click="vm.collapseAll = false">Expand All</md-button>
+
       <md-switch ng-model="vm.showCode" aria-label="Show JSON-LD Code">
         Show JSON-LD
       </md-switch>
@@ -29,7 +32,7 @@
   <uib-alert flex ng-if="vm.warning" type="warning"><span ng-bind="vm.warning"></span></uib-alert>
 
   <div layout="row">
-    <json-ld-editor flex resource="vm.instance"></json-ld-editor>
+    <json-ld-editor flex resource="vm.instance" collapse-all="vm.collapseAll"></json-ld-editor>
     <pre flex ng-show="vm.showCode" ng-bind="vm.nanopub | json"></pre>
   </div>
 
