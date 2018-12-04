@@ -187,21 +187,12 @@ class NanopublicationManager:
         self.db.store.nsBindings = {}
         graphs = []
         for nanopub_uri in nanopub_uris:
-            for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
-    hint:Query hint:optimizer "Runtime" .
+            for np_uri in self.db.query('''select ?np where {
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
-    ?np np:hasAssertion ?assertion;
-        np:hasPublicationInfo ?pubinfo;
-        np:hasProvenance ?provenance.
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
                 print "Retiring", np_uri, "derived from", nanopub_uri
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
-                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-                self.db.remove((None,None,None,nanopub.assertion.identifier))
-                self.db.remove((None,None,None,nanopub.provenance.identifier))
-                self.db.remove((None,None,None,nanopub.pubinfo.identifier))
-                self.db.remove((None,None,None,nanopub.identifier))
-        self.db.commit()
+                self.db.store.remove_graph(np_uri)
         #data = [('c', c.n3()) for c in graphs]
         #session = requests.session()
         #session.keep_alive = False

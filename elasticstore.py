@@ -345,8 +345,10 @@ class ElasticSearchStore(Store):
         self.session.put(self.url+'/nanopublication/'+docid, data=json_ld)
 
     def remove_graph(self, graph):
-        self.remove((None, None, None), graph)
-
+        if isinstance(graph, Graph):
+            graph = graph.identifier
+        
+        response = self.session.delete(self.url+"/nanopublication",graph.split('/')[-1])
 
 def evalBGP(ctx, part=None, bgp=None):
 
