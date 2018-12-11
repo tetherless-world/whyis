@@ -8,39 +8,18 @@
     <div md-whiteframe="2" layout="column" style="height: 50em">
       <explore flex layout-fill start="{{this.identifier}}"></explore>
     </div>
-  <kg-card src="'{{this.identifier}}'"></kg-card>
-  <md-card>
-    <md-card-header-text>
-   <span class="md-title">Nanopublications for {{get_label(this.description())}}</span>
-     </md-card-header-text>
-      </md-card-header>
-    <ul id="nanopubs" class="list-group">
-        {% set q = ['select distinct ?g where {   graph ?g {?s ?p ?o .}   graph ?s { <' , this.description().identifier , '> ?p1 ?o1 . } }']  %}
-       <!---note.. need to update hrefs to point to pages in whyis-->
-        {% for resource in this.graph.query(q|join) %}
-          <li class="list-group-item"><a href={{url_for('view',uri=resource[0])}}>{{resource[0]}}</a></li> 
-        {% endfor %}
-      </ul>
-    <md-card-content>
-        <nanopubs resource="{{this.identifier}}"/>
-      </md-card-content>
-    </md-card>
   </div>
   <div flex="33" layout="column">
-    <md-card>
-      </md-card-header>
+    <kg-card src="'{{this.identifier}}'"></kg-card>
+    <md-card >
+      <md-card-header>
         <md-card-header-text>
-          <span class="md-title">Attributes</span>
+          <span class="md-title">Nanopublications for {{get_label(this.description())}}</span>
         </md-card-header-text>
-        <br>
       </md-card-header>
-        <ul id="attributes" class="list-group">
-        {% set q = ['select distinct ?attr ?attrLabel ?attrVal where { ?attr sio:isAttributeOf  <' , this.description().identifier , '>  . ?attr rdfs:label ?attrLabel . ?attr sio:hasValue ?attrVal .  }'] %}
-       <!---note.. need to update hrefs to point to pages in whyis-->
-        {% for attr ,attrLabel, attrVal in this.graph.query(q|join) %}
-          <li class="list-group-item"><a href="{{url_for('view',uri=attr)}}">{{attrLabel}}</a> - {{attrVal}}</li>
-        {% endfor %}
-      </ul>
+      <md-card-content>
+        <nanopubs resource="{{this.identifier}}"/>
+      </md-card-content>
     </md-card>
   </div>
 </div>
