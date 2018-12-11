@@ -3,6 +3,8 @@ import os
 import flask_ld as ld
 import collections
 import requests
+from dataurl import DataURLStorage
+from werkzeug.utils import secure_filename
 
 import tempfile
 
@@ -89,9 +91,10 @@ class Nanopublication(rdflib.ConjunctiveGraph):
 
 
 class NanopublicationManager:
-    def __init__(self, store, prefix, update_listener=None):
+    def __init__(self, store, prefix, app, update_listener=None):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store
+        self.app = app
         self.depot = DepotManager.get('nanopublications')
         self.prefix = rdflib.Namespace(prefix)
         self.update_listener = update_listener
@@ -245,6 +248,15 @@ class NanopublicationManager:
         with tempfile.NamedTemporaryFile(delete=False) as data:
             to_retire = []
             for np_graph in nanopubs:
+                for entity in np_graph.subjects(self.app.NS.whyis.hasContent):
+                    localpart = self.db.qname(entity).split(":")[1]
+                    filename = secure_filename(localpart)
+                    f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
+                    print 'adding file', filename
+                    self.app.add_file(f, entity, np_graph)
+                    np_graph.remove((entity, self.app.NS.whyis.hasContent, None))
+                
+                
                 for context in np_graph.contexts():
                     if (context.identifier,rdflib.RDF.type, np.Nanopublication) in context:
                         nanopub_uri = context.identifier
@@ -269,6 +281,8 @@ class NanopublicationManager:
                         g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
                         for s,p,o in graph_part:
                             g_part.add((s,p,o))
+
+
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     data.write(serialized)

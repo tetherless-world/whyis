@@ -33,3 +33,4 @@ filedepot
 bibtexparser
 python-magic
 javabridge
+pyjwt
