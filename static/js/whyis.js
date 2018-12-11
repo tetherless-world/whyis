@@ -409,7 +409,7 @@ $( function() {
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
     app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch','jsonLdEditor']);
-    console.log("Here's the app",app);
+    console.log("Here's the app at whyis.js",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
@@ -1159,14 +1159,25 @@ $( function() {
 	/**
 	 * Search for nodes.
 	 */
-	function resolveEntity (query) {
-            return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
+	function resolveEntity (query, type) {
+            if (type === undefined) {
+                return $http.get('',{params: {view:'resolve',term:query+"*"}, responseType:'json'})
                 .then(function(response) {
                     return response.data.map(function(hit) {
                         hit.value = angular.lowercase(hit.label);
                         return hit;
                     });
                 });
+            } else {
+                return $http.get('',{params: {view:'resolve',term:query+"*",type:type}, responseType:'json'})
+                .then(function(response) {
+                    return response.data.map(function(hit) {
+                        hit.value = angular.lowercase(hit.label);
+                        return hit;
+                    });
+                });
+            }
+            
 	}
         return resolveEntity;
     }]);
@@ -2650,11 +2661,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
     app.service("resolveURI", function() {
         function resolveURI(uri, context) {
+            console.log("context[uri]:", context[uri]);
             if (context[uri]) {
                 return resolveURI(context[uri]);
             } else if (uri.indexOf(':') != -1) {
-                var i = s.indexOf(':');
-                var parts = [s.slice(0,i), s.slice(i+1)];
+                console.log("uri:", uri);
+                var i = uri.indexOf(':');
+                var parts = [uri.slice(0,i), uri.slice(i+1)];
                 var prefix = parts[0];
                 var local = parts[1];
                 if (context[prefix]) {
@@ -2673,7 +2686,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     /*
      * The controller - New Instance.
      */
-    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI, $mdToast) {
+    app.controller('NewInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
         var np_id = makeID();
         // let contextString = "";
@@ -2696,7 +2709,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "np" : "http://www.nanopub.org/nschema#",
                 "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
                 'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
@@ -2798,6 +2811,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
 
+        vm.collapseAll = true;
         
     });
     
@@ -2840,7 +2854,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "np" : "http://www.nanopub.org/nschema#",
                 "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
                 'sio' : 'http://semanticscience.org/resource/',
-                'isAbout' : { "@id" : 'sio:isAbout', "@type" : "@uri"},
+                'isAbout' : { "@id" : 'http://semanticscience.org/resource/isAbout', "@type" : "@uri"},
                 'dc' : 'http://purl.org/dc/terms/',
                 'prov' : 'http://www.w3.org/ns/prov#',
                 'references' : {"@id" : 'dc:references', "@type": "@uri"},
@@ -2849,15 +2863,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 'label' : {"@id" : 'rdfs:label', "@type": "xsd:string"},
                 'description' : {'@id' : 'dc:description', '@type': 'xsd:string'}
             },
-            "@id" : "urn:"+np_id,
+            //"@id" : "urn:"+np_id,
+            "@id" : NODE_URI,
             "@graph" : {
-                "@id" : "urn:"+np_id,
+                //"@id" : "urn:"+np_id,
+                "@id" : NODE_URI,
                 "@type": "np:Nanopublication",
                 "np:hasAssertion" : {
-                    "@id" : "urn:"+np_id+"_assertion",
+                    //"@id" : "urn:"+np_id+"_assertion",
+                    "@id" : NODE_URI+"_assertion",
                     "@type" : "np:Assertion",
                     "@graph" : {
-                        "@id": makeID(),
+                        //"@id": makeID(),
+                        "@id": NODE_URI,
+                        /*
                         "@type" : [NODE_URI],
                         'label' : {
                             "@value": ""
@@ -2865,23 +2884,28 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         'description' : {
                             "@value": ""
                         }
+                        */
                     }
                 },
                 "np:hasProvenance" : {
-                    "@id" : "urn:"+np_id+"_provenance",
+                    //"@id" : "urn:"+np_id+"_provenance",
+                    "@id" : NODE_URI+"_provenance",
                     "@type" : "np:Provenance",
                     "@graph" : {
-                        "@id": "urn:"+np_id+"_assertion",
+                        //"@id": "urn:"+np_id+"_assertion",
+                        "@id" : NODE_URI+"_assertion",
                         "references": [],
                         'quoted from' : [],
                         'derived from' : []
                     }
                 },
                 "np:hasPublicationInfo" : {
-                    "@id" : "urn:"+np_id+"_pubinfo",
+                    //"@id" : "urn:"+np_id+"_pubinfo",
+                    "@id" : NODE_URI+"_pubinfo",
                     "@type" : "np:PublicationInfo",
                     "@graph" : {
-                        "@id": "urn:"+np_id,
+                        //"@id": "urn:"+np_id,
+                        "@id" : NODE_URI,
                     }
                 }
             }
@@ -2907,48 +2931,29 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
 
         function populateJsonObject(currentObject) {
-            
+            //console.log("currentObject:", currentObject);
             if (currentObject["@id"]) {
-                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":NODE_URI} })
+                $http.get(ROOT_URL+"about",{ 'params': { "view":"describe", "uri":currentObject["@id"]} })
                 .then(function(data) {
                     let elements = data.data;
-                    console.log("describe:", elements)
-                    for (property in elements[0]) {
-                        for (propertyObject of elements[0][property]) {
-                            let newObject = {};
-                            newObject["@value"] = propertyObject["@value"];
-                            console.log("currentObject:", currentObject);
-                            currentObject[property] = [];
-                            currentObject[property].push(newObject);
+                    //console.log("describe:", elements)
+                    for (element of elements) {
+                        if (element["@id"] === currentObject["@id"]) {
+                            for (property in element) {
+                                let newObject = {};
+                                currentObject[property] = element[property];
+                                if (property !== "@id") {
+                                    for (id of element[property]) {
+                                        for (key in id) {
+                                            if (key === "@id") {
+                                                populateJsonObject(id);
+                                            }
+                                        }
+                                    }
+                                }
+                                //console.log("currentObject[property]:", currentObject[property]);
+                            }
                         }
-
-                        //if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                            /*
-                            let newObject = {};
-                            newObject["@id"] = makeID();
-                            newObject["@type"] = [constraint.range];
-                            populateJsonObject(newObject);
-                            currentObject[constraint.propertyLabel].push(newObject);
-                            */
-                        //} else {
-                            
-                        //}
-                        /*
-                        populateContext(constraint);
-                        if ((!currentObject[constraint.propertyLabel])) {
-                            currentObject[constraint.propertyLabel] = [];
-                        }
-                        if (constraint.propertyType === "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                            let newObject = {};
-                            newObject["@id"] = makeID();
-                            newObject["@type"] = [constraint.range];
-                            populateJsonObject(newObject);
-                            currentObject[constraint.propertyLabel].push(newObject);
-                        } else {
-                            let newObject = {};
-                            newObject["@value"] = "";
-                            currentObject[constraint.propertyLabel].push(newObject);
-                        }*/
                     }
                     return;
                 }, function(error){
@@ -2964,7 +2969,4 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
-    
-    angular.bootstrap(document, ['App']);
-
 });

@@ -3,8 +3,8 @@
   <section layout="column" flex style="height: 60em; margin-bottom:1em;">
     <explore flex start-list="[entities[0].about]"></explore>
   </section>
-
-  <div flex layout-fill layout="column">
+  <!-- fix for footer (layout-fill problem on chrome) -->
+  <div flex layout-fill layout="column" style="height:auto;">
     <md-toolbar layout="column">
       <div class="md-toolbar-tools">
         <h2>Recently Changed</h2>
