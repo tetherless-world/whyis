@@ -867,6 +867,7 @@ $( function() {
                 }
             }
             nanopubs.forEach(function(nanopub) {
+                nanopub.np_local_url = nanopub.np.replace(LOD_PREFIX,'');
                 if (nanopub.modified) nanopub.modified = new Date(nanopub.modified);
                 if (nanopub.created) nanopub.created = new Date(nanopub.created);
                 if (nanopub.updated) nanopub.updated = new Date(nanopub.updated);
