@@ -31,6 +31,7 @@
 	      <section>
                 <h2>Follow along at:</h2>
                 <p><a href="http://tetherless-world.github.io/whyis/tutorial/">http://tetherless-world.github.io/whyis/tutorial/</a></p>
+                <p><br/><strong>Note:</strong> these slides are meant to be used as part of an interactive tutorial with a trainer. If you use them unsupervised, you're on your own.</p>
               </section>
 	      <section>
                 <section>
@@ -181,19 +182,13 @@ $ setlr ../dataset_catalog/setl/integbio.setl.ttl
                   <ol>
                     <li>Comment out all the statements about <code><nanopub.trig></code>.</li>
                     <li>Load into Whyis using <code>python manage.py load</code>:
-                      <pre><code class="bash" >
-$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle
-                      </code></pre>
+                      <pre><code class="bash" >$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle</code></pre>
                     </li>
                     <li>Watch the SETL process in celery (as admin user):
-                      <pre><code class="bash" >
-$ sudo tail -f /var/log/celery/w1.log
-                      </code></pre>
+                      <pre><code class="bash" >$ sudo tail -f /var/log/celery/w1.log</code></pre>
                     </li>
                     <li>Correct any problems and re-load, adding the "Published [URI]" URI from the command line as the URI to revise:
-                      <pre><code class="bash" data-noescape>
-$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle -r [URI]
-                      </code></pre>
+                      <pre><code class="bash" data-noescape>$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle -r [URI]</code></pre>
                     </li>
                   </ol>
                 </section>
