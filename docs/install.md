@@ -58,7 +58,7 @@ It is possible to install Whyis without using Vagrant by installing a Ubuntu Des
 
 ### Download ISO file
 
-Download the latest Ubuntu ISO file from: https://www.ubuntu.com/download/desktop.
+Download the ISO file for Ubuntu Server 16.04 from: https://www.ubuntu.com/download/server.
 
 ### Create a new Ubuntu Virtual Machine
 
