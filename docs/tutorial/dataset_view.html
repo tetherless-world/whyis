@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
+{% block content %}
+<div layout="row" >
+  <md-content flex="66" layout="column">
+    <md-list>
+    {% if this.description().value(ns.skos.editorialNote) %}
+      <md-list-item class="md-3-line">
+          <div class="md-list-item-text" layout="column">
+            <h3>Note</h3>
+            <p>{{this.description().value(ns.skos.editorialNote) | safe}}</p>
+          </div>
+      </md-list-item>
+    {% endif %}
+    {% for property, value in g.get_summary(this.description())%}
+      <md-list-item class="md-3-line">
+          <div class="md-list-item-text" layout="column">
+            <h3>{{get_label(this.graph.resource(property)).title()}}</h3>
+            <p>{{value | safe}}</p>
+          </div>
+      </md-list-item>
+    {% endfor %}
+      <md-list-item class="md-2-line">
+          <div class="md-list-item-text" layout="column">
+            <h3>Keywords</h3>
+            <p>{% for keyword in this.description()[ns.schema.keywords] %}{{keyword}}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+          </div>
+      </md-list-item>
+    </md-list>
+    <md-list>
+      <md-subheader>Resources</md-subheader>
+      <md-list-item class="md-2-line" ng-href="{{this.description().value(ns.foaf.homepage)}}">
+        <span class="format-label" data-format="html"></span>
+        <div class="md-list-item-text" layout="column">
+          <h3>Homepage</h3>
+          <p><a href="{{this.description().value(ns.schema.sameAs)}}">{{this.description().value(ns.schema.url)}}</a></p>
+        </div>
+      </md-list-item>
+      {% for dist in this.description()[ns.schema.distribution] %}
+      {% set distribution = g.get_resource(dist.identifier) %}
+      <md-list-item class="md-2-line" ng-href="{{distribution.description().value(ns.dcat.accessURL)}}">
+        <span class="format-label {% for type in distribution.description()[ns.RDF.type] %}{{this.graph.qname(type.identifier).replace(':','_')}} {% endfor %}" ></span>
+        <div class="md-list-item-text" layout="column">
+          <h3>{{get_label(distribution.description())}}</h3>
+          <p><a href="{{distribution.description().value(ns.schema.accessURL)}}">{{distribution.description().value(ns.schema.accessURL)}}</a></p>
+        </div>
+      </md-list-item>
+      {% endfor %}
+    </md-list>
+    <md-list>
+      <md-subheader>Publications</md-subheader>
+      {% for ref in this.description()[ns.dc.references] %}
+      {% set reference = g.get_resource(ref.identifier, async=False) %}
+      <md-list-item class="md-2-line" ng-href="{{reference.identifier}}">
+        <div class="md-list-item-text" layout="column">
+          <h3>"{{get_label(reference.description())}}."</h3>
+          <h4>
+          {% for partof in reference.description()[ns.dc.isPartOf] %}in <a href="{{partof.identifier}}">{{get_label(partof)}}</a>{% endfor %}  {% if reference.description().value(ns.dc.date) %} ({{reference.description().value(ns.dc.date)}}) {% endif %}
+
+          </h4>
+          <p>
+          {% for creator in reference.description()[ns.dc.creator] %}{{get_label(creator)}}{% if not loop.last %}, {% endif %}{% endfor %}
+          </p>
+        </div>
+      </md-list-item>
+      {% endfor %}
+    </md-list>
+  </md-content>
+  <md-content flex="33" layout="column">
+    <md-subheader>Publisher</md-subheader>
+    {% for publisher in this.description()[ns.schema.creator] %}
+    <kg-card src="'{{publisher.identifier}}'" compact="true"></kg-card>
+    {% endfor %}
+    <md-subheader>Attributes</md-subheader>
+    <kg-card src="'{{this.identifier}}'"></kg-card>
+  </md-content>
+</div>
+{% endblock %}
+{% block styles %}
+<style>
+  .format-label {
+ *margin-right:.3em;
+ display:inline-block;
+ vertical-align:text-bottom;
+ position:relative;
+ top:2px;
+ width:16px;
+ height:16px;
+ background-repeat:no-repeat;
+  background-position:16px 16px;
+  margin-right: 6px;
+ text-indent:-900em;
+ background:url("/cdn/images/sprite-resource-icons.png") no-repeat 0 0
+}
+.format-label {
+ width:32px;
+ height:35px;
+ background-position:0px -62px
+}
+.format-label.sd_Service,.format-label.ld_API {
+ width:32px;
+ height:35px;
+ background-position:-32px -62px
+}
+.format-label[data-format=pdf],.format-label[data-format*=pdf] {
+ width:32px;
+ height:35px;
+ background-position:-64px -62px
+}
+.format-label[data-format=api],.format-label[data-format*=api] {
+ width:32px;
+ height:35px;
+ background-position:-96px -62px
+}
+.format-label[data-format=zip],.format-label[data-format*=zip] {
+ width:32px;
+ height:35px;
+ background-position:-128px -62px
+}
+.format-label[data-format=xls],.format-label[data-format*=xls] {
+ width:32px;
+ height:35px;
+ background-position:-160px -62px
+}
+.format-label[data-format=csv],.format-label[data-format*=csv] {
+ width:32px;
+ height:35px;
+ background-position:-192px -62px
+}
+.format-label[data-format=txt],.format-label[data-format*=txt] {
+ width:32px;
+ height:35px;
+ background-position:-224px -62px
+}
+.format-label[data-format=xml],.format-label[data-format*=xml] {
+ width:32px;
+ height:35px;
+ background-position:-256px -62px
+}
+.format-label[data-format=json],.format-label[data-format*=json] {
+ width:32px;
+ height:35px;
+ background-position:-288px -62px
+}
+.format-label[data-format=html],.format-label[data-format*=html] {
+ width:32px;
+ height:35px;
+ background-position:-320px -62px
+  }
+</style>
+{% endblock %}

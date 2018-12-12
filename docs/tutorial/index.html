@@ -1,0 +1,340 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Whyis Tutorial</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple_whyis.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+	  <div class="reveal">
+	    <div class="slides">
+	      <section data-background-image="random_network.png" >
+                <h2 style="color:white; font-weight:bold; text-shadow: 0px 0px 20px black;" >Creating Your First Whyis Knowledge Graph</h2>
+                <h3 style="color:white; text-shadow: 0px 0px 20px black;" >Jim McCusker, RPI IDEA and Tetherless World Constellation</h3>
+              </section>
+	      <section>
+                <h2>Follow along at:</h2>
+                <p><a href="http://tetherless-world.github.io/whyis/tutorial">http://tetherless-world.github.io/whyis/tutorial</a></p>
+              </section>
+	      <section>
+                <section>
+                  <h2>Preliminaries</h2>
+                  <p>To follow this tutorial, please start by <a href="http://tetherless-world.github.io/whyis/install">installing Whyis</a> onto a virtual or physical machine of your choice.</p>
+                </section>
+                <section>
+                  <h2>Connect to your Whyis VM</h2>
+                  <p>To peform the following administrative tasks, you need to connect to the VM (if you’re not running directly):</p>
+                  <pre><code class="bash">
+$ vagrant ssh
+                  </code></pre>
+                </section>
+                <section>
+                  <h2>Use <em>screen</em> for virtual terminals</h2>
+                  <pre><code class="bash">
+$ screen -R -DD
+                  </code></pre>
+                  <ul>
+                    <li>Create a new virtual terminal using <code>C-a c</code></li>
+                    <li>Switch between virtual terminals using <code>C-a a</code></li>
+                  </ul>
+                </section>
+                <section>
+                  <h2>Make a terminal with your Whyis user</h2>
+                  <p>Once you are in the server, you need to change to the whyis user, go to the whyis app directory:</p>
+                  <pre><code class="bash">
+# Create a virtual terminal with C-a c
+$ sudo su - whyis
+$ cd /apps/whyis
+
+                  </code></pre>
+                </section>
+                <section>
+                  <h2>Update your Whyis code and select branch</h2>
+                  <pre><code class="bash">
+$ git pull
+$ git checkout master
+$ pip install --upgrade -r requirements/dev.txt
+
+                  </code></pre>
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Objectives</h2>
+                  <ol>
+                    <li><strong>Create a custom Whyis knowledge graph</strong> for dataset search.</li>
+                    <li><strong>Integrate knowledge</strong> from the Integbio for compatibility with Google Dataset Search.</li>
+                    <li><strong>Add a simple ontology</strong> for datasets to improve the instance editor and faceted browser.</li>
+                    <li><strong>Customize the front page</strong> to show a faceted browser of datasets.</li>
+                    <li><strong>Create a custom view</strong> to show a relevant details on datasets.</li>
+                    <li><strong>Create an inference agent</strong> to map dataset keywords onto DBpedia entries.</li>
+                    <li><strong>Map metadata</strong> from PubMed XML files into Whyis and SETL PubMed Entries into the knowledge graph.</li>
+                  </ol>
+                </section>
+                <section data-background-size="contain" data-background-image="images/whyis_ecosystem.png">
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Generate a Whyis knowledge graph App</h2>
+                  <pre><code class="bash" >
+$ python manage.py configure
+                    
+project_name [My Knowledge Graph]: Dataset Catalog
+project_short_description []: A catalog of interesting datasets.
+project_slug [dataset_catalog]: 
+location [/apps/dataset_catalog]: 
+author []: 
+email []: 
+linked_data_prefix [http://localhost]: http://datasets.example.com
+version [0.1]: 
+packages []: 
+SECRET_KEY []: 
+SECURITY_PASSWORD_SALT []: 
+$
+                  </pre></code>
+                </section>
+                <section>
+                  <h2>Install the App</h2>
+                  <pre><code class="bash" >
+$ cd /apps/dataset_catalog
+$ pip install -e .
+                  </pre></code>
+                </section>
+                <section>
+                  <h2>Restart Services</h2>
+                  <p>In your first terminal (cycle through using <code>C-a a</code>:</p>
+                  <pre><code class="bash" >
+$ sudo service apache2 restart
+$ sudo service celeryd restart
+                  </pre></code>
+                </section>
+                <section>
+                  <h2>Create an Administrative User</h2>
+                  <p>In your whyis user terminal (cycle through using <code>C-a a</code>:</p>
+                  <pre><code class="bash" >
+$ python manage.py createuser -e [email] -p [password] -f [First Name] \
+                       -l [Last Name] -u [user handle] --roles=admin
+                  </pre></code>
+                </section>
+
+                <section>
+                  <h2>Start the development server</h2>
+                  <pre><code class="bash" >
+$ python manage.py runserver -h 0.0.0.0
+Could not configure logger, using defaults.
+ * Serving Flask app "dataset_catalog" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+ * Restarting with stat
+Could not configure logger, using defaults.
+ * Debugger is active!
+ * Debugger PIN: XXX-XXX-XXX
+                  </code></pre>
+                </section>
+                <section>
+                  <h2>Visit the main page and log in</h2>
+                  <p>Default vagrant configuration URL: <a href="http://192.168.33.36:5000">http://192.168.33.36:5000</a></p>
+                  <img width="60%"  src="images/Screenshot_2018-12-11 Login - Dataset Catalog.png">
+                </section>
+                <section>
+                  <h2>Visit the main page</h2>
+                  <img src="images/Screenshot_2018-12-11 Dataset Catalog - Dataset Catalog.png">
+                </section>
+              </section>
+
+              <section>
+                <section>
+                  <h2>Integrate knowledge</h2>
+                  <ol>
+                    <li>Download this <a href="template.setl.ttl">SETL template</a> and save it to <code>/apps/dataset_catalog/setl/integbio.setl.ttl</code>.</li>
+                    <li>Add fields to the template: keywords, distributions, description, references, similar datasets, URL.</li>
+                    <li>Follow the JSON-LD schema in the <a href="https://developers.google.com/search/docs/data-types/dataset">Google Dataset Search</a></li>
+                    <li>Test locally using setlr:
+                      <pre><code class="bash" >
+$ setlr ../dataset_catalog/setl/integbio.setl.ttl
+                      </code></pre>
+                    </li>
+                  </ol>
+                </section>
+                <section>
+                  <h2>Integrate knowledge (cont.)</h2>
+                  <ol>
+                    <li>Comment out all the statements about <code><nanopub.trig></code>.</li>
+                    <li>Load into Whyis using <code>python manage.py load</code>:
+                      <pre><code class="bash" >
+$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle
+                      </code></pre>
+                    </li>
+                    <li>Watch the SETL process in celery (as admin user):
+                      <pre><code class="bash" >
+$ sudo tail -f /var/log/celery/w1.log
+                      </code></pre>
+                    </li>
+                    <li>Correct any problems and re-load, adding the "Published [URI]" URI from the command line as the URI to revise:
+                      <pre><code class="bash" data-noescape>
+$ python manage.py load -i ../dataset_catalog/setl/integbio.setl.ttl -f turtle -r [URI]
+                      </code></pre>
+                    </li>
+                  </ol>
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Add a simple ontology</h2>
+                  <img style="float:right;" src="images/dataset_view.png" width="30%">
+                  <ol style="width: 60%">
+                    <li>Download this <a href="dataset_ontology.owl">Schema.org-based dataset ontology</a> and save it to <code>/apps/dataset_catalog/dataset_ontology.owl</code>.</li>
+                    <li>Load into Whyis using <code>python manage.py load</code>:
+                      <pre><code class="bash" >
+$ python manage.py load \
+   -i ../dataset_catalog/dataset_ontology.owl -f xml
+                      </code></pre>
+                    </li>
+                    <li>Search for 'dataset' and select.</li>
+                  </ol>
+                </section>
+                <section data-background-size="contain" data-background-image="images/new_dataset.png">
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Customize the front page</h2>
+                  <ul>
+                    <li>Copy the default home page to your project:
+                      <pre><code>
+$ cp /apps/whyis/templates/home_view.html /apps/dataset_catalog/templates/
+                      </code></pre>
+                    </li>
+                    <li>Replace the <code>{% content %}</code> block with this:
+                      <pre><code class="html" >
+<instance-facets title="Datasets" type="'http://schema.org/Dataset'">
+  <md-button ng-href="{{url_for('view',view='new',uri='http://schema.org/Dataset')}}" 
+      class="md-icon-button" aria-label="Add Dataset">
+    <md-icon>add</md-icon>
+  </md-button>
+</instance-facets>                          
+                      </code></pre>
+                    </li>
+                  </ul>
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Create a custom view</h2>
+                  <ul>
+                    <li>Download <a href="dataset_view.html">dataset_view.html</a> to /apps/dataset_catalog/templates.
+                    </li>
+                    <li>Add the following to /apps/dataset_catalog/vocab.ttl:
+                      <pre><code class="ttl">
+&lt;http://schema.org/Dataset&gt; a owl:Class;
+    whyis:hasView "dataset_view.html".
+                     </code></pre>
+                    </li>
+                  </ul>
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Create an inference agent</h2>
+                  <p>We can use dbpedia.org/sparql and the following query to resolve keywords to dc:subject values.</p>
+                  <pre><code class="sparql">
+select distinct ?s ?o ?sc ?score where {
+    ?s rdfs:label ?o .
+    ?o bif:contains 'Protein'
+    OPTION (score ?sc) .
+    FILTER (lang(?o) = 'en')
+    filter (regex(str(?s), "http://dbpedia.org/resource"))
+bind (?sc/ strlen(?o) as ?score)
+} order by desc(?score) LIMIT 1
+                  </code></pre>
+                </section>
+              </section>
+              <section>
+                <section>
+                  <h2>Map metadata</h2>
+                  <ol>
+                    <li>Create a file importer for the PubMed XML.</li>
+                    <li>Add file and publication references to integbio.setl.ttl</li>
+                    <li>Add a SETL script to process PubMed XML files.</li>
+                  </ol>
+                </section>
+                <section>
+                  <h2>Create a file importer</h2>
+                  <p>Add the following to the config.py 'namespaces' entry:</p>
+                  <pre><code class="python">
+        importer.FileImporter(
+            prefix = LOD_PREFIX+'/pubmed/file/',
+            url = 'https://www.ncbi.nlm.nih.gov/pubmed/%s?report=xml'
+        ),
+                  </code></pre>
+                </section>
+                <section>
+                  <h2>Modify integbio.setl.ttl</h2>
+                  <p>Add the following as a predicate of the dataset object:</p>
+                  <pre><code class="json">
+            "dc:references" : [
+              "@for" : "pmid in row['Reference(s) - PubMed ID'].split('||')",
+              "@do" : {
+                "@id" : "https://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}",
+                "@type" : [ "dcterms:BibliographicResource","bibo:AcademicArticle"],
+                "rdfs:seeAlso" : {
+                  "@id" : "https://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}",
+                  "@type" : "http://datasets.example.com/PubMedXMLMetadataFile"
+                }
+              }
+            ]
+                  </code></pre>
+                </section>
+                <section>
+                  <h2>Add a PubMed SETL script</h2>
+                  <p>Download, customize/expand, and add the <a href="pubmed_xml.setl.ttl">pubmed_xml.setl.ttl</a> file.</p>
+                  <pre><code class="bash" >
+$ python manage.py load -i ../dataset_catalog/setl/pubmed_xml.setl.ttl -f turtle
+                  </code></pre>
+                  <p>Additional metadata for PubMed Articles will now be included. Try adding more metadata from the XML, or adding an article view.</p>
+                </section>
+              </section>
+	    </div>
+	  </div>
+
+	  <script src="lib/js/head.min.js"></script>
+	  <script src="js/reveal.js"></script>
+          
+	  <script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+                                width: 1280,
+                                height: 800,
+                                maxScale: 10,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+	  </script>
+	</body>
+</html>

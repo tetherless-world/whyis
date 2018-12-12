@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://purl.org/twc/schema/dataset#"
+     xml:base="http://purl.org/twc/schema/dataset"
+     xmlns:schema="http://schema.org/"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:prov="http://www.w3.org/ns/prov#">
+    <owl:Ontology rdf:about="http://purl.org/twc/schema/dataset"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://schema.org/creator -->
+
+    <owl:ObjectProperty rdf:about="http://schema.org/creator">
+        <rdfs:domain rdf:resource="http://schema.org/CreativeWork"/>
+        <rdfs:range rdf:resource="http://www.w3.org/ns/prov#Agent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://schema.org/distribution -->
+
+    <owl:ObjectProperty rdf:about="http://schema.org/distribution">
+        <rdfs:domain rdf:resource="http://schema.org/Dataset"/>
+        <rdfs:range rdf:resource="http://schema.org/DataDownload"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://schema.org/geo -->
+
+    <owl:ObjectProperty rdf:about="http://schema.org/geo"/>
+    
+
+
+    <!-- http://schema.org/includedInDataCatalog -->
+
+    <owl:ObjectProperty rdf:about="http://schema.org/includedInDataCatalog">
+        <rdfs:domain rdf:resource="http://schema.org/Dataset"/>
+        <rdfs:range rdf:resource="http://schema.org/DataCatalog"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://schema.org/spatialCoverage -->
+
+    <owl:ObjectProperty rdf:about="http://schema.org/spatialCoverage">
+        <rdfs:domain rdf:resource="http://schema.org/CreativeWork"/>
+        <rdfs:range rdf:resource="http://schema.org/Place"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://schema.org/box -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/box">
+        <rdfs:domain rdf:resource="http://schema.org/GeoShape"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/contactType -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/contactType">
+        <rdfs:domain rdf:resource="http://schema.org/ContactPoint"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/contentUrl -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/contentUrl">
+        <rdfs:domain rdf:resource="http://schema.org/MediaObject"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/description -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/description">
+        <rdfs:domain rdf:resource="http://schema.org/Thing"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/email -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/email"/>
+    
+
+
+    <!-- http://schema.org/encodingFormat -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/encodingFormat"/>
+    
+
+
+    <!-- http://schema.org/keywords -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/keywords">
+        <rdfs:domain rdf:resource="http://schema.org/CreativeWork"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/name -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/name">
+        <rdfs:domain rdf:resource="http://schema.org/Thing"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/sameAs -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/sameAs">
+        <rdfs:domain rdf:resource="http://schema.org/Thing"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/telephone -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/telephone"/>
+    
+
+
+    <!-- http://schema.org/temporalCoverage -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/temporalCoverage">
+        <rdfs:domain rdf:resource="http://schema.org/CreativeWork"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://schema.org/url -->
+
+    <owl:DatatypeProperty rdf:about="http://schema.org/url">
+        <rdfs:domain rdf:resource="http://schema.org/Thing"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://schema.org/ContactPoint -->
+
+    <owl:Class rdf:about="http://schema.org/ContactPoint">
+        <rdfs:subClassOf rdf:resource="http://schema.org/Thing"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://schema.org/email"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://schema.org/telephone"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/CreativeWork -->
+
+    <owl:Class rdf:about="http://schema.org/CreativeWork">
+        <rdfs:subClassOf rdf:resource="http://schema.org/Thing"/>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/DataCatalog -->
+
+    <owl:Class rdf:about="http://schema.org/DataCatalog">
+        <rdfs:subClassOf rdf:resource="http://schema.org/CreativeWork"/>
+        <rdfs:label>Data Catalog</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/DataDownload -->
+
+    <owl:Class rdf:about="http://schema.org/DataDownload">
+        <rdfs:subClassOf rdf:resource="http://schema.org/MediaObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/Dataset -->
+
+    <owl:Class rdf:about="http://schema.org/Dataset">
+        <rdfs:subClassOf rdf:resource="http://schema.org/CreativeWork"/>
+        <rdfs:label>Dataset</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/GeoShape -->
+
+    <owl:Class rdf:about="http://schema.org/GeoShape">
+        <rdfs:subClassOf rdf:resource="http://schema.org/Thing"/>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/MediaObject -->
+
+    <owl:Class rdf:about="http://schema.org/MediaObject">
+        <rdfs:subClassOf rdf:resource="http://schema.org/CreativeWork"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://schema.org/encodingFormat"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/Organization -->
+
+    <owl:Class rdf:about="http://schema.org/Organization">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Agent"/>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/Person -->
+
+    <owl:Class rdf:about="http://schema.org/Person">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Agent"/>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/Place -->
+
+    <owl:Class rdf:about="http://schema.org/Place">
+        <rdfs:subClassOf rdf:resource="http://schema.org/Thing"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://schema.org/geo"/>
+                <owl:someValuesFrom rdf:resource="http://schema.org/GeoShape"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://schema.org/Thing -->
+
+    <owl:Class rdf:about="http://schema.org/Thing"/>
+    
+
+
+    <!-- http://www.w3.org/ns/prov#Agent -->
+
+    <owl:Class rdf:about="http://www.w3.org/ns/prov#Agent">
+        <rdfs:subClassOf rdf:resource="http://schema.org/Thing"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

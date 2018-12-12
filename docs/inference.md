@@ -1,6 +1,6 @@
 # Creating Inference Agents
 
-**Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Advanced Configuration](https://tetherless-world.github.io/whyis/configuration).**
+**Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Installing Whyis](https://tetherless-world.github.io/whyis/install).**
 
 Whyis is more than just a place to store, manage and query knowledge. The Inference Agent framework allows for post-processing of your uploaded knowledge. Inference Agents are capable of knowledge curation, reasoning, interaction, creation, and much more. 
 

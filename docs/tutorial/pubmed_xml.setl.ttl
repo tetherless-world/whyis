@@ -1,0 +1,85 @@
+@prefix rdf:           <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:          <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:           <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:           <http://www.w3.org/2002/07/owl#> .
+@prefix skos:          <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov:          <http://www.w3.org/ns/prov#> .
+@prefix sio:           <http://semanticscience.org/resource/> .
+@prefix dcat:          <http://www.w3.org/ns/dcat#> .
+@prefix dcterms:       <http://purl.org/dc/terms/> .
+@prefix void:          <http://rdfs.org/ns/void#> .
+@prefix foaf:          <http://xmlns.com/foaf/0.1/> .
+@prefix ov:            <http://open.vocab.org/terms/> .
+@prefix setl:          <http://purl.org/twc/vocab/setl/> .
+@prefix csvw:          <http://www.w3.org/ns/csvw#> .
+@prefix pv:            <http://purl.org/net/provenance/ns#>.
+
+@prefix :              <http://datasets.example.com/setl/pubmedxml/> .
+
+@prefix whyis: <http://vocab.rpi.edu/whyis/>.
+
+:pubmed_input a setl:XML;
+  prov:wasGeneratedBy [
+    a setl:Extract;
+    prov:used  [ a <http://datasets.example.com/PubMedXMLMetadataFile>]
+  ].
+
+
+:PubMedXMLSETL rdfs:subClassOf setl:SemanticETLScript;
+  setl:hasTemplatePrefix "http://datasets.example.com/setl/pubmedxml/";
+  rdfs:subClassOf [ a owl:Restriction;
+    owl:onProperty prov:used;
+    owl:someValuesFrom <http://datasets.example.com/PubMedXMLMetadataFile>
+  ].
+
+:pubmed a void:Dataset, dcat:Dataset;
+  prov:wasGeneratedBy [a :PubMedXMLSETL], [
+    a setl:Transform, setl:JSLDT;
+    prov:used :pubmed_input;
+    setl:hasContext '''{
+  "@vocab" :  "http://hadatac.org/ont/chear#",
+  "dataset" : "https://hbgd.tw.rpi.edu/dataset/",
+  "sio" :     "http://semanticscience.org/resource/",
+  "skos" :    "http://www.w3.org/2004/02/skos/core#",
+  "dcterms" :    "http://purl.org/dc/terms/",
+  "prov" :    "http://www.w3.org/ns/prov#",
+  "bibo" :    "http://purl.org/ontology/bibo/",
+  "rdfs" :    "http://www.w3.org/2000/01/rdf-schema#",
+  "foaf" :    "http://xmlns.com/foaf/0.1/",
+  "void" :    "http://rdfs.org/ns/void#"
+}''';
+  prov:value '''[{
+  "@context" : {
+    "authorList" : {"@id" : "bibo:authorList", "@type": "@list"}
+  },
+  "@id" : "https://www.ncbi.nlm.nih.gov/pubmed/{{row.find('PubmedArticle/MedlineCitation/PMID).text}}",
+  "@type" :  [ "dcterms:BibliographicResource","bibo:AcademicArticle"],
+  "dcterms:abstract" : [
+    {
+      "@if" : "row.find('.//AbstractText') is not None",
+      "@value" : "{{row.find('.//AbstractText').text}}"
+    }
+  ],
+  "dcterms:title" : [
+    {
+      "@if" : "row.find('.//ArticleTitle') is not None",
+      "@value" : "{{row.find('.//ArticleTitle').text}}"
+    }
+  ],
+  "dcterms:date" : [
+    {
+      "@if" : "row.find('.//Journal/JournalIssue/PubDate/Year')",
+      "@value" : "{{row.find('.//Journal/JournalIssue/PubDate/Year')}}",
+      "@type" : "xsd:dateTime"
+    }
+  ],
+  "dcterms:isPartOf" : [
+    {
+      "@if" : "row.find('.//Journal')",
+      "@id" : "journal/{{row.find('.//Journal/ISSN').text}}",
+      "@type" : "bibo:Journal",
+      "dcterms:title" : "{{row.find('.//Journal/Title')}}"
+    }
+  ]
+}]'''
+  ].
