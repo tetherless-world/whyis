@@ -14,22 +14,22 @@
 @prefix csvw:          <http://www.w3.org/ns/csvw#> .
 @prefix pv:            <http://purl.org/net/provenance/ns#>.
 
-@prefix :              <http://datasets.example.com/setl/pubmedxml/> .
+@prefix :              <http://dev.whyis.io/setl/pubmedxml/> .
 
 @prefix whyis: <http://vocab.rpi.edu/whyis/>.
 
 :pubmed_input a setl:XML;
   prov:wasGeneratedBy [
     a setl:Extract;
-    prov:used  [ a <http://datasets.example.com/PubMedXMLMetadataFile>]
+    prov:used  [ a <http://dev.whyis.io/PubMedXMLMetadataFile>]
   ].
 
 
 :PubMedXMLSETL rdfs:subClassOf setl:SemanticETLScript;
-  setl:hasTemplatePrefix "http://datasets.example.com/setl/pubmedxml/";
+  setl:hasTemplatePrefix "http://dev.whyis.io/setl/pubmedxml/";
   rdfs:subClassOf [ a owl:Restriction;
     owl:onProperty prov:used;
-    owl:someValuesFrom <http://datasets.example.com/PubMedXMLMetadataFile>
+    owl:someValuesFrom <http://dev.whyis.io/PubMedXMLMetadataFile>
   ].
 
 :pubmed a void:Dataset, dcat:Dataset;
@@ -37,8 +37,7 @@
     a setl:Transform, setl:JSLDT;
     prov:used :pubmed_input;
     setl:hasContext '''{
-  "@vocab" :  "http://hadatac.org/ont/chear#",
-  "dataset" : "https://hbgd.tw.rpi.edu/dataset/",
+  "@vocab" :  "http://dev.whyis.io/",
   "sio" :     "http://semanticscience.org/resource/",
   "skos" :    "http://www.w3.org/2004/02/skos/core#",
   "dcterms" :    "http://purl.org/dc/terms/",

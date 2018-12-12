@@ -103,7 +103,7 @@ project_slug [dataset_catalog]:
 location [/apps/dataset_catalog]: 
 author []: 
 email []: 
-linked_data_prefix [http://localhost]: http://datasets.example.com
+linked_data_prefix [http://localhost]: http://dev.whyis.io
 version [0.1]: 
 packages []: 
 SECRET_KEY []: 
@@ -154,7 +154,7 @@ Could not configure logger, using defaults.
                 </section>
                 <section>
                   <h2>Visit the main page and log in</h2>
-                  <p>Default vagrant configuration URL: <a href="http://192.168.33.36:5000">http://192.168.33.36:5000</a></p>
+                  <p>Default vagrant configuration URL: <a href="http://dev.whyis.io:5000">http://dev.whyis.io:5000</a></p>
                   <img width="60%"  src="images/Screenshot_2018-12-11 Login - Dataset Catalog.png">
                 </section>
                 <section>
@@ -294,7 +294,7 @@ bind (?sc/ strlen(?o) as ?score)
                 "@type" : [ "dcterms:BibliographicResource","bibo:AcademicArticle"],
                 "rdfs:seeAlso" : {
                   "@id" : "https://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}",
-                  "@type" : "http://datasets.example.com/PubMedXMLMetadataFile"
+                  "@type" : "http://dev.whyis.io/PubMedXMLMetadataFile"
                 }
               }
             ]

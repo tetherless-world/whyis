@@ -16,7 +16,7 @@
 @prefix sp:            <http://spinrdf.org/sp#>.
 @prefix api_vocab: <http://purl.org/linked-data/api/vocab#>.
 
-@prefix :              <http://nanomine.org/setl/xml/> .
+@prefix :              <http://dev.whyis.io/setl/integbio/> .
 
 @prefix nanopub: <http://www.nanopub.org/nschema#> .
 
@@ -34,7 +34,7 @@
     a setl:Transform, setl:JSLDT;
     prov:used :table;
     setl:hasContext '''{
-    "@base" : "http://datasets.example.com/",
+    "@base" : "http://dev.whyis.io/",
     "schema": "http://schema.org/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "whyis": "http://vocab.rpi.edu/whyis/",
