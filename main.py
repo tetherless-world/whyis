@@ -662,7 +662,7 @@ construct {
                 for authenticator in self.config['authenticators']:
                     user = authenticator.authenticate(request, self.datastore, self.config)
                     if user is not None:
-                        login_user(user)
+                    #    login_user(user)
                         break
                 
             #g.search_form = SearchForm()
