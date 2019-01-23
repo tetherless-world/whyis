@@ -147,6 +147,7 @@ python::pip { 'pip-upgrade' :
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
+  timeout       => 0,
 } ->
 file { "/var/log/celery":
     owner => "whyis",
