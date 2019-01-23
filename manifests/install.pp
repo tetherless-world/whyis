@@ -129,7 +129,7 @@ python::virtualenv { '/apps/whyis/venv' :
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
   cwd          => '/apps/whyis',
-  timeout      => 0,
+  timeout      => 18000,
 } ->
 file { "/apps/.bash_profile" :
   owner => 'whyis',
