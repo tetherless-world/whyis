@@ -1,0 +1,33 @@
+<a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/edit/master/src/faceturlstate/faceturlstate.url-state-handler-service.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/faceturlstate/faceturlstate.url-state-handler-service.js#L26" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">facetUrlStateHandlerService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">seco.facetedSearch</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="seco-facetedsearch-faceturlstatehandlerservice-page"><h3 id="description_faceturlstatehandlerservice">facetUrlStateHandlerService</h3>
+<p>Service for updating the URL parameters based on facet selections,
+and retrieving the facet values from URL parameters.</p>
+<p>Intended for bookmarking the current facet selections.
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a> can take
+the return value of <code>getFacetValuesFromUrlParams</code> as the
+<code>initialState</code> configuration value.</p>
+<p>Updating the URL parameters can be done, e.g., when the facet states
+have been received while listening for facet updates.
+See <a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a> for details
+regarding events.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/faceturlstate/faceturlstate.url-state-handler-service.js#L67" class="view-source icon-eye-open"> </a><h3 id="methods_getfacetvaluesfromurlparams">getFacetValuesFromUrlParams()</h3>
+<div class="getfacetvaluesfromurlparams"><div class="seco-facetedsearch-faceturlstatehandlerservice-getfacetvaluesfromurlparams-page"><p>Get the facet states from the URL parameters.</p>
+</div><h5 id="methods_getfacetvaluesfromurlparams_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-faceturlstatehandlerservice-getfacetvaluesfromurlparams-page"><p>The facet states.</p>
+</div></td></tr></table></div>
+</li>
+<li><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/faceturlstate/faceturlstate.url-state-handler-service.js#L43" class="view-source icon-eye-open"> </a><h3 id="methods_updateurlparams">updateUrlParams(facets)</h3>
+<div class="updateurlparams"><div class="seco-facetedsearch-faceturlstatehandlerservice-updateurlparams-page"><p>Update the URL parameters based on the given facet state.</p>
+</div><h5 id="methods_updateurlparams_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>facets</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-faceturlstatehandlerservice-updateurlparams-page"><p>The facet states as broadcast by
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a>.</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+</div>

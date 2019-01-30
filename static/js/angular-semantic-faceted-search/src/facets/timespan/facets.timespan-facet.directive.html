@@ -1,0 +1,44 @@
+<seco-facet-wrapper>
+  <div class="row no-gutter">
+    <div class="col-md-6 facet-date-left">
+      <span class="input-group">
+        <span class="input-group-btn">
+          <button type="button" class="btn btn-default"
+            ng-disabled="vm.isLoading()"
+            ng-click="startDate.opened = !startDate.opened">
+            <i class="glyphicon glyphicon-calendar"></i>
+          </button>
+        </span>
+        <input type="text" class="form-control"
+          uib-datepicker-popup=""
+          ng-readonly="true"
+          ng-change="vm.changed()"
+          ng-model="vm.facet.selectedValue.start"
+          is-open="startDate.opened"
+          show-button-bar="false"
+          datepicker-options="vm.facet.state.start"
+          close-text="Close" />
+      </span>
+    </div>
+    <div class="col-md-6 facet-date-right">
+      <span class="input-group">
+        <span class="input-group-btn">
+          <button type="button" class="btn btn-default"
+            ng-disabled="vm.isLoading()"
+            ng-click="endDate.opened = !endDate.opened">
+            <i class="glyphicon glyphicon-calendar"></i>
+          </button>
+        </span>
+        <input type="text" class="form-control"
+          uib-datepicker-popup=""
+          ng-readonly="true"
+          ng-change="vm.changed()"
+          ng-model="vm.facet.selectedValue.end"
+          is-open="endDate.opened"
+          show-button-bar="false"
+          datepicker-options="vm.facet.state.end"
+          close-text="Close" />
+      </span>
+    </div>
+  </div>
+</seco-facet-wrapper>

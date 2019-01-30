@@ -1,44 +1,32 @@
-<div ng-cloak md-whiteframe="2">
+<div ng-cloak md-whiteframe="2" >
   <md-toolbar>
     <div class="md-toolbar-tools" layout="row">
-      <h2 flex ng-bind="title"</h2>
-      <actions>
-      </actions>
+      <h2 flex ng-bind="title"></h2>
+      <ng-transclude>
+      </ng-transclude>
     </div>
   </md-toolbar>
   <md-progress-linear ng-show="isLoadingResults" md-mode="indeterminate"></md-progress-linear>
   <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert>
-  <div layout="row" >
-    <div flex="auto"  style="max-width: 30em">
-        <!-- Facets are defined here using the configurations defined in the controller -->
+  <div layout="row"  style="height:100%">
+    <md-content  flex="30" style="overflow:scroll">
+      <md-subheader >{{pager.getLength()}} results found.</md-subheader>
+      <!-- Facets are defined here using the configurations defined in the controller -->
         <div ng-repeat="facet in facets" ng-switch="facet.type">
-          <seco-text-facet ng-switch-when="text" data-options="facet"></seco-text-facet>
-          <seco-basic-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
+          <whyis-text-facet ng-switch-when="text" data-options="facet"></whyis-text-facet>
+          <whyis-smart-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
           <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
           <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
           <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
         </div>
-    </div>
+    </md-content>
 
     <!-- Results view -->
-    <div flex="grow" style="padding-bottom:2em">
-      <div layout-fill layout="column" ng-hide="isLoadingResults">
-        <md-subheader ng-hide="page.length > 0" >No results found.</md-subheader>
-        <kg-card  ng-repeat="entity in page"  compact="true" src="entity.id">
-        </kg-card>
-        <div layout="row" layout-align="center">
-          <ul uib-pagination
-              ng-hide="isLoadingResults || num-pages < 2"
-              max-size="10"
-              boundary-links="true"
-              rotate="false"
-              total-items="totalCount"
-              ng-model="pageNo"
-              ng-disabled="isLoadingResults"
-              ng-change="getPage()">
-          </ul>
-        </div>
-      </div>
+    <div flex="grow" layout="column" >
+            <md-content layout="column" when-scrolled="pager.loadMore()" >
+              <kg-card ng-repeat="entity in pager.all track by entity.id" compact="true" src="entity.id">
+              </kg-card>
+            </md-content>
     </div>
   </div>
 </div>

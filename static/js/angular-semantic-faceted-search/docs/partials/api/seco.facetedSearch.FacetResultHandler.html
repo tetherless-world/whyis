@@ -1,0 +1,65 @@
+<a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/edit/master/src/results/results.service.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/results/results.service.js#L68" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">FacetResultHandler</code>
+<div><span class="hint">service in module <code ng:non-bindable="">seco.facetedSearch</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="seco-facetedsearch-facetresulthandler-page"><p>Service for retrieving SPARQL results based on facet selections.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">new FacetResultHandler(endpointConfig, resultOptions);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>endpointConfig</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="seco-facetedsearch-facetresulthandler-page"><p>The URL of the SPARQL endpoint,
+or a configuration object as taken by <a href="http://semanticcomputing.github.io/angular-paging-sparql-service/#/api/sparql.AdvancedSparqlService"><code>AdvancedSparqlService</code></a>.
+See the <a href="https://github.com/SemanticComputing/angular-paging-sparql-service">angular-paging-sparql-service</a> package.</p>
+</div></td></tr><tr><td>resultOptions</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-facetresulthandler-page"><p>Configuration object.
+The object has the following properties:</p>
+<ul>
+<li><strong>queryTemplate</strong> - <code>{string}</code> - The result query with a <code>&lt;RESULT_SET&gt;</code>
+placeholder for the facet selections.
+The variable <code>?id</code> should be used for the result resources.
+The query should not restrict the results in any way (outside of the
+facet selections), or the results will not reflect the facets.
+The best way to insure this is to wrap each result value in an
+<code>OPTIONAL</code> block.
+For example:
+ <pre class="prettyprint linenums">
+   SELECT * WHERE {
+       &lt;RESULT_SET&gt;
+       OPTIONAL {
+           ?id rdfs:label ?name .
+           FILTER(langMatches(lang(?name), "en"))
+       }
+   }
+   </pre></li>
+<li><strong>[prefixes]</strong> - <code>{string}</code> - Any prefixes used in the <code>queryTemplate</code>.
+Required if the query uses any other prefixes than <code>rdf</code>, <code>rdfs</code>, or <code>skos</code>.</li>
+<li><strong>[paging]</strong> - <code>{boolean}</code> - If truthy, results will be paged.
+Default is <code>true</code>.</li>
+<li><strong>[resultsPerPage]</strong> - <code>{number}</code> - The number of results per page.
+Default is 10.</li>
+<li><strong>[pagesPerQuery]</strong> - <code>{number}</code> - The number of pages to retrieve per query.
+Default is 1.</li>
+<li><strong>[mapper]</strong> - <code>{Object}</code> - Mapper service for the results.
+The default is
+<a href="http://semanticcomputing.github.io/angular-paging-sparql-service/#/api/sparql.objectMapperService"><code>objectMapperService</code></a>.
+See the <a href="https://github.com/SemanticComputing/angular-paging-sparql-service">angular-paging-sparql-service</a> package
+for more information.</li>
+</ul>
+</div></td></tr></tbody></table></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/results/results.service.js#L105" class="view-source icon-eye-open"> </a><h3 id="methods_getresults">getResults(facetSelections, [orderBy])</h3>
+<div class="getresults"><div class="seco-facetedsearch-facetresulthandler-getresults-page"><p>Get results based on the facet selections and the query template.
+Use paging if defined in the options.</p>
+</div><h5 id="methods_getresults_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>facetSelections</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-facetresulthandler-getresults-page"><p>The facet states as broadcast by
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a></p>
+</div></td></tr><tr><td>[orderBy]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="seco-facetedsearch-facetresulthandler-getresults-page"><p>SPARQL order comparators to use in sorting
+the results. Any variables used here have to be present in the
+<code>&lt;RESULT_SET&gt;</code> part of the query. I.e. they need to be included
+in the <code>constraint</code> parameter of
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a>.
+The default is to sort by <code>?id</code>.</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+</div>
