@@ -127,6 +127,13 @@ $ sudo service celeryd restart
                   </pre></code>
                 </section>
                 <section>
+                  <h2>Make sure the Blazegraph namespaces are created</h2>
+                  <pre><code>
+$ curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace
+$ curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace
+                  </pre></code>
+                </section>
+                <section>
                   <h2>Create an Administrative User</h2>
                   <p>In your whyis user terminal (cycle through using <code>C-a a</code>:</p>
                   <pre><code class="bash" >
