@@ -424,6 +424,151 @@ $( function() {
 
     });
 
+    app.factory('SmartFacet', SmartFacet);
+
+    /* ngInject */
+    function SmartFacet($q, _, BasicFacet, PREFIXES) {
+        function makeID () {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return Math.random().toString(36).substr(2, 10);
+        };
+
+        SmartFacetConstructor.prototype = Object.create(BasicFacet.prototype);
+
+        SmartFacetConstructor.prototype.getSelectedValue = getSelectedValue;
+        SmartFacetConstructor.prototype.setSelectedValue = setSelectedValue;
+        SmartFacetConstructor.prototype.getConstraint = getConstraint;
+
+        return SmartFacetConstructor;
+
+        function SmartFacetConstructor(options) {
+            
+            BasicFacet.call(this, options);
+            if (!this.config.multiType) this.config.multiType = "intersection";
+        }
+
+        function getSelectedValue() {
+            return _.filter(this.getState(), function(d) { return d.selected; })
+                .map(function(d) {
+                    return d.value
+                } );
+        }
+
+        function setSelectedValue(value) {
+            console.log("where did this come from?");
+            _.forEach(this.getState(), function(d) { d.selected = d.value == value; });
+        }
+
+        function getConstraint() {
+            var self = this;
+            var values = this.getSelectedValue();
+            if (values == null || values.length == 0) {
+                return;
+            } else {
+                if (this.config.multiType == "intersection") {
+                    return values
+                        .map(function(v) { return ' ?id ' + self.predicate + ' ' + v + ' . ' } )
+                        .join("\n");
+                } else {
+                    var selectionConstraint = '?var_'+makeID();
+                    return ' ?id ' + self.predicate + ' '+ selectionConstraint + ' \n values ' +
+                        selectionConstraint + ' { '+ values.join(" ") + ' }';
+                }
+            }
+        }
+
+
+    }
+    
+    app.controller('SmartFacetController', SmartFacetController);
+
+    /* ngInject */
+    function SmartFacetController($scope, $controller, SmartFacet) {
+        var args = { $scope: $scope, FacetImpl: SmartFacet };
+        return $controller('AbstractFacetController', args);
+    }
+    
+    /**
+    * @ngdoc directive
+    * @name seco.facetedSearch.directive:secoBasicFacet
+    * @restrict 'E'
+    * @element ANY
+    * @description
+    * A basic select box facet with text filtering.
+    *
+    * @param {Object} options The configuration object with the following structure:
+    * - **facetId** - `{string}` - A friendly id for the facet.
+    *   Should be unique in the set of facets, and should be usable as a SPARQL variable.
+    * - **name** - `{string}` - The title of the facet. Will be displayed to end users.
+    * - **predicate** - `{string}` - The property (path) that defines the facet values.
+    * - **[specifier]** `{string}` - Restriction on the values as a SPARQL triple pattern.
+    *   Helpful if multiple facets need to be generated from the same predicate,
+    *   or not all values defined by the given predicate should be selectable.
+    *   `?value` is the variable to which the facet selection is bound.
+    *   For example, if `predicate` has been defined as
+    *   `<http://purl.org/dc/terms/subject>` (subject),
+    *   and there are different kinds of subjects for the resource, and you want
+    *   to select people (`<http://xmlns.com/foaf/0.1/Person>`) only, you would
+    *   define `specifier` as `'?value a <http://xmlns.com/foaf/0.1/Person> .'`.
+    *   This would generate the following triple patterns:
+    *       ?id <http://purl.org/dc/terms/subject> ?value .
+    *       ?value a <http://xmlns.com/foaf/0.1/Person> .
+    * - **[enabled]** `{boolean}` - Whether or not the facet is enabled by default.
+    *   If undefined, the facet will be disabled by default.
+    * - **[endpointUrl]** `{string}` - The URL of the SPARQL endpoint.
+    *   Optional, as it can also be given globally in
+    *   {@link seco.facetedSearch.FacetHandler `FacetHandler`} config.
+    * - **[chart]** `{boolean}` - If truthy, there will be an additional button next to the
+    *   enable/disable button of the facet. Clicking the button will display the facet values
+    *   as a pie chart.
+    * - **[headers]** `{Object}` - Additional HTTP headers.
+    *   Note that currently it is not possible to specify separate headers for separate
+    *   services.
+    * - **[services]** `{Array}` - In case labels for the facet values are (partially)
+    *   found in another SPARQL endpoint, those endpoints can be given as a list of URIs.
+    *   A separate query is made to each additional service to retrieve the labels.
+    * - **[preferredLang]** - `{string|Array}` - The language tag that is preferred
+    *   when getting labels for facet values, in case the value is a resource.
+    *   The default is 'en'.
+    *   Can also be a list of languages, in which case the languages are tried
+    *   in order.
+    *   If a label is not found in the given languages, a label without a
+    *   language tag is used. If a label is still not found,
+    *   the end part of the resource URI is used.
+    *   Supported label properties are `skos:prefLabel`, and `rdfs:label`.
+    * - **[priority]** - `{number}` - Priority for constraint sorting.
+    *   Undefined by default.
+    */
+    app.directive('whyisSmartFacet', whyisSmartFacet);
+
+    function whyisSmartFacet() {
+        return {
+            restrict: 'E',
+            scope: {
+                options: '='
+            },
+            controller: 'SmartFacetController',
+            controllerAs: 'vm',
+            templateUrl: ROOT_URL+'static/html/smart_facet.html'
+        };
+    }
+    
+    app.directive('whyisTextFacet', whyisTextFacet);
+
+    function whyisTextFacet() {
+        return {
+            restrict: 'E',
+            scope: {
+                options: '='
+            },
+            controller: 'TextFacetController',
+            controllerAs: 'vm',
+            templateUrl: ROOT_URL+'static/html/text_facet.html'
+        };
+    }
+    
     app.filter('urlencode', function() {
         return window.encodeURIComponent;
     });
@@ -2333,6 +2478,22 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
     }]);
 
+    app.directive('whenScrolled', function() {
+        return {
+            restrict: 'A',
+            scope: false,
+            link: function(scope, elm, attr) {
+                var raw = elm[0];
+                
+                elm.on('scroll', function() {
+                    if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
+                        scope.$apply(attr.whenScrolled);
+                    }
+                });
+            }
+        };
+    });
+    
     /*
      * DBpedia service
      * Handles SPARQL queries and defines facet configurations.
@@ -2362,57 +2523,100 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             // If 'enabled' is not true, the facet will be disabled by default.
             var facets = [
                 // Text search facet for names
-                {
-                    facetId: 'label',
-                    predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
-                    enabled: true,
-                    name: 'Label',
-                    type: 'text'
-                },
-                // Text search facet for descriptions
-                {
-                    facetId: 'description',
-                    predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
-                    enabled: true,
-                    name: 'Description',
-                    type: 'text'
-                },
+                // {
+                //     facetId: 'label',
+                //     predicate:'(rdfs:label|skos:prefLabel|skos:altLabel|dc:title|<http://xmlns.com/foaf/0.1/name>|<http://schema.org/name>)',
+                //     enabled: true,
+                //     name: 'Label',
+                //     type: 'text'
+                // },
+                // // Text search facet for descriptions
+                // {
+                //     facetId: 'description',
+                //     predicate:'(rdfs:comment|skos:definition|dc:description|dc:abstract)',
+                //     enabled: true,
+                //     name: 'Description',
+                //     type: 'text'
+                // },
                 // Text search facet for types
                 {
                     facetId: 'type',
                     predicate:'rdf:type/rdfs:subClassOf*',
+                    hierarchy: 'rdfs:subClassOf',
+                    depth: '5',
                     specifier: 'FILTER (!ISBLANK(?value) && !strstarts(str(?value), "bnode:") )',
                     preferredLang: "en",
                     enabled: true,
-                    type: 'basic',
+                    classes: ['<'+type+'>'],
+                    type: 'hierarchy',
                     name: 'Type'
                 }
             ];
 
-            function processConstraints(response) {
-                response.data.forEach(function (d) {
-                    d.name = d.propertyLabel;
-                    if (d.rangeLabel && d.name.indexOf(d.rangeLabel) == -1)
-                        d.name += " " + d.rangeLabel;
-                    d.facetId = d.property;
-                    if (d.range)
-                        d.facetId += " " + d.range;
+            facetProcessors = {
+                'http://www.w3.org/2002/07/owl#ObjectProperty' : function(d) {
+                    d.name = d.label;
+                    if (!d.facetId)
+                        d.facetId = b64_sha256(d.property);
                     d.predicate = '<'+d.property+'>';
-                    if (d.propertyType == "http://www.w3.org/2002/07/owl#ObjectProperty") {
-                        d.predicate = d.predicate + "/rdf:type";
+                    if (d.inverse) {
+                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
                     }
-                    if (d.range) {
-                        d.specifier = '?value rdfs:subClassOf* <'+d.range + ">";
-                    }
+                    d.predicate += '/rdf:type';
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
-                    facets.push(d);
+                },
+                'http://www.w3.org/2002/07/owl#DataProperty' : function(d) {
+                    d.name = d.label;
+                    if (!d.facetId)
+                        d.facetId = b64_sha256(d.property);
+                    d.predicate = '<'+d.property+'>';
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                },
+                'http://semanticscience.org/resource/Quality' : function(d) {
+                    d.name = "Qualities";
+                    if (!d.facetId)
+                        d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quality');
+                    d.predicate = '<'+d.property+'>';
+                    if (d.inverse) {
+                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    }
+                    d.specifier = '?value rdfs:subClasOf <http://semanticscience.org/resource/Quality>.\n';
+                    d.predicate += '/rdf:type';
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                },
+                'http://semanticscience.org/resource/Quantity' : function(d) {
+                    d.name = "Properties";
+                    if (!d.facetId)
+                        d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quantity');
+                    d.predicate = '<'+d.property+'>';
+                    if (d.inverse) {
+                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    }
+                    d.specifier = '?value rdfs:subClassO <http://semanticscience.org/resource/Quantity>.\n';
+                    d.predicate += '/rdf:type';
+                    d.enabled = true;
+                    d.preferredLang = "en";
+                    d.type = "basic";
+                }
+            }
+            
+            function processConstraints(response) {
+                response.data.forEach(function (d) {
+                    if (facetProcessors[d.propertyType] != null) {
+                        facetProcessors[d.propertyType](d);
+                        facets.push(d);
+                    }
                 });
             }
             if (constraints != null) processConstraints({data: constraints});
             else {
-                $http.get(ROOT_URL+'about', { params: {uri:type,view:'constraints'}, responseType:'json'})
+                $http.get(ROOT_URL+'about', { params: {uri:type,view:'facets'}, responseType:'json'})
                     .then(processConstraints);
             }
             
@@ -2435,8 +2639,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             // one of them, or you might get bad results when there are no facet selections.
             var facetOptions = {
                 endpointUrl: endpointUrl, // required
-                rdfClass: rdfClass, // optional
-                constraint: 'FILTER (!ISBLANK(?id))\n\
+                //rdfClass: rdfClass, // optional
+                constraint: '?id rdf:type/rdfs:subClassOf* '+rdfClass+'.\n\
+FILTER (!ISBLANK(?id))\n\
 FILTER ( !strstarts(str(?id), "bnode:") )\n\
 ',
                 preferredLang : 'en' // required
@@ -2468,7 +2673,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             var resultOptions = {
                 prefixes: prefixes, // required if the queryTemplate uses prefixes
                 queryTemplate: queryTemplate, // required
-                resultsPerPage: 10, // optional (default is 10)
+                resultsPerPage: 20, // optional (default is 10)
                 pagesPerQuery: 1, // optional (default is 1)
                 paging: true // optional (default is true), if true, enable paging of the results
             };
@@ -2486,14 +2691,56 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 // order of the results (as a valid SPARQL ORDER BY sequence, e.g. "?id").
                 // The results are sorted by URI (?id) by default.
                 return resultHandler.getResults(facetSelections).then(function(pager) {
-                    // We'll also query for the total number of results, and load the
-                    // first page of results.
-                    return pager.getTotalCount().then(function(count) {
-                        pager.totalCount = count;
-                        return pager.getPage(0);
-                    }).then(function() {
-                        return pager;
-                    });
+
+                    pager.all = [];
+                    pager.loadedPages = {};
+                    
+                    pager.numItems = 0;
+                    pager._lastPage = null;
+                    
+                    pager.PAGE_SIZE = resultOptions.resultsPerPage;
+                    
+                    pager.getItemAtIndex = function(index) {
+                        var pageNumber = Math.floor(index / pager.PAGE_SIZE);
+                        var page = pager.loadedPages[pageNumber];
+                        
+                        if (page) {
+                            return page[index % pager.PAGE_SIZE];
+                        } else if (page !== null) {
+                            pager.fetchPage_(pageNumber);
+                        }
+                    };
+                    
+                    // Required.
+                    pager.getLength = function() {
+                        return pager.numItems;
+                    };
+
+                    pager.fetchPage_ = function(pageNumber) {
+                        // Set the page to null so we know it is already being fetched.
+                        pager.loadedPages[pageNumber] = null;
+                        pager._lastPage = pageNumber;
+
+                        pager.getPage(pageNumber).then(function(page) {
+                            pager.loadedPages[pageNumber] = page;
+                            page.forEach(function(d) {pager.all.push(d)});
+                        });
+                    };
+
+                    pager.loadMore = function() {
+                        if (pager.numItems == pager.all.length) return;
+                        if (pager._lastPage == null) pager.fetchPage_(0);
+                        else pager.fetchPage_(pager._lastPage + 1);
+                    }
+
+                    pager.fetchNumItems_ = function() {
+                        pager.getTotalCount().then(function(count) {
+                            pager.numItems = count;
+                        });
+                    };
+                    pager.fetchNumItems_();
+                    pager.fetchPage_(0);
+                    return pager;
                 });
             }
 
@@ -2523,9 +2770,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     constraints : "=?",
                     title : "=?"
                 },
-                transclude : {
-                    "actions" : "?actions"
-                },
+                transclude : true,
                 templateUrl: ROOT_URL+'static/html/instanceFacets.html',
 	        restrict: "E",
                 link: function(scope, element, attrs) {
@@ -2536,9 +2781,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     instanceFacets = instanceFacetService(scope.type, scope.constraints);
                     
                     // page is the current page of results.
-                    vm.page = [];
-                    vm.pageNo = 0;
-                    vm.getPage = getPage;
                     vm.makeArray = makeArray;
                     vm.getLabel = getLabel;
                     
@@ -2577,68 +2819,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     // Get results based on facet selections (each time the selections change).
                     function updateResults(event, facetSelections) {
-                        // As the facets are not locked while the results are loading,
-                        // this function may be called again before the results have been
-                        // retrieved. This creates a race condition where the later call
-                        // may return before the first one, which leads to an inconsistent
-                        // state once the first returns. To avoid this we'll have a counter
-                        // that is incremented each time update is called, and we'll abort
-                        // the update if the counter has been incremented before it finishes.
-                        var uid = ++updateId;
-                        // As the user can also change the page via pagination, and introduce
-                        // a race condition that way, we'll want to discard any pending
-                        // page changes if a facet value changes. So set a boolean flag for
-                        // this purpose.
-                        vm.lock = true;
-                        // This variable is used to disable page selection, and display the
-                        // spinner animation.
                         vm.isLoadingResults = true;
-                        
-                        // Update the URL parameters based on facet selections
-                        facetUrlStateHandlerService.updateUrlParams(facetSelections);
-                    
-                        // The dbpediaService returns a (promise of a) pager object.
-                        return instanceFacets.getResults(facetSelections)
-                            .then(function(pager) {
-                                if (uid === updateId) {
-                                    vm.pager = pager;
-                                    vm.totalCount = pager.totalCount;
-                                    vm.pageNo = 1;
-                                    getPage(uid).then(function() {
-                                        vm.lock = false;
-                                        return vm.page;
-                                    });
-                                }
-                            });
-                    }
-                    
-                    // Get a page of mapped objects.
-                    // Angular-UI pagination handles the page number changes.
-                    function getPage(uid) {
-                        vm.isLoadingResults = true;
-                        // Get the page.
-                        // (The pager uses 0-indexed pages, whereas Angular-UI pagination uses 1-indexed pages).
-                        return vm.pager.getPage(vm.pageNo-1).then(function(page) {
-                            // Check if it's ok to change the page
-                            if (!vm.lock || (uid === updateId)) {
-                                vm.page = page;
-                                vm.page.forEach(function(d) {
-                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'label'}})
-                                    //    .then(function(response) {
-                                    //        d.label = response.data;
-                                    //    });
-                                    //$http.get(ROOT_URL+'about',{ params: {uri:d.id,view:'summary'}, responseType:'json'})
-                                    //    .then(function(response) {
-                                    //        d.summary = response.data;
-                                    //    });
-                                    //d.type.forEach(function(type) {
-                                    //    getLabel(type.id).then(function(d) { type.label = d});
-                                    //});
-                                });
-                                vm.isLoadingResults = false;
-                            }
-                        }).catch(function(error) {
-                            vm.error = error;
+                        instanceFacets.getResults(facetSelections).then(function(pager) {
+                            vm.pager = pager;
                             vm.isLoadingResults = false;
                         });
                     }

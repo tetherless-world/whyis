@@ -21,6 +21,8 @@
     <!-- Optional theme -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
         
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-semantic-faceted-search/dist/semantic-faceted-search.css')}}">
+        
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/apple-icon-57x57.png') }}">
@@ -194,7 +196,10 @@
 <script src="{{ url_for('static', filename='bower_components/angular-spinner/angular-spinner.min.js')}}"></script>
 <script src="{{ url_for('static', filename='bower_components/angular-paging-sparql-service/dist/sparql-service.js')}}"></script>
 <script src="{{ url_for('static', filename='bower_components/checklist-model/checklist-model.js')}}"></script>
-    <script src="{{ url_for('static', filename='bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js')}}"></script>
+
+<script src="{{ url_for('static', filename='js/lib/chart.js')}}"></script>
+
+<script src="{{ url_for('static', filename='bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js')}}"></script>
 
     <script src="{{ url_for('static', filename='js/lib/moment-with-locales.min.js')}}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
@@ -204,6 +209,7 @@
     <script>
 </script>
 
+<script src="{{ url_for('static', filename='js/crypt.js')}}"></script>
 <script src="{{ url_for('static', filename='js/whyis.js')}}"></script>
 
 {% block scripts %}{% endblock %}

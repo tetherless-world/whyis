@@ -121,6 +121,7 @@ NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
+NS.schema = rdflib.Namespace("http://schema.org/")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -610,7 +611,7 @@ construct {
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name, URIRef('http://schema.org/name')]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
         @lru
         def get_remote_label(uri):
@@ -798,6 +799,7 @@ construct {
         def get_summary(resource):
             summary_properties = [
                 self.NS.skos.definition,
+                self.NS.schema.description,
                 self.NS.dc.abstract,
                 self.NS.dc.description,
                 self.NS.dc.summary,

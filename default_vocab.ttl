@@ -376,12 +376,16 @@ bibo:AcademicArticle whyis:hasView "article_view.html".
 
 owl:Class rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
+  whyis:hasFacets "class_facets.json";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
   whyis:newInstanceView "new_instance_view.html";
   whyis:hasView "class_view.html".
 
 whyis:hasConstraints dc:identifier "constraints";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasFacets dc:identifier "facets";
   rdfs:subPropertyOf whyis:hasView.
 
 owl:Ontology rdfs:label "Ontology";

@@ -208,11 +208,9 @@
 </div>
 
 <instance-facets title="'Instances'" type="'{{this.identifier}}'">
-  <actions>
-    <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create">
+    <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create Instance">
       <md-icon>add</md-icon>
     </md-button>
-  </actions>
 </instance-facets>
 
 <div md-whiteframe="2">

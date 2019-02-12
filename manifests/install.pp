@@ -129,7 +129,7 @@ python::virtualenv { '/apps/whyis/venv' :
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
   cwd          => '/apps/whyis',
-  timeout      => 0,
+  timeout      => 18000,
 } ->
 file { "/apps/.bash_profile" :
   owner => 'whyis',
@@ -147,6 +147,7 @@ python::pip { 'pip-upgrade' :
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
+  timeout       => 0,
 } ->
 file { "/var/log/celery":
     owner => "whyis",

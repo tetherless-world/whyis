@@ -1,0 +1,19 @@
+<seco-facet-wrapper>
+  <div class="row">
+    <div class="col-xs-12 text-left">
+      <div class="facet-input-container">
+        <div class="checkbox" ng-repeat="choice in vm.facet.getState()">
+        <label>
+          <input type="checkbox"
+            checklist-change="vm.changed()"
+            ng-disabled="(vm.isLoading() || !choice.count)"
+            class="selector checkbox"
+            checklist-model="vm.facet.selectedValue.value"
+            checklist-value="choice.value" />
+          {{ choice.text }} ({{ choice.count }})
+        </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</seco-facet-wrapper>

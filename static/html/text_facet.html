@@ -1,0 +1,22 @@
+<div ng-if=vm.facet.isEnabled()>
+  <md-autocomplete
+     md-floating-label="{{vm.facet.name}}"
+     md-selected-item="vm.facet.selectedValue"
+     md-search-text-change="vm.changed()"
+     md-search-text="textFilter"
+     ng-disabled="vm.isLoading()"
+     md-selected-item-change="vm.changed()"
+     md-items="value in vm.facet.getState() | textWithSelection:textFilter:vm.facet.selectedValue track by value.value"
+     md-item-text="value.text"
+     md-min-length="3">
+    <md-item-template>
+      <span md-highlight-text="textFilter" md-highlight-flags="^i">{{value.text}}({{value.count}})</span>
+    </md-item-template>
+  </md-autocomplete>
+  <md-progress-linear md-mode="indeterminate" ng-show="vm.isLoading()"></md-progress-linear>
+  <md-toolbar class="md-warn" ng-if="vm.error">
+    <div class="md-toolbar-tools">
+      <h2 class="md-flex">{{ vm.error|limitTo:100 }}</h2>
+    </div>
+  </md-toolbar>
+</div>

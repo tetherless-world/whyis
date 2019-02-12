@@ -1,0 +1,58 @@
+<a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/edit/master/src/facets/jena-text/facets.jena-text-facet.directive.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/facets/jena-text/facets.jena-text-facet.directive.js#L63" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">secoJenaTextFacet</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">seco.facetedSearch</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secojenatextfacet-page"><p>A free-text search facet using Jena text search.</p>
+<p>This facet can only be used if the SPARQL endpoint supports
+<a href="https://jena.apache.org/documentation/query/text-query.html">Jena text query</a>.</p>
+<p>The facet does not make any SPARQL queries, just generates SPARQL triple patterns
+out of the typed text for other facets to use.</p>
+<p>The produced constraint looks like the following (where <code>predicate</code>, and <code>limit</code>
+are based on the configuration options, and left out if undefined):
+<pre class="prettyprint linenums">
+(?id ?score) &lt;http://jena.apache.org/text#query&gt; (predicate "search terms" limit) .
+</pre>
+<p>If the <code>graph</code> option is defined, the constraint is wrapped accordingly:
+<pre class="prettyprint linenums">
+GRAPH graph {
+  (?id ?score) &lt;http://jena.apache.org/text#query&gt; (predicate "search terms" limit) .
+}
+</pre>
+<p>The score is captured as variable <code>?score</code>, and can thus be used to sort results.</p>
+<p>The search terms are sanitized in order to avoid syntax errors from the backend.
+In case there is an even number of quotes (<code>&quot;</code>) they are escaped in the search terms.
+If there is an odd number of quotes, they are removed.
+Backslashes, and parentheses are removed, as well as <code>AND</code>, <code>OR</code>, and <code>NOT</code>,
+if they are the first or last tokens in the query.
+&quot;<code>~</code>&quot; is removed if it&#39;s the first character in the query.
+Consecutive &quot;<code>~</code>&quot; are removed. I.e. &quot;<code>~~</code>&quot; is changed to &quot;<code>~</code>&quot;.
+Otherwise the search terms are not modified, so e.g. <code>AND</code>, <code>OR</code>, <code>*</code>, and <code>~</code>
+can be used in the query.</p>
+<p>The sanitization is not reflected to the user, so if a search triggers while
+they are writing, and the last word they wrote is, e.g., &quot;<code>AND</code>&quot;,
+the user will see all that they wrote, but the produced SPARQL constraint
+will not include the <code>AND</code>. The user can continue writing, and the next time
+the search triggers, if the query is valid, the constraint will include it.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;seco-jena-text-facet
+       options="{Object}"&gt;
+&lt;/seco-jena-text-facet&gt;</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secojenatextfacet-page"><p>The configuration object with the following structure:</p>
+<ul>
+<li><strong>facetId</strong> - <code>{string}</code> - A friendly id for the facet.
+Should be unique in the set of facets, and should be usable as a SPARQL variable.</li>
+<li><strong>name</strong> - <code>{string}</code> - The title of the facet. Will be displayed to end users.</li>
+<li><strong>[enabled]</strong> <code>{boolean}</code> - Whether or not the facet is enabled by default.
+If undefined, the facet will be disabled by default.</li>
+<li><strong>[priority]</strong> - <code>{number}</code> - Priority for constraint sorting. Default is 0.</li>
+<li><strong>[predicate]</strong> - <code>{string}</code> - The property to use in the search.
+See <a href="https://jena.apache.org/documentation/query/text-query.html#query-with-sparql">Jena text query documentation</a>.</li>
+<li><strong>[limit]</strong> - <code>{number}</code> - Limit for the text search results.
+See <a href="https://jena.apache.org/documentation/query/text-query.html#query-with-sparql">Jena text query documentation</a>.</li>
+<li><strong>[graph]</strong> - <code>{string}</code> - The URI of the graph to use for the text search.</li>
+</ul>
+</div></td></tr></tbody></table></div>
+</div>
