@@ -2558,11 +2558,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
-                    d.predicate += '/rdf:type';
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2571,7 +2577,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);
-                    d.predicate = '<'+d.property+'>';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                    }
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2580,12 +2588,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = "Qualities";
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quality');
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
                     d.specifier = '?value rdfs:subClasOf <http://semanticscience.org/resource/Quality>.\n';
-                    d.predicate += '/rdf:type';
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2594,12 +2608,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = "Properties";
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quantity');
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
-                    d.specifier = '?value rdfs:subClassO <http://semanticscience.org/resource/Quantity>.\n';
-                    d.predicate += '/rdf:type';
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
+                    d.specifier = '?value rdfs:subClassOf <http://semanticscience.org/resource/Quantity>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2757,13 +2777,43 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return instanceFacetService;
     });
+
+    app.directive("vega", function() {
+        return {
+            scope: {
+                spec: '=',
+                then: '=?',
+                opt: '=?'
+            },
+            template: '',
+            restrict: 'E',
+            link: function(scope, element, attrs) {
+                var result = vegaEmbed(element, scope.spec, scope.opt);
+                if (scope.then) result.then(scope.then);
+            }
+        };
+    });
+
+    app.directive("vegaController", function() {
+        return {
+            scope: {
+                spec: '=',
+                facetValues: '='
+            },
+            templateUrl: ROOT_URL+'static/html/vegaController.html',
+            restrict: "E",
+            link: function (scope, element, attrs) {
+                
+            }
+        };
+    });
     
     /*
      * The controller.
      */
     app.directive("instanceFacets", [
-        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http',
-        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
+        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http', 'loadAttributes',
+        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http, loadAttributes) {
 	    return {
                 scope: {
                     type : "=",
@@ -2778,6 +2828,107 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     var updateId = 0;
 
+                    loadAttributes().then(function(attrs) {
+                        scope.facetValues = attrs;
+                    });
+                    
+                    scope.vmConfig = {
+                        "$schema": "https://vega.github.io/schema/vega/v5.json",
+                        "type": "pad",
+                        "resize": true
+                        "padding": 5,
+
+                        "data": [
+                        ],
+                        
+                        "scales": [
+                            {
+                                "name": "x",
+                                "type": "linear",
+                                "round": true,
+                                "nice": true,
+                                "zero": true,
+                                "domain": {"data": "source", "field": "Horsepower"},
+                                "range": "width"
+                            },
+                            {
+                                "name": "y",
+                                "type": "linear",
+                                "round": true,
+                                "nice": true,
+                                "zero": true,
+                                "domain": {"data": "source", "field": "Miles_per_Gallon"},
+                                "range": "height"
+                            },
+                            {
+                                "name": "size",
+                                "type": "linear",
+                                "round": true,
+                                "nice": false,
+                                "zero": true,
+                                "domain": {"data": "source", "field": "Acceleration"},
+                                "range": [4,361]
+                            }
+                        ],
+                        
+                        "axes": [
+                            {
+                                "scale": "x",
+                                "grid": true,
+                                "domain": false,
+                                "orient": "bottom",
+                                "tickCount": 5,
+                                "title": "Horsepower"
+                            },
+                            {
+                                "scale": "y",
+                                "grid": true,
+                                "domain": false,
+                                "orient": "left",
+                                "titlePadding": 5,
+                                "title": "Miles_per_Gallon"
+                            }
+                        ],
+
+                        "legends": [
+                            {
+                                "size": "size",
+                                "title": "Acceleration",
+                                "format": "s",
+                                "encode": {
+                                    "symbols": {
+                                        "update": {
+                                            "strokeWidth": {"value": 2},
+                                            "opacity": {"value": 0.5},
+                                            "stroke": {"value": "#4682b4"},
+                                            "shape": {"value": "circle"}
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        
+                        "marks": [
+                            {
+                                "name": "marks",
+                                "type": "symbol",
+                                "from": {"data": "source"},
+                                "encode": {
+                                    "update": {
+                                        "x": {"scale": "x", "field": "Horsepower"},
+                                        "y": {"scale": "y", "field": "Miles_per_Gallon"},
+                                        "size": {"scale": "size", "field": "Acceleration"},
+                                        "shape": {"value": "circle"},
+                                        "strokeWidth": {"value": 2},
+                                        "opacity": {"value": 0.5},
+                                        "stroke": {"value": "#4682b4"},
+                                        "fill": {"value": "transparent"}
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    
                     instanceFacets = instanceFacetService(scope.type, scope.constraints);
                     
                     // page is the current page of results.
@@ -2785,6 +2936,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.getLabel = getLabel;
                     
                     vm.disableFacets = disableFacets;
+                    scope.view = "list";
                     
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
@@ -2800,6 +2952,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.facets = instanceFacets.getFacets();
                     // Initialize the facet handler
                     vm.handler = new FacetHandler(getFacetOptions());
+
                     
                     // Disable the facets while results are being retrieved.
                     function disableFacets() {
@@ -2832,7 +2985,35 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 }
             };
         }]);
-                                  
+
+
+    app.factory('loadAttributes', ['$http', 'conf', '$q', "sparqlValuesBinder", function($http, conf, $q, sparqlValuesBinder) {
+        function fn(otherVariable) {
+            return $http.get(ROOT_URL+'about', { params: {uri:type,view:'facet_values'}, responseType:'json'})
+                .then(function(data) {
+                    return $q(function( resolve, reject) {
+                        var result = [];
+                        data.forEach(function(facet) {
+                            if (facet.value) {
+                                facet.values.forEach(function(facet_value) {
+                                    $.extend(facet_value, facet);
+                                    result.push(facet_value);
+                                });
+                            } else {
+                                facet.name = facet.label;
+                                result.push(facet);
+                            }
+                        });
+                        resolve(result);
+                    });
+                });
+        }
+        return fn;
+    }]);
+    
+
+    
+    
     app.service('makeID',function() {
         var ID = function () {
             // Math.random should be unique because of its seeding algorithm.
