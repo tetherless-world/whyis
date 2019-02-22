@@ -2803,10 +2803,168 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             templateUrl: ROOT_URL+'static/html/vegaController.html',
             restrict: "E",
             link: function (scope, element, attrs) {
-                
+                scope.views = [
+                    //{
+                    //    mark:"area",
+                    //    label: "Area Plot",
+                    //},
+                    {
+                        mark: "point",
+                        label: "Scatter Plot",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            y: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            color: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            size: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                        }
+                    },                    {
+                        mark:"bar",
+                        label: "Histogram",
+                        encoding: {
+                            x: {
+                                "bin" : true,
+                                "types" : ['quantitative']
+                            },
+                            y: {
+                                "aggregate" : "count",
+                                "type" : 'quantitative'
+                            },
+                            color: {
+                                "types" : ['ordinal']
+                            }
+                        }
+                    },
+                    {
+                        mark:"bar",
+                        label: "Bar Chart",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','quantitative','nominal']
+                            },
+                            y: {
+                                "types" : ['ordinal','quantitative','nominal']
+                            },
+                            color: {
+                                "types" : ['ordinal']
+                            }
+                        }
+                    },
+                    {
+                        mark:"boxplot",
+                        label: "Box Plot",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','quantitative','nominal']
+                            },
+                            y: {
+                                "types" : ['ordinal','quantitative','nominal']
+                            },
+                            color: {
+                                "types" : ['ordinal','quantitative','nominal']
+                            },
+                        }
+                    },
+                    //{
+                    //    mark: "errorband",
+                    //    label: "Error Band"
+                    //},
+                    //{
+                    //    mark: "errorbar",
+                    //    label: "Error Bars",
+                    //},
+
+                    {
+                        mark: "rect",
+                        label: "Heatmap",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','nominal']
+                            },
+                            y: {
+                                "types" : ['ordinal','nominal']
+                            },
+                            color: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                        }
+                    },
+                    {
+                        mark: "rect",
+                        label: "Density",
+                        encoding: {
+                            x: {
+                                "bin": {"maxbins": 100},
+                                "types": ["quantitative"]
+                            },
+                            y: {
+                                "bin": {"maxbins": 100},
+                                "types": ["quantitative"]
+                            },
+                            color: {
+                                "aggregate": "count",
+                                "types": ["quantitative"]
+                            }
+                        }
+                    },
+                    //{
+                    //    mark: "rule",
+                    //},
+                    //{
+                    //    mark: "text",
+                    //},
+                    {
+                        mark: "tick",
+                        label: "Tick marks",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            y: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            color: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            size: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                        }
+                    },
+                    {
+                        mark: "trail",
+                        label: "Line Plot",
+                        encoding: {
+                            x: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            y: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            color: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                            size: {
+                                "types" : ['ordinal','quantitative','nominal','temporal']
+                            },
+                        }
+                    },
+                    //{
+                    //    mark: "geoshape"
+                    //}
+                ];
+                scope.selectedView = scope.views[0];
             }
         };
     });
+
     
     /*
      * The controller.
@@ -2828,105 +2986,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     var updateId = 0;
 
-                    loadAttributes().then(function(attrs) {
+                    loadAttributes(scope.type).then(function(attrs) {
                         scope.facetValues = attrs;
                     });
                     
-                    scope.vmConfig = {
-                        "$schema": "https://vega.github.io/schema/vega/v5.json",
-                        "type": "pad",
-                        "resize": true
-                        "padding": 5,
-
-                        "data": [
-                        ],
-                        
-                        "scales": [
-                            {
-                                "name": "x",
-                                "type": "linear",
-                                "round": true,
-                                "nice": true,
-                                "zero": true,
-                                "domain": {"data": "source", "field": "Horsepower"},
-                                "range": "width"
-                            },
-                            {
-                                "name": "y",
-                                "type": "linear",
-                                "round": true,
-                                "nice": true,
-                                "zero": true,
-                                "domain": {"data": "source", "field": "Miles_per_Gallon"},
-                                "range": "height"
-                            },
-                            {
-                                "name": "size",
-                                "type": "linear",
-                                "round": true,
-                                "nice": false,
-                                "zero": true,
-                                "domain": {"data": "source", "field": "Acceleration"},
-                                "range": [4,361]
-                            }
-                        ],
-                        
-                        "axes": [
-                            {
-                                "scale": "x",
-                                "grid": true,
-                                "domain": false,
-                                "orient": "bottom",
-                                "tickCount": 5,
-                                "title": "Horsepower"
-                            },
-                            {
-                                "scale": "y",
-                                "grid": true,
-                                "domain": false,
-                                "orient": "left",
-                                "titlePadding": 5,
-                                "title": "Miles_per_Gallon"
-                            }
-                        ],
-
-                        "legends": [
-                            {
-                                "size": "size",
-                                "title": "Acceleration",
-                                "format": "s",
-                                "encode": {
-                                    "symbols": {
-                                        "update": {
-                                            "strokeWidth": {"value": 2},
-                                            "opacity": {"value": 0.5},
-                                            "stroke": {"value": "#4682b4"},
-                                            "shape": {"value": "circle"}
-                                        }
-                                    }
-                                }
-                            }
-                        ],
-                        
-                        "marks": [
-                            {
-                                "name": "marks",
-                                "type": "symbol",
-                                "from": {"data": "source"},
-                                "encode": {
-                                    "update": {
-                                        "x": {"scale": "x", "field": "Horsepower"},
-                                        "y": {"scale": "y", "field": "Miles_per_Gallon"},
-                                        "size": {"scale": "size", "field": "Acceleration"},
-                                        "shape": {"value": "circle"},
-                                        "strokeWidth": {"value": 2},
-                                        "opacity": {"value": 0.5},
-                                        "stroke": {"value": "#4682b4"},
-                                        "fill": {"value": "transparent"}
-                                    }
-                                }
-                            }
-                        ]
+                    scope.vizConfig = {
+                        "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+                        "data": {"url": null},
+                        "view" : "instanceAttributes",
+                        "mark": "point",
+                        "autosize" : "pad",
+                        "resize" : "true",
+                        "encoding": {
+                            "y": {"field": null},
+                            "x": {"field": null},
+                       }
                     };
                     
                     instanceFacets = instanceFacetService(scope.type, scope.constraints);
@@ -2987,22 +3061,26 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }]);
 
 
-    app.factory('loadAttributes', ['$http', 'conf', '$q', "sparqlValuesBinder", function($http, conf, $q, sparqlValuesBinder) {
-        function fn(otherVariable) {
+    app.factory('loadAttributes', ['$http', '$q', function($http, $q) {
+        function fn(type, otherVariable) {
             return $http.get(ROOT_URL+'about', { params: {uri:type,view:'facet_values'}, responseType:'json'})
                 .then(function(data) {
                     return $q(function( resolve, reject) {
                         var result = [];
-                        data.forEach(function(facet) {
+                        data.data.forEach(function(facet) {
                             if (facet.value) {
                                 facet.values.forEach(function(facet_value) {
                                     $.extend(facet_value, facet);
                                     result.push(facet_value);
+                                    
                                 });
                             } else {
                                 facet.name = facet.label;
                                 result.push(facet);
                             }
+                        });
+                        result.forEach(function(attribute) {
+                            attribute.field = attribute.facetID;
                         });
                         resolve(result);
                     });
