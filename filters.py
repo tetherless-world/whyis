@@ -18,6 +18,8 @@ import json
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from slugify import slugify
+
 def geomean(nums):
     return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
@@ -25,7 +27,7 @@ def geomean(nums):
 #    return norm.cdf(sum([norm.ppf(x) for x in nums]))
 
 def configure(app):
-    
+
     @app.template_filter('urlencode')
     def urlencode_filter(s):
         if type(s) == 'Markup':
@@ -296,7 +298,26 @@ WHERE {
         FILTER ( !strstarts(str(?id), "bnode:") )
         ?id {{facet['predicate']}}/{{facet['typeProperty']}} ?value .
         {{facet['specifier']}}
-        {% if 'unit' in facet %}optional { ?id {{facet['predicate']}}/{{facet['unit']}} ?unit. }{%endif%}
+        {% if 'unitPredicate' in facet %}optional { ?id {{facet['predicate']}}/{{facet['unitPredicate']}} ?unit. }{%endif%}
+
+    {% for constraint in constraints %}{{constraint}}{% endfor %}
+
+    {% for variable in variables %}
+    {% if 'valuePredicate' in variable %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['valuePredicate']}} ?{{variable['field']}};
+        {% if 'unit' in variable %}
+          {{variable['unitPredicate']}} <{{variable['unit']}}>;
+        {% endif %}
+      ].
+    {% else %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} ?{{variable['field']}};
+      ].
+    {% endif %}
+  {% endfor %}
+                
       } GROUP BY ?value ?unit
     }
     FILTER(BOUND(?value))
@@ -304,33 +325,64 @@ WHERE {
 }''')
     
     @app.template_filter('facet_values')
-    def facet_values(facets):
+    def facet_values(facets, variables, constraints):
+        if len(constraints) > 0:
+            constraints = json.loads(constraints)
+        if len(variables) > 0:
+            variables = json.loads(variables)
+        results = []
         for facet in facets:
-            query = facet_value_template.render(facet=facet)
-            
-            facet['values'] = query_filter(query)
-            iter_labelize(facet['values'], key='value', label_key='name')
-            iter_labelize(facet['values'], key='unit', label_key='unit_label')
-        return facets
+            facet['type'] = 'nominal'
+            if 'valuePredicate' in facet:
+                query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
+                values = query_filter(query)
+                for value in values:
+                    value.update(facet)
+                    fieldName = [value['facetId'],
+                                 slugify(value['value'],separator='_',lowercase=False)]
+                    if 'unit' in value:
+                        fieldName.append(slugify(value['unit'],separator='_',lowercase=False))
+                    value['type'] = 'quantitative'
+                    fieldName = '__'.join(fieldName)
+                    value['field'] = fieldName
+                    results.append(value)
+            else:
+                facet['field'] = facet['facetId']
+                facet['name'] = facet['label']
+                results.append(facet)
+        iter_labelize(results, key='value', label_key='name')
+        iter_labelize(results, key='unit', label_key='unit_label')
+        return results
 
-    facet_instance_template = env.from_string('''
-SELECT DISTINCT ?count ?value ?unit
+    instance_data_template = env.from_string('''
+SELECT DISTINCT ?id {% for variable in variables %} ?{{variable['field']}}{% endfor %}
 WHERE {
-  SELECT DISTINCT ?count ?value ?unit {
-    {
-      SELECT DISTINCT (count(DISTINCT ?id) as ?count) ?value ?unit {
-        ?id rdf:type/rdfs:subClassOf* <{{facet['class']}}> .
-        FILTER (!ISBLANK(?id))
-        FILTER ( !strstarts(str(?id), "bnode:") )
-        ?id {{facet['predicate']}}/{{facet['typeProperty']}} ?value .
-        {{facet['specifier']}}
-        {% if 'unit' in facet %}optional { ?id {{facet['predicate']}}/{{facet['unit']}} ?unit. }{%endif%}
-      } GROUP BY ?value ?unit
-    }
-    FILTER(BOUND(?value))
-  }
+    {% for constraint in constraints %}{{constraint}}{% endfor %}
+
+    {% for variable in variables %}
+    {% if 'valuePredicate' in variable %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['valuePredicate']}} ?{{variable['field']}};
+        {% if 'unit' in variable %}
+          {{variable['unitPredicate']}} <{{variable['unit']}}>;
+        {% endif %}
+      ].
+    {% else %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} ?{{variable['field']}};
+      ].
+    {% endif %}
+  {% endfor %}
+  
 }''')
-    @app.template_filter('facet_instances')
-    def facet_instances(facets, this):
-        return facets
+    @app.template_filter('instance_data')
+    def instance_data(this, variables, constraints):
+        if len(constraints) > 0:
+            constraints = json.loads(constraints)
+        if len(variables) > 0:
+            variables = json.loads(variables)
+        query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
+        
+        return query
         

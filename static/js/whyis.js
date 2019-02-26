@@ -2788,8 +2788,24 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             template: '',
             restrict: 'E',
             link: function(scope, element, attrs) {
-                var result = vegaEmbed(element, scope.spec, scope.opt);
-                if (scope.then) result.then(scope.then);
+                scope.$watch("spec", function(oldvalue, newvalue) {
+                    scope.spec.data.variables = [];
+                    for (var property in scope.spec.encoding) {
+                        if (property != 'id' &&
+                            scope.spec.encoding.hasOwnProperty(property) &&
+                            scope.spec.encoding[property].field) {
+                            scope.spec.data.variables.push(scope.spec.encoding[property]);
+                        }
+                    }
+                    scope.spec.data.url = scope.spec.data.baseurl;
+                    scope.spec.data.url += '&variables='+encodeURIComponent(JSON.stringify(scope.spec.data.variables));
+                    if (scope.spec.data.constraints) {
+                        scope.spec.data.url += "&constraints="+encodeURIComponent(JSON.stringify(scope.spec.data.constraints));
+                    }
+                    console.log(scope.spec.data.url);
+                    var result = vegaEmbed(element[0], scope.spec, scope.opt);
+                    if (scope.then) result.then(scope.then);
+                }, true);
             }
         };
     });
@@ -2803,6 +2819,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             templateUrl: ROOT_URL+'static/html/vegaController.html',
             restrict: "E",
             link: function (scope, element, attrs) {
+                scope.variables = {}
                 scope.views = [
                     //{
                     //    mark:"area",
@@ -2813,16 +2830,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Scatter Plot",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log"}
                             },
                             y: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log"}
                             },
                             color: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log"}
                             },
                             size: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log"}
                             },
                         }
                     },                    {
@@ -2831,14 +2852,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         encoding: {
                             x: {
                                 "bin" : true,
-                                "types" : ['quantitative']
+                                "types" : {'quantitative':1}
                             },
                             y: {
                                 "aggregate" : "count",
                                 "type" : 'quantitative'
-                            },
-                            color: {
-                                "types" : ['ordinal']
                             }
                         }
                     },
@@ -2847,13 +2865,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Bar Chart",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','quantitative','nominal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
                             y: {
-                                "types" : ['ordinal','quantitative','nominal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
                             color: {
-                                "types" : ['ordinal']
+                                "types" : {'ordinal':1}
                             }
                         }
                     },
@@ -2862,13 +2880,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Box Plot",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','quantitative','nominal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
                             y: {
-                                "types" : ['ordinal','quantitative','nominal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
                             color: {
-                                "types" : ['ordinal','quantitative','nominal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
                         }
                     },
@@ -2886,13 +2904,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Heatmap",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','nominal']
+                                "types" : {'ordinal':1,'nominal':1}
                             },
                             y: {
-                                "types" : ['ordinal','nominal']
+                                "types" : {'ordinal':1,'nominal':1}
                             },
                             color: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                         }
                     },
@@ -2902,15 +2920,15 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         encoding: {
                             x: {
                                 "bin": {"maxbins": 100},
-                                "types": ["quantitative"]
+                                "types": {"quantitative":1}
                             },
                             y: {
                                 "bin": {"maxbins": 100},
-                                "types": ["quantitative"]
+                                "types": {"quantitative":1}
                             },
                             color: {
                                 "aggregate": "count",
-                                "types": ["quantitative"]
+                                "types": {"quantitative":1}
                             }
                         }
                     },
@@ -2925,16 +2943,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Tick marks",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             y: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             color: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             size: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                         }
                     },
@@ -2943,16 +2961,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Line Plot",
                         encoding: {
                             x: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             y: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             color: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                             size: {
-                                "types" : ['ordinal','quantitative','nominal','temporal']
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
                         }
                     },
@@ -2961,6 +2979,21 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //}
                 ];
                 scope.selectedView = scope.views[0];
+                scope.$watch('selectedView',function(newValue,oldValue){
+                    $.extend(scope.spec, scope.selectedView);
+                    ['x','y','size','color'].forEach(function(variable) {
+                        if (!scope.selectedView.encoding[variable])
+                            delete scope.spec.encoding[variable];
+                        else {
+                            $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                        }
+                    });
+                });
+                ['x','y','size','color'].forEach(function(variable) {
+                    scope.$watch('variables.'+variable,function(newValue,oldValue){
+                        $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                    });
+                });
             }
         };
     });
@@ -2986,16 +3019,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     var updateId = 0;
 
-                    loadAttributes(scope.type).then(function(attrs) {
-                        scope.facetValues = attrs;
-                    });
-                    
                     scope.vizConfig = {
                         "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-                        "data": {"url": null},
+                        "data": {
+                            "url": null,
+                            "baseurl" : ROOT_URL+'about?uri='+encodeURIComponent(scope.type)+"&view=instance_data",
+                        },
                         "view" : "instanceAttributes",
                         "mark": "point",
-                        "autosize" : "pad",
+                        "autosize": {
+                            "type": "fit",
+                            "contains": "padding"
+                        },
+                        "width" : 1000,
+                        "height" : 700,
                         "resize" : "true",
                         "encoding": {
                             "y": {"field": null},
@@ -3050,39 +3087,51 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
                             vm.isLoadingResults = false;
+                            vm.vizConfig.data.constraints = [];
+                            if (facetSelections.constraint) {
+                                vm.vizConfig.data.constraints = facetSelections.constraint;
+                            }
                         });
                     }
                     
                     function makeArray(val) {
                         return angular.isArray(val) ? val : [val];
                     }
+
+                    function updateAttributes() {
+                        loadAttributes(scope.type, vm.vizConfig.data.constraints, vm.vizConfig.data.variables)
+                            .then(function(attrs) {
+                                scope.facetValues = attrs;
+                                scope.facetValues.splice(0, 0, {
+                                    "field" : "id",
+                                    "type" : "nominal",
+                                    "name" : "By Instance"
+                                });
+                            });
+                        
+                    }
+                    vm.$watch('vizConfig.data.constraints', updateAttributes);
+                    vm.$watch('vizConfig.data.variables', updateAttributes);
                 }
             };
         }]);
 
 
     app.factory('loadAttributes', ['$http', '$q', function($http, $q) {
-        function fn(type, otherVariable) {
-            return $http.get(ROOT_URL+'about', { params: {uri:type,view:'facet_values'}, responseType:'json'})
+        function fn(type, constraints, variables) {
+            return $http.get(ROOT_URL+'about', {
+                params: {
+                    uri:type,
+                    view:'facet_values',
+                    constraints:JSON.stringify(constraints),
+                    variables:JSON.stringify(variables)
+                },
+                responseType:'json'
+            })
                 .then(function(data) {
                     return $q(function( resolve, reject) {
                         var result = [];
-                        data.data.forEach(function(facet) {
-                            if (facet.value) {
-                                facet.values.forEach(function(facet_value) {
-                                    $.extend(facet_value, facet);
-                                    result.push(facet_value);
-                                    
-                                });
-                            } else {
-                                facet.name = facet.label;
-                                result.push(facet);
-                            }
-                        });
-                        result.forEach(function(attribute) {
-                            attribute.field = attribute.facetID;
-                        });
-                        resolve(result);
+                        resolve(data.data);
                     });
                 });
         }

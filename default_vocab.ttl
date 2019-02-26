@@ -378,6 +378,7 @@ owl:Class rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasFacets "class_facets.json";
   whyis:hasFacetValues "facet_values.json";
+  whyis:hasInstanceData "class_instance_data.json";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
   whyis:newInstanceView "new_instance_view.html";
@@ -391,6 +392,10 @@ whyis:hasFacets dc:identifier "facets";
 
 whyis:hasFacetValues dc:identifier "facet_values";
   rdfs:subPropertyOf whyis:hasView.
+  
+whyis:hasInstanceData dc:identifier "instance_data";
+  rdfs:subPropertyOf whyis:hasView.
+
 
 owl:Ontology rdfs:label "Ontology";
     whyis:hasOutgoing "outgoing_ontology.json";
