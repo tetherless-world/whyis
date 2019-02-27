@@ -2790,11 +2790,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             link: function(scope, element, attrs) {
                 scope.$watch("spec", function(oldvalue, newvalue) {
                     scope.spec.data.variables = [];
+                    var variable_names = {};
                     for (var property in scope.spec.encoding) {
                         if (property != 'id' &&
                             scope.spec.encoding.hasOwnProperty(property) &&
-                            scope.spec.encoding[property].field) {
+                            scope.spec.encoding[property].field &&
+                            variable_names[scope.spec.encoding[property].field] == null) {
                             scope.spec.data.variables.push(scope.spec.encoding[property]);
+                            variable_names[scope.spec.encoding[property].field] = scope.spec.encoding[property];
                         }
                     }
                     scope.spec.data.url = scope.spec.data.baseurl;
@@ -2831,19 +2834,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         encoding: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log"}
+                                "scale": {"type": "log", nice : 20}
                             },
                             y: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log"}
+                                "scale": {"type": "log", nice : 20}
                             },
                             color: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log"}
+                                "scale": {"type": "log", nice : 20}
                             },
                             size: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log"}
+                                "scale": {"type": "log", nice : 20}
                             },
                         }
                     },                    {
@@ -2992,6 +2995,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 ['x','y','size','color'].forEach(function(variable) {
                     scope.$watch('variables.'+variable,function(newValue,oldValue){
                         $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                        scope.spec.encoding[variable].axis = {"title": scope.variables[scope.spec.encoding[variable].name]};
                     });
                 });
             }

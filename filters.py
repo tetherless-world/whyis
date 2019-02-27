@@ -330,11 +330,14 @@ WHERE {
             constraints = json.loads(constraints)
         if len(variables) > 0:
             variables = json.loads(variables)
+            var_map = dict([(v['field'],v) for v in variables])
+            variables = list(var_map.values())
         results = []
         for facet in facets:
             facet['type'] = 'nominal'
             if 'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
+                print query
                 values = query_filter(query)
                 for value in values:
                     value.update(facet)
@@ -370,7 +373,7 @@ WHERE {
       ].
     {% else %}
       ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} ?{{variable['field']}};
+        {{variable['typeProperty']}} [ rdfs:label ?{{variable['field']}}];
       ].
     {% endif %}
   {% endfor %}
