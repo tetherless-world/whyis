@@ -142,12 +142,12 @@ python::pip { 'pip-upgrade' :
   ensure        => 'latest',
   virtualenv    => '/apps/whyis/venv',
   owner         => 'whyis',
-  timeout       => 0,
+  timeout       => 18000,
 } ->
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
-  timeout       => 0,
+  timeout       => 18000,
 } ->
 file { "/var/log/celery":
     owner => "whyis",

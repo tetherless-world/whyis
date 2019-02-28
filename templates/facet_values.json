@@ -1,0 +1,1 @@
+{{this | include('facets') | fromjson | facet_values(args['variables'], args['constraints']) |  tojson }}

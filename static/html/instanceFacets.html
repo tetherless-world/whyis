@@ -1,16 +1,31 @@
-<div ng-cloak md-whiteframe="2" >
+<div ng-cloak md-whiteframe="2"  style="height:100%" layout="column" layout-fill>
   <md-toolbar>
     <div class="md-toolbar-tools" layout="row">
       <h2 flex ng-bind="title"></h2>
       <ng-transclude>
       </ng-transclude>
+      <md-button class="md-mini md-icon-button"
+                 ng-class="{'md-primary' : view=='list'}"
+                 aria-label="List View"
+                 title="List View"
+                 data-ng-click="view='list'">
+        <md-icon>view_list</md-icon>
+      </md-button>
+      <md-button class=" md-mini md-icon-button"
+                 ng-class="{'md-primary' : view=='chart'}"
+                 aria-label="Chart View"
+                 title="Chart View"
+                 data-ng-click="view='chart'">
+        <md-icon>show_chart</md-icon>
+      </md-button>
     </div>
   </md-toolbar>
   <md-progress-linear ng-show="isLoadingResults" md-mode="indeterminate"></md-progress-linear>
   <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert>
-  <div layout="row"  style="height:100%">
-    <md-content  flex="30" style="overflow:scroll">
+  <div layout="row" flex>
+    <md-content flex="30" style="overflow:scroll">
       <md-subheader >{{pager.getLength()}} results found.</md-subheader>
+      <vega-controller spec="vizConfig" facet-values="facetValues" ng-if="view=='chart'" ng-show="view=='chart'" ></vega-controller>
       <!-- Facets are defined here using the configurations defined in the controller -->
         <div ng-repeat="facet in facets" ng-switch="facet.type">
           <whyis-text-facet ng-switch-when="text" data-options="facet"></whyis-text-facet>
@@ -23,10 +38,14 @@
 
     <!-- Results view -->
     <div flex="grow" layout="column" >
-            <md-content layout="column" when-scrolled="pager.loadMore()" >
-              <kg-card ng-repeat="entity in pager.all track by entity.id" compact="true" src="entity.id">
-              </kg-card>
-            </md-content>
+      
+      <md-content layout="column" when-scrolled="pager.loadMore()" ng-if="view=='list'" ng-show="view=='list'" >
+        <kg-card ng-repeat="entity in pager.all track by entity.id" compact="true" src="entity.id">
+        </kg-card>
+      </md-content>
+      <md-content layout="column" ng-if="view=='chart'" ng-show="view=='chart'" >
+        <vega spec="vizConfig"></vega>
+      </md-content>
     </div>
   </div>
 </div>

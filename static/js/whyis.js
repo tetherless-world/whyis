@@ -2558,11 +2558,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
-                    d.predicate += '/rdf:type';
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2571,7 +2577,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);
-                    d.predicate = '<'+d.property+'>';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                    }
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2580,12 +2588,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = "Qualities";
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quality');
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
                     d.specifier = '?value rdfs:subClasOf <http://semanticscience.org/resource/Quality>.\n';
-                    d.predicate += '/rdf:type';
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2594,12 +2608,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.name = "Properties";
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property)+'/'+b64_sha256('http://semanticscience.org/resource/Quantity');
-                    d.predicate = '<'+d.property+'>';
-                    if (d.inverse) {
-                        d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                    if (!d.predicate) {
+                        d.predicate = '<'+d.property+'>';
+                        if (d.inverse) {
+                            d.predicate = '('+d.predicate+ '|<' + d.inverse + '>)';
+                        }
                     }
-                    d.specifier = '?value rdfs:subClassO <http://semanticscience.org/resource/Quantity>.\n';
-                    d.predicate += '/rdf:type';
+                    d.entityPredicate = d.predicate;
+                    if (!d.typeProperty) {
+                        d.typeProperty = 'rdf:type';
+                    }
+                    d.predicate = d.predicate + '/' + d.typeProperty;
+                    d.specifier = '?value rdfs:subClassOf <http://semanticscience.org/resource/Quantity>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";
@@ -2757,13 +2777,238 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return instanceFacetService;
     });
+
+    app.directive("vega", function() {
+        return {
+            scope: {
+                spec: '=',
+                then: '=?',
+                opt: '=?'
+            },
+            template: '',
+            restrict: 'E',
+            link: function(scope, element, attrs) {
+                scope.$watch("spec", function(oldvalue, newvalue) {
+                    scope.spec.data.variables = [];
+                    var variable_names = {};
+                    for (var property in scope.spec.encoding) {
+                        if (property != 'id' &&
+                            scope.spec.encoding.hasOwnProperty(property) &&
+                            scope.spec.encoding[property].field &&
+                            variable_names[scope.spec.encoding[property].field] == null) {
+                            scope.spec.data.variables.push(scope.spec.encoding[property]);
+                            variable_names[scope.spec.encoding[property].field] = scope.spec.encoding[property];
+                        }
+                    }
+                    scope.spec.data.url = scope.spec.data.baseurl;
+                    scope.spec.data.url += '&variables='+encodeURIComponent(JSON.stringify(scope.spec.data.variables));
+                    if (scope.spec.data.constraints) {
+                        scope.spec.data.url += "&constraints="+encodeURIComponent(JSON.stringify(scope.spec.data.constraints));
+                    }
+                    console.log(scope.spec.data.url);
+                    var result = vegaEmbed(element[0], scope.spec, scope.opt);
+                    if (scope.then) result.then(scope.then);
+                }, true);
+            }
+        };
+    });
+
+    app.directive("vegaController", function() {
+        return {
+            scope: {
+                spec: '=',
+                facetValues: '='
+            },
+            templateUrl: ROOT_URL+'static/html/vegaController.html',
+            restrict: "E",
+            link: function (scope, element, attrs) {
+                scope.variables = {}
+                scope.views = [
+                    //{
+                    //    mark:"area",
+                    //    label: "Area Plot",
+                    //},
+                    {
+                        mark: "point",
+                        label: "Scatter Plot",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log", nice : 20}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log", nice : 20}
+                            },
+                            color: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log", nice : 20}
+                            },
+                            size: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": {"type": "log", nice : 20}
+                            },
+                        }
+                    },                    {
+                        mark:"bar",
+                        label: "Histogram",
+                        encoding: {
+                            x: {
+                                "bin" : true,
+                                "types" : {'quantitative':1}
+                            },
+                            y: {
+                                "aggregate" : "count",
+                                "type" : 'quantitative'
+                            }
+                        }
+                    },
+                    {
+                        mark:"bar",
+                        label: "Bar Chart",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                            },
+                            color: {
+                                "types" : {'ordinal':1}
+                            }
+                        }
+                    },
+                    {
+                        mark:"boxplot",
+                        label: "Box Plot",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                            },
+                            color: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                            },
+                        }
+                    },
+                    //{
+                    //    mark: "errorband",
+                    //    label: "Error Band"
+                    //},
+                    //{
+                    //    mark: "errorbar",
+                    //    label: "Error Bars",
+                    //},
+
+                    {
+                        mark: "rect",
+                        label: "Heatmap",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'nominal':1}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'nominal':1}
+                            },
+                            color: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                        }
+                    },
+                    {
+                        mark: "rect",
+                        label: "Density",
+                        encoding: {
+                            x: {
+                                "bin": {"maxbins": 100},
+                                "types": {"quantitative":1}
+                            },
+                            y: {
+                                "bin": {"maxbins": 100},
+                                "types": {"quantitative":1}
+                            },
+                            color: {
+                                "aggregate": "count",
+                                "types": {"quantitative":1}
+                            }
+                        }
+                    },
+                    //{
+                    //    mark: "rule",
+                    //},
+                    //{
+                    //    mark: "text",
+                    //},
+                    {
+                        mark: "tick",
+                        label: "Tick marks",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            color: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            size: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                        }
+                    },
+                    {
+                        mark: "trail",
+                        label: "Line Plot",
+                        encoding: {
+                            x: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            y: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            color: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                            size: {
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                            },
+                        }
+                    },
+                    //{
+                    //    mark: "geoshape"
+                    //}
+                ];
+                scope.selectedView = scope.views[0];
+                scope.$watch('selectedView',function(newValue,oldValue){
+                    $.extend(scope.spec, scope.selectedView);
+                    ['x','y','size','color'].forEach(function(variable) {
+                        if (!scope.selectedView.encoding[variable])
+                            delete scope.spec.encoding[variable];
+                        else {
+                            $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                        }
+                    });
+                });
+                ['x','y','size','color'].forEach(function(variable) {
+                    scope.$watch('variables.'+variable,function(newValue,oldValue){
+                        $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                        scope.spec.encoding[variable].axis = {"title": scope.variables[scope.spec.encoding[variable].name]};
+                    });
+                });
+            }
+        };
+    });
+
     
     /*
      * The controller.
      */
     app.directive("instanceFacets", [
-        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http',
-        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http) {
+        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http', 'loadAttributes',
+        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http, loadAttributes) {
 	    return {
                 scope: {
                     type : "=",
@@ -2778,6 +3023,27 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     var updateId = 0;
 
+                    scope.vizConfig = {
+                        "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+                        "data": {
+                            "url": null,
+                            "baseurl" : ROOT_URL+'about?uri='+encodeURIComponent(scope.type)+"&view=instance_data",
+                        },
+                        "view" : "instanceAttributes",
+                        "mark": "point",
+                        "autosize": {
+                            "type": "fit",
+                            "contains": "padding"
+                        },
+                        "width" : 1000,
+                        "height" : 700,
+                        "resize" : "true",
+                        "encoding": {
+                            "y": {"field": null},
+                            "x": {"field": null},
+                       }
+                    };
+                    
                     instanceFacets = instanceFacetService(scope.type, scope.constraints);
                     
                     // page is the current page of results.
@@ -2785,6 +3051,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.getLabel = getLabel;
                     
                     vm.disableFacets = disableFacets;
+                    scope.view = "list";
                     
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
@@ -2800,6 +3067,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.facets = instanceFacets.getFacets();
                     // Initialize the facet handler
                     vm.handler = new FacetHandler(getFacetOptions());
+
                     
                     // Disable the facets while results are being retrieved.
                     function disableFacets() {
@@ -2823,16 +3091,60 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
                             vm.isLoadingResults = false;
+                            vm.vizConfig.data.constraints = [];
+                            if (facetSelections.constraint) {
+                                vm.vizConfig.data.constraints = facetSelections.constraint;
+                            }
                         });
                     }
                     
                     function makeArray(val) {
                         return angular.isArray(val) ? val : [val];
                     }
+
+                    function updateAttributes() {
+                        loadAttributes(scope.type, vm.vizConfig.data.constraints, vm.vizConfig.data.variables)
+                            .then(function(attrs) {
+                                scope.facetValues = attrs;
+                                scope.facetValues.splice(0, 0, {
+                                    "field" : "id",
+                                    "type" : "nominal",
+                                    "name" : "By Instance"
+                                });
+                            });
+                        
+                    }
+                    vm.$watch('vizConfig.data.constraints', updateAttributes);
+                    vm.$watch('vizConfig.data.variables', updateAttributes);
                 }
             };
         }]);
-                                  
+
+
+    app.factory('loadAttributes', ['$http', '$q', function($http, $q) {
+        function fn(type, constraints, variables) {
+            return $http.get(ROOT_URL+'about', {
+                params: {
+                    uri:type,
+                    view:'facet_values',
+                    constraints:JSON.stringify(constraints),
+                    variables:JSON.stringify(variables)
+                },
+                responseType:'json'
+            })
+                .then(function(data) {
+                    return $q(function( resolve, reject) {
+                        var result = [];
+                        resolve(data.data);
+                    });
+                });
+        }
+        return fn;
+    }]);
+    
+
+    
+    
     app.service('makeID',function() {
         var ID = function () {
             // Math.random should be unique because of its seeding algorithm.
