@@ -518,7 +518,7 @@ class SETLr(UpdateChangeService):
             if input_file in resources:
                 i = resources[input_file]
                 if isinstance(i, StoredFile):
-                    print "Closing", input_file
+                    print ("Closing", input_file)
                     i.close()
 
 class Deductor(UpdateChangeService):
