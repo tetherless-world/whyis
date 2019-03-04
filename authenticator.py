@@ -1,3 +1,4 @@
+from __future__ import print_function
 from flask_login import AnonymousUserMixin, login_user
 
 class InvitedAnonymousUser(AnonymousUserMixin):
@@ -28,7 +29,7 @@ class APIKeyAuthenticator:
     
     def authenticate(self, request, datastore, config):
         if self.request_arg in request.args and request.args[self.request_arg] == self.key:
-            print 'logging in invited user'
+            print('logging in invited user')
             user = InvitedAnonymousUser()
             login_user(user)
             return user

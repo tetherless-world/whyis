@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sadi
 import rdflib
 import setlr
@@ -601,7 +602,7 @@ class Interpreter(autonomic.UpdateChangeService):
                                 try :
                                     term = rdflib.term.URIRef(self.prefixes[self.kb] + str(a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")) + "-" + identifierString)
                                     nanopub.assertion.add((term,rdflib.RDF.type,rdflib.term.URIRef(self.prefixes[self.kb] + str(a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")))))
-                                    print term
+                                    print(term)
                                     if "Attribute" in a_tuple :
                                         if ',' in a_tuple["Attribute"] :
                                             attributes = parseString(a_tuple["Attribute"],',')

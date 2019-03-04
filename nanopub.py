@@ -1,3 +1,4 @@
+from __future__ import print_function
 import rdflib
 import os
 import flask_ld as ld
@@ -197,7 +198,7 @@ class NanopublicationManager:
         np:hasPublicationInfo ?pubinfo;
         np:hasProvenance ?provenance.
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
-                print "Retiring", np_uri, "derived from", nanopub_uri
+                print("Retiring", np_uri, "derived from", nanopub_uri)
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
                 nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
                 self.db.remove((None,None,None,nanopub.assertion.identifier))
@@ -209,7 +210,7 @@ class NanopublicationManager:
         #session = requests.session()
         #session.keep_alive = False
         #session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
-        print "Retired %s nanopubs." % len(nanopub_uris)
+        print("Retired %s nanopubs." % len(nanopub_uris))
 
     def is_current(self, nanopub_uri):
         work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
@@ -252,7 +253,7 @@ class NanopublicationManager:
                     localpart = self.db.qname(entity).split(":")[1]
                     filename = secure_filename(localpart)
                     f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
-                    print 'adding file', filename
+                    print('adding file', filename)
                     self.app.add_file(f, entity, np_graph)
                     np_graph.remove((entity, self.app.NS.whyis.hasContent, None))
                 
@@ -271,13 +272,13 @@ class NanopublicationManager:
                             nanopub.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
                             to_retire.append(nanopub_uri)
                             r = True
-                            print "Retiring", nanopub_uri
+                            print("Retiring", nanopub_uri)
                     if r:
                         nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
                     else:
                         nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
                     g = rdflib.ConjunctiveGraph()
-                    for graph_part in [rdflib.Graph(identifier=x.identifier, store=x.store) for x in nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo]:
+                    for graph_part in [rdflib.Graph(identifier=x.identifier, store=x.store) for x in (nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo)]:
                         g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
                         for s,p,o in graph_part:
                             g_part.add((s,p,o))
@@ -299,7 +300,7 @@ class NanopublicationManager:
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data, *nanopubs)
-            print "Published %s nanopubs" % len(full_list)
+            print("Published %s nanopubs" % len(full_list))
             
         for n in full_list:
             self.update_listener(n)

@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from __future__ import print_function
 import requests
 import importlib
 
@@ -183,7 +184,7 @@ class App(Empty):
         
         def setup_task(service):
             service.app = app
-            print service
+            print(service)
             result = None
             if service.query_predicate == self.NS.whyis.globalChangeQuery:
                 result = process_resource
@@ -196,31 +197,31 @@ class App(Empty):
         def process_resource(service_name, taskid=None):
             service = self.config['inferencers'][service_name]
             if is_waiting(service_name):
-                print "Deferring to a later invocation.", service_name
+                print("Deferring to a later invocation.", service_name)
                 return
-            print service_name
+            print(service_name)
             service.process_graph(app.db)
 
         @self.celery.task
         def process_nanopub(nanopub_uri, service_name, taskid=None):
             service = self.config['inferencers'][service_name]
-            print service, nanopub_uri
+            print(service, nanopub_uri)
             if app.nanopub_manager.is_current(nanopub_uri):
                 nanopub = app.nanopub_manager.get(nanopub_uri)
                 service.process_graph(nanopub)
             else:
-                print "Skipping retired nanopub", nanopub_uri
+                print("Skipping retired nanopub", nanopub_uri)
 
         def setup_periodic_task(task):
             @self.celery.task
             def find_instances():
-                print "Triggered task", task['name']
+                print("Triggered task", task['name'])
                 for x, in task['service'].getInstances(app.db):
                     task['do'](x)
             
             @self.celery.task
             def do_task(uri):
-                print "Running task", task['name'], 'on', uri
+                print("Running task", task['name'], 'on', uri)
                 resource = app.get_resource(uri)
                 result = task['service'].process_graph(resource.graph)
 
@@ -280,7 +281,7 @@ class App(Empty):
             Performs a breadth-first knowledge expansion of the current change.'''
             #print "Updating on", nanopub_uri
             if not app.nanopub_manager.is_current(nanopub_uri):
-                print "Skipping retired nanopub", nanopub_uri
+                print("Skipping retired nanopub", nanopub_uri)
                 return
             nanopub = app.nanopub_manager.get(nanopub_uri)
             nanopub_graph = ConjunctiveGraph(nanopub.store)
@@ -290,7 +291,7 @@ class App(Empty):
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(service.getInstances(nanopub_graph)) > 0:
-                            print "invoking", name, nanopub_uri
+                            print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in self.config['inferencers'].items():
                     service.app = self
@@ -320,7 +321,7 @@ class App(Empty):
             counter = app.redis.incr(("import",entity_name))
             if counter > 1:
                 return
-            print 'importing', entity_name
+            print('importing', entity_name)
             importer = app.find_importer(entity_name)
             if importer is None:
                 return
@@ -329,7 +330,7 @@ class App(Empty):
             updated = importer.modified(entity_name)
             if updated is None:
                 updated = datetime.now(pytz.utc)
-            print "Remote modified:", updated, type(updated), "Local modified:", modified, type(modified)
+            print("Remote modified:", updated, type(updated), "Local modified:", modified, type(modified))
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
             app.redis.set(("import",entity_name),0)
@@ -342,7 +343,7 @@ class App(Empty):
                     m = importlib.import_module(imp)
                     self.template_imports[name] = m
                 except Exception as e:
-                    print "Error importing module %s into template variable %s." % (imp, name)
+                    print("Error importing module %s into template variable %s." % (imp, name))
                     raise
         
 
@@ -487,14 +488,14 @@ construct {
 
             if importer is None:
                 importer = self.find_importer(entity)
-            print entity, importer
+            print(entity, importer)
 
             if importer is not None:
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
                 if modified is None or async is False:
                     self.run_importer(entity)
                 elif not importer.import_once:
-                    print "Type of modified is",type(modified)
+                    print("Type of modified is",type(modified))
                     self.run_importer.delay(entity)
                     
         return self.Entity(self.db, entity)
@@ -646,7 +647,7 @@ construct {
                 label = self.db.qname(uri).split(":")[1].replace("_"," ")
                 return ' '.join(camel_case_split(label)).title()
             except Exception as e:
-                print str(e), uri
+                print(str(e), uri)
                 return str(uri)
         
         def get_label(resource):
@@ -744,7 +745,7 @@ construct {
                 for nanopub_uri, in nanopubs:
                     self.nanopub_manager.get(nanopub_uri, result)
             except Exception as e:
-                print str(e), entity
+                print(str(e), entity)
                 raise e
             return result.resource(entity)
         
@@ -764,7 +765,7 @@ construct {
                 result = ConjunctiveGraph()
                 result.addN(statements)
             except Exception as e:
-                print str(e), entity
+                print(str(e), entity)
                 raise e
             #print result.serialize(format="trig")
             return result.resource(entity)
@@ -787,7 +788,7 @@ construct {
                     self.nanopub_manager.get(nanopub_uri, result)
 #                result.addN(nanopubs)
             except Exception as e:
-                print str(e), entity
+                print(str(e), entity)
                 raise e
             #print result.serialize(format="trig")
             return result.resource(entity)
@@ -840,7 +841,7 @@ construct {
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
-                print request.get_data()
+                print(request.get_data())
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
                                     headers = request.headers, params=request.args)
             #print self.db.store.query_endpoint
@@ -926,7 +927,7 @@ construct {
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
-                    print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
+                    print('attempting linked data on', name, fmt, dataFormats[fmt], format, content_type)
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
@@ -1038,7 +1039,7 @@ construct {
                 uri = self._get_uri(ident)
                 result = app.nanopub_manager.get(uri)
                 if result is None:
-                    print "cannot find", uri
+                    print("cannot find", uri)
                     return None
                 return result
 
@@ -1134,7 +1135,7 @@ construct {
                             g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
                             #print len(g)
                         else:
-                            print "not attempting to deserialize."
+                            print("not attempting to deserialize.")
 #                            try:
 #                                sadi.deserialize(g, text, content_type)
 #                            except:

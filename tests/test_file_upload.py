@@ -1,3 +1,4 @@
+from __future__ import print_function
 from testcase import WhyisTestCase
 
 from base64 import b64encode
@@ -89,7 +90,7 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(content.mimetype, "application/json")
         json_content = json.loads(content.data)
 
-        print json_content
+        print(json_content)
 
         self.assertEquals(json_content['label'], "Jane Doe")
         self.assertEquals(len(json_content['type']), 1)

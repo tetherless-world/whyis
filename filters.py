@@ -1,3 +1,4 @@
+from __future__ import print_function
 from flask_ld.utils import lru
 
 import urllib
@@ -19,6 +20,7 @@ import json
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from slugify import slugify
+from functools import reduce
 
 def geomean(nums):
     return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
@@ -103,7 +105,7 @@ def configure(app):
         g = ConjunctiveGraph()
         for stmt in graph.query(query, **params):
             g.add(tuple([remap_bnode(x) for x in stmt]))
-        print len(g)
+        print(len(g))
         return g
 
     @app.template_filter('serialize')
@@ -337,7 +339,7 @@ WHERE {
             facet['type'] = 'nominal'
             if 'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
-                print query
+                print(query)
                 values = query_filter(query)
                 for value in values:
                     value.update(facet)

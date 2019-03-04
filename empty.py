@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from __future__ import print_function
 __all__ = ['Empty']
 
 from flask import Flask, render_template
@@ -40,8 +41,8 @@ class Empty(Flask):
                 name = blueprint_config[0]
                 kw.update(blueprint_config[1])
             else:
-                print "Error in BLUEPRINTS setup in config.py"
-                print "Please, verify if each blueprint setup is either a string or a tuple."
+                print("Error in BLUEPRINTS setup in config.py")
+                print("Please, verify if each blueprint setup is either a string or a tuple.")
                 exit(1)
 
             self.add_blueprint(name, kw)
@@ -69,7 +70,7 @@ class Empty(Flask):
             self.logger.addHandler(log_file)
             self.logger.info("Logger started")
         except:
-            print "Could not configure logger, using defaults."
+            print("Could not configure logger, using defaults.")
             
     def configure_error_handlers(app):
         @app.errorhandler(403)
@@ -144,8 +145,8 @@ class Empty(Flask):
             # only works in debug mode
             from flask_debugtoolbar import DebugToolbarExtension
             DebugToolbarExtension(self)
-        except ImportError, e:
-            print 'debugtoolbar extension not available.'
+        except ImportError as e:
+            print('debugtoolbar extension not available.')
 
     def configure_before_request(self):
         pass

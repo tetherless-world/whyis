@@ -1,3 +1,4 @@
+from __future__ import print_function
 from six import b
 from six.moves.urllib.request import pathname2url
 from six import iteritems
@@ -83,8 +84,8 @@ class ElasticSearchStore(Store):
         if create and status.status_code == 404:
             r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
             if r.status_code != 201:
-                print r.status_code
-                print r.content
+                print(r.status_code)
+                print(r.content)
         self.__open = True
 
         return VALID_STORE
@@ -159,8 +160,8 @@ class ElasticSearchStore(Store):
                              headers={"Content-Type":"application/json"},
                              data=json_ld)
         if r.status_code != 201:
-            print r.status_code
-            print r.content
+            print(r.status_code)
+            print(r.content)
     
     def remove(self, spo, context, txn=None):
         subject, predicate, object = spo

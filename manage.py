@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import print_function
 import flask_script as script
 
 import commands
@@ -7,8 +8,8 @@ import commands
 from main import app_factory
 try:
     import config
-except ImportError, e:
-    print "WARNING: %s, using defaults file" % str(e)
+except ImportError as e:
+    print("WARNING: %s, using defaults file" % str(e))
     import config_defaults as config
 
 manager = script.Manager(app_factory)
@@ -29,7 +30,7 @@ def list_routes():
         output.append(line)
     
     for line in sorted(output):
-        print line
+        print(line)
 
 if __name__ == "__main__":
 

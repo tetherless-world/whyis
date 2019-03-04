@@ -1,3 +1,4 @@
+from __future__ import print_function
 from testcase import WhyisTestCase
 
 from base64 import b64encode
@@ -37,7 +38,7 @@ class OntologyImportAgentTestCase(WhyisTestCase):
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertEquals(len(results), 1)
-        print results[0].serialize(format="trig")
+        print(results[0].serialize(format="trig"))
         self.assertTrue(results[0].resource(URIRef('http://purl.org/dc/terms/created'))[RDF.type:RDF.Property])
 
     def test_hasco_import(self):
