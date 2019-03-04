@@ -309,23 +309,15 @@ class NanopublicationManager:
         
     def get(self, nanopub_uri, graph = None):
         nanopub_uri = rdflib.URIRef(nanopub_uri)
-        f = None
-        if nanopub_uri in self._idmap:
-            f = self.depot.get(self._idmap[nanopub_uri])
-        else:
-            #try:
-                fileid = nanopub_uri.replace(self.prefix, "", 1)
-                f = self.depot.get(fileid)
-            #except:
-            #    try:
-            #        fileid = self.db.value(nanopub_uri, dc.identifier)
-            #        if fileid is not None:
-            #            self._idmap[nanopub_uri] = fileid
-            #        f = self.depot.get(fileid)
-            #    except Exception as e:
-            #        return None
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-        nanopub.parse(f, format="trig")
+        
+        if nanopub_uri in self._idmap:
+            with self.depot.get(self._idmap[nanopub_uri]) as f:
+                nanopub.parse(f, format="trig")
+        else:
+            fileid = nanopub_uri.replace(self.prefix, "", 1)
+            with nanopub.parse(f, format="trig") as f:
+                nanopub.parse(f, format="trig")
         return nanopub

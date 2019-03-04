@@ -2823,6 +2823,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             restrict: "E",
             link: function (scope, element, attrs) {
                 scope.variables = {}
+                scope.scales = [
+                    {"type": "linear", "zero" : false},
+                    {"type": "log", "zero" : false}
+                ];
                 scope.views = [
                     //{
                     //    mark:"area",
@@ -2831,28 +2835,28 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark: "point",
                         label: "Scatter Plot",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log", nice : 20}
+                                "scale": scope.scales[0]
                             },
                             y: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log", nice : 20}
+                                "scale": scope.scales[0]
                             },
                             color: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log", nice : 20}
+                                "scale": scope.scales[0]
                             },
                             size: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
-                                "scale": {"type": "log", nice : 20}
+                                "scale": scope.scales[0]
                             },
                         }
                     },                    {
                         mark:"bar",
                         label: "Histogram",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "bin" : true,
                                 "types" : {'quantitative':1}
@@ -2866,7 +2870,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark:"bar",
                         label: "Bar Chart",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
@@ -2881,7 +2885,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark:"boxplot",
                         label: "Box Plot",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1}
                             },
@@ -2905,7 +2909,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark: "rect",
                         label: "Heatmap",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'nominal':1}
                             },
@@ -2920,7 +2924,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark: "rect",
                         label: "Density",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "bin": {"maxbins": 100},
                                 "types": {"quantitative":1}
@@ -2944,7 +2948,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark: "tick",
                         label: "Tick marks",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
@@ -2962,7 +2966,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     {
                         mark: "trail",
                         label: "Line Plot",
-                        encoding: {
+                        dimensions: {
                             x: {
                                 "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
                             },
@@ -2985,19 +2989,27 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.$watch('selectedView',function(newValue,oldValue){
                     $.extend(scope.spec, scope.selectedView);
                     ['x','y','size','color'].forEach(function(variable) {
-                        if (!scope.selectedView.encoding[variable])
+                        if (!scope.selectedView.dimensions[variable]) {
+                            delete scope.spec.dimensions[variable];
                             delete scope.spec.encoding[variable];
-                        else {
-                            $.extend(scope.spec.encoding[variable],scope.variables[variable]);
+                        } else {
+                            $.extend(scope.spec.dimensions[variable],scope.variables[variable]);
+                            scope.spec.encoding[variable] = scope.spec.dimensions[variable];
                         }
                     });
                 });
                 ['x','y','size','color'].forEach(function(variable) {
                     scope.$watch('variables.'+variable,function(newValue,oldValue){
-                        $.extend(scope.spec.encoding[variable],scope.variables[variable]);
-                        scope.spec.encoding[variable].axis = {"title": scope.variables[scope.spec.encoding[variable].name]};
-                    });
-                });
+                        if (!scope.variables[variable]) {
+                            scope.spec.dimensions[variable] = $.extend({},scope.selectedView.dimensions[variable]);
+                            delete scope.spec.encoding[variable];
+                        } else {
+                            $.extend(scope.spec.dimensions[variable],scope.variables[variable]);
+                            scope.spec.dimensions[variable].axis = {"title": scope.variables[variable].name};
+                            scope.spec.encoding[variable] = scope.spec.dimensions[variable];
+                        }
+                    }, true);
+                });                
             }
         };
     });
@@ -3035,13 +3047,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             "type": "fit",
                             "contains": "padding"
                         },
+                        "encoding" : {},
                         "width" : 1000,
                         "height" : 700,
-                        "resize" : "true",
-                        "encoding": {
-                            "y": {"field": null},
-                            "x": {"field": null},
-                       }
+                        "resize" : "true"
                     };
                     
                     instanceFacets = instanceFacetService(scope.type, scope.constraints);
@@ -3103,6 +3112,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
 
                     function updateAttributes() {
+                        console.log(vm.vizConfig);
                         loadAttributes(scope.type, vm.vizConfig.data.constraints, vm.vizConfig.data.variables)
                             .then(function(attrs) {
                                 scope.facetValues = attrs;

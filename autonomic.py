@@ -16,6 +16,8 @@ import database
 
 import tempfile
 
+from depot.io.interfaces import StoredFile
+
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
@@ -512,6 +514,12 @@ class SETLr(UpdateChangeService):
                 #if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
             print('Published')
+        for input_file in setl_graph.objects(None, prov.used):
+            if input_file in resources:
+                i = resources[input_file]
+                if isinstance(i, StoredFile):
+                    print "Closing", input_file
+                    i.close()
 
 class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
