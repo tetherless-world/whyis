@@ -64,7 +64,7 @@ class JWTAuthenticator:
                     if self.mapping['roles'] in payload:
                         role_objects = payload[self.mapping['roles']]
                     if self.mapping['admin'] in payload:
-                        if payload[self.mapping['admin']] == 'true':
+                        if payload[self.mapping['admin']] == True:
                             role_objects.append('admin')
                     user = dict(identifier=payload[self.mapping['identifier']],
                                 email=payload[self.mapping['email']],
