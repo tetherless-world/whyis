@@ -1,7 +1,12 @@
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from past.utils import old_div
 from flask_ld.utils import lru
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from markupsafe import Markup
 
 from flask import g, request
@@ -35,7 +40,7 @@ def configure(app):
         if type(s) == 'Markup':
             s = s.unescape()
         s = s.encode('utf8')
-        s = urllib.quote_plus(s)
+        s = urllib.parse.quote_plus(s)
         return Markup(s)
 
     @app.template_filter('labelize')
@@ -78,7 +83,7 @@ def configure(app):
     @app.template_filter('query')
     def query_filter(query, graph=app.db, prefixes={}, values=None):
         namespaces = dict(app.NS.prefixes)
-        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in list(prefixes.items())]))
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
@@ -98,7 +103,7 @@ def configure(app):
             else:
                 return x
         namespaces = dict(app.NS.prefixes)
-        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in list(prefixes.items())]))
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
@@ -129,7 +134,7 @@ def configure(app):
         for attr in attrs:
             result['attributes'][attr['property']]['@id'] = attr['property']
             result['attributes'][attr['property']]['values'].append(attr)
-        for attr in result['attributes'].values():
+        for attr in list(result['attributes'].values()):
             values = set(lang_filter([x['value'] for x in attr['values'] if x['value'] != result['label']]))
             attr['values'] = [x for x in attr['values'] if x['value'] in values]
             labelize(attr, key='@id')
@@ -140,7 +145,7 @@ def configure(app):
                 if 'unit' in value:
                     labelize(value, key='unit', label_key='unit_label')
                 del value['property']
-        result['attributes'] = [x for x in result['attributes'].values() if len(x['values']) > 0]
+        result['attributes'] = [x for x in list(result['attributes'].values()) if len(x['values']) > 0]
         return result
 
     @app.template_filter('include')
@@ -220,7 +225,7 @@ where {
                     if 'frequency' in i:
                         idf = 10 ** i.get('idf',Literal(100)).value
                         tfidf = (0.5+i['frequency'].value) * idf
-                        i['probability'] = combine_pvalues([tfidf/(1+tfidf)],method='stouffer')[1]
+                        i['probability'] = combine_pvalues([old_div(tfidf,(1+tfidf))],method='stouffer')[1]
                 else:
                     i['probability'] = i['probability'].value
                 result['from'].append(i['np'])
@@ -236,7 +241,7 @@ where {
             edge['link_types'] = [x for x in edge.get('link_types','').split(' ') if len(x) > 0]
             edge['articles'] = [x for x in edge.get('articles','').split(' ') if len(x) > 0]
             byLink[(edge['source'],edge['link'],edge['target'])].append(edge)
-        result = map(merge, byLink.values())
+        result = list(map(merge, list(byLink.values())))
         return result
 
     @app.template_filter('mergeLinkTypes')
@@ -259,7 +264,7 @@ where {
         #print edge
             #for link_type in edge['link_types']:
             result[(edge['source'],tuple(sorted(edge['link_types'])),edge['target'])].append(edge)
-        result = map(merge, result.values())
+        result = list(map(merge, list(result.values())))
         return result
 
     def types(x):

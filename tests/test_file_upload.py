@@ -1,4 +1,6 @@
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from testcase import WhyisTestCase
 
 from base64 import b64encode
@@ -6,7 +8,7 @@ from base64 import b64encode
 from rdflib import *
 
 import json
-from StringIO import StringIO
+from io import StringIO
 
 class UploadTest(WhyisTestCase):
     

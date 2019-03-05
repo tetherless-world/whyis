@@ -1,5 +1,7 @@
 from __future__ import print_function
-import urllib2
+from future import standard_library
+standard_library.install_aliases()
+import urllib.request, urllib.error, urllib.parse
 from flask import Flask, g
 from flask_testing import TestCase
 from flask.ext.login import login_user, current_user, current_app
@@ -30,10 +32,10 @@ class WhyisTestCase(TestCase):
         return application
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='admin'):
-        import commands
+        import subprocess
         from uuid import uuid4
         pw = 'password'
-        creator = commands.CreateUser()
+        creator = subprocess.CreateUser()
         creator.run(email, password, fn, ln, username, roles)
         return email, password
 

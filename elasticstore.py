@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import str
+from builtins import range
 from six import b
 from six.moves.urllib.request import pathname2url
 from six import iteritems
@@ -257,7 +259,7 @@ class ElasticSearchStore(Store):
                     if predicate is not None:
                         predicates = [str(predicate)]
                     else:
-                        predicates = resource.keys()
+                        predicates = list(resource.keys())
                     for pred in predicates:
                         if pred == '@object' or pred == '@id':
                             continue

@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import range
+from builtins import object
 import rdflib
 import os
 import flask_ld as ld
@@ -91,7 +93,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
             return modified.value
 
 
-class NanopublicationManager:
+class NanopublicationManager(object):
     def __init__(self, store, prefix, app, update_listener=None):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store

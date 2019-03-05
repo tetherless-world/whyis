@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import chr
+from builtins import object
 import requests
 import rdflib
 import nanopub
@@ -31,7 +33,7 @@ def replace_with_byte(match):
 def repair(brokenjson):
     return invalid_escape.sub(replace_with_byte, brokenjson.replace('\u000',''))
 
-class Importer:
+class Importer(object):
 
     min_modified = 0
 

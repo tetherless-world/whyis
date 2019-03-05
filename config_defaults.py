@@ -1,5 +1,6 @@
 # -*- config:utf-8 -*-
 
+from builtins import str
 import os
 import logging
 from datetime import timedelta

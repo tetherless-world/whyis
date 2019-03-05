@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import str
 import sadi
 import rdflib
 import setlr
@@ -498,7 +499,7 @@ class SETLr(UpdateChangeService):
                 triples = 0
                 for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings, store=nanopub_prepare_graph.store):
                     self.explain(new_np, i, o)
-                    orig = [orig for orig, new in mappings.items() if new == new_np.assertion.identifier]
+                    orig = [orig for orig, new in list(mappings.items()) if new == new_np.assertion.identifier]
                     if len(orig) == 0:
                         continue
                     orig = orig[0]
@@ -515,7 +516,7 @@ class SETLr(UpdateChangeService):
                 self.app.nanopub_manager.publish(*to_publish)
                 nanopub_prepare_graph.store.close()
             print("Published")
-        for resource, obj in resources.items():
+        for resource, obj in list(resources.items()):
             if hasattr(i, 'close'):
                 print("Closing", resource)
                 try:
@@ -547,7 +548,7 @@ class Deductor(UpdateChangeService):
     def get_context(self, i):
         context = {}
         context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.where, self.resource, i.identifier) , initNs=self.app.NS.prefixes )
-        for key in context_vars.json["results"]["bindings"][0].keys():
+        for key in list(context_vars.json["results"]["bindings"][0].keys()):
             context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
         return context
     

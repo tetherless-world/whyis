@@ -1,4 +1,7 @@
-import urllib2
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+import urllib.request, urllib.error, urllib.parse
 from flask import Flask
 from flask_testing import LiveServerTestCase
 from selenium import webdriver
@@ -23,11 +26,11 @@ class MyTest(LiveServerTestCase):
         return application
 
     def test_server_is_up_and_running(self):
-        response = urllib2.urlopen(self.get_server_url())
+        response = urllib.request.urlopen(self.get_server_url())
         self.assertEqual(response.code, 200)
 
     def test_openChrome(self):
-        import commands
+        import subprocess
         import time
         from flask_security.utils import encrypt_password, verify_password, get_hmac
         from uuid import uuid4
@@ -40,7 +43,7 @@ class MyTest(LiveServerTestCase):
 
         self.driver = webdriver.Chrome()
         self.driver.get("http://localhost:8943")
-        creator = commands.CreateUser()
+        creator = subprocess.CreateUser()
         creator.run('user@example.com', pw, 'First', 'Last', 'identifier', '--roles=admin')
 
         #find email/password and put in the text fields        

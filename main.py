@@ -1,5 +1,10 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 import requests
 import importlib
 
@@ -43,7 +48,7 @@ import sadi.mimeparse
 
 import werkzeug.utils
 
-from urllib import urlencode
+from urllib.parse import urlencode
 
 from flask_mail import Mail, Message
 
@@ -85,11 +90,11 @@ top_compare_key = False, -100, [(-2, 0)]
 # increase probability that the rule will be near or at the bottom 
 bottom_compare_key = True, 100, [(2, 0)]
 
-class NamespaceContainer:
+class NamespaceContainer(object):
     @property
     def prefixes(self):
         result = {}
-        for key, value in self.__dict__.items():
+        for key, value in list(self.__dict__.items()):
             if isinstance(value, Namespace):
                 result[key] = value
         return result
@@ -141,7 +146,7 @@ class SearchForm(Form):
     search_query = StringField('search_query', [validators.DataRequired()])
 
 def to_json(result):
-    return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in x.items()]) for x in result.bindings])
+    return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in list(x.items())]) for x in result.bindings])
 
 def conditional_login_required(func):
     from flask import current_app
@@ -235,7 +240,7 @@ class App(Empty):
         if 'inference_tasks' in self.config:
             app.inference_tasks = [setup_periodic_task(task) for task in self.config['inference_tasks']]
 
-        for name, task in self.config['inferencers'].items():
+        for name, task in list(self.config['inferencers'].items()):
             task.app = app
             
         for task in app.inference_tasks:
@@ -253,7 +258,7 @@ class App(Empty):
             """
             Check if a task is waiting.
             """
-            scheduled_tasks = inspect().scheduled().values()[0]
+            scheduled_tasks = list(inspect().scheduled().values())[0]
             for task in scheduled_tasks:
                 if 'kwargs' in task:
                     args = eval(task['kwargs'])
@@ -267,7 +272,7 @@ class App(Empty):
             """
             if is_waiting(service_name):
                 return True
-            running_tasks = inspect().active().values()[0]
+            running_tasks = list(inspect().active().values())[0]
             for task in running_tasks:
                 if 'kwargs' in task:
                     args = eval(task['kwargs'])
@@ -286,14 +291,14 @@ class App(Empty):
             nanopub = app.nanopub_manager.get(nanopub_uri)
             nanopub_graph = ConjunctiveGraph(nanopub.store)
             if 'inferencers' in self.config:
-                for name, service in self.config['inferencers'].items():
+                for name, service in list(self.config['inferencers'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
                         if len(service.getInstances(nanopub_graph)) > 0:
                             print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
-                for name, service in self.config['inferencers'].items():
+                for name, service in list(self.config['inferencers'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.globalChangeQuery and not is_running_waiting(name):
                         #print "checking", name, service.get_query()
@@ -308,7 +313,7 @@ class App(Empty):
             Check if a task is running or waiting.
             """
             if inspect().scheduled():
-                tasks = inspect().scheduled().values()
+                tasks = list(inspect().scheduled().values())
                 for task in tasks:
                     if 'args' in task and entity_name in task['args']:
                         return True
@@ -338,7 +343,7 @@ class App(Empty):
 
         self.template_imports = {}
         if 'template_imports' in self.config:
-            for name, imp in self.config['template_imports'].items():
+            for name, imp in list(self.config['template_imports'].items()):
                 try:
                     m = importlib.import_module(imp)
                     self.template_imports[name] = m
@@ -823,7 +828,7 @@ construct {
         @conditional_login_required
         def sparql_view():
             has_query = False
-            for arg in request.args.keys():
+            for arg in list(request.args.keys()):
                 if arg.lower() == "update":
                     return "Update not allowed.", 403
                 if arg.lower() == 'query':
@@ -903,7 +908,7 @@ construct {
                 upload_type = rdflib.URIRef(request.form['upload_type'])
                 self.add_files(entity, [y for x, y in request.files.iteritems(multi=True)],
                                upload_type=upload_type)
-                url = "/about?%s" % urlencode(dict(uri=unicode(entity), view="view"))
+                url = "/about?%s" % urlencode(dict(uri=str(entity), view="view"))
                 return redirect(url)
             elif request.method == 'DELETE':
                 self.delete_file(entity)
@@ -923,7 +928,7 @@ construct {
                 #print entity
 
                 htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
-                fmt = sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)
+                fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
@@ -1113,7 +1118,7 @@ construct {
                         html = markdown.markdown(text.value, extensions=['rdfa'])
                         attributes = ['vocab="%s"' % app.NS.local,
                                       'base="%s"'% app.NS.local,
-                                      'prefix="%s"' % ' '.join(['%s: %s'% x for x in app.NS.prefixes.items()])]
+                                      'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]
                         if about is not None:
                             attributes.append('resource="%s"' % about)
                         html = '<div %s>%s</div>' % (' '.join(attributes), html)

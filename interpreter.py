@@ -1,4 +1,8 @@
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 import sadi
 import rdflib
 import setlr
@@ -12,11 +16,11 @@ from flask import render_template
 import logging
 import database
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import csv
 import sys
 import pandas as pd
-import ConfigParser as configparser
+import configparser as configparser
 import hashlib
 
 import autonomic
