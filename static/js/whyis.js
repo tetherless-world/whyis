@@ -2565,10 +2565,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     }
                     d.entityPredicate = d.predicate;
-                    if (!d.typeProperty) {
+                    if (d.typeProperty === undefined) {
                         d.typeProperty = 'rdf:type';
                     }
-                    d.predicate = d.predicate + '/' + d.typeProperty;
+                    if (d.typeProperty != '') {
+                        d.predicate = d.predicate + '/' + d.typeProperty;
+                    }
                     d.enabled = true;
                     d.preferredLang = "en";
                     d.type = "basic";

@@ -512,13 +512,15 @@ class SETLr(UpdateChangeService):
                 #triples += len(new_np)
                 #if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
+                nanopub_prepare_graph.store.close()
             print 'Published'
-        for input_file in setl_graph.objects(None, prov.used):
-            if input_file in resources:
-                i = resources[input_file]
-                if isinstance(i, StoredFile):
-                    print "Closing", input_file
+        for resource, obj in resources.items():
+            if hasattr(i, 'close'):
+                print "Closing", resource
+                try:
                     i.close()
+                except:
+                    pass
 
 class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
