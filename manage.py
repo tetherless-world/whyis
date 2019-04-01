@@ -6,7 +6,7 @@ standard_library.install_aliases()
 from builtins import str
 import flask_script as script
 
-import subprocess
+import commands
 
 from main import app_factory
 try:
@@ -39,13 +39,13 @@ if __name__ == "__main__":
 
     manager.add_option("-n", "--name", dest="app_name", required=False, default=config.project_name)
     manager.add_option("-c", "--config", dest="config", required=False, default=config.Dev)
-    manager.add_command("createuser", subprocess.CreateUser())
-    manager.add_command("updateuser", subprocess.UpdateUser())
-    manager.add_command("test", subprocess.Test())
-    manager.add_command("configure", subprocess.Configure())
-    manager.add_command("test_agent", subprocess.TestAgent())
-    manager.add_command("load", subprocess.LoadNanopub())
-    manager.add_command("retire", subprocess.RetireNanopub())
-    manager.add_command("interpret", subprocess.RunInterpreter())
+    manager.add_command("createuser", commands.CreateUser())
+    manager.add_command("updateuser", commands.UpdateUser())
+    manager.add_command("test", commands.Test())
+    manager.add_command("configure", commands.Configure())
+    manager.add_command("test_agent", commands.TestAgent())
+    manager.add_command("load", commands.LoadNanopub())
+    manager.add_command("retire", commands.RetireNanopub())
+    manager.add_command("interpret", commands.RunInterpreter())
 
     manager.run()

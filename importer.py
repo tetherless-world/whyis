@@ -31,7 +31,7 @@ def replace_with_byte(match):
     return chr(int(match.group(0)[1:], 8))
 
 def repair(brokenjson):
-    return invalid_escape.sub(replace_with_byte, brokenjson.replace('\u000',''))
+    return invalid_escape.sub(replace_with_byte, brokenjson.replace(b'\u000',''))
 
 class Importer(object):
 

@@ -528,7 +528,7 @@ class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
         if resource is not None:
             self.resource = resource
-	self.prefixes = {}
+        self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
         self.where = where
