@@ -1,4 +1,6 @@
+from flask import current_app
 from flask_login import AnonymousUserMixin, login_user
+import datetime
 
 class InvitedAnonymousUser(AnonymousUserMixin):
     '''A user that has been referred via an external application references but does not have a user account.'''
@@ -43,7 +45,7 @@ default_jwt_mapping = {
 }
         
 class JWTAuthenticator:
-    def __init__(self,  key, cookie="access_token", algorithm='HS256', mapping=default_jwt_mapping):
+    def __init__(self,  key, cookie="token", algorithm='HS256', mapping=default_jwt_mapping):
         import jwt
         self.jwt = jwt
         self.cookie = cookie
@@ -62,14 +64,19 @@ class JWTAuthenticator:
                     if self.mapping['roles'] in payload:
                         role_objects = payload[self.mapping['roles']]
                     if self.mapping['admin'] in payload:
-                        role_objects.add('admin')
+                        if payload[self.mapping['admin']] == True:
+                            role_objects.append('admin')
                     user = dict(identifier=payload[self.mapping['identifier']],
                                 email=payload[self.mapping['email']],
                                 givenName=payload[self.mapping['givenName']],
                                 familyName=payload[self.mapping['familyName']],
                                 confirmed_at = datetime.datetime.utcnow(),
                                 roles = role_objects)
-                user_obj = flask.current_app.datastore.create_user(**user)
+                    #user_obj = flask.current_app.datastore.create_user(**user)
+                    user_obj = current_app.datastore.create_user(**user)
+                else :
+                  user_obj = user
+                login_user(user_obj)
                 return user_obj
             except self.jwt.ExpiredSignatureError:
                 return None
