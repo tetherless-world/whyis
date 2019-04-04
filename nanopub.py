@@ -3,6 +3,8 @@ import os
 import flask_ld as ld
 import collections
 import requests
+from dataurl import DataURLStorage
+from werkzeug.utils import secure_filename
 
 import tempfile
 
@@ -89,9 +91,10 @@ class Nanopublication(rdflib.ConjunctiveGraph):
 
 
 class NanopublicationManager:
-    def __init__(self, store, prefix, update_listener=None):
+    def __init__(self, store, prefix, app, update_listener=None):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store
+        self.app = app
         self.depot = DepotManager.get('nanopublications')
         self.prefix = rdflib.Namespace(prefix)
         self.update_listener = update_listener
@@ -118,11 +121,12 @@ class NanopublicationManager:
             mappings = {}
         new_nps = list(graph.subjects(rdflib.RDF.type, np.Nanopublication))
         if len(new_nps) == 0:
-            new_np = Nanopublication(store=graph.store)
-            new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
-            new_np.add((new_np.identifier, np.hasAssertion, graph.identifier))
-            new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
-            new_nps = [new_np.identifier]
+            for context in list(graph.contexts()):
+                new_np = Nanopublication(store=context.store)
+                new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
+                new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
+                new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+                new_nps.append(new_np.identifier)
         for nanopub in new_nps:
             if self.prefix not in nanopub:
                 fileid = self._reserve_id()
@@ -244,6 +248,15 @@ class NanopublicationManager:
         with tempfile.NamedTemporaryFile(delete=False) as data:
             to_retire = []
             for np_graph in nanopubs:
+                for entity in np_graph.subjects(self.app.NS.whyis.hasContent):
+                    localpart = self.db.qname(entity).split(":")[1]
+                    filename = secure_filename(localpart)
+                    f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
+                    print 'adding file', filename
+                    self.app.add_file(f, entity, np_graph)
+                    np_graph.remove((entity, self.app.NS.whyis.hasContent, None))
+                
+                
                 for context in np_graph.contexts():
                     if (context.identifier,rdflib.RDF.type, np.Nanopublication) in context:
                         nanopub_uri = context.identifier
@@ -268,6 +281,8 @@ class NanopublicationManager:
                         g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
                         for s,p,o in graph_part:
                             g_part.add((s,p,o))
+
+
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     data.write(serialized)
@@ -277,7 +292,7 @@ class NanopublicationManager:
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
                 #data.flush()
-                print data.name
+                #print data.name
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
                 #data.flush()
@@ -297,19 +312,23 @@ class NanopublicationManager:
         if nanopub_uri in self._idmap:
             f = self.depot.get(self._idmap[nanopub_uri])
         else:
-            try:
+            #try:
                 fileid = nanopub_uri.replace(self.prefix, "", 1)
                 f = self.depot.get(fileid)
-            except:
-                try:
-                    fileid = self.db.value(nanopub_uri, dc.identifier)
-                    if fileid is not None:
-                        self._idmap[nanopub_uri] = fileid
-                    f = self.depot.get(fileid)
-                except:
-                    return None
+            #except:
+            #    try:
+            #        fileid = self.db.value(nanopub_uri, dc.identifier)
+            #        if fileid is not None:
+            #            self._idmap[nanopub_uri] = fileid
+            #        f = self.depot.get(fileid)
+            #    except Exception as e:
+            #        return None
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
         nanopub.parse(f, format="trig")
+        try:
+            f.close()
+        except:
+            pass
         return nanopub

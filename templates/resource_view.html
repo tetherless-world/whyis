@@ -2,7 +2,7 @@
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
-<div layout="row" >
+<div layout="row" style="height:max-content;">
   <div flex="66" layout="column">
     {{ content(this.description()) }}
     <div md-whiteframe="2" layout="column" style="height: 50em">

@@ -14,6 +14,12 @@ from scipy.stats import norm
 
 from scipy.stats import combine_pvalues
 
+import json
+
+from jinja2 import Environment, PackageLoader, select_autoescape
+
+from slugify import slugify
+
 def geomean(nums):
     return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
@@ -21,7 +27,7 @@ def geomean(nums):
 #    return norm.cdf(sum([norm.ppf(x) for x in nums]))
 
 def configure(app):
-    
+
     @app.template_filter('urlencode')
     def urlencode_filter(s):
         if type(s) == 'Markup':
@@ -43,9 +49,9 @@ def configure(app):
         return entry
 
     @app.template_filter('iter_labelize')
-    def iter_labelize(entries, *kw):
+    def iter_labelize(entries, *args, **kw):
         for entry in entries:
-            labelize(entry, *kw)
+            labelize(entry, *args, **kw)
         return entries
 
     app.labelize = labelize
@@ -76,7 +82,11 @@ def configure(app):
             params['initBindings'] = values
         return [x.asdict() for x in graph.query(query, **params)]
 
-    
+
+    @app.template_filter("fromjson")
+    def fromjson(json_text):
+        return json.loads(json_text)
+        
     @app.template_filter('construct')
     def construct_filter(query, graph=app.db, prefixes={}, values=None):
 
@@ -126,7 +136,7 @@ def configure(app):
                     value['@id'] = value['value']
                     labelize(value, key='@id', label_key='value')
                 if 'unit' in value:
-                    labelize(vaue, key='unit', label_key='unit_label')
+                    labelize(value, key='unit', label_key='unit_label')
                 del value['property']
         result['attributes'] = [x for x in result['attributes'].values() if len(x['values']) > 0]
         return result
@@ -166,11 +176,14 @@ where {
         ?assertion prov:wasDerivedFrom|dc:references ?article.
         #?article a sio:PeerReviewedArticle.
       }
+      optional {
+        ?article sio:hasAttribute [ a whyis:ConfidenceScore; sio:hasValue ?probability].
+      }
       minus { ?article a np:Nanopublication.}
     }
     optional {
       graph ?prob_assertion {
-        ?assertion sio:hasAttribute [ a prov:ProbabilityMeasure; sio:hasValue ?probability].
+        ?assertion sio:hasAttribute [ a sio:ProbabilityMeasure; sio:hasValue ?probability].
       }
       ?prob_np np:hasAssertion ?prob_assertion.
     }
@@ -272,3 +285,107 @@ where {
                 r['source_types'] = [x for x,
                                      in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['source']))]
         return results
+
+    env = Environment()
+    facet_value_template = env.from_string('''
+SELECT DISTINCT ?count ?value ?unit
+WHERE {
+  SELECT DISTINCT ?count ?value ?unit {
+    {
+      SELECT DISTINCT (count(DISTINCT ?id) as ?count) ?value ?unit {
+        ?id rdf:type/rdfs:subClassOf* <{{facet['class']}}> .
+        FILTER (!ISBLANK(?id))
+        FILTER ( !strstarts(str(?id), "bnode:") )
+        ?id {{facet['predicate']}}/{{facet['typeProperty']}} ?value .
+        {{facet['specifier']}}
+        {% if 'unitPredicate' in facet %}optional { ?id {{facet['predicate']}}/{{facet['unitPredicate']}} ?unit. }{%endif%}
+
+    {% for constraint in constraints %}{{constraint}}{% endfor %}
+
+    {% for variable in variables %}
+    {% if 'valuePredicate' in variable %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['valuePredicate']}} ?{{variable['field']}};
+        {% if 'unit' in variable %}
+          {{variable['unitPredicate']}} <{{variable['unit']}}>;
+        {% endif %}
+      ].
+    {% else %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} ?{{variable['field']}};
+      ].
+    {% endif %}
+  {% endfor %}
+                
+      } GROUP BY ?value ?unit
+    }
+    FILTER(BOUND(?value))
+  }
+}''')
+    
+    @app.template_filter('facet_values')
+    def facet_values(facets, variables, constraints):
+        if len(constraints) > 0:
+            constraints = json.loads(constraints)
+        if len(variables) > 0:
+            variables = json.loads(variables)
+            var_map = dict([(v['field'],v) for v in variables])
+            variables = list(var_map.values())
+        results = []
+        for facet in facets:
+            facet['type'] = 'nominal'
+            if 'valuePredicate' in facet:
+                query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
+                print query
+                values = query_filter(query)
+                for value in values:
+                    value.update(facet)
+                    fieldName = [value['facetId'],
+                                 slugify(value['value'],separator='_',lowercase=False)]
+                    if 'unit' in value:
+                        fieldName.append(slugify(value['unit'],separator='_',lowercase=False))
+                    value['type'] = 'quantitative'
+                    fieldName = '__'.join(fieldName)
+                    value['field'] = fieldName
+                    results.append(value)
+            else:
+                facet['field'] = facet['facetId']
+                facet['name'] = facet['label']
+                results.append(facet)
+        iter_labelize(results, key='value', label_key='name')
+        iter_labelize(results, key='unit', label_key='unit_label')
+        return results
+
+    instance_data_template = env.from_string('''
+SELECT DISTINCT ?id {% for variable in variables %} ?{{variable['field']}}{% endfor %}
+WHERE {
+    {% for constraint in constraints %}{{constraint}}{% endfor %}
+
+    {% for variable in variables %}
+    {% if 'valuePredicate' in variable %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['valuePredicate']}} ?{{variable['field']}};
+        {% if 'unit' in variable %}
+          {{variable['unitPredicate']}} <{{variable['unit']}}>;
+        {% endif %}
+      ].
+    {% else %}
+      ?id {{variable['predicate']}} [
+        {{variable['typeProperty']}} [ rdfs:label ?{{variable['field']}}];
+      ].
+    {% endif %}
+  {% endfor %}
+  
+}''')
+    @app.template_filter('instance_data')
+    def instance_data(this, variables, constraints):
+        if len(constraints) > 0:
+            constraints = json.loads(constraints)
+        if len(variables) > 0:
+            variables = json.loads(variables)
+        query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
+        
+        return query
+        

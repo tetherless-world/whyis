@@ -45,6 +45,7 @@ class LoadNanopub(Command):
         ]
     
     def run(self, input_file, file_format="trig", was_revision_of=None):
+        flask.current_app.managed = True
         if was_revision_of is not None:
             wasRevisionOf = set(flask.current_app.db.objects(predicate=np.hasAssertion,
                                                                subject=rdflib.URIRef(was_revision_of)))
@@ -209,7 +210,7 @@ class Test(Command):
 
     def get_options(self):
         return [
-            Option('--verbosity', '-v', dest='verbose',
+            Option('--verbosity', '-v', dest='verbosity',
                     type=int, default=self.verbosity),
             Option('--failfast', dest='failfast',
                     default=self.failfast, action='store_false')

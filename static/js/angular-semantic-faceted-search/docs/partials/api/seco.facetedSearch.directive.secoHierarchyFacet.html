@@ -1,0 +1,49 @@
+<a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/edit/master/src/facets/hierarchy/facets.hierarchy-facet.directive.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/facets/hierarchy/facets.hierarchy-facet.directive.js#L46" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">secoHierarchyFacet</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">seco.facetedSearch</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secohierarchyfacet-page"><p>A select box facet for hierarchical values.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;seco-hierarchy-facet
+       options="{Object}"&gt;
+&lt;/seco-hierarchy-facet&gt;</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secohierarchyfacet-page"><p>The configuration object with the following structure:</p>
+<ul>
+<li><strong>facetId</strong> - <code>{string}</code> - A friendly id for the facet.
+Should be unique in the set of facets, and should be usable as a SPARQL variable.</li>
+<li><strong>predicate</strong> - <code>{string}</code> - The predicate or property path that defines the facet values.</li>
+<li><strong>hierarchy</strong> - <code>{string}</code> - The predicate or property path that defines the hierarchy of values.</li>
+<li><strong>depth</strong> - <code>{number}</code> - The maximum depth of the hierarchy. Default is 3.</li>
+<li><strong>name</strong> - <code>{string}</code> - The title of the facet. Will be displayed to end users.</li>
+<li><strong>[specifier]</strong> <code>{string}</code> - Restriction on the values as a SPARQL triple pattern.
+Helpful if multiple facets need to be generated from the same predicate,
+or not all values defined by the given predicate should be selectable.
+<code>?value</code> is the variable to which the facet selection is bound.
+For example, if <code>predicate</code> has been defined as
+<code>&lt;http://purl.org/dc/terms/subject&gt;</code> (subject),
+and there are different kinds of subjects for the resource, and you want
+to select people (<code>&lt;http://xmlns.com/foaf/0.1/Person&gt;</code>) only, you would
+define <code>specifier</code> as <code>&#39;?value a &lt;http://xmlns.com/foaf/0.1/Person&gt; .&#39;</code>.</li>
+<li><strong>[enabled]</strong> <code>{boolean}</code> - Whether or not the facet is enabled by default.
+If undefined, the facet will be disabled by default.</li>
+<li><strong>[endpointUrl]</strong> <code>{string}</code> - The URL of the SPARQL endpoint.
+Optional, as it can also be given globally in
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a> config.</li>
+<li><strong>[headers]</strong> <code>{Object}</code> - Additional HTTP headers.</li>
+<li><strong>[preferredLang]</strong> - <code>{string|Array}</code> - The language tag that is preferred
+when getting labels for facet values, in case the value is a resource.
+The default is &#39;en&#39;.
+Can also be a list of languages, in which case the languages are tried
+in order.
+If a label is not found in the given languages, a label without a
+language tag is used. If a label is still not found,
+the end part of the resource URI is used.
+Supported label properties are <code>skos:prefLabel</code>, and <code>rdfs:label</code>.</li>
+<li><strong>[priority]</strong> - <code>{number}</code> - Priority for constraint sorting.
+Undefined by default.</li>
+</ul>
+</div></td></tr></tbody></table></div>
+</div>

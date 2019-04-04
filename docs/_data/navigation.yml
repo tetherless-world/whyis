@@ -3,8 +3,11 @@
 - title: Home
   url: /
 
-- title: Installing Whyis
+- title: Basic Installation
   url: /install
+  
+- title: Docker Installation
+  url: /docker
 
 - title: Whyis Views
   url: /views

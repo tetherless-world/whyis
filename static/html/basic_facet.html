@@ -1,0 +1,16 @@
+<div>
+  <md-list ng-if="vm.facet.isEnabled()" class="md-dense" ng-disabled="vm.isLoading()">
+    <md-divider ></md-divider>
+    <md-subheader class="md-no-sticky">{{vm.facet.name}}</md-subheader>
+    <md-list-item ng-repeat="value in vm.facet.getState()" ng-click="vm.facet.selectedValue = value">
+      <md-checkbox ng-click="vm.facet.selectedValue = value" ng-model="value.selected"></md-checkbox>
+      <p>{{ value.text }} ({{value.count}})</p>
+    </md-list-item>
+  </md-list>
+  <md-progress-linear md-mode="indeterminate" ng-show="vm.isLoading()"></md-progress-linear>
+  <md-toolbar class="md-warn" ng-if="vm.error">
+    <div class="md-toolbar-tools">
+      <h2 class="md-flex">{{ vm.error|limitTo:100 }}</h2>
+    </div>
+  </md-toolbar>
+</div>

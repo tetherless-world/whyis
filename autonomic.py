@@ -15,6 +15,8 @@ import database
 
 import tempfile
 
+from depot.io.interfaces import StoredFile
+
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
@@ -256,17 +258,22 @@ class OntologyImporter(UpdateChangeService):
 
     def process_nanopub(self, i, o, new_np):
         if (i.identifier, rdflib.RDF.type, whyis.ImportedOntology) in self.app.db:
+            print "Skipping already imported ontology:", i.identifier
             return
+        print "Attempting to import", i.identifier
         file_format = rdflib.util.guess_format(i.identifier)
         try: # Try the best guess at a format.
             g = rdflib.Graph()
             g.parse(location=i.identifier, format=file_format, publicID=self.app.NS.local)
             g.serialize() # to test that parsing was actually successful.
-            new_np.assertion.addN([(s,p,o,new_np.assertion.identifier) for s,p,o in g])
+            for s,p,o in g:
+                new_np.assertion.add((s,p,o))
             logging.debug("%s was parsed as %s"%(i.identifier,file_format))
+            print "%s was parsed as %s"%(i.identifier,file_format)
+            print len(new_np.assertion), len(g)
         except Exception: # If that doesn't work, brute force it with all possible RDF formats, most likely first.
             print "Could not parse %s as %s" %(i.identifier,file_format)
-            traceback.print_exc(file=sys.stdout)
+            #traceback.print_exc(file=sys.stdout)
             parsed = False
             for f in ['xml', 'turtle', 'trig', # Most likely
                       'n3','nquads','nt', # rarely used for ontologies, but sometimes
@@ -275,16 +282,19 @@ class OntologyImporter(UpdateChangeService):
                       'rdfa1.1','rdfa1.0','rdfa', # rare, but I've seen them.
                       'mdata','microdata','html']: # wow, there are a lot of RDF formats...
                 try:
+                    #print "Trying", f
                     g = rdflib.Graph()
                     g.parse(location=i.identifier, format=f, publicID=self.app.NS.local)
                     g.serialize() # to test that parsing was actually successful.
-                    new_np.assertion.addN([(s,p,o,new_np.assertion.identifier) for s,p,o in g])
+                    for s,p,o in g:
+                        new_np.assertion.add((s,p,o))
                     logging.debug("%s was parsed as %s"%(i.identifier, f))
+                    print "%s was parsed as %s"%(i.identifier, f)
                     parsed = True
                     break
                 except Exception:
                     print "BF: Could not parse %s as %s" %(i.identifier,f)
-                    traceback.print_exc(file=sys.stdout)
+                    #traceback.print_exc(file=sys.stdout)
                     pass
             if not parsed: # probably the best guess anyways, retry to throw the best possible exception.
                 print "Could not import ontology %s" % i.identifier
@@ -452,7 +462,7 @@ class SETLr(UpdateChangeService):
         setlr.actions[whyis.NanopublicationManager] = self.app.nanopub_manager
         setlr.actions[whyis.Nanopublication] = self.app.nanopub_manager.new
         setl_graph = i.graph
-        setlr.run_samples = True
+#        setlr.run_samples = True
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
@@ -502,12 +512,21 @@ class SETLr(UpdateChangeService):
                 #triples += len(new_np)
                 #if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
+                nanopub_prepare_graph.store.close()
             print 'Published'
+        for resource, obj in resources.items():
+            if hasattr(i, 'close'):
+                print "Closing", resource
+                try:
+                    i.close()
+                except:
+                    pass
 
 class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
         if resource is not None:
             self.resource = resource
+	self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
         self.where = where
@@ -522,19 +541,18 @@ class Deductor(UpdateChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings={}
-        return '''%s SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.prefixes, self.resource, self.where, self.construct )
+        return '''SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.resource, self.where, self.construct )
     
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''%s SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes, self.where, self.resource, i.identifier) )
+        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.where, self.resource, i.identifier) , initNs=self.app.NS.prefixes )
         for key in context_vars.json["results"]["bindings"][0].keys():
             context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
         return context
     
     def process(self, i, o):
-        self.app.db.store.nsBindings={}
         npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query('''%s CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes,self.construct, self.where, self.construct, self.resource, i.identifier) ) # init.bindings = prefix, dict for identifier (see graph.query in rdflib)
+        triples = self.app.db.query('''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.construct, self.where, self.construct, self.resource, i.identifier) , initNs=self.prefixes ) 
         for s, p, o, c in triples:
             print "Deductor Adding ", s, p, o
             npub.assertion.add((s, p, o))

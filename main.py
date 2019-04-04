@@ -14,6 +14,7 @@ from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
 import pytz
+from dataurl import DataURLStorage
 
 from werkzeug.exceptions import Unauthorized
 from werkzeug.datastructures import FileStorage
@@ -28,7 +29,6 @@ import rdflib
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
 from flask_security.core import current_user
-from flask_login import AnonymousUserMixin, login_user
 from flask_security.forms import RegisterForm
 from flask_security.utils import encrypt_password
 from werkzeug.datastructures import ImmutableList
@@ -121,6 +121,7 @@ NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
+NS.schema = rdflib.Namespace("http://schema.org/")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -158,7 +159,7 @@ def conditional_login_required(func):
 
 class App(Empty):
 
-
+    managed = False
     
     def configure_extensions(self):
 
@@ -430,7 +431,7 @@ class App(Empty):
 #                try:
                 result = Graph()
 #                try:
-                for s,p,o,c in self._graph.query('''
+                for quad in self._graph.query('''
 construct {
     ?e ?p ?o.
     ?o rdfs:label ?label.
@@ -464,6 +465,10 @@ construct {
       ?o foaf:name ?name.
     }
 }''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+                    if len(quad) == 3:
+                        s,p,o = quad
+                    else:
+                        s,p,o,c = quad
                     result.add((s,p,o))
 #                except:
 #                    pass
@@ -511,7 +516,7 @@ construct {
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))
-        if current_user._get_current_object() is not None:
+        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
             nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
         nanopub.assertion.add((entity, NS.ov.hasContentType, Literal(f.mimetype)))
@@ -521,7 +526,7 @@ construct {
         nanopub.assertion.add((NS.mediaTypes[f.mimetype.split('/')[0]], NS.RDF.type, NS.dc.FileFormat))
         nanopub.assertion.add((entity, NS.RDF.type, NS.pv.File))
 
-        if current_user._get_current_object() is not None:
+        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
             nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
         nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.created, Literal(datetime.utcnow())))
 
@@ -580,9 +585,13 @@ construct {
                 self.nanopub_manager.publish(n)
 
     def _can_edit(self, uri):
+        if self.managed:
+            return True
         if current_user._get_current_object() is None:
             # This isn't null even when not authenticated, unless we are an autonomic agent.
             return True
+        if not hasattr(current_user, 'resUri'): # This is an anonymous user.
+            return False
         if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
             return True
         if self.db.query('''ask {
@@ -598,27 +607,11 @@ construct {
         def sort_by(resources, property):
             return sorted(resources, key=lambda x: x.value(property))
 
-        class InvitedAnonymousUser(AnonymousUserMixin):
-            '''A user that has been referred via kikm references but does not have a user account.'''
-            def __init__(self):
-                self.roles = ImmutableList()
-
-            def has_role(self, *args):
-                """Returns `False`"""
-                return False
-
-            def is_active(self):
-                return True
-
-            @property
-            def is_authenticated(self):
-                return True
-
         def camel_case_split(identifier):
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
         @lru
         def get_remote_label(uri):
@@ -666,10 +659,12 @@ construct {
             
         @self.before_request
         def load_forms():
-            if 'API_KEY' in self.config:
-                if 'API_KEY' in request.args and request.args['API_KEY'] == self.config['API_KEY']:
-                    print 'logging in invited user'
-                    login_user(InvitedAnonymousUser())
+            if 'authenticators' in self.config:
+                for authenticator in self.config['authenticators']:
+                    user = authenticator.authenticate(request, self.datastore, self.config)
+                    if user is not None:
+                    #    login_user(user)
+                        break
                 
             #g.search_form = SearchForm()
             g.ns = self.NS
@@ -804,6 +799,7 @@ construct {
         def get_summary(resource):
             summary_properties = [
                 self.NS.skos.definition,
+                self.NS.schema.description,
                 self.NS.dc.abstract,
                 self.NS.dc.description,
                 self.NS.dc.summary,
@@ -844,6 +840,7 @@ construct {
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
+                print request.get_data()
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
                                     headers = request.headers, params=request.args)
             #print self.db.store.query_endpoint
@@ -882,7 +879,6 @@ construct {
         @conditional_login_required
         def view(name=None, format=None, view=None):
             self.db.store.nsBindings = {}
-            print format, name, view, extensions
             content_type = None
             if format is not None:
                 if format in extensions:
@@ -914,13 +910,19 @@ construct {
             elif request.method == 'GET':
                 resource = self.get_resource(entity)
 
+                # 'view' is the default view
+                fileid = resource.value(self.NS.whyis.hasFileID)
+                if fileid is not None and 'view' not in request.args:
+                    f = self.file_depot.get(fileid)
+                    fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
+                    return fsa
+            
                 if content_type is None:
                     content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
                 htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
                 fmt = sadi.mimeparse.best_match([mt for mt in dataFormats.keys() if mt is not None],content_type)
-                print fmt
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
@@ -928,7 +930,6 @@ construct {
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
-                    print len(output_graph)
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
@@ -954,12 +955,6 @@ construct {
                 set=set))
             if view is None and 'view' in request.args:
                 view = request.args['view']
-            # 'view' is the default view
-            fileid = resource.value(self.NS.whyis.hasFileID)
-            if fileid is not None and view is None:
-                f = self.file_depot.get(fileid)
-                fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
-                return fsa
 
             if view is None:
                 view = 'view'
@@ -973,7 +968,6 @@ construct {
                 types.extend([(x.identifier, 1) for x in resource[RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
-            print types
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
             view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
     values (?c ?priority ?id) { %s }
@@ -987,7 +981,6 @@ construct {
 
             #print view_query
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
-            print views
             if len(views) == 0:
                 abort(404)
 
@@ -1025,6 +1018,7 @@ construct {
 
         self.nanopub_manager = NanopublicationManager(app.db.store,
                                                       Namespace('%s/pub/'%(app.config['lod_prefix'])),
+                                                      self,
                                                       update_listener=self.nanopub_update_listener)
 
 
@@ -1073,14 +1067,15 @@ construct {
                     app.nanopub_manager.retire(nanopub_uri)
                     app.nanopub_manager.publish(nanopub)
 
-            def _prep_nanopub(self, nanopub_uri, graph):
-                nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
+            def _prep_nanopub(self, nanopub):
+                #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
                 about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
                 #print nanopub.assertion_resource.identifier, about
-                self._prep_graph(nanopub.assertion_resource, about.identifier)
+                self._prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
                 #self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
                 self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
                 nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
+
                 return nanopub
 
             @login_required
@@ -1088,10 +1083,10 @@ construct {
                 if ident is not None:
                     return self.put(ident)
                 inputGraph = self._get_graph()
-                for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
-                    nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
+                #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                     #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
                 for nanopub in app.nanopub_manager.prepare(inputGraph):
+                    self._prep_nanopub(nanopub)
                     app.nanopub_manager.publish(nanopub)
 
                 return '', 201

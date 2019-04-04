@@ -46,7 +46,7 @@
           </md-button>
           <md-menu-content width="4">
             <md-menu-item>
-              <md-button ng-href="{{nanopub.np}}">Details</md-button>
+              <md-button ng-href="{{nanopub.np_local_url}}">Details</md-button>
             </md-menu-item>
             <md-menu-item data-ng-if="canEdit(nanopub)" data-ng-hide="nanopub.editing && !disableNanopubing" >
               <md-button data-ng-click="editNanopub(nanopub)">Edit</md-button>
