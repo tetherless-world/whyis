@@ -2573,7 +2573,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     d.enabled = true;
                     d.preferredLang = "en";
-                    d.type = "basic";
+                    if (!d.type) 
+                        d.type = "basic";
                 },
                 'http://www.w3.org/2002/07/owl#DataProperty' : function(d) {
                     d.name = d.label;
@@ -2584,7 +2585,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     d.enabled = true;
                     d.preferredLang = "en";
-                    d.type = "basic";
+                    if (!d.type) 
+                        d.type = "basic";
                 },
                 'http://semanticscience.org/resource/Quality' : function(d) {
                     d.name = "Qualities";
@@ -2604,7 +2606,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.specifier = '?value rdfs:subClasOf <http://semanticscience.org/resource/Quality>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
-                    d.type = "basic";
+                    if (!d.type) 
+                        d.type = "basic";
                 },
                 'http://semanticscience.org/resource/Quantity' : function(d) {
                     d.name = "Properties";
@@ -2624,7 +2627,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.specifier = '?value rdfs:subClassOf <http://semanticscience.org/resource/Quantity>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
-                    d.type = "basic";
+                    if (!d.type) 
+                        d.type = "basic";
                 }
             }
             
@@ -2756,6 +2760,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
 
                     pager.fetchNumItems_ = function() {
+                        pager.numItems = null;
                         pager.getTotalCount().then(function(count) {
                             pager.numItems = count;
                         });
@@ -2889,13 +2894,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Box Plot",
                         dimensions: {
                             x: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1},
+                                "scale": scope.scales[0]
                             },
                             y: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1},
+                                "scale": scope.scales[0]
                             },
                             color: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1},
+                                "scale": scope.scales[0]
                             },
                         }
                     },
@@ -2919,7 +2927,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 "types" : {'ordinal':1,'nominal':1}
                             },
                             color: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                         }
                     },
@@ -2929,15 +2938,18 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         dimensions: {
                             x: {
                                 "bin": {"maxbins": 100},
-                                "types": {"quantitative":1}
+                                "types": {"quantitative":1},
+                                "scale": scope.scales[0]
                             },
                             y: {
                                 "bin": {"maxbins": 100},
-                                "types": {"quantitative":1}
+                                "types": {"quantitative":1},
+                                "scale": scope.scales[0]
                             },
                             color: {
                                 "aggregate": "count",
-                                "types": {"quantitative":1}
+                                "types": {"quantitative":1},
+                                "scale": scope.scales[0]
                             }
                         }
                     },
@@ -2949,19 +2961,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //},
                     {
                         mark: "tick",
-                        label: "Tick marks",
+                        label: "Strip Plot",
                         dimensions: {
                             x: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             y: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             color: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             size: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                         }
                     },
@@ -2970,16 +2986,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         label: "Line Plot",
                         dimensions: {
                             x: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             y: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             color: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                             size: {
-                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1}
+                                "types" : {'ordinal':1,'quantitative':1,'nominal':1,'temporal':1},
+                                "scale": scope.scales[0]
                             },
                         }
                     },

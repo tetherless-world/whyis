@@ -24,8 +24,8 @@
   <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert>
   <div layout="row" flex>
     <md-content flex="30" style="overflow:scroll">
-      <md-subheader >{{pager.getLength()}} results found.</md-subheader>
-      <vega-controller spec="vizConfig" facet-values="facetValues" ng-if="view=='chart'" ng-show="view=='chart'" ></vega-controller>
+      <md-subheader ng-show="pager.numItems">{{pager.getLength()}} results found.</md-subheader>
+      <vega-controller spec="vizConfig" facet-values="facetValues" ng-show="view=='chart'" ></vega-controller>
       <!-- Facets are defined here using the configurations defined in the controller -->
         <div ng-repeat="facet in facets" ng-switch="facet.type">
           <whyis-text-facet ng-switch-when="text" data-options="facet"></whyis-text-facet>

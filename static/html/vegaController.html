@@ -1,6 +1,6 @@
-<div layout="column">
+<div>
   <div layout="row" flex>
-    <md-input-container>
+    <md-input-container flex>
       <label>View</label>
       <md-select ng-model="selectedView">
         <md-option ng-repeat="view in views" ng-value="view">
@@ -21,7 +21,7 @@
     </md-select>
   </md-input-container>
   <md-input-container ng-show="selectedView.dimensions.x.scale" flex="none">
-    <label>X Axis Scale</label>
+    <label>Scale</label>
     <md-select ng-model="selectedView.dimensions.x.scale">
       <md-option ng-repeat="scale in scales" ng-value="scale">
         {{scale.type}}
@@ -42,7 +42,7 @@
     </md-select>
   </md-input-container>
   <md-input-container ng-show="selectedView.dimensions.y.scale" flex="none">
-    <label>Y Axis Scale</label>
+    <label>Scale</label>
     <md-select ng-model="selectedView.dimensions.y.scale">
       <md-option ng-repeat="scale in scales" ng-value="scale">
         {{scale.type}}
