@@ -11,6 +11,7 @@ scipy
 pandas
 nltk
 beautifulsoup4
+Werkzeug==0.14.1
 Flask
 Flask-Script
 flask_script
@@ -24,9 +25,9 @@ git+git://github.com/jimmccusker/flask-ld.git#egg=flask-ld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 SPARQLWrapper
 html5lib
-redis
-celery
-setlr
+redis<3
+celery==4.2.1
+setlr==0.2.11
 cookiecutter
 keepalive
 filedepot

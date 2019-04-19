@@ -882,7 +882,7 @@ $( function() {
         return getLabel;
     }]);
 
-    app.filter("label", ["$http", '$q', function($http, $q) {
+    app.filter("label", ["$http", '$q','getLabel', function($http, $q, getLabel) {
         function label(uri) {
             if (getLabel.labels[uri] === undefined) {
                 var localPart = uri.split("#").filter(function(d) {return d.length > 0});
