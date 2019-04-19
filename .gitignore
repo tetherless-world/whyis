@@ -1,3 +1,6 @@
+#Node install files
+node_modules/
+
 # Emacs backup files
 *~
 

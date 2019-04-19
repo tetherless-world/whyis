@@ -15,6 +15,8 @@ import database
 
 import tempfile
 
+from depot.io.interfaces import StoredFile
+
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
@@ -510,12 +512,21 @@ class SETLr(UpdateChangeService):
                 #triples += len(new_np)
                 #if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
+                nanopub_prepare_graph.store.close()
             print 'Published'
+        for resource, obj in resources.items():
+            if hasattr(i, 'close'):
+                print "Closing", resource
+                try:
+                    i.close()
+                except:
+                    pass
 
 class Deductor(UpdateChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): # prefixes should be 
         if resource is not None:
             self.resource = resource
+	self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
         self.where = where
@@ -530,19 +541,18 @@ class Deductor(UpdateChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings={}
-        return '''%s SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.prefixes, self.resource, self.where, self.construct )
+        return '''SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' %( self.resource, self.where, self.construct )
     
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''%s SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes, self.where, self.resource, i.identifier) )
+        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.where, self.resource, i.identifier) , initNs=self.app.NS.prefixes )
         for key in context_vars.json["results"]["bindings"][0].keys():
             context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
         return context
     
     def process(self, i, o):
-        self.app.db.store.nsBindings={}
         npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query('''%s CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.prefixes,self.construct, self.where, self.construct, self.resource, i.identifier) ) # init.bindings = prefix, dict for identifier (see graph.query in rdflib)
+        triples = self.app.db.query('''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.construct, self.where, self.construct, self.resource, i.identifier) , initNs=self.prefixes ) 
         for s, p, o, c in triples:
             print "Deductor Adding ", s, p, o
             npub.assertion.add((s, p, o))

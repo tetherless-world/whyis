@@ -1,0 +1,16 @@
+<seco-facet-wrapper>
+  <input
+    ng-disabled="vm.isLoading()"
+    type="text"
+    class="form-control"
+    ng-model="textFilter" />
+  <select
+    ng-change="vm.changed()"
+    ng-disabled="vm.isLoading()"
+    ng-attr-size="{{ vm.getFacetSize(vm.facet.getState()) }}"
+    id="{{ ::vm.facet.name + '_select' }}"
+    class="selector form-control"
+    ng-options="value as (value.text + ' (' + value.count + ')') for value in vm.facet.getState() | textWithSelection:textFilter:vm.facet.selectedValue track by value.value"
+    ng-model="vm.facet.selectedValue">
+  </select>
+</seco-facet-wrapper>

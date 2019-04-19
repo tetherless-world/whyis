@@ -1,0 +1,47 @@
+<div class="facet-wrapper">
+  <div class="facet">
+    <div class="well well-sm">
+      <div class="row">
+        <div class="col-xs-12 text-left">
+          <div class="alert alert-danger" ng-if="vm.error">{{ vm.error|limitTo:100 }}</div>
+          <div class="row vertical-align">
+            <div class="col-xs-10 text-left">
+              <h5 class="facet-name pull-left">{{ vm.facet.name }}</h5>
+            </div>
+            <div class="facet-enable-btn-container col-xs-2 text-right">
+              <button ng-show="vm.hasChartButton()"
+                  class="btn btn-default btn-toggle-chart btn-xs pull-right"
+                  ng-click="vm.toggleChart()">
+                <span class="glyphicon glyphicon-stats"></span>
+              </button>
+              <button
+                  ng-disabled="vm.isLoading()"
+                  ng-click="vm.toggleFacetEnabled()"
+                  class="btn btn-default btn-facet-toggle btn-xs pull-right"
+                  ng-class="vm.facet.isEnabled() ? 'btn-facet-close' : 'btn-facet-open'">
+                <span class="glyphicon" ng-class="vm.facet.isEnabled() ? 'glyphicon-minus' : 'glyphicon-plus'"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" ng-if="vm.facet.isEnabled()">
+        <div class="col-xs-12 text-left">
+          <span spinner-key="vm.getSpinnerKey()" spinner-start-active="true"
+                us-spinner="{radius:15, width:6, length: 20}" ng-if="vm.isLoading()"></span>
+          <div ng-switch="vm.isChartVisible()">
+            <div ng-switch-when="true">
+              <canvas class="chart chart-pie"
+                chart-click="vm.handleChartClick"
+                chart-data="vm.chart.chartData.data"
+                chart-labels="vm.chart.chartData.labels"></canvas>
+            </div>
+            <div ng-switch-default>
+              <div class="facet-input-container" ng-transclude></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

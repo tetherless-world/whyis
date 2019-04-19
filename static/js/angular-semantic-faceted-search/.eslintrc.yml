@@ -1,0 +1,25 @@
+rules:
+  indent:
+    - 2
+    - 4
+    - SwitchCase: 1
+      MemberExpression: "off"
+      FunctionDeclaration:
+          parameters: 2
+  quotes:
+    - 2
+    - single
+  linebreak-style:
+    - 2
+    - unix
+  semi:
+    - 2
+    - always
+env:
+  browser: true
+globals:
+    jQuery: false
+    angular: false
+extends: "eslint:recommended"
+plugins:
+    - angular

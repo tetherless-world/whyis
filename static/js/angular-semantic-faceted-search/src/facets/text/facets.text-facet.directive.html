@@ -1,0 +1,17 @@
+<seco-facet-wrapper>
+  <p class="input-group">
+    <input type="text" class="form-control"
+      ng-change="vm.changed()"
+      ng-disabled="vm.isLoading()"
+      ng-model="vm.facet.selectedValue"
+      ng-model-options="{ debounce: 1000 }">
+    </input>
+    <span class="input-group-btn">
+      <button type="button" class="btn btn-default"
+        ng-disabled="vm.isDisabled()"
+        ng-click="vm.clear()">
+        <i class="glyphicon glyphicon-remove"></i>
+      </button>
+    </span>
+  </p>
+</seco-facet-wrapper>

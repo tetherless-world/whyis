@@ -29,7 +29,6 @@ import rdflib
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
 from flask_security.core import current_user
-from flask_login import AnonymousUserMixin, login_user
 from flask_security.forms import RegisterForm
 from flask_security.utils import encrypt_password
 from werkzeug.datastructures import ImmutableList
@@ -122,6 +121,7 @@ NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
 NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
 NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
+NS.schema = rdflib.Namespace("http://schema.org/")
     
 from rdfalchemy import *
 from flask_ld.datastore import *
@@ -159,7 +159,7 @@ def conditional_login_required(func):
 
 class App(Empty):
 
-
+    managed = False
     
     def configure_extensions(self):
 
@@ -516,7 +516,7 @@ construct {
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))
-        if current_user._get_current_object() is not None:
+        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
             nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
         nanopub.assertion.add((entity, NS.ov.hasContentType, Literal(f.mimetype)))
@@ -526,7 +526,7 @@ construct {
         nanopub.assertion.add((NS.mediaTypes[f.mimetype.split('/')[0]], NS.RDF.type, NS.dc.FileFormat))
         nanopub.assertion.add((entity, NS.RDF.type, NS.pv.File))
 
-        if current_user._get_current_object() is not None:
+        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
             nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
         nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.created, Literal(datetime.utcnow())))
 
@@ -585,9 +585,13 @@ construct {
                 self.nanopub_manager.publish(n)
 
     def _can_edit(self, uri):
+        if self.managed:
+            return True
         if current_user._get_current_object() is None:
             # This isn't null even when not authenticated, unless we are an autonomic agent.
             return True
+        if not hasattr(current_user, 'resUri'): # This is an anonymous user.
+            return False
         if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
             return True
         if self.db.query('''ask {
@@ -603,27 +607,11 @@ construct {
         def sort_by(resources, property):
             return sorted(resources, key=lambda x: x.value(property))
 
-        class InvitedAnonymousUser(AnonymousUserMixin):
-            '''A user that has been referred via kikm references but does not have a user account.'''
-            def __init__(self):
-                self.roles = ImmutableList()
-
-            def has_role(self, *args):
-                """Returns `False`"""
-                return False
-
-            def is_active(self):
-                return True
-
-            @property
-            def is_authenticated(self):
-                return True
-
         def camel_case_split(identifier):
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.dc.title, self.NS.foaf.name, URIRef('http://schema.org/name')]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
         @lru
         def get_remote_label(uri):
@@ -671,10 +659,12 @@ construct {
             
         @self.before_request
         def load_forms():
-            if 'API_KEY' in self.config:
-                if 'API_KEY' in request.args and request.args['API_KEY'] == self.config['API_KEY']:
-                    print 'logging in invited user'
-                    login_user(InvitedAnonymousUser())
+            if 'authenticators' in self.config:
+                for authenticator in self.config['authenticators']:
+                    user = authenticator.authenticate(request, self.datastore, self.config)
+                    if user is not None:
+                    #    login_user(user)
+                        break
                 
             #g.search_form = SearchForm()
             g.ns = self.NS
@@ -809,6 +799,7 @@ construct {
         def get_summary(resource):
             summary_properties = [
                 self.NS.skos.definition,
+                self.NS.schema.description,
                 self.NS.dc.abstract,
                 self.NS.dc.description,
                 self.NS.dc.summary,
@@ -849,6 +840,7 @@ construct {
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
+                print request.get_data()
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
                                     headers = request.headers, params=request.args)
             #print self.db.store.query_endpoint
@@ -1026,6 +1018,7 @@ construct {
 
         self.nanopub_manager = NanopublicationManager(app.db.store,
                                                       Namespace('%s/pub/'%(app.config['lod_prefix'])),
+                                                      self,
                                                       update_listener=self.nanopub_update_listener)
 
 
@@ -1083,13 +1076,6 @@ construct {
                 self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
                 nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
 
-                for entity in nanopub.assertion.subjects(app.NS.whyis.hasContent):
-                    localpart = app.db.qname(entity).split(":")[1]
-                    filename = secure_filename(localpart)
-                    f = DataURLStorage(nanopub.assertion.value(entity, app.NS.whyis.hasContent), filename=filename)
-                    app.add_file(f, entity, nanopub)
-                    nanopub.assertion.remove((entity, app.NS.whyis.hasContent, None))
-                
                 return nanopub
 
             @login_required
