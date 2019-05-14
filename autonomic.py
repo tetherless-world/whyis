@@ -454,8 +454,9 @@ class SETLr(UpdateChangeService):
             nanopub.pubinfo.add((nanopub.assertion.identifier, prov.wasAttributedTo, i.identifier))
 
     def process(self, i, o):
-        
-        query_store = database.create_query_store(self.app.db.store)
+        query_store = self.app.db.store
+        if hasattr(query_store, 'endpoint'):
+            query_store = database.create_query_store(self.app.db.store)
         db_graph = rdflib.ConjunctiveGraph(store=query_store)
         db_graph.NS = self.app.NS
         setlr.actions[whyis.sparql] = db_graph
