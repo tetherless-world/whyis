@@ -1,7 +1,7 @@
 import urllib2
 from flask import Flask, g
 from flask_testing import TestCase
-from flask.ext.login import login_user, current_user, current_app
+from flask_login import login_user, current_user, current_app
 import requests
 
 class WhyisTestCase(TestCase):
