@@ -1,7 +1,7 @@
 #!/bin/bash
 
-curl -O https://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb
-sudo dpkg -i puppetlabs-release-pc1-xenial.deb
+curl -O https://apt.puppetlabs.com/puppet-release-xenial.deb
+sudo dpkg -i puppet-release-xenial.deb
 sudo apt-get update
 
 echo "Installing puppet..."
