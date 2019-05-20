@@ -1,2 +1,4 @@
 -r common.txt
 flask-debugtoolbar
+flask_testing
+selenium
