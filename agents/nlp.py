@@ -6,7 +6,7 @@ from slugify import slugify
 import nanopub
 from math import log10
 import collections
-import PyPDF2
+from tika import parser as tika_parser
 
 sioc_types = Namespace("http://rdfs.org/sioc/types#")
 sioc = Namespace("http://rdfs.org/sioc/ns#")
@@ -47,10 +47,12 @@ class PDF2Text(autonomic.UpdateChangeService):
 
     def process(self, i, o):
         content = i.value(sioc.content)
-        document = PyPDF2.PdfFileReader(content) # requires passing in a stream. We'll see if this works or errors
-        text = "".join([document.getPage(i).extractText() for i in range(document.numPages)])
+        parsed = tika_parser.from_file(content)
+        # obviously this runs from a file, which isn't what we'll evnetually want, we want to get it from the app
+        # for now for testing it works, especially now since I've just gotten whyis working.
+        text = parsed["content"]
         o.add(URIRef("http://schema.org/text"), Literal(text))
-        o.add(URIRef("http://jordanfaasbush.com/thisispythontype_1"), Literal(str(type(sioc.content))))
+        o.add(URIRef("http://jordanfaasbush.com/thisispythontype_1"), Literal(str(type(i.value(sioc.content)))))
         
 class IDFCalculator(autonomic.UpdateChangeService):
     activity_class = whyis.InverseDocumentFrequencyCalculation
