@@ -17,7 +17,17 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(response.status,'201 CREATED')
         content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
         self.assertEquals(content.mimetype, "text/plain")
-        self.assertEquals(content.data, "Hello, World!")    
+        self.assertEquals(content.data, "Hello, World!")
+
+    def test_PDF_upload(self):
+        self.login(*self.create_user("user@example.com","password"))
+        nanopub = '''{ "@id": "http://example.com/testdataPDF","http://vocab.rpi.edu/whyis/hasContent":"data:text/plain;charset=UTF-8,Hello, World!"}'''
+        response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
+            
+        self.assertEquals(response.status,'201 CREATED')
+        content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
+        self.assertEquals(content.mimetype, "text/plain")
+        self.assertEquals(content.data, "Hello, World!")
 
     def test_base64_upload(self):
         self.login(*self.create_user("user@example.com","password"))

@@ -6,6 +6,7 @@ from slugify import slugify
 import nanopub
 from math import log10
 import collections
+import PyPDF2
 
 sioc_types = Namespace("http://rdfs.org/sioc/types#")
 sioc = Namespace("http://rdfs.org/sioc/ns#")
@@ -31,6 +32,25 @@ class HTML2Text(autonomic.UpdateChangeService):
         soup = BeautifulSoup(content, 'html.parser')
         text = soup.get_text("\n")
         o.add(URIRef("http://schema.org/text"), Literal(text))
+
+class PDF2Text(autonomic.UpdateChangeService):
+    activity_class = whyis.TextFromPDF
+    
+    def getInputClass(self):
+        return sioc.Site # this should actually return a paper, I'm just not sure which ontology to use, for now I'm using an unused item so I can test.
+
+    def getOutputClass(self):
+        return URIRef("http://purl.org/dc/dcmitype/Text")
+
+    def get_query(self):
+        return '''select ?resource where { ?resource <http://rdfs.org/sioc/ns#content> [].}'''
+
+    def process(self, i, o):
+        content = i.value(sioc.content)
+        document = PyPDF2.PdfFileReader(content) # requires passing in a stream. We'll see if this works or errors
+        text = "".join([document.getPage(i).extractText() for i in range(document.numPages)])
+        o.add(URIRef("http://schema.org/text"), Literal(text))
+        o.add(URIRef("http://jordanfaasbush.com/thisispythontype_1"), Literal(str(type(sioc.content))))
         
 class IDFCalculator(autonomic.UpdateChangeService):
     activity_class = whyis.InverseDocumentFrequencyCalculation
