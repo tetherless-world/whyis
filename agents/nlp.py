@@ -50,7 +50,7 @@ class PDF2Text(autonomic.UpdateChangeService):
         parsed = tika_parser.from_file(content)
         # obviously this runs from a file, which isn't what we'll evnetually want, we want to get it from the app
         # for now for testing it works, especially now since I've just gotten whyis working.
-        text = parsed["content"]
+        text = parsed["content"].strip()
         o.add(URIRef("http://schema.org/text"), Literal(text))
         o.add(URIRef("http://jordanfaasbush.com/thisispythontype_1"), Literal(str(type(i.value(sioc.content)))))
         
