@@ -52,7 +52,7 @@ To peform the following administrative tasks, you need to connect to the VM (if 
 vagrant ssh
 ```
 
-Once you are in the server, you need to change to the whyis user, go to the whyis app directory, and activate the python virtual environment:
+Once you are in the server, you need to change to the **whyis** user, go to the whyis app directory, and activate the python virtual environment:
 
 ```
 sudo su - whyis
@@ -61,6 +61,7 @@ source venv/bin/activate
 ```
 
 ### Configure Whyis
+**If you are using an existing whyis knowledge graph, this step is not needed.  Instead, go to the install instructions for the graph you wish to install.**
 
 Whyis is built on the Flask web framework, and most of the Flask authentication options are available to configure in Whyis.
 A configuration script will walk you through the configuration process and make a project directory for you. 
