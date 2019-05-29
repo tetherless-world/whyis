@@ -2,13 +2,12 @@
 
 The Whyis installer is layered, which allows for maximum flexibility. Each layer is runnable by itself, resulting in a functional Whyis.
 
-- **Layer 3: Vagrant** [Vagrant](https://www.vagrantup.com/) is a tool for automatically creating virtual machines either on developer computers or in virtual environments. The `Vagrantfile` that is included in Whyis is set up to use [VirtualBox](https://www.virtualbox.org/) to create an Ubuntu 16.04 virtual machine automatically. This script creates a virtual machine and then calls the Layer 2 shell script.
+If you do not have Ubuntu 16.04, please use VirtualBox, VMWare, or another virtualization tool to create a VM with Ubuntu 16.04 installed. Whyis requires at least 4 GB of memory and 30GB of disk space.
+
 - **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Whyis onto an Ubuntu 16.04 server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
 - **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
 
-Choose a layer to install. Most developers working with Whyis for the first time will want to install into a virtual machine, and should choose Layer 3.
-Users who are willing to configure a machine directly for use by Whyis should choose Layer 2.
-Whyis installations are currently supported on Ubuntu 16.04. 
+** Whyis installations are currently supported on Ubuntu 16.04. **
 
 
 ## Layer 2: Install into an Ubuntu 16.04 system
@@ -24,37 +23,7 @@ To install using the development branch of Whyis, use the master install script:
 ```
 bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh)
 ```
-
-## Layer 3: Install into a vagrant virtual machine 
-
-This is useful for developers who want to isolate their development environment so that builds are repeatable, and for developers of multiple knowledge graphs.
-
-You will need to install vagrant and virtualbox.
-
-```
-mkdir whyis-vm && cd whyis-vm
-curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/Vagrantfile > Vagrantfile
-curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/install.sh > install.sh
-vagrant up
-```
-
-To install using the development branch of Whyis, use the master install script:
-
-```
-mkdir whyis-vm && cd whyis-vm
-curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/Vagrantfile > Vagrantfile
-curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh > install.sh
-vagrant up
-```
-
-If you are setting up more than one whyis vm (maybe for multiple projects), be sure to change the IP address in the Vagrantfile after you downloaded but before running `vagrant up`:
-
-```
-  config.vm.network "private_network", ip: "192.168.33.36"
-```
-
-## Installing on Virtual Box without Vagrant
-It is possible to install Whyis without using Vagrant by installing a Ubuntu Server 16.04 via an ISO file on Virtual Box, and then installing Whyis on the Virtual Machine following the "Layer 2: Install into an Ubuntu system" instructions
+## How to Create an Ubuntu 16.04 Virtual Machine with Virtualbox
 
 ### Download ISO file
 
