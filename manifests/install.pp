@@ -216,18 +216,3 @@ exec { "compile_java":
 
 
 include java
-
-class { 'elasticsearch':
-  restart_on_change => true,
-  api_protocol            => 'http',
-  api_host                => 'localhost',
-  api_port                => 9200,
-  api_timeout             => 10,
-  api_basic_auth_username => undef,
-  api_basic_auth_password => undef,
-  api_ca_file             => undef,
-  api_ca_path             => undef,
-  validate_tls            => true,  
-}
-
-elasticsearch::instance { 'es-01': }
