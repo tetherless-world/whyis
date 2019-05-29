@@ -22,7 +22,6 @@ sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 
 sudo /opt/puppetlabs/bin/puppet module install stankevich-python
 
-sudo /opt/puppetlabs/bin/puppet module install elastic-elastic_stack
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 
