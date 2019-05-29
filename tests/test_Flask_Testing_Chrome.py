@@ -1,6 +1,6 @@
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import str
 import urllib.request, urllib.error, urllib.parse
 from flask import Flask
 from flask_testing import LiveServerTestCase

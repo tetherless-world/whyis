@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
-from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
-from builtins import object
+#from __future__ import print_function
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import str
+#from past.builtins import basestring
+#from builtins import object
 import requests
 import importlib
 
@@ -935,7 +935,8 @@ construct {
                     print('attempting linked data on', name, fmt, dataFormats[fmt], format, content_type)
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
-                    output_graph.parse(data=result, format="json-ld")
+                    print(result)
+                    output_graph.parse(data=str(result,'utf8'), format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
@@ -1060,7 +1061,9 @@ construct {
             def _get_graph(self):
                 inputGraph = ConjunctiveGraph()
                 contentType = request.headers['Content-Type']
-                sadi.deserialize(inputGraph, request.data, contentType)
+                encoding = 'utf8' if not request.content_encoding else request.content_encoding
+                content = str(request.data, encoding)
+                sadi.deserialize(inputGraph, content, contentType)
                 return inputGraph
 
             @login_required

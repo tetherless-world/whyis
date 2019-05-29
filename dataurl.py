@@ -1,5 +1,5 @@
-from future import standard_library
-standard_library.install_aliases()
+#from future import standard_library
+#standard_library.install_aliases()
 import binascii
 try:
     from urllib.parse import unquote_to_bytes

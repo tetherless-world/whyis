@@ -1,6 +1,6 @@
-from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
+#from __future__ import print_function
+#from future import standard_library
+#standard_library.install_aliases()
 from testcase import WhyisTestCase
 
 from base64 import b64encode
@@ -23,6 +23,7 @@ class OntologyImportAgentTestCase(WhyisTestCase):
          "@type" : "http://www.w3.org/2002/07/owl#Ontology",
          "http://www.w3.org/2002/07/owl#imports":{"@id":"http://xmlns.com/foaf/0.1/"}
         }''', format="json-ld")
+        print(np.serialize(format="trig"))
         agent = autonomic.OntologyImporter()
 
         results = self.run_agent(agent, nanopublication=np)
@@ -31,11 +32,9 @@ class OntologyImportAgentTestCase(WhyisTestCase):
 
     def test_dc_terms_import(self):
         np = nanopub.Nanopublication()
-        np.assertion.parse(data='''{
-         "@id": "http://example.com/testonto",
-         "@type" : "http://www.w3.org/2002/07/owl#Ontology",
-         "http://www.w3.org/2002/07/owl#imports":{"@id":"http://purl.org/dc/terms/"}
-        }''', format="json-ld")
+        np.assertion.parse(data=str('''<http://example.com/testonto> a <http://www.w3.org/2002/07/owl#Ontology>;
+         <http://www.w3.org/2002/07/owl#imports> <http://purl.org/dc/terms/>.'''), format="turtle")
+        print(np.serialize(format="trig"))
         agent = autonomic.OntologyImporter()
 
         results = self.run_agent(agent, nanopublication=np)
@@ -50,6 +49,7 @@ class OntologyImportAgentTestCase(WhyisTestCase):
          "@type" : "http://www.w3.org/2002/07/owl#Ontology",
          "http://www.w3.org/2002/07/owl#imports":{"@id":"http://hadatac.org/ont/hasco/"}
         }''', format="json-ld")
+        print(np.serialize(format="trig"))
         agent = autonomic.OntologyImporter()
 
         results = self.run_agent(agent, nanopublication=np)

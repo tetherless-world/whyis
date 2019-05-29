@@ -116,7 +116,7 @@ class NanopublicationManager(object):
         # This needs to be a two-step write, since we need to store
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
-        fileid = self.depot.create(FileIntent('', ld.create_id(), 'application/trig'))
+        fileid = self.depot.create(FileIntent(b'', ld.create_id(), 'application/trig'))
         return fileid
                     
     def prepare(self, graph, mappings = None, store=None):
@@ -289,7 +289,7 @@ class NanopublicationManager(object):
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     data.write(serialized)
-                    data.write('\n')
+                    data.write(b'\n')
                     data.flush()
                     full_list.append(nanopub.identifier)
                 #np_graph.serialize(data, format="trig")

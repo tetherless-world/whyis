@@ -1,6 +1,6 @@
-from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
+#from __future__ import print_function
+#from future import standard_library
+#standard_library.install_aliases()
 from testcase import WhyisTestCase
 
 from base64 import b64encode
@@ -20,33 +20,33 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(response.status,'201 CREATED')
         content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
         self.assertEquals(content.mimetype, "text/plain")
-        self.assertEquals(content.data, "Hello, World!")    
+        self.assertEquals(str(content.data,'utf8'), "Hello, World!")    
 
     def test_base64_upload(self):
         self.login(*self.create_user("user@example.com","password"))
         text = "Hello, World!"
-        b64text = b64encode(text)
+        b64text = str(b64encode(bytes(text,'utf8')),'utf8')
         nanopub = '''{ "@id": "http://example.com/testdatab64","http://vocab.rpi.edu/whyis/hasContent":"data:text/plain;charset=UTF-8;base64,%s"}''' % b64text
-        response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
+        response = self.client.post("/pub", data=bytes(nanopub,'utf8'), content_type="application/ld+json",follow_redirects=True)
         
         self.assertEquals(response.status,'201 CREATED')
         content = self.client.get("/about",query_string={"uri":"http://example.com/testdatab64"},follow_redirects=True)
         self.assertEquals(content.mimetype, "text/plain")
-        self.assertEquals(content.data, text)
+        self.assertEquals(str(content.data, 'utf8'), text)
 
     def test_form_upload(self):
         self.login(*self.create_user("user@example.com","password"))
         text = "Hello, World!"
         uri = 'http://example.com/testdata_form_upload'
         data = {
-            'file': (StringIO(text), 'hello_world.txt'),
+            'file': (bytes(text,'utf8'), 'hello_world.txt'),
             'upload_type': 'http://purl.org/net/provenance/ns#File'
         }
         response = self.client.post("/about",query_string={"uri":uri}, data=data)
         self.assertEquals(response.status,'302 FOUND')
         content = self.client.get("/about",query_string={"uri":uri},follow_redirects=True)
         self.assertEquals(content.mimetype, "text/plain")
-        self.assertEquals(content.data, text)
+        self.assertEquals(str(content.data, 'utf8'), text)
 
         metadata = self.client.get("/about",query_string={"uri":uri, 'view':'describe'},headers={"Accept":"application/ld+json"},follow_redirects=True)
         g = Graph()
@@ -68,7 +68,7 @@ class UploadTest(WhyisTestCase):
         content = self.client.get("/about",query_string={"uri":"http://example.com/janedoe"},follow_redirects=True)
         g = Graph()
         self.assertEquals(content.mimetype, "text/turtle")
-        g.parse(data=content.data, format="turtle")
+        g.parse(data=str(content.data,'utf8'), format="turtle")
         
         self.assertEquals(len(g), 5)
         self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type), URIRef('http://schema.org/Person'))
@@ -83,14 +83,14 @@ class UploadTest(WhyisTestCase):
 '''        
         self.login(*self.create_user("user@example.com","password"))
         text = "Hello, World!"
-        b64text = b64encode(text)
+        b64text = b64encode(bytes(text,'utf8'))
         response = self.client.post("/pub", data=turtle, content_type="text/turtle",follow_redirects=True)
         
         self.assertEquals(response.status,'201 CREATED')
         content = self.client.get("/about",query_string={"uri":"http://example.com/janedoe", 'view':'attributes'},follow_redirects=True)
         
         self.assertEquals(content.mimetype, "application/json")
-        json_content = json.loads(content.data)
+        json_content = json.loads(str(content.data, 'utf8'))
 
         print(json_content)
 

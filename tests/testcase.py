@@ -1,10 +1,10 @@
-from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
+#from __future__ import print_function
+#from future import standard_library
+#standard_library.install_aliases()
 import urllib.request, urllib.error, urllib.parse
 from flask import Flask, g
 from flask_testing import TestCase
-from flask.ext.login import login_user, current_user, current_app
+from flask_login import login_user, current_user, current_app
 import requests
 
 class WhyisTestCase(TestCase):
@@ -32,10 +32,10 @@ class WhyisTestCase(TestCase):
         return application
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='admin'):
-        import subprocess
+        import commands
         from uuid import uuid4
         pw = 'password'
-        creator = subprocess.CreateUser()
+        creator = commands.CreateUser()
         creator.run(email, password, fn, ln, username, roles)
         return email, password
 
