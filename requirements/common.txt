@@ -28,6 +28,7 @@ git+git://github.com/jimmccusker/flask-ld.git@057ec0faf626d34e7d235a9d1531ec8300
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 SPARQLWrapper
 html5lib
+kombu==4.3.0
 redis<3
 celery==4.2.1
 setlr==0.2.11
