@@ -28,8 +28,6 @@ sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
 
-sudo /opt/puppetlabs/bin/puppet module install elastic-elasticsearch
-
 curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
 
 if [ -f /vagrant/manifests/install.pp ]; then
