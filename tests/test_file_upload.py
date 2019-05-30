@@ -6,6 +6,8 @@ from rdflib import *
 
 import json
 from StringIO import StringIO
+from tika import parser as tika_parser
+
 
 class UploadTest(WhyisTestCase):
     
@@ -20,14 +22,35 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(content.data, "Hello, World!")
 
     def test_PDF_upload(self):
-        self.login(*self.create_user("user@example.com","password"))
-        nanopub = '''{ "@id": "http://example.com/testdataPDF","http://vocab.rpi.edu/whyis/hasContent":"data:text/plain;charset=UTF-8,Hello, World!"}'''
-        response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
+        # self.login(*self.create_user("user@example.com","password"))
+        # nanopub = '''{ "@id": "http://example.com/testdataPDF","http://vocab.rpi.edu/whyis/hasContent":"data:application/pdf;charset=UTF-8,Hello, World!"}'''
+        # response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
             
-        self.assertEquals(response.status,'201 CREATED')
-        content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
-        self.assertEquals(content.mimetype, "text/plain")
-        self.assertEquals(content.data, "Hello, World!")
+        # self.assertEquals(response.status,'201 CREATED')
+        # content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
+        # self.assertEquals(content.mimetype, "application/pdf")
+        # self.assertEquals(content.data, "Hello, World!")
+        self.login(*self.create_user("user@example.com","password"))
+        pdf_filename = "tests/test_pdf.pdf"
+        pdf_content = u'\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis is a test PDF, this is the header. \n\nHello World! This is the body. \nHow are you doing? \n \n  \n\n\n\nThis is a test PDF, this is the header. \n\nThis is page 2. \n\n\n'
+        uri = 'http://example.com/testdata_pdf_form_upload'
+
+        pdf_file = open(pdf_filename, "r")
+        data = {
+            'file': (pdf_file, 'test_pdf.pdf'),
+            'upload_type': 'http://purl.org/net/provenance/ns#File'
+        }
+        response = self.client.post("/about",query_string={"uri":uri}, data=data)
+        self.assertEquals(response.status,'302 FOUND')
+        content = self.client.get("/about",query_string={"uri":uri},follow_redirects=True)
+        self.assertEquals(content.mimetype, "application/pdf")
+        self.assertEquals(type(content.data), type("string type"))
+        self.assertEquals(tika_parser.from_buffer(content.data)["content"], pdf_content)
+
+        metadata = self.client.get("/about",query_string={"uri":uri, 'view':'describe'},headers={"Accept":"application/ld+json"},follow_redirects=True)
+        g = Graph()
+        g.parse(data=metadata.data, format="json-ld")
+        self.assertTrue(g.resource(URIRef(uri))[RDF.type : URIRef('http://purl.org/net/provenance/ns#File')])
 
     def test_base64_upload(self):
         self.login(*self.create_user("user@example.com","password"))
