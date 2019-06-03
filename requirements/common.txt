@@ -19,7 +19,8 @@ Flask-Login==0.3.2
 flask-security
 Nose
 flask-admin
-git+git://github.com/jimmccusker/rdflib-jsonld.git#egg=rdflib-jsonld
+#git+git://github.com/jimmccusker/rdflib-jsonld.git#egg=rdflib-jsonld
+git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/jimmccusker/RDFAlchemy.git#egg=RDFAlchemy
 git+git://github.com/jimmccusker/flask-ld.git#egg=flask-ld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa

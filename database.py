@@ -60,7 +60,8 @@ def engine_from_config(config, prefix):
         graph.store.batch_unification = False
         graph.store.open(config[prefix+"store"], create=True)
     else:
-        graph = memory_graphs[prefix]
+        graph = ConjunctiveGraph() # memory_graphs[prefix]
+        print (prefix, graph.store)
         def publish(data, *graphs):
             for nanopub in graphs:
                 graph.addN(nanopub.quads())

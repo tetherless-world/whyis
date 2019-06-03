@@ -936,7 +936,12 @@ construct {
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
                     print(result)
-                    output_graph.parse(data=str(result,'utf8'), format="json-ld")
+                    f = open("resultfile", 'a')
+                    print(resource,file=f)
+                    f.write(str(type(result))+'\n')
+                    f.write(result)
+                    f.close()
+                    output_graph.parse(data=str(eval(result),'utf8'), format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
@@ -996,6 +1001,11 @@ construct {
             if extension in extensions:
                 headers['Content-Type'] = extensions[extension]
                 
+
+            f = open("templatefile", 'a')
+            print(views, file=f)
+            f.close()
+
             # default view (list of nanopubs)
             # if available, replace with class view
             # if available, replace with instance view
