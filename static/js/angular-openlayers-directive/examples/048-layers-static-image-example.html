@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html ng-app="demoapp">
+  <head>
+    <script src="../bower_components/openlayers/ol.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="../dist/angular-openlayers-directive.js"></script>
+    <link rel="stylesheet" href="../bower_components/openlayers/ol.css" />
+    <script>
+      var app = angular.module("demoapp", ["openlayers-directive"]);
+      app.controller("StaticImageController", [ '$scope', '$http', 'olData', function($scope, $http, olData) {
+        angular.extend($scope, {
+            center: {
+                coord: [ 900, 600 ],
+                zoom: 3
+            },
+            defaults: {
+                view: {
+                    projection: 'pixel',
+                    extent: [ 0, 0, 1800, 1200 ]
+                }
+            },
+            static: {
+                source: {
+                    type: "ImageStatic",
+                    url: "http://blog.wallpops.com/wp-content/upLoads/2013/05/WPE0624.jpg",
+                    imageSize: [ 1800, 1200 ]
+                }
+            }
+        });
+
+      } ]);
+      </script>
+  </head>
+  <body ng-controller="StaticImageController">
+     <openlayers ol-center="center" ol-defaults="defaults" custom-layers="true" height="600px">
+         <ol-layer ol-layer-properties="static"></ol-layer>
+     </openlayers>
+     <h1>Static Image Layer example</h1>
+     <p>You can load an static image (no tiles) easily, look at the source of the <strong>layer</strong> object:</p>
+     <pre ng-bind="static | json"></pre>
+     <pre ng-bind="center | json"></pre>
+  </body>
+</html>

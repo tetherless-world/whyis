@@ -1,0 +1,15 @@
+lib
+temp
+node_modules/
+bower_components/
+dist/
+libpeerconnection.log
+*.swp
+.*.swp
+*.iml
+.idea
+.project
+selenium
+coverage
+*.log
+.vscode

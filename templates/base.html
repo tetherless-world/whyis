@@ -22,6 +22,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
         
     <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-semantic-faceted-search/dist/semantic-faceted-search.css')}}">
+
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v3.20.1/css/ol.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/markers.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/openlayers.css')}}">
         
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
@@ -211,6 +215,18 @@
 <script src="{{ url_for('static', filename='js/lib/chart.js')}}"></script>
 
 <script src="{{ url_for('static', filename='bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js')}}"></script>
+
+<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v3.20.1/build/ol.js"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/openlayers.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/center.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/control.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/layer.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/marker.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/path.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/view.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olData.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olHelpers.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olMapDefaults.js')}}"></script>
 
     <script src="{{ url_for('static', filename='js/lib/moment-with-locales.min.js')}}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
