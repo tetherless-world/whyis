@@ -5,7 +5,7 @@ import rdflib
 import setlr
 from datetime import datetime
 from nanopub import Nanopublication
-import flask_ld as ld
+from datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -242,7 +242,8 @@ class DatasetImporter(UpdateChangeService):
     def process(self, i, o):
         node = self.app.run_importer(i.identifier)
                     
-                            
+
+## TODO: Add content negotiation.
 class OntologyImporter(UpdateChangeService):
 
     activity_class = whyis.OntologyImport
@@ -382,7 +383,7 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
             nanopub = self.app.nanopub_manager.get(np)
             print("Template NP", nanopub.identifier, len(nanopub))
             template_prefix = nanopub.assertion.value(script, setl.hasTemplatePrefix)
-            replacement_prefix = self.app.NS.local['setl/'+ld.create_id()+"/"]
+            replacement_prefix = self.app.NS.local['setl/'+create_id()+"/"]
 
             mappings = {}
             for x, in nanopub.assertion.query("select ?x where {?x a ?t}",

@@ -3,7 +3,6 @@ from builtins import range
 from builtins import object
 import rdflib
 import os
-import flask_ld as ld
 import collections
 import requests
 from dataurl import DataURLStorage
@@ -22,6 +21,8 @@ prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")
 frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
 from uuid import uuid4
+
+from datastore import create_id
 
 class Nanopublication(rdflib.ConjunctiveGraph):
 
@@ -116,7 +117,7 @@ class NanopublicationManager(object):
         # This needs to be a two-step write, since we need to store
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
-        fileid = self.depot.create(FileIntent(b'', ld.create_id(), 'application/trig'))
+        fileid = self.depot.create(FileIntent(b'', create_id(), 'application/trig'))
         return fileid
                     
     def prepare(self, graph, mappings = None, store=None):
@@ -181,7 +182,7 @@ class NanopublicationManager(object):
                 p += output_graph.get_context(identifier=provenance)
                 #print "Provenance", len(p), len(output_graph.get_context(identifier=provenance))
             if nanopub.pubinfo.value(nanopub.identifier, frbr.realizationOf) is None:
-                work = self.prefix[ld.create_id()]
+                work = self.prefix[create_id()]
                 nanopub.pubinfo.add((nanopub.identifier, frbr.realizationOf, work))
                 nanopub.pubinfo.add((work, rdflib.RDF.type, frbr.Work))
                 nanopub.pubinfo.add((nanopub.identifier, rdflib.RDF.type, frbr.Expression))

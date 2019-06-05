@@ -12,9 +12,13 @@ import os
 import sys, collections
 from empty import Empty
 from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
-import flask_ld as ld
+from utils import lru
+
+from flask.views import MethodView
+
 import jinja2
-from flask_ld.utils import lru
+from api import LinkedDataApi
+
 from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
 import requests
@@ -40,8 +44,6 @@ from flask_security.utils import encrypt_password
 from werkzeug.datastructures import ImmutableList
 from flask_wtf import Form, RecaptchaField
 from wtforms import TextField, TextAreaField, StringField, validators
-import rdfalchemy
-from rdfalchemy.orm import mapper
 import sadi
 import json
 import sadi.mimeparse
@@ -129,15 +131,14 @@ NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
 NS.schema = rdflib.Namespace("http://schema.org/")
     
-from rdfalchemy import *
-from flask_ld.datastore import *
+from datastore import *
 
 #from flask_login.config import EXEMPT_METHODS
 from functools import wraps
 
 # Setup Flask-Security
 class ExtendedRegisterForm(RegisterForm):
-    identifier = TextField('Identifier', [validators.Required()])
+    id = TextField('Identifier', [validators.Required()])
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
 
@@ -362,7 +363,6 @@ class App(Empty):
         self.admin_db = database.engine_from_config(self.config, "admin_")
         self.db = database.engine_from_config(self.config, "knowledge_")
         self.db.app = self
-        load_namespaces(self.db,locals())
         Resource.db = self.admin_db
 
         self.vocab = ConjunctiveGraph()
@@ -372,17 +372,16 @@ class App(Empty):
         custom_vocab = Graph(store=self.vocab.store)
         custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
 
-        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
-        self.Role = self.role_api.alchemy
+#        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
+#        self.Role = self.role_api.alchemy
 
-        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.admin_db.store, self.vocab, self.config['lod_prefix'], UserMixin)
-        self.User = self.user_api.alchemy
+#        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.admin_db.store, self.vocab, self.config['lod_prefix'], UserMixin)
+#        self.User = self.user_api.alchemy
 
-        self.nanopub_api = ld.LocalResource(self.NS.np.Nanopublication,"pub", self.db.store, self.vocab, self.config['lod_prefix'], name="Graph")
-        self.Nanopub = self.nanopub_api.alchemy
+#        self.nanopub_api = ld.LocalResource(self.NS.np.Nanopublication,"pub", self.db.store, self.vocab, self.config['lod_prefix'], name="Graph")
+#        self.Nanopub = self.nanopub_api.alchemy
 
-        self.classes = mapper(self.Role, self.User)
-        self.datastore = RDFAlchemyUserDatastore(self.admin_db, self.classes, self.User, self.Role)
+        self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
         #self.mail = Mail(self)
@@ -1023,7 +1022,7 @@ construct {
             resp.headers.extend(headers or {})
             return resp
         
-        self.api = ld.LinkedDataApi(self, "", self.db.store, "")
+        self.api = LinkedDataApi(self, "", self.db.store, "")
         self.api.representations['text/html'] = render_nanopub
 
         #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
@@ -1040,12 +1039,8 @@ construct {
 
 
         
-        class NanopublicationResource(ld.LinkedDataResource):
+        class NanopublicationResource(Resource, MethodView):
             decorators = [conditional_login_required]
-
-            def __init__(self):
-                self.local_resource = app.nanopub_api
-
 
             def _get_uri(self, ident):
                 return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
@@ -1065,7 +1060,6 @@ construct {
                 if not app._can_edit(uri):
                     return '<h1>Not Authorized</h1>', 401
                 app.nanopub_manager.retire(uri)
-                #self.local_resource.delete(uri)
                 return '', 204
 
             def _get_graph(self):

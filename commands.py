@@ -146,7 +146,7 @@ class UpdateUser(Command):
 
     def run(self, identifier, email, password, fn, ln, add_roles, remove_roles):
         user = flask.current_app.datastore.get_user(identifier)
-        print("Modifying user", user.resUri)
+        print("Modifying user", user.identifier)
         if password is not None:
             verified = verify_password(password,encrypt_password(password))
             if verified:
@@ -194,12 +194,14 @@ class CreateUser(Command):
         role_objects = []
         if roles is not None:
             role_objects = [flask.current_app.datastore.find_or_create_role(name=r) for r in roles.split(',')]
-        user = dict(identifier=identifier, email=email,
+            print(role_objects)
+        user = dict(id=identifier, email=email,
             password=encrypt_password(password),
             givenName=fn, familyName=ln,
             confirmed_at = datetime.datetime.utcnow(), roles = role_objects)
         user_obj = flask.current_app.datastore.create_user(**user)
-        print("Created user: %s (%s)" % (user, ', '.join([r.resUri for r in role_objects])))
+        print(user_obj.roles)
+        print("Created user: %s (%s)" % (user, ', '.join([r.identifier for r in user_obj.roles])))
 
 class Test(Command):
     """

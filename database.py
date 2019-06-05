@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-import flask_ld as ld
 from rdflib import *
 SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql, POST
@@ -61,7 +60,6 @@ def engine_from_config(config, prefix):
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph() # memory_graphs[prefix]
-        print (prefix, graph.store)
         def publish(data, *graphs):
             for nanopub in graphs:
                 graph.addN(nanopub.quads())

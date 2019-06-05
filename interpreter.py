@@ -10,7 +10,6 @@ import re
 from datetime import datetime
 import time
 from nanopub import Nanopublication
-import flask_ld as ld
 import flask
 from flask import render_template
 import logging
