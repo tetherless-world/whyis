@@ -208,16 +208,19 @@ class Test(Command):
 
     verbosity = 2
     failfast = False
+    tests = 'test*.py'
 
     def get_options(self):
         return [
             Option('--verbosity', '-v', dest='verbosity',
                     type=int, default=self.verbosity),
             Option('--failfast', dest='failfast',
-                    default=self.failfast, action='store_false')
+                    default=self.failfast, action='store_false'),
+            Option('--test', dest='tests',
+                    default=self.tests, type=str)
         ]
-
-    def run(self, verbosity, failfast):
+    
+    def run(self, verbosity, failfast, tests):
         import sys
         import glob
         import unittest
@@ -244,12 +247,19 @@ class Test(Command):
                     if exists(join(path, 'tests.py')):
                         all_tests.append(loader.discover(path, 'tests.py'))
                     elif exists(tests_dir):
-                        all_tests.append(loader.discover(tests_dir, pattern='test*.py'))
-
+                        all_tests.append(loader.discover(tests_dir, pattern=tests+'.py'))
+                        
         if exists('tests') and isdir('tests'):
-            all_tests.append(loader.discover('tests', pattern='test*.py'))
+            all_tests.append(loader.discover('tests', pattern=tests+'.py'))
         elif exists('tests.py'):
             all_tests.append(loader.discover('.', pattern='tests.py'))
+
+        if 'app_path' in flask.current_app.config:
+            print('Adding tests from', flask.current_app.config['app_path'])
+            sys.path.insert(0, flask.current_app.config['app_path'])
+            all_tests.append(loader.discover(join(flask.current_app.config['app_path'],'tests'),
+                                             pattern=tests+'.py',
+                                             top_level_dir=flask.current_app.config['app_path']))
 
         test_suite = unittest.TestSuite(all_tests)
         unittest.TextTestRunner(
