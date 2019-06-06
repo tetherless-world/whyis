@@ -208,7 +208,7 @@ class Test(Command):
 
     verbosity = 2
     failfast = False
-    tests = 'test*.py'
+    tests = 'test*'
 
     def get_options(self):
         return [
