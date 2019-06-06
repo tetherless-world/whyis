@@ -194,13 +194,11 @@ class CreateUser(Command):
         role_objects = []
         if roles is not None:
             role_objects = [flask.current_app.datastore.find_or_create_role(name=r) for r in roles.split(',')]
-            print(role_objects)
         user = dict(id=identifier, email=email,
             password=encrypt_password(password),
             givenName=fn, familyName=ln,
             confirmed_at = datetime.datetime.utcnow(), roles = role_objects)
         user_obj = flask.current_app.datastore.create_user(**user)
-        print(user_obj.roles)
         print("Created user: %s (%s)" % (user, ', '.join([r.identifier for r in user_obj.roles])))
 
 class Test(Command):
