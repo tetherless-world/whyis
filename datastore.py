@@ -249,13 +249,16 @@ class WhyisDatastore(Datastore):
 
     def find(self, model, **kwargs):
         rdf_type = model.rdf_type
-        predicates = [(model.__dict__[key].predicate, key) for key, value in kwargs.items()]
+        predicates = [(model.__dict__[key]._predicate, key) for key, value in kwargs.items()]
+        bindings = dict([(key, value2object(value)) for key, value in kwargs.items()])
         query = ''' select ?identifier where {
         ?identifier a %s;
-        ''' % rdf_type + '\n'.join(['    %s ?%s;' % x for x in predicates]) + '''
+        ''' % rdf_type.n3() + '\n'.join(['    %s ?%s;' % (p.n3(), v) for p, v in predicates]) + '''
         .
         }'''
-        return self.db.query(query, initBindings=kwargs)
+        result = list(self.db.query(query, initBindings=bindings))
+        if len(result) > 0:
+            return model(self.db, result[0][0])
 
     def read(self, uri):
         db = ConjunctiveGraph(self.db.store)
@@ -321,10 +324,7 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     def find_user(self, **kwargs):
         if 'identifier' in kwargs:
             return self.get(URIRef(kwargs['identifier']))
-        try:
-            u = self.find(User, **kwargs)
-        except:
-            return None
+        return self.find(User, **kwargs)
 
     @tag_datastore
     def find_role(self, role_name, **kwargs):

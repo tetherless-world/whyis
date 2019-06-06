@@ -20,6 +20,7 @@ class LoginTest(WhyisTestCase):
         print(user_obj)
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
+        print(user_obj.password)
         login_response = self.login(*user_details)
         self.assertNotIn(b'USER = { }', login_response.data)
         #print(login_response.response)
