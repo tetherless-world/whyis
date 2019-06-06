@@ -11,20 +11,12 @@ sudo apt-get install -y puppet-agent libaugeas0
 #sudo apt-get install -y python-virtualenv
 
 export PATH=/opt/puppetlabs/bin/:$PATH
-echo "Installing puppetlabs-stdlib --version 4.14.0..."
-sudo /opt/puppetlabs/bin/puppet module install puppetlabs-stdlib
-
-echo "Installing puppetlabs-vcsrepo --version 4.14.0..."
-sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo 
-
-echo "Installing maestrodev-wget --version 1.7.3..."
-sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 
 sudo /opt/puppetlabs/bin/puppet module install puppet-python
-
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
+sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
-
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
 
 curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
