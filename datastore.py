@@ -197,11 +197,11 @@ class User(MappedResource, UserMixin):
     active = single(auth.active)
     confirmed_at = single(auth.confirmed)
     email = single(auth.email)
-    current_login = single(auth.hadCurrentLogin)
+    current_login_at = single(auth.hadCurrentLogin)
     current_login_ip = single( auth.hadCurrentLoginIP)
     last_login_at = single( auth.hadLastLogin)
-    hadLastLoginIP = single( auth.hadLastLoginIP)
-    hadLoginCount = single( auth.hadLoginCount)
+    last_login_ip = single( auth.hadLastLoginIP)
+    login_count = single( auth.hadLoginCount)
     roles = multiple( auth.hasRole)
     password = single( auth.passwd)
     familyName = single(foaf.familyName)
@@ -307,11 +307,11 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     @tag_datastore
     def get_user(self, identifier):
         if isinstance(identifier, URIRef):
-            return self.get(identifier)
+            return self.User(self.db, identifier)
         for attr in [dc.identifier, auth.email]:
             uri = self.db.value(predicate=attr, object=Literal(identifier))
             if uri is not None:
-                self.get(uri)
+                return self.User(self.db, uri)
 
     def _is_numeric(self, value):
         try:

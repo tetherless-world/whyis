@@ -12,11 +12,11 @@ from io import StringIO
 
 class LoginTest(WhyisTestCase):
     
-    def test_plain_text_upload(self):
+    def test_login(self):
         user_details = self.create_user("user@example.com","password")
         print (user_details)
         self.assertEquals(user_details[0], 'user@example.com')
-        user_obj = self.app.datastore.find_user(email='user@example.com')
+        user_obj = self.app.datastore.get_user('user@example.com')
         print(user_obj)
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
