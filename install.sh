@@ -20,7 +20,7 @@ sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
 echo "Installing maestrodev-wget --version 1.7.3..."
 sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 
-sudo /opt/puppetlabs/bin/puppet module install stankevich-python
+sudo /opt/puppetlabs/bin/puppet module install puppet-python
 
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
