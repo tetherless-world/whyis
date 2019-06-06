@@ -14,6 +14,7 @@ class LoginTest(WhyisTestCase):
     
     def test_plain_text_upload(self):
         login_response = self.login(*self.create_user("user@example.com","password"))
-        print(login_response.status)
         print(login_response.data)
+        self.assertNotIn(b'USER = { }', login_response.data)
+        #print(login_response.response)
 

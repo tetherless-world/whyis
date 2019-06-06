@@ -40,7 +40,7 @@ class WhyisTestCase(TestCase):
         return email, password
 
     def login(self, email, password):
-        return self.client.post('/login', data={ 'email': email, 'password': password, 'remember':'y' })
+        return self.client.post('/login', data={ 'email': email, 'password': password, 'remember':'y' }, follow_redirects=True)
 
     def run_agent(self, agent, nanopublication=None):
         app = self.app
