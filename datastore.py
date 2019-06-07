@@ -244,39 +244,61 @@ class WhyisDatastore(Datastore):
     def commit(self):
         self.db.commit()
 
-    @tag_datastore
     def put(self, model):
+        print(self.db.store)
         #self.db.add(model)
-        self.update(model.graph, model.identifier)
-        return model
+        idb = Graph(self.db.store,model.identifier)
+        idb.remove((None,None,None))
+        idb += model.graph
+        self.db.store.commit()
+        
+        return self.get(model.identifier, type(model))
 
     def delete(self, model):
+        uri = model.identifier
+        idb = ConjunctiveGraph(self.db.store,uri)
+        if len(idb) == 0:
+            abort(404, "Resource does not exist or is not deletable.")
+        idb.remove((None,None,None))
+        g = ConjunctiveGraph(self.db.store)
+        g.remove((uri,None,None))
+        g.remove((None,None,uri))
         self.delete(model.identifier)
 
-    @tag_datastore
-    def get(self,resUri):
-        #print resUri, 'a', [x for x in self.db.objects(resUri,rdfalchemy.RDF.type)]
-        for t in self.db.objects(resUri,RDF.type):
-            if str(t) in self.classes:
-                result = self.classes[t](self.db, resUri)
-                result.datasource = self
-                return result
-        return Resource(self.db, resUri)
+    def get(self,resUri, c=None):
+        idb = Graph(self.db.store,resUri) 
+        result = Graph(identifier=resUri)
+        result += idb
+
+        if c is None:
+            c = Resource
+            for t in result.objects(resUri,RDF.type):
+                if str(t) in self.classes:
+                    c = self.classes[t]
+        
+        res = c(result, resUri)
+        res.datasource = self
+
+        return res
 
     def find(self, model, **kwargs):
         rdf_type = model.rdf_type
         predicates = [(model.__dict__[key]._predicate, key) for key, value in kwargs.items()]
         bindings = dict([(key, value2object(value)) for key, value in kwargs.items()])
+        print(str(self.db.serialize(format='turtle'), 'utf8'))
         query = ''' select ?identifier where {
         ?identifier a %s;
         ''' % rdf_type.n3() + '\n'.join(['    %s ?%s;' % (p.n3(), v) for p, v in predicates]) + '''
         .
         }'''
+        print (len(self.db))
+        print (bindings)
         result = list(self.db.query(query, initBindings=bindings))
+        print(result)
         if len(result) > 0:
-            return model(self.db, result[0][0])
+            return self.get(result[0][0], model)
 
-    def read(self, uri):
+    def _read(self, uri):
         db = ConjunctiveGraph(self.db.store)
         idb = Graph(self.db.store,uri) 
         result = Graph(identifier=uri)
@@ -288,9 +310,9 @@ class WhyisDatastore(Datastore):
             result.template = self.view_template[0].value
         return result
 
-    def update(self,inputGraph, uri):
-        allGraphs = ConjunctiveGraph(self.db.store)
-        allGraphs.remove((uri,None,None))
+    def _update(self,inputGraph, uri):
+        #allGraphs = ConjunctiveGraph(self.db.store)
+        #allGraphs.remove((uri,None,None))
         idb = Graph(self.db.store,uri)
         idb.remove((None,None,None))
         idb += inputGraph
@@ -298,15 +320,6 @@ class WhyisDatastore(Datastore):
         self.db.store.commit()
         return idb
 
-    def delete(self,uri):
-        idb = ConjunctiveGraph(self.db.store,uri)
-        if len(idb) == 0:
-            abort(404, "Resource does not exist or is not deletable.")
-        idb.remove((None,None,None))
-        g = ConjunctiveGraph(self.db.store)
-        g.remove((uri,None,None))
-        g.remove((None,None,uri))
-            
 
 class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     def __init__(self, db, classes, prefix):

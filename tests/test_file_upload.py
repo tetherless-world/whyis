@@ -9,13 +9,18 @@ from rdflib import *
 
 import json
 from io import StringIO
+from flask_login import login_user
 
 class UploadTest(WhyisTestCase):
     
     def test_plain_text_upload(self):
-        self.login(*self.create_user("user@example.com","password"))
+        email, pw = self.create_user("user@example.com","password")
+        user_obj = self.app.datastore.get_user(email)
+        login_user(user_obj)
+        
         nanopub = '''{ "@id": "http://example.com/testdata","http://vocab.rpi.edu/whyis/hasContent":"data:text/plain;charset=UTF-8,Hello, World!"}'''
         response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
+        print (response.data)
             
         self.assertEquals(response.status,'201 CREATED')
         content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
