@@ -24,7 +24,7 @@ class LoginTest(WhyisTestCase):
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
 
-        print(dir(user_obj))
+        
         self.assertNotEquals(None, user_obj.password)
         self.assertTrue(user_obj.verify_and_update_password("password"))
         self.assertFalse(requires_confirmation(user_obj))

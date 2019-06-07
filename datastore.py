@@ -6,7 +6,7 @@ from flask import make_response
 from copy import copy
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
-from flask_security.utils import  hash_password
+from flask_security.utils import  hash_password, verify_and_update_password
 
 from utils import create_id
 
@@ -217,10 +217,7 @@ class User(MappedResource, UserMixin):
         super().__init__(*args, **kwargs)
 
     def verify_and_update_password(self, password):
-        hashed =  hash_password(password)
-        print (self.password)
-        print (hashed)
-        return hashed == self.password
+        return verify_and_update_password(password, self)
 
 
 ###  http://www.w3.org/ns/prov#Role
