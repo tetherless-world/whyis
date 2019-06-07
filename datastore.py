@@ -182,6 +182,10 @@ class MappedResource(Resource):
             if key in kls.__dict__:
                 return kls.__dict__[key]
         raise AttributeError("descriptor %s not found for class %s" % (key,cls))
+
+#    def __str__(self):
+#        return type(self).__name__ + ' ' + super().__str__() + ' a ' + self.rdf_type
+
     
 dc = Namespace("http://purl.org/dc/terms/")
 auth = Namespace("http://vocab.rpi.edu/auth/")
@@ -207,6 +211,8 @@ class User(MappedResource, UserMixin):
     familyName = single(foaf.familyName)
     givenName = single(foaf.givenName)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 ###  http://www.w3.org/ns/prov#Role
@@ -215,6 +221,10 @@ class Role(MappedResource, RoleMixin):
     rdf_type = prov.Role
     name = single(RDFS.label)
     key = 'name'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
 class WhyisDatastore(Datastore):
 

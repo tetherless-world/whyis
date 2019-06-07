@@ -7,6 +7,9 @@ from base64 import b64encode
 
 from rdflib import *
 
+from flask_security.confirmable import requires_confirmation
+from flask_security.utils import  hash_password, localize_callback, url_for_security, validate_redirect_url
+
 import json
 from io import StringIO
 
@@ -20,7 +23,13 @@ class LoginTest(WhyisTestCase):
         print(user_obj)
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
-        print(user_obj.password)
+
+        print(dir(user_obj))
+        self.assertNotEquals(None, user_obj.password)
+        self.assertTrue(user_obj.verify_and_update_password("password"))
+        self.assertFalse(requires_confirmation(user_obj))
+        self.assertTrue(user_obj.is_active)
+                
         login_response = self.login(*user_details)
         self.assertNotIn(b'USER = { }', login_response.data)
         #print(login_response.response)
