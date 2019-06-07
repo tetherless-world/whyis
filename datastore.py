@@ -6,6 +6,7 @@ from flask import make_response
 from copy import copy
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
+from flask_security.utils import  hash_password
 
 from utils import create_id
 
@@ -212,7 +213,14 @@ class User(MappedResource, UserMixin):
     givenName = single(foaf.givenName)
 
     def __init__(self, *args, **kwargs):
+        print(dir(UserMixin))
         super().__init__(*args, **kwargs)
+
+    def verify_and_update_password(self, password):
+        hashed =  hash_password(password)
+        print (self.password)
+        print (hashed)
+        return hashed == self.password
 
 
 ###  http://www.w3.org/ns/prov#Role
