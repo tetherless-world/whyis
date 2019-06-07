@@ -104,9 +104,10 @@ class multiple:
     def __get__(self, obj, cls):
         if obj is None:
             return self
+        print ("accessing",obj,self._predicate)
         #if self._predicate in obj.__dict__:
         #    return obj.__dict__[self._predicate]
-        val = [o for o in obj.graph.objects(obj.identifier, self._predicate)]
+        val = list(obj.graph.objects(obj.identifier, self._predicate))
         # check to see if this is a Container or Collection
         # if so, return collection as a list
         if (len(val) == 1
@@ -213,10 +214,10 @@ class User(MappedResource, UserMixin):
     givenName = single(foaf.givenName)
 
     def __init__(self, *args, **kwargs):
-        print(dir(UserMixin))
         super().__init__(*args, **kwargs)
 
     def verify_and_update_password(self, password):
+        print("verifying password", password, self)
         return verify_and_update_password(password, self)
 
 
@@ -322,10 +323,12 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     @tag_datastore
     def get_user(self, identifier):
         if isinstance(identifier, URIRef):
+            print("getting user", uri)
             return self.User(self.db, identifier)
         for attr in [dc.identifier, auth.email]:
             uri = self.db.value(predicate=attr, object=Literal(identifier))
             if uri is not None:
+                print("getting user", uri)
                 return self.User(self.db, uri)
 
     def _is_numeric(self, value):

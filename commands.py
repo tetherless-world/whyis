@@ -199,7 +199,7 @@ class CreateUser(Command):
             givenName=fn, familyName=ln,
             confirmed_at = datetime.datetime.utcnow(), roles = role_objects)
         user_obj = flask.current_app.datastore.create_user(**user)
-        print("Created user: %s (%s)" % (user, ', '.join([r.identifier for r in user_obj.roles])))
+        print("Created user: %s (%s)" % (user, ''))#', '.join([r.identifier for r in user_obj.roles])))
 
 class Test(Command):
     """
