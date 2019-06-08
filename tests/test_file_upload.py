@@ -14,9 +14,7 @@ from flask_login import login_user
 class UploadTest(WhyisTestCase):
     
     def test_plain_text_upload(self):
-        email, pw = self.create_user("user@example.com","password")
-        user_obj = self.app.datastore.get_user(email)
-        login_user(user_obj)
+        self.login(*self.create_user("user@example.com","password"))
         
         nanopub = '''{ "@id": "http://example.com/testdata","http://vocab.rpi.edu/whyis/hasContent":"data:text/plain;charset=UTF-8,Hello, World!"}'''
         response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)

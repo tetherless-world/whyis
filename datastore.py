@@ -104,7 +104,6 @@ class multiple:
     def __get__(self, obj, cls):
         if obj is None:
             return self
-        print ("accessing",obj,self._predicate)
         #if self._predicate in obj.__dict__:
         #    return obj.__dict__[self._predicate]
         val = list(obj.graph.objects(obj.identifier, self._predicate))
@@ -217,7 +216,6 @@ class User(MappedResource, UserMixin):
         super().__init__(*args, **kwargs)
 
     def verify_and_update_password(self, password):
-        print("verifying password", password, self)
         return verify_and_update_password(password, self)
 
 
@@ -245,7 +243,6 @@ class WhyisDatastore(Datastore):
         self.db.commit()
 
     def put(self, model):
-        print(self.db.store)
         #self.db.add(model)
         idb = Graph(self.db.store,model.identifier)
         idb.remove((None,None,None))
@@ -266,14 +263,13 @@ class WhyisDatastore(Datastore):
         self.delete(model.identifier)
 
     def get(self,resUri, c=None):
-        idb = Graph(self.db.store,resUri) 
+        idb = Graph(self.db.store,resUri)
         result = Graph(identifier=resUri)
         result += idb
-
         if c is None:
             c = Resource
             for t in result.objects(resUri,RDF.type):
-                if str(t) in self.classes:
+                if t in self.classes:
                     c = self.classes[t]
         
         res = c(result, resUri)
@@ -285,47 +281,20 @@ class WhyisDatastore(Datastore):
         rdf_type = model.rdf_type
         predicates = [(model.__dict__[key]._predicate, key) for key, value in kwargs.items()]
         bindings = dict([(key, value2object(value)) for key, value in kwargs.items()])
-        print(str(self.db.serialize(format='turtle'), 'utf8'))
         query = ''' select ?identifier where {
         ?identifier a %s;
         ''' % rdf_type.n3() + '\n'.join(['    %s ?%s;' % (p.n3(), v) for p, v in predicates]) + '''
         .
         }'''
-        print (len(self.db))
-        print (bindings)
         result = list(self.db.query(query, initBindings=bindings))
-        print(result)
         if len(result) > 0:
             return self.get(result[0][0], model)
-
-    def _read(self, uri):
-        db = ConjunctiveGraph(self.db.store)
-        idb = Graph(self.db.store,uri) 
-        result = Graph(identifier=uri)
-        # raise RuntimeError(result)
-        result += idb
-        describe(db.store, uri, result)
-        result.template = None
-        if len(self.view_template) > 0:
-            result.template = self.view_template[0].value
-        return result
-
-    def _update(self,inputGraph, uri):
-        #allGraphs = ConjunctiveGraph(self.db.store)
-        #allGraphs.remove((uri,None,None))
-        idb = Graph(self.db.store,uri)
-        idb.remove((None,None,None))
-        idb += inputGraph
-        idb.template = None
-        self.db.store.commit()
-        return idb
 
 
 class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     def __init__(self, db, classes, prefix):
-        c = dict(classes)
-        c[User.rdf_type] = User
-        c[Role.rdf_type] = Role
+        classes[User.rdf_type] = User
+        classes[Role.rdf_type] = Role
         self.User = User
         self.Role = Role
         self.User.prefix = Namespace(prefix+'/user/')
@@ -336,20 +305,11 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     @tag_datastore
     def get_user(self, identifier):
         if isinstance(identifier, URIRef):
-            print("getting user", uri)
-            return self.User(self.db, identifier)
+            return self.get(identifier, self.User)
         for attr in [dc.identifier, auth.email]:
             uri = self.db.value(predicate=attr, object=Literal(identifier))
             if uri is not None:
-                print("getting user", uri)
-                return self.User(self.db, uri)
-
-    def _is_numeric(self, value):
-        try:
-            int(value)
-        except ValueError:
-            return False
-        return True
+                return self.get(uri, self.User)
 
     @tag_datastore
     def find_user(self, **kwargs):
@@ -359,4 +319,8 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
 
     @tag_datastore
     def find_role(self, role_name, **kwargs):
-        return self.get(self.Role.prefix[role_name])
+        role_uri = self.Role.prefix[role_name]
+        if (role_uri, RDF.type, self.Role.rdf_type) not in self.db:
+            self.put(self.Role(name=role_name))
+        role = self.get(self.Role.prefix[role_name], self.Role)
+        return role

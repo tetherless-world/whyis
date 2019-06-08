@@ -20,10 +20,8 @@ class LoginTest(WhyisTestCase):
     
     def test_direct_login(self):
         user_details = self.create_user("user@example.com","password")
-        print (user_details)
         self.assertEquals(user_details[0], 'user@example.com')
         user_obj = self.app.datastore.get_user('user@example.com')
-        print(user_obj)
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
 
@@ -36,17 +34,14 @@ class LoginTest(WhyisTestCase):
         login_user(user_obj)
        
         #login_response = self.login(*user_details)
-        print (current_user)
         self.assertTrue(current_user.is_authenticated)
         #self.assertNotIn(b'USER = { }', login_response.data)
         #print(login_response.response)
 
     def test_web_login(self):
         user_details = self.create_user("user@example.com","password")
-        print (user_details)
         self.assertEquals(user_details[0], 'user@example.com')
         user_obj = self.app.datastore.get_user('user@example.com')
-        print(user_obj)
         self.assertNotEquals(user_obj, None)
         self.assertEquals('user@example.com', user_obj.email)
 
@@ -57,8 +52,7 @@ class LoginTest(WhyisTestCase):
         self.assertTrue(user_obj.is_active)
        
         login_response = self.login(*user_details)
-        print (current_user)
-        self.assertTrue(current_user.is_authenticated)
-        #self.assertNotIn(b'USER = { }', login_response.data)
+        #self.assertTrue(current_user.is_authenticated)
+        self.assertNotIn(b'USER = { }', login_response.data)
         #print(login_response.response)
 

@@ -686,10 +686,8 @@ construct {
         @self.login_manager.user_loader
         def load_user(user_id):
             if user_id != None:
-                print('load_user', user_id)
                 #try:
                 user = self.datastore.find_user(id=user_id)
-                print ('loaded user', user)
                 return user
                 #except:
                 #    return None
