@@ -8,7 +8,7 @@ from base64 import b64encode
 from rdflib import *
 
 import json
-from io import StringIO
+from io import BytesIO
 from flask_login import login_user
 
 class UploadTest(WhyisTestCase):
@@ -43,10 +43,10 @@ class UploadTest(WhyisTestCase):
         text = "Hello, World!"
         uri = 'http://example.com/testdata_form_upload'
         data = {
-            'file': (bytes(text,'utf8'), 'hello_world.txt'),
+            'file': (BytesIO(text.encode('utf8')), 'hello_world.txt'),
             'upload_type': 'http://purl.org/net/provenance/ns#File'
         }
-        response = self.client.post("/about",query_string={"uri":uri}, data=data)
+        response = self.client.post("/about",query_string={"uri":uri}, data=data, content_type="multipart/form-data")
         self.assertEquals(response.status,'302 FOUND')
         content = self.client.get("/about",query_string={"uri":uri},follow_redirects=True)
         self.assertEquals(content.mimetype, "text/plain")

@@ -115,7 +115,7 @@ def configure(app):
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        return graph.serialize(**kwargs)
+        return graph.serialize(**kwargs).decode()
 
     @app.template_filter('attributes')
     def attributes(query, this):

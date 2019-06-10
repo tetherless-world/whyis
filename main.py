@@ -907,13 +907,15 @@ construct {
 
             #print(request.method, 'view()', entity, view)
             if request.method == 'POST':
+                print ("uploading file",entity)
                 if len(request.files) == 0:
                     flash('No file uploaded')
                     return redirect(request.url)
                 upload_type = rdflib.URIRef(request.form['upload_type'])
-                self.add_files(entity, [y for x, y in request.files.iteritems(multi=True)],
+                self.add_files(entity, [y for x, y in request.files.items(multi=True)],
                                upload_type=upload_type)
                 url = "/about?%s" % urlencode(dict(uri=str(entity), view="view"))
+                print ("redirecting to",url)
                 return redirect(url)
             elif request.method == 'DELETE':
                 self.delete_file(entity)
@@ -924,6 +926,7 @@ construct {
                 # 'view' is the default view
                 fileid = resource.value(self.NS.whyis.hasFileID)
                 if fileid is not None and 'view' not in request.args:
+                    print (resource.identifier, fileid)
                     f = self.file_depot.get(fileid)
                     fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
                     return fsa
@@ -938,11 +941,11 @@ construct {
                 elif fmt in dataFormats:
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
-                    f = open("resultfile", 'a')
-                    f.write(str(type(result))+'\n')
-                    f.write(result)
-                    f.close()
-                    output_graph.parse(data=str(eval(result),'utf8'), format="json-ld")
+                    #f = open("resultfile", 'a')
+                    #f.write(str(type(result))+'\n')
+                    #f.write(result)
+                    #f.close()
+                    output_graph.parse(data=result, format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
