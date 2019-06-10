@@ -17,7 +17,7 @@ from utils import lru
 from flask.views import MethodView
 
 import jinja2
-from api import LinkedDataApi
+#from api import LinkedDataApi
 
 from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
@@ -521,8 +521,8 @@ construct {
         fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))
-        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
-            nanopub.assertion.add((entity, NS.dc.contributor, current_user.resUri))
+        if current_user._get_current_object() is not None and hasattr(current_user, 'identifier'):
+            nanopub.assertion.add((entity, NS.dc.contributor, current_user.identifier))
         nanopub.assertion.add((entity, NS.dc.created, Literal(datetime.utcnow())))
         nanopub.assertion.add((entity, NS.ov.hasContentType, Literal(f.mimetype)))
         nanopub.assertion.add((entity, NS.RDF.type, NS.mediaTypes[f.mimetype]))
@@ -531,8 +531,8 @@ construct {
         nanopub.assertion.add((NS.mediaTypes[f.mimetype.split('/')[0]], NS.RDF.type, NS.dc.FileFormat))
         nanopub.assertion.add((entity, NS.RDF.type, NS.pv.File))
 
-        if current_user._get_current_object() is not None and hasattr(current_user, 'resUri'):
-            nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.resUri))
+        if current_user._get_current_object() is not None and hasattr(current_user, 'identifier'):
+            nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.contributor, current_user.identifier))
         nanopub.pubinfo.add((nanopub.assertion.identifier, NS.dc.created, Literal(datetime.utcnow())))
 
         return old_nanopubs
@@ -595,14 +595,14 @@ construct {
         if current_user._get_current_object() is None:
             # This isn't null even when not authenticated, unless we are an autonomic agent.
             return True
-        if not hasattr(current_user, 'resUri'): # This is an anonymous user.
+        if not hasattr(current_user, 'identifier'): # This is an anonymous user.
             return False
         if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
             return True
         if self.db.query('''ask {
     ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
     graph ?info { ?assertion dc:contributor ?user. }
-}''', initBindings=dict(nanopub=uri, user=current_user.resUri), initNs=dict(np=self.NS.np, dc=self.NS.dc)):
+}''', initBindings=dict(nanopub=uri, user=current_user.identifier), initNs=dict(np=self.NS.np, dc=self.NS.dc)):
             #print "Is owner."
             return True
         return False
@@ -720,6 +720,9 @@ construct {
             "application/xhtml" : None,
             None: "json-ld"
         }
+
+        htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
+
 
         def get_graphs(graphs):
             query = '''select ?s ?p ?o ?g where {
@@ -846,7 +849,7 @@ construct {
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers['content-type']:
                     return "Update not allowed.", 403
-                print(request.get_data())
+                #print(request.get_data())
                 req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
                                     headers = request.headers, params=request.args)
             #print self.db.store.query_endpoint
@@ -877,8 +880,8 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+#        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+#        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
         @self.route('/home', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
@@ -901,6 +904,7 @@ construct {
             else:
                 entity = self.NS.local.Home
 
+            #print(request.method, 'view()', entity, view)
             if request.method == 'POST':
                 if len(request.files) == 0:
                     flash('No file uploaded')
@@ -927,7 +931,6 @@ construct {
                     content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
-                htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
                 fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
@@ -1023,8 +1026,8 @@ construct {
             resp.headers.extend(headers or {})
             return resp
         
-        self.api = LinkedDataApi(self, "", self.db.store, "")
-        self.api.representations['text/html'] = render_nanopub
+        #self.api = LinkedDataApi(self, "", self.db.store, "")
+        #self.api.representations['text/html'] = render_nanopub
 
         #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
         #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
@@ -1038,123 +1041,145 @@ construct {
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
 
+        def _get_graph():
+            inputGraph = ConjunctiveGraph()
+            contentType = request.headers['Content-Type']
+            encoding = 'utf8' if not request.content_encoding else request.content_encoding
+            content = str(request.data, encoding)
+            sadi.deserialize(inputGraph, content, contentType)
+            return inputGraph
 
         
-        class NanopublicationResource(Resource, MethodView):
-            decorators = [conditional_login_required]
+        #decorators = [conditional_login_required]
 
-            def _get_uri(self, ident):
-                return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
+        def _get_uri(ident):
+            return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
 
-            def get(self, ident):
-                ident = ident.split("_")[0]
-                uri = self._get_uri(ident)
-                result = app.nanopub_manager.get(uri)
-                if result is None:
-                    print("cannot find", uri)
-                    return None
-                return result
+        @self.route('/pub/<ident>',methods=['GET'])
+        @self.route('/pub/<ident>.<format>', methods=['GET'])
+        @conditional_login_required
+        def get_nanopub(ident, format=None):
+            #print(request.method, 'get_nanopub()', ident)
+            ident = ident.split("_")[0]
+            uri = self._get_uri(ident)
+            result = app.nanopub_manager.get(uri)
+            if result is None:
+                #print("cannot find", uri)
+                abort(404)
 
-            @login_required
-            def delete(self, ident):
-                uri = self._get_uri(ident)
-                if not app._can_edit(uri):
-                    return '<h1>Not Authorized</h1>', 401
-                app.nanopub_manager.retire(uri)
-                return '', 204
+            content_type = None
+                        
+            if format is not None and format in extensions:
+                content_type = extensions[format]
+            if content_type is None:
+                content_type = request.headers['Accept'] if 'Accept' in request.headers else 'application/ld+json'
+            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
+            if 'view' in request.args or fmt in htmls:
+                return render_nanopub(result, 200)
+            elif fmt in dataFormats:
+                return result.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
 
-            def _get_graph(self):
-                inputGraph = ConjunctiveGraph()
-                contentType = request.headers['Content-Type']
-                encoding = 'utf8' if not request.content_encoding else request.content_encoding
-                content = str(request.data, encoding)
-                sadi.deserialize(inputGraph, content, contentType)
-                return inputGraph
-
-            @login_required
-            def put(self, ident):
-                nanopub_uri = self._get_uri(ident)
-                inputGraph = self._get_graph()
-                old_nanopub = self._prep_nanopub(nanopub_uri, inputGraph)
-                for nanopub in app.nanopub_manager.prepare(inputGraph):
-                    nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
-                    app.nanopub_manager.retire(nanopub_uri)
-                    app.nanopub_manager.publish(nanopub)
-
-            def _prep_nanopub(self, nanopub):
-                #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-                about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
-                #print nanopub.assertion_resource.identifier, about
-                self._prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
-                #self._prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
-                self._prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
-                nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.resUri))
-
-                return nanopub
-
-            @login_required
-            def post(self, ident=None):
-                if ident is not None:
-                    return self.put(ident)
-                inputGraph = self._get_graph()
-                #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
-                    #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
-                for nanopub in app.nanopub_manager.prepare(inputGraph):
-                    self._prep_nanopub(nanopub)
-                    app.nanopub_manager.publish(nanopub)
-
-                return '', 201
+        @self.route('/pub/<ident>', methods=['DELETE'])
+        @login_required
+        def delete_nanopub(ident):
+            #print(request.method, 'delete_nanopub()', ident)
+            ident = ident.split("_")[0]
+            uri = self._get_uri(ident)
+            if not app._can_edit(uri):
+                return '<h1>Not Authorized</h1>', 401
+            app.nanopub_manager.retire(uri)
+            return '', 204
 
 
-            def _prep_graph(self, resource, about = None):
-                #print '_prep_graph', resource.identifier, about
-                content_type = resource.value(app.NS.ov.hasContentType)
-                if content_type is not None:
-                    content_type = content_type.value
-                #print 'graph content type', resource.identifier, content_type
-                #print resource.graph.serialize(format="nquads")
-                g = Graph(store=resource.graph.store,identifier=resource.identifier)
-                text = resource.value(app.NS.prov.value)
-                if content_type is not None and text is not None:
-                    #print 'Content type:', content_type, resource.identifier
-                    html = None
-                    if content_type in ["text/html", "application/xhtml+xml"]:
-                        html = Literal(text.value, datatype=RDF.HTML)
-                    if content_type == 'text/markdown':
-                        #print "Aha, markdown!"
-                        #print text.value
-                        html = markdown.markdown(text.value, extensions=['rdfa'])
-                        attributes = ['vocab="%s"' % app.NS.local,
-                                      'base="%s"'% app.NS.local,
-                                      'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]
-                        if about is not None:
-                            attributes.append('resource="%s"' % about)
-                        html = '<div %s>%s</div>' % (' '.join(attributes), html)
-                        html = Literal(html, datatype=RDF.HTML)
-                        text = html
-                        content_type = "text/html"
-                    #print resource.identifier, content_type
-                    if html is not None:
-                        resource.set(app.NS.sioc.content, html)
-                        try:
-                            g.remove((None,None,None))
-                            g.parse(data=text, format='rdfa', publicID=app.NS.local)
-                        except:
-                            pass
+        @self.route('/pub/<ident>', methods=['PUT'])
+        @login_required
+        def put_nanopub(ident):
+            #print(request.method, 'put_nanopub()', ident)
+            nanopub_uri = _get_uri(ident)
+            inputGraph = _get_graph()
+            old_nanopub = _prep_nanopub(nanopub_uri, inputGraph)
+            for nanopub in app.nanopub_manager.prepare(inputGraph):
+                nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
+                app.nanopub_manager.retire(nanopub_uri)
+                app.nanopub_manager.publish(nanopub)
+
+        def _prep_nanopub(nanopub):
+            #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
+            about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
+            #print nanopub.assertion_resource.identifier, about
+            _prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
+            #_prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
+            _prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
+            nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.identifier))
+
+            return nanopub
+
+        @self.route('/pub/<ident>',  methods=['POST'])
+        @self.route('/pub',  methods=['POST'])
+        @login_required
+        def post_nanopub(ident=None):
+            #print(request.method, 'post_nanopub()', ident)
+            if ident is not None:
+                return self.put(ident)
+            inputGraph = _get_graph()
+            #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
+                #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
+            for nanopub in app.nanopub_manager.prepare(inputGraph):
+                _prep_nanopub(nanopub)
+                app.nanopub_manager.publish(nanopub)
+
+            return '', 201
+
+
+        def _prep_graph(resource, about = None):
+            #print '_prep_graph', resource.identifier, about
+            content_type = resource.value(app.NS.ov.hasContentType)
+            if content_type is not None:
+                content_type = content_type.value
+            #print 'graph content type', resource.identifier, content_type
+            #print resource.graph.serialize(format="nquads")
+            g = Graph(store=resource.graph.store,identifier=resource.identifier)
+            text = resource.value(app.NS.prov.value)
+            if content_type is not None and text is not None:
+                #print 'Content type:', content_type, resource.identifier
+                html = None
+                if content_type in ["text/html", "application/xhtml+xml"]:
+                    html = Literal(text.value, datatype=RDF.HTML)
+                if content_type == 'text/markdown':
+                    #print "Aha, markdown!"
+                    #print text.value
+                    html = markdown.markdown(text.value, extensions=['rdfa'])
+                    attributes = ['vocab="%s"' % app.NS.local,
+                                  'base="%s"'% app.NS.local,
+                                  'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]
+                    if about is not None:
+                        attributes.append('resource="%s"' % about)
+                    html = '<div %s>%s</div>' % (' '.join(attributes), html)
+                    html = Literal(html, datatype=RDF.HTML)
+                    text = html
+                    content_type = "text/html"
+                #print resource.identifier, content_type
+                if html is not None:
+                    resource.set(app.NS.sioc.content, html)
+                    try:
+                        g.remove((None,None,None))
+                        g.parse(data=text, format='rdfa', publicID=app.NS.local)
+                    except:
+                        pass
+                else:
+                    #print "Deserializing", g.identifier, 'as', content_type
+                    #print dataFormats
+                    if content_type in dataFormats:
+                        g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
+                        #print len(g)
                     else:
-                        #print "Deserializing", g.identifier, 'as', content_type
-                        #print dataFormats
-                        if content_type in dataFormats:
-                            g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
-                            #print len(g)
-                        else:
-                            print("not attempting to deserialize.")
-#                            try:
-#                                sadi.deserialize(g, text, content_type)
-#                            except:
-#                                pass
-                #print Graph(store=resource.graph.store).serialize(format="trig")
-        self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
+                        print("not attempting to deserialize.")
+#                        try:
+#                            sadi.deserialize(g, text, content_type)
+#                        except:
+#                            pass
+            #print Graph(store=resource.graph.store).serialize(format="trig")
+        #self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
 
 
 def config_str_to_obj(cfg):
