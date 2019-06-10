@@ -116,10 +116,12 @@ class multiple:
                 obj.graph.value(val[0], RDF.first
                              ) ):
             val = getList(obj, self._predicate)
+        #print(val)
         val = [(obj.datastore.get(v) if isinstance(v, (BNode, URIRef))
                 else v.toPython())
                for v in val]
         #obj.__dict__[self.name] = val
+        #print (val)
         return val
 
     def __set__(self, obj, newvals):
@@ -269,9 +271,10 @@ class WhyisDatastore(Datastore):
         if c is None:
             c = Resource
             for t in result.objects(resUri,RDF.type):
+                #print (resUri, t, t in self.classes)
                 if t in self.classes:
                     c = self.classes[t]
-        
+        #print (c, resUri)
         res = c(result, resUri)
         res.datasource = self
 

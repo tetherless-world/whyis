@@ -31,7 +31,7 @@ class WhyisTestCase(TestCase):
 
         return application
 
-    def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='admin'):
+    def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='Admin'):
         import commands
         from uuid import uuid4
         pw = 'password'

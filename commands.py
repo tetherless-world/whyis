@@ -190,7 +190,7 @@ class CreateUser(Command):
         ]
 
     def run(self, email, password, fn, ln, identifier, roles=[]):
-        print('Password verified:', verify_password(password,encrypt_password(password)))
+        #print('Password verified:', verify_password(password,encrypt_password(password)))
         role_objects = []
         if roles is not None:
             role_objects = [flask.current_app.datastore.find_or_create_role(name=r) for r in roles.split(',')]
@@ -199,7 +199,7 @@ class CreateUser(Command):
             givenName=fn, familyName=ln,
             confirmed_at = datetime.datetime.utcnow(), roles = role_objects)
         user_obj = flask.current_app.datastore.create_user(**user)
-        print("Created user: %s (%s)" % (user, ''))#', '.join([r.identifier for r in user_obj.roles])))
+        #print("Created user: %s (%s)" % (user, ''))#', '.join([r.identifier for r in user_obj.roles])))
 
 class Test(Command):
     """

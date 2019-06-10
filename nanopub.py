@@ -58,7 +58,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 assertion = self.resource(self.identifier+"_assertion")
                 assertion.add(rdflib.RDF.type, np.Assertion)
                 self.nanopub_resource.add(np.hasAssertion, assertion)
-            self._assertion = rdflib.Graph(store=self.store, identifier=assertion)
+            self._assertion = rdflib.Graph(store=self.store, identifier=assertion.identifier)
         return self._assertion
 
     _pubinfo = None
@@ -71,7 +71,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 pubinfo = self.resource(self.identifier+"_pubinfo")
                 pubinfo.add(rdflib.RDF.type, np.PublicationInfo)
                 self.nanopub_resource.add(np.hasPublicationInfo, pubinfo)
-            self._pubinfo = rdflib.Graph(store=self.store, identifier=pubinfo)
+            self._pubinfo = rdflib.Graph(store=self.store, identifier=pubinfo.identifier)
         return self._pubinfo
 
     _provenance = None
@@ -84,7 +84,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 provenance = self.resource(self.identifier+"_provenance")
                 provenance.add(rdflib.RDF.type, np.Provenance)
                 self.nanopub_resource.add(np.hasProvenance, provenance)
-            self._provenance = rdflib.Graph(store=self.store, identifier=provenance)
+            self._provenance = rdflib.Graph(store=self.store, identifier=provenance.identifier)
         return self._provenance
     
     @property
@@ -195,7 +195,7 @@ class NanopublicationManager(object):
         graphs = []
         for nanopub_uri in nanopub_uris:
             for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
-    hint:Query hint:optimizer "Runtime" .
+#    hint:Query hint:optimizer "Runtime" .
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
     ?np np:hasAssertion ?assertion;
         np:hasPublicationInfo ?pubinfo;

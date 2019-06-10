@@ -710,6 +710,7 @@ construct {
         dataFormats = {
             "application/rdf+xml" : "xml",
             "application/ld+json" : 'json-ld',
+            "application/json" : 'json-ld',
             "text/turtle" : "turtle",
             "application/trig" : "trig",
             "application/n-quads" : "nquads",
@@ -880,8 +881,8 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-#        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-#        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
         @self.route('/home', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
@@ -935,12 +936,9 @@ construct {
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
-                    print('attempting linked data on', name, fmt, dataFormats[fmt], format, content_type)
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
-                    print(result)
                     f = open("resultfile", 'a')
-                    print(resource,file=f)
                     f.write(str(type(result))+'\n')
                     f.write(result)
                     f.close()
@@ -1006,7 +1004,7 @@ construct {
                 
 
             f = open("templatefile", 'a')
-            print(views, file=f)
+            #print(views, file=f)
             f.close()
 
             # default view (list of nanopubs)
@@ -1061,7 +1059,7 @@ construct {
         def get_nanopub(ident, format=None):
             #print(request.method, 'get_nanopub()', ident)
             ident = ident.split("_")[0]
-            uri = self._get_uri(ident)
+            uri = _get_uri(ident)
             result = app.nanopub_manager.get(uri)
             if result is None:
                 #print("cannot find", uri)
@@ -1077,14 +1075,16 @@ construct {
             if 'view' in request.args or fmt in htmls:
                 return render_nanopub(result, 200)
             elif fmt in dataFormats:
-                return result.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
+                response = Response(result.serialize(format=dataFormats[fmt]))
+                response.headers = {'Content-type': fmt}
+                return response, 200
 
         @self.route('/pub/<ident>', methods=['DELETE'])
         @login_required
         def delete_nanopub(ident):
             #print(request.method, 'delete_nanopub()', ident)
             ident = ident.split("_")[0]
-            uri = self._get_uri(ident)
+            uri = _get_uri(ident)
             if not app._can_edit(uri):
                 return '<h1>Not Authorized</h1>', 401
             app.nanopub_manager.retire(uri)
@@ -1124,11 +1124,13 @@ construct {
             inputGraph = _get_graph()
             #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                 #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
+            headers = {}
             for nanopub in app.nanopub_manager.prepare(inputGraph):
                 _prep_nanopub(nanopub)
+                headers['Location'] = nanopub.identifier
                 app.nanopub_manager.publish(nanopub)
 
-            return '', 201
+            return '', 201, headers
 
 
         def _prep_graph(resource, about = None):
@@ -1172,8 +1174,8 @@ construct {
                     if content_type in dataFormats:
                         g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
                         #print len(g)
-                    else:
-                        print("not attempting to deserialize.")
+                    #else:
+                        #print("not attempting to deserialize.")
 #                        try:
 #                            sadi.deserialize(g, text, content_type)
 #                        except:
