@@ -123,19 +123,13 @@ vcsrepo { '/apps/whyis':
 } ->
 python::virtualenv { '/apps/whyis/venv' :
   ensure       => present,
-  version      => 'system',
+  version      => '3',
   systempkgs   => false,
   distribute   => false,
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
   cwd          => '/apps/whyis',
   timeout      => 18000,
-} ->
-file { "/apps/.bash_profile" :
-  owner => 'whyis',
-  content => '
-  source /apps/whyis/venv/bin/activate
-  ',
 } ->
 python::pip { 'pip-upgrade' :
   pkgname       => 'pip',
@@ -147,7 +141,14 @@ python::pip { 'pip-upgrade' :
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
+  forceupdate => true,
   timeout       => 18000,
+} ->
+file { "/apps/.bash_profile" :
+  owner => 'whyis',
+  content => '
+  source /apps/whyis/venv/bin/activate
+  ',
 } ->
 file { "/var/log/celery":
     owner => "whyis",

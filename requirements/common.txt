@@ -1,9 +1,8 @@
 cryptography
 requests[security]
 fabric
-#git+git://github.com/RDFLib/rdflib.git@654bc787a5449f7e331860a67cb993226ac99585#egg=rdflib
-git+git://github.com/jimmccusker/rdflib.git@sparqlwrapper-fork#egg=rdflib
-#rdflib>=4.2.2
+git+git://github.com/RDFLib/rdflib.git#egg=rdflib
+#rdflib>=5
 virtualenv
 Cython
 numpy
@@ -19,7 +18,6 @@ Flask-Login==0.3.2
 flask-security
 Nose
 flask-admin
-#git+git://github.com/jimmccusker/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 SPARQLWrapper
@@ -35,3 +33,5 @@ bibtexparser
 python-magic
 javabridge
 pyjwt
+sadi
+coverage

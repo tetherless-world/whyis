@@ -19,7 +19,6 @@ from flask.views import MethodView
 import jinja2
 #from api import LinkedDataApi
 
-from flask_restful import Resource
 from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
@@ -363,7 +362,6 @@ class App(Empty):
         self.admin_db = database.engine_from_config(self.config, "admin_")
         self.db = database.engine_from_config(self.config, "knowledge_")
         self.db.app = self
-        Resource.db = self.admin_db
 
         self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
@@ -372,14 +370,6 @@ class App(Empty):
         custom_vocab = Graph(store=self.vocab.store)
         custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
 
-#        self.role_api = ld.LocalResource(self.NS.prov.Role,"role", self.admin_db.store, self.vocab, self.config['lod_prefix'], RoleMixin)
-#        self.Role = self.role_api.alchemy
-
-#        self.user_api = ld.LocalResource(self.NS.prov.Agent,"user", self.admin_db.store, self.vocab, self.config['lod_prefix'], UserMixin)
-#        self.User = self.user_api.alchemy
-
-#        self.nanopub_api = ld.LocalResource(self.NS.np.Nanopublication,"pub", self.db.store, self.vocab, self.config['lod_prefix'], name="Graph")
-#        self.Nanopub = self.nanopub_api.alchemy
 
         self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
         self.security = Security(self, self.datastore,
@@ -941,10 +931,6 @@ construct {
                 elif fmt in dataFormats:
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
-                    #f = open("resultfile", 'a')
-                    #f.write(str(type(result))+'\n')
-                    #f.write(result)
-                    #f.close()
                     output_graph.parse(data=result, format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
@@ -1005,10 +991,6 @@ construct {
             if extension in extensions:
                 headers['Content-Type'] = extensions[extension]
                 
-
-            f = open("templatefile", 'a')
-            #print(views, file=f)
-            f.close()
 
             # default view (list of nanopubs)
             # if available, replace with class view

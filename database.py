@@ -2,7 +2,7 @@
 
 from rdflib import *
 SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
-from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql, POST
+from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql
 from SPARQLWrapper import *
 
 import requests
@@ -22,11 +22,9 @@ def node_to_sparql(node):
 
 def create_query_store(store):
     new_store = SPARQLStore(endpoint=store.endpoint,
-                            default_query_method=POST,
-                            returnFormat=JSON,
+                            method="POST",
+                            returnFormat='json',
                             node_to_sparql=node_to_sparql)
-    new_store._defaultReturnFormat=JSON
-    new_store.setReturnFormat(JSON)
     return new_store
 
 memory_graphs = collections.defaultdict(ConjunctiveGraph)
@@ -38,8 +36,8 @@ def engine_from_config(config, prefix):
     if prefix+"queryEndpoint" in config:
         store = SPARQLUpdateStore(queryEndpoint=config[prefix+"queryEndpoint"],
                                   update_endpoint=config[prefix+"updateEndpoint"],
-                                  default_query_method=POST,
-                                  returnFormat=JSON,
+                                  method="POST",
+                                  returnFormat='json',
                                   node_to_sparql=node_to_sparql)
         def publish(data, *graphs):
             s = requests.session()
@@ -51,8 +49,6 @@ def engine_from_config(config, prefix):
 
         store.publish = publish
 
-        store._defaultReturnFormat=JSON
-        store.setReturnFormat(JSON)
         graph = ConjunctiveGraph(store,defaultgraph)
     elif prefix+'store' in config:
         graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)
