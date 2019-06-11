@@ -35,3 +35,4 @@ javabridge
 pyjwt
 sadi
 coverage
+bsddb3
