@@ -219,7 +219,7 @@ class Test(Command):
             Option('--test', dest='tests',
                     default=self.tests, type=str)
         ]
-    
+
     def run(self, verbosity, failfast, tests):
         import sys
         import glob
