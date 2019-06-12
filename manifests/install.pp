@@ -20,11 +20,6 @@ package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9"
 package { "jetty8":
   ensure => "absent",
 } ->
-file_line { "configure_jetty8_stop":
-  path  => '/etc/default/jetty8',
-  line  => 'NO_START=1',
-  match => 'NO_START=0',
-} ->
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
   line  => 'NO_START=0',
