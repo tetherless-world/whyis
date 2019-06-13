@@ -423,48 +423,47 @@ class App(Empty):
 
         def description(self):
             if self._description is None:
-#                try:
-                result = Graph()
-#                try:
-                for quad in self._graph.query('''
-construct {
-    ?e ?p ?o.
-    ?o rdfs:label ?label.
-    ?o skos:prefLabel ?prefLabel.
-    ?o dc:title ?title.
-    ?o foaf:name ?name.
-    ?o ?pattr ?oatter.
-    ?oattr rdfs:label ?oattrlabel
-} where {
-    graph ?g {
-      ?e ?p ?o.
-    }
-    ?g a np:Assertion.
-    optional {
-      ?e sio:hasAttribute|sio:hasPart ?o.
-      ?o ?pattr ?oattr.
-      optional {
-        ?oattr rdfs:label ?oattrlabel.
-      }
-    }
-    optional {
-      ?o rdfs:label ?label.
-    }
-    optional {
-      ?o skos:prefLabel ?prefLabel.
-    }
-    optional {
-      ?o dc:title ?title.
-    }
-    optional {
-      ?o foaf:name ?name.
-    }
-}''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
-                    if len(quad) == 3:
-                        s,p,o = quad
-                    else:
-                        s,p,o,c = quad
-                    result.add((s,p,o))
+                result = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } })
+#                 result = Graph()
+#                 for quad in self._graph.query('''
+# construct {
+#     ?e ?p ?o.
+#     ?o rdfs:label ?label.
+#     ?o skos:prefLabel ?prefLabel.
+#     ?o dc:title ?title.
+#     ?o foaf:name ?name.
+#     ?o ?pattr ?oatter.
+#     ?oattr rdfs:label ?oattrlabel
+# } where {
+#     graph ?g {
+#       ?e ?p ?o.
+#     }
+#     ?g a np:Assertion.
+#     optional {
+#       ?e sio:hasAttribute|sio:hasPart ?o.
+#       ?o ?pattr ?oattr.
+#       optional {
+#         ?oattr rdfs:label ?oattrlabel.
+#       }
+#     }
+#     optional {
+#       ?o rdfs:label ?label.
+#     }
+#     optional {
+#       ?o skos:prefLabel ?prefLabel.
+#     }
+#     optional {
+#       ?o dc:title ?title.
+#     }
+#     optional {
+#       ?o foaf:name ?name.
+#     }
+# }''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+#                     if len(quad) == 3:
+#                         s,p,o = quad
+#                     else:
+#                         s,p,o,c = quad
+#                     result.add((s,p,o))
 #                except:
 #                    pass
                 self._description = result.resource(self.identifier)
@@ -929,7 +928,12 @@ construct {
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
+<<<<<<< HEAD
                     output_graph = ConjunctiveGraph()
+=======
+                    print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
+                    output_graph = Graph()
+>>>>>>> 48f5266317afeea2a37102b5e457a24e586f06a0
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}

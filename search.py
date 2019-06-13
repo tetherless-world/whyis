@@ -91,7 +91,7 @@ latest_query = '''select distinct
 (max(?created) as ?updated)
 #(group_concat(distinct ?type; separator="||") as ?types)
 where {
-    hint:Query hint:optimizer "Runtime" .                                                                                              graph ?np {
+     graph ?np {
     ?np 
         np:hasPublicationInfo ?pubinfo;
         np:hasAssertion ?assertion.

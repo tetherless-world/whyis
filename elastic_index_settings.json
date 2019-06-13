@@ -1,5 +1,6 @@
 {
     "settings": {
+        "index.mapping.ignore_malformed": true
     },
     "mappings" : {
         "nanopublication" : {
@@ -17,6 +18,14 @@
                         "match": "@graph",
                         "mapping": {
                             "type": "nested"
+                        }
+                    }
+                },
+                {
+                    "jsonld_graph": {
+                        "match": "@value",
+                        "mapping": {
+                            "type": "text"
                         }
                     }
                 }

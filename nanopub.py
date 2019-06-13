@@ -197,18 +197,10 @@ class NanopublicationManager(object):
             for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
 #    hint:Query hint:optimizer "Runtime" .
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
-    ?np np:hasAssertion ?assertion;
-        np:hasPublicationInfo ?pubinfo;
-        np:hasProvenance ?provenance.
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
                 print("Retiring", np_uri, "derived from", nanopub_uri)
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
-                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-                self.db.remove((None,None,None,nanopub.assertion.identifier))
-                self.db.remove((None,None,None,nanopub.provenance.identifier))
-                self.db.remove((None,None,None,nanopub.pubinfo.identifier))
-                self.db.remove((None,None,None,nanopub.identifier))
-        self.db.commit()
+                self.db.store.remove_graph(np_uri)
         #data = [('c', c.n3()) for c in graphs]
         #session = requests.session()
         #session.keep_alive = False
@@ -289,9 +281,10 @@ class NanopublicationManager(object):
 
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-                    data.write(serialized)
-                    data.write(b'\n')
-                    data.flush()
+                    if self.db.store.publish.serialize:
+                        data.write(serialized)
+                        data.write('\n')
+                        data.flush()
                     full_list.append(nanopub.identifier)
                 #np_graph.serialize(data, format="trig")
                 #data.write('\n')
@@ -336,3 +329,4 @@ class NanopublicationManager(object):
         except:
             pass
         return nanopub
+
