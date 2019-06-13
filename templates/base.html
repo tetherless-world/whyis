@@ -153,8 +153,8 @@
       {% else %}
       BASE_RATE = 0.5;
       {% endif %}
-      {% if current_user and current_user.resUri %}
-      USER = { uri: '{{current_user.resUri}}', admin: '{{current_user.has_role('admin')}}' };
+      {% if current_user and current_user.identifier %}
+      USER = { uri: '{{current_user.identifier}}', admin: '{{current_user.has_role('Admin')}}' };
       {% else %}
       USER = { }
       {% endif %}
