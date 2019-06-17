@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import print_function
 from flask_script import Command, Option, prompt_bool
 
 from flask_security.utils import encrypt_password, verify_password, get_hmac
@@ -50,7 +51,7 @@ class LoadNanopub(Command):
             wasRevisionOf = set(flask.current_app.db.objects(predicate=np.hasAssertion,
                                                                subject=rdflib.URIRef(was_revision_of)))
             if len(wasRevisionOf) == 0:
-                print "Could not find active nanopublication to revise:", was_revision_of
+                print("Could not find active nanopublication to revise:", was_revision_of)
                 return
             was_revision_of = wasRevisionOf
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize(), store="Sleepycat")
@@ -60,7 +61,7 @@ class LoadNanopub(Command):
 
         g1 = g.parse(location=input_file, format=file_format, publicID=flask.current_app.NS.local)
         if len(list(g.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
-            print "Could not find existing nanopublications.", len(g1), len(g)
+            print("Could not find existing nanopublications.", len(g1), len(g))
             new_np = Nanopublication(store=g1.store)
             new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
             new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
@@ -73,12 +74,12 @@ class LoadNanopub(Command):
         for npub in flask.current_app.nanopub_manager.prepare(g, store=nanopub_prepare_graph.store):
             if was_revision_of is not None:
                 for r in was_revision_of:
-                    print "Marking as revision of", r
+                    print("Marking as revision of", r)
                     npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
-            print 'Prepared', npub.identifier
+            print('Prepared', npub.identifier)
             nanopubs.append(npub)
         flask.current_app.nanopub_manager.publish(*nanopubs)
-        print "Published", npub.identifier
+        print("Published", npub.identifier)
 
 class RetireNanopub(Command):
     '''Retire a nanopublication from the knowledge graph.'''
@@ -107,9 +108,9 @@ class TestAgent(Command):
         agent = agent_class()
         agent.dry_run = dry_run
         if agent.dry_run:
-            print "Dry run, not storing agent output."
+            print("Dry run, not storing agent output.")
         agent.app = app
-        print agent.get_query()
+        print(agent.get_query())
         results = []
         if agent.query_predicate == app.NS.whyis.globalChangeQuery:
             results.extend(agent.process_graph(app.db))
@@ -123,7 +124,7 @@ class TestAgent(Command):
                     np = app.nanopub_manager.get(np_uri)
                     results.extend(agent.process_graph(np))
         for np in results:
-            print np.serialize(format="trig")
+            print(np.serialize(format="trig"))
             
 class UpdateUser(Command):
     """Update a user in Whyis"""
@@ -145,7 +146,7 @@ class UpdateUser(Command):
 
     def run(self, identifier, email, password, fn, ln, add_roles, remove_roles):
         user = flask.current_app.datastore.get_user(identifier)
-        print "Modifying user", user.resUri
+        print("Modifying user", user.identifier)
         if password is not None:
             verified = verify_password(password,encrypt_password(password))
             if verified:
@@ -169,7 +170,7 @@ class UpdateUser(Command):
         if ln is not None:
             user.familyName = ln    
         flask.current_app.datastore.commit()
-        print "Updated user: %s" % (user, )
+        print("Updated user: %s" % (user, ))
 
 class CreateUser(Command):
     """Add a user to Whyis"""
@@ -189,16 +190,16 @@ class CreateUser(Command):
         ]
 
     def run(self, email, password, fn, ln, identifier, roles=[]):
-        print 'Password verified:', verify_password(password,encrypt_password(password))
+        #print('Password verified:', verify_password(password,encrypt_password(password)))
         role_objects = []
         if roles is not None:
             role_objects = [flask.current_app.datastore.find_or_create_role(name=r) for r in roles.split(',')]
-        user = dict(identifier=identifier, email=email,
+        user = dict(id=identifier, email=email,
             password=encrypt_password(password),
             givenName=fn, familyName=ln,
             confirmed_at = datetime.datetime.utcnow(), roles = role_objects)
         user_obj = flask.current_app.datastore.create_user(**user)
-        print "Created user: %s (%s)" % (user, ', '.join([r.resUri for r in role_objects]))
+        #print("Created user: %s (%s)" % (user, ''))#', '.join([r.identifier for r in user_obj.roles])))
 
 class Test(Command):
     """
@@ -207,7 +208,7 @@ class Test(Command):
 
     verbosity = 2
     failfast = False
-    tests = 'test*.py'
+    tests = 'test*'
 
     def get_options(self):
         return [

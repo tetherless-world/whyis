@@ -1,8 +1,10 @@
+#from future import standard_library
+#standard_library.install_aliases()
 import binascii
 try:
     from urllib.parse import unquote_to_bytes
 except:
-    from urllib2 import unquote, toBytes
+    from urllib.parse import unquote
     def unquote_to_bytes(*args, **kwargs):
         return toBytes(unquote(*args, **kwargs))
 import email.message

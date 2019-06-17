@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import object
 from flask import current_app
 from flask_login import AnonymousUserMixin, login_user
 import datetime
@@ -19,18 +21,18 @@ class InvitedAnonymousUser(AnonymousUserMixin):
         return True
 
 
-class Authenticator:
+class Authenticator(object):
     def authenticate(self, request, datastore, config):
         pass
 
-class APIKeyAuthenticator:
+class APIKeyAuthenticator(object):
     def __init__(self, key, request_arg='API_KEY'):
         self.key = key
         self.request_arg = request_arg
     
     def authenticate(self, request, datastore, config):
         if self.request_arg in request.args and request.args[self.request_arg] == self.key:
-            print 'logging in invited user'
+            print('logging in invited user')
             user = InvitedAnonymousUser()
             login_user(user)
             return user
@@ -44,7 +46,7 @@ default_jwt_mapping = {
     'familyName' : 'sn'
 }
         
-class JWTAuthenticator:
+class JWTAuthenticator(object):
     def __init__(self,  key, cookie="token", algorithm='HS256', mapping=default_jwt_mapping):
         import jwt
         self.jwt = jwt

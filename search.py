@@ -1,3 +1,4 @@
+from __future__ import print_function
 import rdflib
 
 prefixes = dict(
@@ -25,8 +26,8 @@ def resolve(graph, g, term, type=None, context=None):
         type_query = """
   ?node rdf:type <%s> .
 """ % type
-    print type
-    print type_query
+    print(type)
+    print(type_query)
 
     query = """
 select distinct
@@ -76,7 +77,7 @@ where {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
 } group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10""" % (term, type_query, context_query)
-    print query
+    print(query)
     results = []
     for hit in graph.query(query, initNs=prefixes):
         result = hit.asdict()

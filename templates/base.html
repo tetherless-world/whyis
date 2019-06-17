@@ -157,15 +157,15 @@
       {% else %}
       BASE_RATE = 0.5;
       {% endif %}
-      {% if current_user and current_user.resUri %}
-      USER = { uri: '{{current_user.resUri}}', admin: '{{current_user.has_role('admin')}}' };
+      {% if current_user and current_user.identifier %}
+      USER = { uri: '{{current_user.identifier}}', admin: '{{current_user.has_role('Admin')}}' };
       {% else %}
       USER = { }
       {% endif %}
       {% if this is defined %}
       NODE_URI = "{{this.identifier | safe}}";
       ATTRIBUTES = {{ this | include('attributes') | safe }};
-      DESCRIPTION = {{this.description().graph.serialize(format="json-ld") | safe}};
+      DESCRIPTION = {{this.description().graph | serialize(format="json-ld") | safe}};
       NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
       if (NODE.length > 0)  NODE = NODE[0];
       else NODE = {"@id" : NODE_URI};

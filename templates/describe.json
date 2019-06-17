@@ -1,1 +1,1 @@
-{{this.description().graph.serialize(format="json-ld")}}
+{{this.description().graph | serialize(format="json-ld")}}

@@ -1,3 +1,8 @@
+#from __future__ import print_function
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import str
+#from builtins import range
 import sadi
 import rdflib
 import setlr
@@ -5,17 +10,16 @@ import re
 from datetime import datetime
 import time
 from nanopub import Nanopublication
-import flask_ld as ld
 import flask
 from flask import render_template
 import logging
 import database
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import csv
 import sys
 import pandas as pd
-import ConfigParser as configparser
+import configparser as configparser
 import hashlib
 
 import autonomic
@@ -601,7 +605,7 @@ class Interpreter(autonomic.UpdateChangeService):
                                 try :
                                     term = rdflib.term.URIRef(self.prefixes[self.kb] + str(a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")) + "-" + identifierString)
                                     nanopub.assertion.add((term,rdflib.RDF.type,rdflib.term.URIRef(self.prefixes[self.kb] + str(a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")))))
-                                    print term
+                                    print(term)
                                     if "Attribute" in a_tuple :
                                         if ',' in a_tuple["Attribute"] :
                                             attributes = parseString(a_tuple["Attribute"],',')

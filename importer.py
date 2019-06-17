@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import chr
+from builtins import object
 import requests
 import rdflib
 import nanopub
@@ -28,9 +31,9 @@ def replace_with_byte(match):
     return chr(int(match.group(0)[1:], 8))
 
 def repair(brokenjson):
-    return invalid_escape.sub(replace_with_byte, brokenjson.replace('\u000',''))
+    return invalid_escape.sub(replace_with_byte, brokenjson.replace(b'\u000',''))
 
-class Importer:
+class Importer(object):
 
     min_modified = 0
 
@@ -50,13 +53,13 @@ class Importer:
             if m is None:
                 continue
             if modified is None or m > modified:
-                print m, modified, old_np.modified
+                print(m, modified, old_np.modified)
                 modified = m
         return modified
         
     def load(self, entity_name, db, nanopubs):
         entity_name = rdflib.URIRef(entity_name)
-        print "Fetching", entity_name
+        print("Fetching", entity_name)
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
@@ -67,11 +70,11 @@ class Importer:
         try:
             g = self.fetch(entity_name)
         except Exception as e:
-            print "Error loading %s: %s" %(entity_name,e)
+            print("Error loading %s: %s" %(entity_name,e))
             traceback.print_exc(file=sys.stdout)
             return
         for new_np in nanopubs.prepare(g):
-            print "Adding new nanopub:", new_np.identifier
+            print("Adding new nanopub:", new_np.identifier)
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
             if updated != None:
@@ -81,7 +84,7 @@ class Importer:
             nanopubs.publish(new_np)
 
         for old_np in old_nps:
-            print "retiring", old_np.identifier
+            print("retiring", old_np.identifier)
             nanopubs.retire(old_np.identifier)
 
     def explain(self, new_np, entity_name):
@@ -133,7 +136,7 @@ class LinkedData (Importer):
 
     def modified(self, entity_name):
         u = self._get_access_url(entity_name)
-        print "accessing at", u
+        print("accessing at", u)
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
@@ -149,7 +152,7 @@ class LinkedData (Importer):
 
     def fetch(self, entity_name):
         u = self._get_access_url(entity_name)
-        print u
+        print(u)
         r = requests.get(u, headers = self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.URIRef("urn:default_assertion"))
@@ -159,7 +162,7 @@ class LinkedData (Importer):
             #print "update postprocess query."
             g.update(self.postprocess_update)
         if self.postprocess is not None:
-            print "postprocessing", entity_name
+            print("postprocessing", entity_name)
             p = self.postprocess
             p(g)
         #print g.serialize(format="trig")
