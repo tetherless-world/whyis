@@ -408,7 +408,7 @@ $( function() {
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
         
-    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch','jsonLdEditor']);
+    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch', 'jsonLdEditor', 'openlayers-directive']);
     console.log("Here's the app at whyis.js",app);
     
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {

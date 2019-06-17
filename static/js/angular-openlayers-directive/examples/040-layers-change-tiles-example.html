@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html ng-app="demoapp">
+  <head>
+    <script src="../bower_components/openlayers/ol-debug.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="../dist/angular-openlayers-directive.js"></script>
+    <link rel="stylesheet" href="../bower_components/openlayers/ol.css" />
+    <script>
+        var app = angular.module("demoapp", ["openlayers-directive"]);
+        app.controller('DemoController', [ '$scope', function($scope) {
+            angular.extend($scope, {
+                london: {
+                    lat: 51.505,
+                    lon: -0.09,
+                    zoom: 3
+                },
+                layers: [
+                    {
+                        name: 'OpenStreetMap',
+                        active: true,
+                        source: {
+                            type: 'OSM'
+                        }
+                    },
+                    {
+                        name: 'OpenCycleMap',
+                        active: false,
+                        source: {
+                            type: 'OSM',
+                            url: 'http://{a-c}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png',
+                            attribution: 'All maps &copy; <a href="http://www.opencyclemap.org/">OpenCycleMap</a>'
+                        }
+                    },
+                    {
+                        name: 'MapBox Night',
+                        active: false,
+                        source: {
+                            type: 'TileJSON',
+                            url: 'https://api.tiles.mapbox.com/v3/examples.map-0l53fhk2.jsonp'
+                        }
+                    },
+                    {
+                        name: 'MapBox Terrain',
+                        active: false,
+                        source: {
+                            type: 'TileJSON',
+                            url: 'https://api.tiles.mapbox.com/v3/examples.map-i86nkdio.jsonp'
+                        }
+                    },
+                    {
+                        name: 'Mapbox Geography Class',
+                        active: false,
+                        source: {
+                            type: 'TileJSON',
+                            url: 'http://api.tiles.mapbox.com/v3/mapbox.geography-class.json'
+                        }
+                    }
+                ],
+                changeLayer: function(layer) {
+                    $scope.layers.map(function(l) {
+                        l.active = (l === layer);
+                    });
+                }
+            });
+        } ]);
+    </script>
+  </head>
+  <body>
+  <div class="container">
+      <div ng-controller="DemoController">
+        <openlayers ol-center="london" custom-layers="true" height="400px">
+            <ol-layer name="{{ layer.name }}" ol-layer-properties="layer" ng-repeat="layer in layers|filter: { active: true}"></ol-layer>
+        </openlayers>
+
+        <h1>Layers change tiles example</h1>
+        <p>This is a map that can change the tiles of the main layer by demand</p>
+
+        <ul>
+            <li style="display: inline" ng-repeat="layer in layers">
+                <button ng-click="changeLayer(layer)" class="btn btn-default" ng-bind="layer.name"></button>
+            </li>
+        </ul>
+
+        <p>Current TileLayer Url:
+            <pre>{{ layers | json }}</pre>
+        </p>
+
+      </div>
+  </div>
+
+  </body>
+</html>
