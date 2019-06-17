@@ -75,7 +75,7 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
         res.raise_for_status()
         
 def create_query_store(store):
-    new_store = WhyisSPARQLStore(endpoint=store.endpoint,
+    new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
 #                            method="POST",
 #                            returnFormat='json',
                             node_to_sparql=node_to_sparql)
@@ -96,7 +96,7 @@ def engine_from_config(config, prefix):
         def publish(data, *graphs):
             s = requests.session()
             s.keep_alive = False
-            result = s.post(store.endpoint,
+            result = s.post(store.query_endpoint,
                             data=data,
 #                            params={"context-uri":graph.identifier},
                             headers={'Content-Type':'application/x-trig'})

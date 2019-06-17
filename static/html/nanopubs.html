@@ -23,16 +23,16 @@
   <md-card data-ng-repeat="nanopub in nanopubs">
     <md-card-header>
       <md-card-avatar>
-        <md-icon class="md-avatar-icon" ng-show="nanopub.contributor">person</md-icon>
-        <md-icon class="md-avatar-icon" ng-hide="nanopub.contributor">code</md-icon>
+        <md-icon ng-show="nanopub.contributor">person</md-icon>
+        <md-icon ng-hide="nanopub.contributor">code</md-icon>
       </md-card-avatar>
       <md-card-header-text>
         <span class="md-title">
           <span data-ng-if="nanopub.contributor">
-            <span data-ng-bind="(nanopub.contributor | label).label"/>
+            <span data-ng-bind="nanopub.contributor_label"/>
           </span>
           <span data-ng-if="nanopub.generation_type">
-            <span data-ng-bind="nanopub.generation_type | label"/>
+            <span data-ng-bind="nanopub.generation_type_label"/>
           </span>
         </span>
         <span class="md-subhead">
@@ -82,7 +82,7 @@
             <span >
               <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
                   <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
-              <span data-ng-if="reply.contributor" data-ng-bind="reply.contributor | label"/>
+              <span data-ng-if="reply.contributor" data-ng-bind="reply.contributor_label"/>
             </span>
             (<span data-ng-show="reply.modified">Edited <span data-ng-bind="reply.modified | date"/>
             </span><span data-ng-hide="reply.modified" data-ng-bind="reply.created | date"/>)

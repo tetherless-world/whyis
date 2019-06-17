@@ -1,4 +1,4 @@
-{% set qr = this.graph.query('''
+{{'''
 select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?modified, ?created) as ?updated) ?derived_from ?generation_type ?content ?reply_of ?work where {
   { graph ?np { ?np sio:isAbout ?e.}}
   UNION
@@ -42,9 +42,4 @@ select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?mo
   optional {
     ?assertion sioc:reply_of ?reply_of.
   }
-}''', initNs=dict(np=ns.np, sio=ns.sio, prov=ns.prov, dc=ns.dc, frbr=ns.frbr, sioc=ns.sioc), initBindings={"e":this.identifier}) %}
-[
-    {% for row in qr %}
-    {{row.asdict()|tojson}}{% if not loop.last %},{% endif %}
-    {% endfor %}
-]
+}''' | query(values={"e":this.identifier}) | iter_labelize(key="contributor", label_key="contributor_label") | iter_labelize(key="generation_type", label_key="generation_type_label") | tojson }}
