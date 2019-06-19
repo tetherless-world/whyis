@@ -37,3 +37,5 @@ pyjwt
 sadi
 coverage
 bsddb3
+pyshp
+pygeoif
