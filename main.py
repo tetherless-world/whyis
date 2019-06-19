@@ -928,12 +928,8 @@ class App(Empty):
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
                 elif fmt in dataFormats:
-<<<<<<< HEAD
+                    print('attempting linked data on', name, fmt, dataFormats[fmt], format, content_type)
                     output_graph = ConjunctiveGraph()
-=======
-                    print 'attempting linked data on', name, fmt, dataFormats[fmt], format, content_type
-                    output_graph = Graph()
->>>>>>> 48f5266317afeea2a37102b5e457a24e586f06a0
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
                     return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}

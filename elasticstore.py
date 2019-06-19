@@ -12,7 +12,7 @@ from rdflib.graph import Graph
 
 import requests
 from uuid import uuid4
-from urllib import quote_plus
+from urllib.parse import quote_plus
 
 import rdflib
 

@@ -283,7 +283,7 @@ class NanopublicationManager(object):
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     if self.db.store.publish.serialize:
                         data.write(serialized)
-                        data.write('\n')
+                        data.write(b'\n')
                         data.flush()
                     full_list.append(nanopub.identifier)
                 #np_graph.serialize(data, format="trig")

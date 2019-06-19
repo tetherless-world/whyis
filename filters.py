@@ -87,8 +87,8 @@ def configure(app):
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        print query
-        print params
+        print(query)
+        print(params)
         return [x.asdict() for x in graph.query(query, **params)]
 
 
