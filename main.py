@@ -1029,7 +1029,9 @@ class App(Empty):
             contentType = request.headers['Content-Type']
             encoding = 'utf8' if not request.content_encoding else request.content_encoding
             content = str(request.data, encoding)
-            sadi.deserialize(inputGraph, content, contentType)
+            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],contentType)
+            if fmt in dataFormats:
+                inputGraph.parse(data=content, format=dataFormats[fmt])
             return inputGraph
 
         
@@ -1135,7 +1137,7 @@ class App(Empty):
                 if content_type == 'text/markdown':
                     #print "Aha, markdown!"
                     #print text.value
-                    html = markdown.markdown(text.value, extensions=['rdfa'])
+                    html = markdown.markdown(text.value)
                     attributes = ['vocab="%s"' % app.NS.local,
                                   'base="%s"'% app.NS.local,
                                   'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]

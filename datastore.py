@@ -247,7 +247,8 @@ class WhyisDatastore(Datastore):
     def put(self, model):
         #self.db.add(model)
         idb = Graph(self.db.store,model.identifier)
-        idb.remove((None,None,None))
+        if len(idb) > 0:
+            idb.remove((None,None,None))
         idb += model.graph
         self.db.store.commit()
         

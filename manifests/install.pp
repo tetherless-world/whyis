@@ -10,17 +10,15 @@ class { 'python' :
 
 service { jetty8:
     ensure => stopped,
-} ->
+    subscribe => [Package["jetty8"]],
+
+}
+
 package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "libdb5.3-dev"]:
   ensure => "installed"
 } ->
-package { ["jetty8"]:
-  ensure => "absent"
-} ->
-file_line { "configure_jetty8_stop":
-  path  => '/etc/default/jetty8',
-  line  => 'NO_START=1',
-  match => 'NO_START=0',
+package { "jetty8":
+  ensure => "absent",
 } ->
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',

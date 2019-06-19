@@ -6,7 +6,7 @@ git+git://github.com/RDFLib/rdflib.git#egg=rdflib
 virtualenv
 Cython
 numpy
-scipy
+scipy==1.2.1
 pandas
 nltk
 beautifulsoup4
@@ -22,6 +22,7 @@ git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 SPARQLWrapper
 html5lib
+kombu==4.3.0
 redis<3
 kombu==4.3.0
 celery==4.2.1
