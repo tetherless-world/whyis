@@ -131,6 +131,8 @@ class ElasticSearchStore(Store):
         resources = {}
         json_ld = []
         bnodes = {}
+
+
         def skolemize_bnodes(x):
             if isinstance(x, rdflib.Graph):
                 x = x.identifier
@@ -150,7 +152,7 @@ class ElasticSearchStore(Store):
                 resources[(g,s)] = {"@id":str(s), "@object" : []}
                 graphs[g]['@graph'].append(resources[(g,s)])
             resource = resources[(g,s)]
-            if p not in resource:
+            if str(p) not in resource:
                 resource[str(p)] = []
             if isinstance(o, rdflib.Literal):
                 obj = {"@value" : str(o)}
@@ -161,9 +163,10 @@ class ElasticSearchStore(Store):
             else:
                 obj = {"@id" : str(o)}
             resource[str(p)].append(obj)
-            resource['@object'].append(obj)
+            resource['@object'].append(obj) # check if it's already there first?
 
         json_ld = json.dumps({ "graphs": json_ld })
+
         return json_ld
         
     def addN(self, quads, docid=None):
@@ -215,7 +218,7 @@ class ElasticSearchStore(Store):
         g.addN(self.json_ld_triples(json_response))
         return g
 
-    def triples(self, spo, context=None, txn=None):
+    def triples(self, spo=(None,None,None), context=None, txn=None):
         """A generator over all the triples matching """
         assert self.__open, "The Store must be open."
 
@@ -286,6 +289,10 @@ class ElasticSearchStore(Store):
                     continue
                 for resource in graph['@graph']:
                     resourceid = rdflib.URIRef(resource['@id'])
+                    if resourceid.startswith('_:'):
+                      resourceid = rdflib.BNode(resourceid[2:])
+                    else:
+                      resourceid = rdflib.URIRef(resourceid)
                     if subject is not None and subject != resourceid:
                         continue
                     predicates = []
@@ -342,9 +349,7 @@ class ElasticSearchStore(Store):
             yield(URIRef())
 
     def add_graph(self, graph):
-        json_ld = graph.serialize(format='json-ld')
-        docid = uuid4().hex
-        self.session.put(self.url+'/nanopublication/'+docid, data=json_ld)
+        self.addN(((s,p,o,graph.identifier) for s,p,o in graph.triples((None, None, None))))
 
     def remove_graph(self, graph):
         if isinstance(graph, Graph):
