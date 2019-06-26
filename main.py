@@ -496,6 +496,10 @@ construct {
     
     def configure_template_filters(self):
         filters.configure(self)
+        if 'filters' in self.config:
+            for name, fn in self.config['filters'].items():
+                self.template_filter(name)(fn)
+
 
     def add_file(self, f, entity, nanopub):
         entity = rdflib.URIRef(entity)
