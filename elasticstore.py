@@ -26,7 +26,7 @@ import pkg_resources
 
 elastic_index_settings = pkg_resources.resource_string(__name__, "elastic_index_settings.json")
 
-from rdflib.plugins.sparql import CUSTOM_EVALS
+#from rdflib.plugins.sparql import CUSTOM_EVALS
 from rdflib.plugins.sparql.sparql import Query, AlreadyBound
 
 from rdflib.plugins.sparql.parser import parseQuery, parseUpdate
@@ -35,7 +35,8 @@ from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
 from rdflib.plugins.sparql.evalutils import (
     _filter, _eval, _join, _diff, _minus, _fillTemplate, _ebv, _val)
 
-from rdflib.plugins.sparql.evaluate import evalPart
+#from rdflib.plugins.sparql.evaluate import evalPart
+from elastic_eval import evalPart
 from rdflib.plugins.sparql.evaluate import evalBGP as evalBGP_orig
 from rdflib.plugins.sparql.evaluate import evalGraph as evalGraph_orig
 
@@ -461,5 +462,5 @@ def evalGraph(ctx, part):
         for x in evalPart(c, part.p):
             yield x
 
-CUSTOM_EVALS['BGP'] = evalBGP
-CUSTOM_EVALS['Graph'] = evalGraph
+#CUSTOM_EVALS['BGP'] = evalBGP
+#CUSTOM_EVALS['Graph'] = evalGraph
