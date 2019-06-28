@@ -549,14 +549,15 @@ class Deductor(UpdateChangeService):
     
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s\nFILTER(str(%s)="%s") .\n}''' %( self.where, self.resource, i.identifier) , initNs=self.app.NS.prefixes )
+        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s \nFILTER(regex(str(%s), "^(%s)")) . }''' % (self.where , self.resource, i.identifier) , initNs=self.prefixes )
+        #print(context_vars)
         for key in list(context_vars.json["results"]["bindings"][0].keys()):
             context[key]=context_vars.json["results"]["bindings"][0][key]["value"]
         return context
     
     def process(self, i, o):
         npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query('''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER(str(%s)="%s") .\n}''' %( self.construct, self.where, self.construct, self.resource, i.identifier) , initNs=self.prefixes ) 
+        triples = self.app.db.query('''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' %( self.construct, self.where, self.construct, self.resource, i.identifier) , initNs=self.prefixes ) 
         for s, p, o, c in triples:
             print("Deductor Adding ", s, p, o)
             npub.assertion.add((s, p, o))
