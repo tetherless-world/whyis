@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#service apache2 start
-#service celeryd start
+service apache2 start
+service celeryd start
 service jetty9 start
 
 if [ ! -f ".data_loaded" ] ;
