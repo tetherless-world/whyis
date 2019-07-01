@@ -38,17 +38,5 @@ COPY /dockerfiles/docker-cmd.sh /
 
 WORKDIR /apps/whyis
 
-RUN echo "\n\
-Please configure Whyis at /apps/whyis/config.py to ensure correct customization.\n\
-Follow the instructions for 'Configure Whyis' at http://tetherless-world.github.io/whyis/install.\n\
-\n\
-To run whyis in development mode, run the following to start it:\n\
-\n\
- > sudo su - whyis\n\
- > cd /apps/whyis\n\
- > source venv/bin/activate\n\
- > python manage.py runserver\n\
-\n"
-
 CMD ["/bin/bash", "/docker-cmd.sh"]
 
