@@ -34,11 +34,9 @@ RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_M
 
 RUN puppet apply /tmp/install_whyis.pp
 
-WORKDIR /apps/whyis
+COPY /dockerfiles/docker-cmd.sh /
 
-RUN service jetty9 start;\
-	curl -X POST --data-binary "@admin.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/admin_namespace.log &&\
-	curl -X POST --data-binary "@knowledge.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/knowledge_namespace.log
+WORKDIR /apps/whyis
 
 RUN echo "\n\
 Please configure Whyis at /apps/whyis/config.py to ensure correct customization.\n\
@@ -52,4 +50,5 @@ To run whyis in development mode, run the following to start it:\n\
  > python manage.py runserver\n\
 \n"
 
-ENTRYPOINT bash
+CMD ["/bin/bash", "/docker-cmd.sh"]
+
