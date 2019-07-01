@@ -1,8 +1,8 @@
 #!/bin/bash
 
 service apache2 start
-service celeryd start
 service jetty9 start
+service celeryd start &
 
 if [ ! -f ".data_loaded" ] ;
 then
@@ -28,3 +28,5 @@ To run whyis in development mode, run the following to start it:\n\
  > source venv/bin/activate\n\
  > python manage.py runserver\n\
 \n"
+
+exec "$@"
