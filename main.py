@@ -473,7 +473,7 @@ construct {
 #                    raise e
             return self._description
         
-    def get_resource(self, entity, async=True, retrieve=True):
+    def get_resource(self, entity, async_=True, retrieve=True):
         if retrieve:
             mapped_name, importer = self.map_entity(entity)
     
@@ -486,7 +486,7 @@ construct {
 
             if importer is not None:
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-                if modified is None or async is False:
+                if modified is None or async_ is False:
                     self.run_importer(entity)
                 elif not importer.import_once:
                     print("Type of modified is",type(modified))
