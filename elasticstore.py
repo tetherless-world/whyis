@@ -118,14 +118,14 @@ class ElasticSearchStore(Store):
             #self.db_env.close()
             self.__open = False
 
-    def add(self, triple, context, quoted=False, txn=None):
+    def add(self, triple, context, quoted=False, txn=None, refresh=False):
         """\
         Add a triple to the store of triples.
         """
         (subject, predicate, object) = triple
         assert self.__open, "The Store must be open."
         assert context != self, "Can not add triple directly to store"
-        self.addN([(subject,predicate,object,context)])
+        self.addN([(subject,predicate,object,context)], refresh=refresh)
 
     def prep_graph(self, quads):
         graphs = {}
@@ -170,7 +170,7 @@ class ElasticSearchStore(Store):
 
         return json_ld
         
-    def addN(self, quads, docid=None):
+    def addN(self, quads, docid=None, refresh=False):
         """
         Adds each item in the list of statements to a specific context. The
         quoted argument is interpreted by formula-aware stores to indicate this
@@ -184,8 +184,10 @@ class ElasticSearchStore(Store):
             docid = uuid4().hex
         else:
             docid = quote_plus(docid)
-            
-        r = self.session.put(self.url+'/nanopublication/'+docid,
+
+         
+
+        r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),
                              headers={"Content-Type":"application/json"},
                              data=json_ld)
         if r.status_code != 201:
@@ -207,6 +209,10 @@ class ElasticSearchStore(Store):
                 }
             }
         }
+
+        refponse = self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
+        print(refponse, refponse.status_code, refponse.content)
+
         response = self.session.post(self.url+"/_search",data=json.dumps(query),
                                      headers={"Content-Type":"application/json"})
 
@@ -349,8 +355,8 @@ class ElasticSearchStore(Store):
         for i in range(0):
             yield(URIRef())
 
-    def add_graph(self, graph):
-        self.addN(((s,p,o,graph.identifier) for s,p,o in graph.triples((None, None, None))))
+    def add_graph(self, graph, refresh=False):
+        self.addN(((s,p,o,graph.identifier) for s,p,o in graph.triples((None, None, None))), refresh=refresh)
 
     def remove_graph(self, graph):
         if isinstance(graph, Graph):
