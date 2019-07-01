@@ -143,7 +143,7 @@ class Crawler(UpdateChangeService):
             if uri in cache:
                 continue
             node = None
-            node = self.app.get_resource(uri, async=False)
+            node = self.app.get_resource(uri, async_=False)
             cache.add(uri)
             if depth != 0:
                 for p in self.predicates:
