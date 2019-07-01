@@ -2,7 +2,8 @@
 
 service apache2 start
 service jetty9 start
-service celeryd start &
+service redis-server start
+service celeryd start
 
 if [ ! -f ".data_loaded" ] ;
 then
