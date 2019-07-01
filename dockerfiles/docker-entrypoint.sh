@@ -28,5 +28,3 @@ To run whyis in development mode, run the following to start it:\n\
  > source venv/bin/activate\n\
  > python manage.py runserver\n\
 \n"
-
-/bin/bash

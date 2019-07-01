@@ -34,9 +34,9 @@ RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_M
 
 RUN puppet apply /tmp/install_whyis.pp
 
-COPY /dockerfiles/docker-cmd.sh /
+COPY /dockerfiles/docker-entrypoint.sh /
 
 WORKDIR /apps/whyis
 
-CMD ["/bin/bash", "/docker-cmd.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
