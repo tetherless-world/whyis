@@ -24,6 +24,9 @@ Follow the instructions for 'Configure Whyis' at http://tetherless-world.github.
 \n\
 To run whyis in development mode, run the following to start it:\n\
 \n\
+ > sudo su - whyis\n\
+ > cd /apps/whyis\n\
+ > source venv/bin/activate\n\
  > python manage.py runserver\n\
 \n"
 
