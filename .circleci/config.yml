@@ -15,3 +15,8 @@ jobs:
           name: Build application Docker image
           command: |
             docker build -t whyis -f dockerfiles/Dockerfile .
+      - run:
+          name: Run tests
+          command: |
+            docker run whyis bash -c "source venv/bin/activate && python manage.py test"
+  
