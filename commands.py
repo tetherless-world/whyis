@@ -220,7 +220,7 @@ class Test(Command):
                     default=self.failfast, action='store_false'),
             Option('--test', dest='tests',
                     default=self.tests, type=str),
-            Option('--ci', dest='ci', default=self.ci, action='store_false')
+            Option('--ci', dest='ci', default=self.ci, action='store_true')
         ]
 
     def run(self, verbosity, failfast, tests, ci):
@@ -266,7 +266,7 @@ class Test(Command):
 
         test_suite = unittest.TestSuite(all_tests)
 
-        if self.ci:
+        if ci:
             with open("junit.xml", 'wb') as output:
                 xmlrunner.XMLTestRunner(output=output,
                     verbosity=verbosity, failfast=failfast).run(test_suite)
