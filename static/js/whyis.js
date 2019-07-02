@@ -853,7 +853,22 @@ $( function() {
                 //});
             },
         };
-    }]);    
+    }]);
+
+    app.directive("resourceAction",['getLabel', function(getLabel) {
+        return {
+            restrict: "E",
+            scope: {
+                uri: "=",
+                label: "=",
+                action: "="
+            },
+            template: '<a href="'+ROOT_URL+'about?uri={{uri}}&view={{action}}"><span ng-if="label">{{label}}</span><span ng-if="label == null">{{getLabel(uri)}}</span></a>',
+            link: function (scope) {
+                scope.getLabel = getLabel;
+            },
+        };
+    }]);
     
     app.factory("getLabel", ["$http", '$q', function($http, $q) {
         var promises = {}
