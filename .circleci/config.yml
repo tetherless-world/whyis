@@ -19,4 +19,6 @@ jobs:
           name: Run tests
           command: |
             docker run whyis bash -c "source venv/bin/activate && python manage.py test"
+      - store_test_results:
+          path: test-results
   

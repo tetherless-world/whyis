@@ -267,7 +267,9 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
 
         if ci:
-            with open("junit.xml", 'wb') as output:
+            if not os.path.isdir("test-results"):
+                os.makedirs("test-results")
+            with open(os.path.join("test-results", "junit.xml"), "wb") as output:
                 xmlrunner.XMLTestRunner(output=output,
                     verbosity=verbosity, failfast=failfast).run(test_suite)
         else:
