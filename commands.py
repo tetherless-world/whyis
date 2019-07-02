@@ -267,7 +267,7 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
 
         if ci:
-            test_results_dir_path = "/test-results/python"
+            test_results_dir_path = os.path.join("test-results", "python")
             if not os.path.isdir(test_results_dir_path):
                 os.makedirs(test_results_dir_path)
             with open(os.path.join(test_results_dir_path, "results.xml"), "wb") as output:
