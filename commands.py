@@ -267,11 +267,13 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
 
         if ci:
-            if not os.path.isdir("test-results"):
-                os.makedirs("test-results")
-            with open(os.path.join("test-results", "junit.xml"), "wb") as output:
+            test_results_dir_path = os.path.join("test-results", "python")
+            if not os.path.isdir(test_results_dir_path):
+                os.makedirs(test_results_dir_path)
+            with open(os.path.join(test_results_dir_path, "results.xml"), "wb") as output:
                 xmlrunner.XMLTestRunner(output=output,
                     verbosity=verbosity, failfast=failfast).run(test_suite)
+                print("Wrote test results to", os.path.abspath(test_results_dir_path))
         else:
             unittest.TextTestRunner(
                 verbosity=verbosity, failfast=failfast).run(test_suite)
