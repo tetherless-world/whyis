@@ -38,6 +38,8 @@ RUN puppet apply /tmp/install_whyis.pp
 RUN rm -fr /apps/whyis
 COPY / /apps/whyis
 WORKDIR /apps/whyis
+# Remove any existing venv
+RUN rm -fr venv
 RUN apt-get install -y python3-venv
 RUN python3 -m venv venv
 RUN bash -c "source venv/bin/activate && python3 -m pip install --upgrade pip && pip install -r requirements/dev.txt"
