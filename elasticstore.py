@@ -15,6 +15,7 @@ from uuid import uuid4
 from urllib.parse import quote_plus
 
 import rdflib
+from elasticsearch import Elasticsearch
 
 import json
 
@@ -97,14 +98,19 @@ class ElasticSearchStore(Store):
         return self.__open
 
     def open(self, url, create=True):
-        self.url = url
-        self.session = requests.Session()
+        print("URL IS",url)
+        self.url, _, self.index = url.rpartition('/')
+
+        self.es = Elasticsearch([self.url])
+#        self.session = requests.Session()
+
+        """TODO make a replacement for this
         status = self.session.get(url)
         if create and status.status_code == 404:
             r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
             if r.status_code != 201:
                 print(r.status_code)
-                print(r.content)
+                print(r.content)"""
         self.__open = True
 
         return VALID_STORE
@@ -187,12 +193,14 @@ class ElasticSearchStore(Store):
 
          
 
-        r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),
-                             headers={"Content-Type":"application/json"},
-                             data=json_ld)
-        if r.status_code != 201:
-            print(r.status_code)
-            print(r.content)
+        #r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),
+        #                     headers={"Content-Type":"application/json"},
+        #                     data=json_ld)
+        #if r.status_code != 201:
+        #    print(r.status_code)
+        #    print(r.content)
+
+        self.es.create(index=self.index, id=docid, body=json_ld, refresh='wait_for' if refresh else 'false')
     
                 
     def remove(self, spo, context, txn=None):
@@ -200,7 +208,7 @@ class ElasticSearchStore(Store):
         assert False, "remove() is not implemented."
 
     def elastic_query(self, query):
-        query = {
+        """query = {
             "query": {
                 "nested" : {
                     "path" : "graphs.@graph",
@@ -208,15 +216,23 @@ class ElasticSearchStore(Store):
                     "query" : query
                 }
             }
-        }
+        }"""
 
-        refponse = self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
-        print(refponse, refponse.status_code, refponse.content)
+        query = {"query" : query}
 
-        response = self.session.post(self.url+"/_search",data=json.dumps(query),
-                                     headers={"Content-Type":"application/json"})
+        print(query)
 
-        return response.json()
+        #refponse = self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
+        self.es.indices.refresh(index=self.index)
+
+        #response = self.session.post(self.url+"/_search",data=json.dumps(query),
+        #                             headers={"Content-Type":"application/json"})
+
+        return self.es.search(index=[self.index], body=json.dumps(query))
+
+#        print(response)
+
+#        return response.json()
 
     def subgraph(self, query):
         json_response = self.elastic_query(query)
@@ -361,8 +377,8 @@ class ElasticSearchStore(Store):
     def remove_graph(self, graph):
         if isinstance(graph, Graph):
             graph = graph.identifier
-        
-        response = self.session.delete(self.url+"/nanopublication",graph.split('/')[-1])
+        # response = self.session.delete(self.url+"/nanopublication",graph.split('/')[-1])
+        self.es.delete(index=self.index, id=graph.split('/')[-1]) #TODO where do I put "/nanopublication"? 
 
 def evalBGP(ctx, part=None, bgp=None):
 
