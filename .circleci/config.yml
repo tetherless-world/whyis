@@ -19,7 +19,9 @@ jobs:
           name: Run tests
           command: |
             mkdir -p test-results/python &&
-            docker run whyis bash -c "source venv/bin/activate && python manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml
+            docker run whyis bash -c "source venv/bin/activate && python manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml &&
+            cat test-results/python/results.txt &&
+            grep -c "<failure " test-results/python/results.txt
       - store_test_results:
           path: test-results
   
