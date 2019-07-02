@@ -3,3 +3,4 @@ flask-debugtoolbar
 flask-testing
 selenium
 chromedriver_binary
+unittest-xml-reporting
