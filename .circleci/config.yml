@@ -18,9 +18,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-            mkdir test-results &&
-            docker run -v $PWD/test-results:/apps/whyis/test-results whyis bash -c "source venv/bin/activate && python manage.py test --ci" &&
-            find .
+            docker run -v $PWD/test-results:/apps/whyis/test-results whyis bash -c "source venv/bin/activate && python manage.py test --ci && find /apps/whyis/test-results" &&
+            find test-results
       - store_test_results:
           path: test-results
   
