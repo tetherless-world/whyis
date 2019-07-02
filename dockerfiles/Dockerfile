@@ -34,22 +34,14 @@ RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_M
 
 RUN puppet apply /tmp/install_whyis.pp
 
+# Delete the puppet installation (checked out from GitHub master) and replace it with the files in this checkout.
+RUN rm -fr /apps/whyis
+COPY / /apps/whyis
 WORKDIR /apps/whyis
+RUN apt-get install -y python3-venv
+RUN python3 -m venv venv
+RUN bash -c "source venv/bin/activate && python3 -m pip install --upgrade pip && pip install -r requirements/dev.txt"
 
-RUN service jetty9 start;\
-	curl -X POST --data-binary "@admin.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/admin_namespace.log &&\
-	curl -X POST --data-binary "@knowledge.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/knowledge_namespace.log
+COPY /dockerfiles/docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
-RUN echo "\n\
-Please configure Whyis at /apps/whyis/config.py to ensure correct customization.\n\
-Follow the instructions for 'Configure Whyis' at http://tetherless-world.github.io/whyis/install.\n\
-\n\
-To run whyis in development mode, run the following to start it:\n\
-\n\
- > sudo su - whyis\n\
- > cd /apps/whyis\n\
- > source venv/bin/activate\n\
- > python manage.py runserver\n\
-\n"
-
-ENTRYPOINT bash
