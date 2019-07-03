@@ -45,6 +45,9 @@ module.exports = (env, argv) => ({
         })
     ],
     resolve: {
+        alias: {
+            'vue$': 'vue/dist/vue.esm.js' // Include the runtime template compiler
+        },
         extensions: ['.js'],
         modules: [path.join(__dirname, 'js', 'whyis_vue'), path.join(__dirname, 'node_modules')]
     },
