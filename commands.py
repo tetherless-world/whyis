@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
 
 from __future__ import print_function
-from flask_script import Command, Option, prompt_bool
+
+import subprocess
+
+from flask_script import Command, Option, prompt_bool, Server
 
 from flask_security.utils import encrypt_password, verify_password, get_hmac
 
@@ -292,3 +295,13 @@ class RunInterpreter(Command):
             agent = interpreter.Interpreter(config_fn=config_file)
             agent.app = app
             agent.process_graph(app.db)
+
+
+class WhyisServer(Server):
+    """
+    Customized runserver command.
+    """
+    def __call__(self, app, *args, **kwds):
+        subprocess.Popen(["npm", "start"], cwd=app.static_folder)
+        Server.__call__(self, app=app, *args, **kwds)
+
