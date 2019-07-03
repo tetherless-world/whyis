@@ -15,7 +15,6 @@ import rdflib
 from nanopub import Nanopublication
 from cookiecutter.main import cookiecutter
 import tempfile
-import xmlrunner
 
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
@@ -267,6 +266,7 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
 
         if ci:
+            import xmlrunner
             test_results_dir_path = os.path.join("test-results", "python")
             if not os.path.isdir(test_results_dir_path):
                 os.makedirs(test_results_dir_path)
