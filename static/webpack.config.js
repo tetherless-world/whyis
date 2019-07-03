@@ -6,7 +6,7 @@ module.exports = (env, argv) => ({
     devServer: {
         contentBase: ".",
         host: "localhost",
-        hot: true,
+        hot: false,
         inline: true,
         port: 9000,
         proxy: {
