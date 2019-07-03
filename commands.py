@@ -15,6 +15,7 @@ import rdflib
 from nanopub import Nanopublication
 from cookiecutter.main import cookiecutter
 import tempfile
+import xmlrunner
 
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
@@ -206,6 +207,7 @@ class Test(Command):
     Run tests
     """
 
+    ci = False
     verbosity = 2
     failfast = False
     tests = 'test*'
@@ -217,10 +219,11 @@ class Test(Command):
             Option('--failfast', dest='failfast',
                     default=self.failfast, action='store_false'),
             Option('--test', dest='tests',
-                    default=self.tests, type=str)
+                    default=self.tests, type=str),
+            Option('--ci', dest='ci', default=self.ci, action='store_true')
         ]
 
-    def run(self, verbosity, failfast, tests):
+    def run(self, verbosity, failfast, tests, ci):
         import sys
         import glob
         import unittest
@@ -248,7 +251,7 @@ class Test(Command):
                         all_tests.append(loader.discover(path, 'tests.py'))
                     elif exists(tests_dir):
                         all_tests.append(loader.discover(tests_dir, pattern=tests+'.py'))
-                        
+
         if exists('tests') and isdir('tests'):
             all_tests.append(loader.discover('tests', pattern=tests+'.py'))
         elif exists('tests.py'):
@@ -262,8 +265,18 @@ class Test(Command):
                                              top_level_dir=flask.current_app.config['app_path']))
 
         test_suite = unittest.TestSuite(all_tests)
-        unittest.TextTestRunner(
-            verbosity=verbosity, failfast=failfast).run(test_suite)
+
+        if ci:
+            test_results_dir_path = os.path.join("test-results", "python")
+            if not os.path.isdir(test_results_dir_path):
+                os.makedirs(test_results_dir_path)
+            with open(os.path.join(test_results_dir_path, "results.xml"), "wb") as output:
+                xmlrunner.XMLTestRunner(output=output,
+                    verbosity=verbosity, failfast=failfast).run(test_suite)
+                print("Wrote test results to", os.path.abspath(test_results_dir_path))
+        else:
+            unittest.TextTestRunner(
+                verbosity=verbosity, failfast=failfast).run(test_suite)
 
 class RunInterpreter(Command):
     '''Add a nanopublication to the knowledge graph.'''

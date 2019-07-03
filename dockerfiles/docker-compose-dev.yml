@@ -1,0 +1,20 @@
+# Simple docker-compose file for local development:
+# * Creates a redis server for celery and opens its port to localhost
+# * Uses the whyis image for its pre-configured blazegraph.
+#
+# A production compose file would have a separate blazegraph container, and others.
+version: '3'
+services:
+  redis:
+    container_name: "redis"
+    image: "redis:3.0.6-alpine"
+    ports:
+      - "127.0.0.1:6379:6379"
+  whyis:
+    container_name: "whyis"
+    build:
+      context: ..
+      dockerfile: dockerfiles/Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    command: tail -f /dev/null
