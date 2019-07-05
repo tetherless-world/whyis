@@ -17,11 +17,7 @@ jobs:
             docker build -t whyis -f dockerfiles/Dockerfile .
       - run:
           name: Run tests
-          command: |
-            mkdir -p test-results/python &&
-            docker run whyis bash -c "source venv/bin/activate && python manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml &&
-            cat test-results/python/results.xml &&
-            ! grep -q "failure " test-results/python/results.xml
+          command: .circleci/test.sh
       - store_test_results:
           path: test-results
   
