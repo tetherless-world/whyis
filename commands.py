@@ -302,6 +302,7 @@ class WhyisServer(Server):
     Customized runserver command.
     """
     def __call__(self, app, *args, **kwds):
-        subprocess.Popen(["npm", "start"], cwd=app.static_folder)
+        if os.path.isfile(os.path.join(app.static_folder, "package.json")) and os.path.isfile(os.path.join(app.static_folder, "webpack.config.js")):
+            subprocess.Popen(["npm", "start"], cwd=app.static_folder)
         Server.__call__(self, app=app, *args, **kwds)
 
