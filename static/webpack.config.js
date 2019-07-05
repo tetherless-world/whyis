@@ -3,23 +3,6 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 
 module.exports = (env, argv) => ({
-    devServer: {
-        contentBase: ".",
-        host: "localhost",
-        hot: false,
-        inline: true,
-        port: 9000,
-        proxy: {
-            "/api": {
-                "target": {
-                    "host": "localhost",
-                    "protocol": 'http:',
-                    "port": 5000
-                },
-                secure: false
-            }
-        }
-    },
     devtool: argv.mode === "production" ? 'hidden-source-map' : 'cheap-module-eval-source-map',
     entry: {
         app: ['./js/whyis_vue/main.js']
