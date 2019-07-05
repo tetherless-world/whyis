@@ -98,7 +98,7 @@ function encodeDataURI(input, mediatype) {
 
 
 //require(["d3", "angular", "jquery", 'angular-sanitize', "bootstrap" ], function () {
-$( function() {
+function whyis() {
     PALETTE = [
         "#9B242D",
         "#B6985E",
@@ -3512,4 +3512,5 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         $scope.globalContext = vm.nanopub['@context'];
     });
-});
+}
+whyis();
