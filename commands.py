@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import subprocess
+import sys
 
 from flask_script import Command, Option, prompt_bool, Server
 
@@ -302,7 +303,32 @@ class WhyisServer(Server):
     Customized runserver command.
     """
     def __call__(self, app, *args, **kwds):
-        if os.path.isfile(os.path.join(app.static_folder, "package.json")) and os.path.isfile(os.path.join(app.static_folder, "webpack.config.js")):
-            subprocess.Popen(["npm", "start"], cwd=app.static_folder)
-        Server.__call__(self, app=app, *args, **kwds)
+        if sys.platform != "win32":
+            # Start webpack in the static/ directories if it's configured
+            static_dir_paths = [app.static_folder]
+            if 'WHYIS_CDN_DIR' in app.config and app.config['WHYIS_CDN_DIR'] is not None:
+                static_dir_paths.append(app.config["WHYIS_CDN_DIR"])
+            webpack_static_dir_paths = \
+                [static_dir_path for static_dir_path in static_dir_paths
+                 if os.path.isfile(os.path.join(static_dir_path, "package.json")) and os.path.isfile(os.path.join(static_dir_path, "webpack.config.js"))]
+        else:
+            webpack_static_dir_paths = []
 
+        class CleanChildProcesses:
+            def __enter__(self):
+                os.setpgrp() # create new process group, become its leader
+
+            def __exit__(self, type, value, traceback):
+                try:
+                    import signal
+                    os.killpg(0, signal.SIGINT) # kill all processes in my group
+                except KeyboardInterrupt:
+                    # SIGINT is delievered to this process as well as the child processes.
+                    # Ignore it so that the existing exception, if any, is returned. This
+                    # leaves us with a clean exit code if there was no exception.
+                    pass
+        with CleanChildProcesses():
+            for static_dir_path in webpack_static_dir_paths:
+                subprocess.Popen(["npm", "start"], cwd=static_dir_path)
+
+            Server.__call__(self, app=app, *args, **kwds)
