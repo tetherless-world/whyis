@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 mkdir -p test-results/python
 
 docker run whyis bash -c "source venv/bin/activate && python manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml
