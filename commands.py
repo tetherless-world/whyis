@@ -1,7 +1,11 @@
 # -*- coding:utf-8 -*-
 
 from __future__ import print_function
-from flask_script import Command, Option, prompt_bool
+
+import subprocess
+import sys
+
+from flask_script import Command, Option, prompt_bool, Server
 
 from flask_security.utils import encrypt_password, verify_password, get_hmac
 
@@ -15,7 +19,6 @@ import rdflib
 from nanopub import Nanopublication
 from cookiecutter.main import cookiecutter
 import tempfile
-import xmlrunner
 
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 
@@ -267,6 +270,7 @@ class Test(Command):
         test_suite = unittest.TestSuite(all_tests)
 
         if ci:
+            import xmlrunner
             test_results_dir_path = os.path.join("test-results", "python")
             if not os.path.isdir(test_results_dir_path):
                 os.makedirs(test_results_dir_path)
@@ -292,3 +296,39 @@ class RunInterpreter(Command):
             agent = interpreter.Interpreter(config_fn=config_file)
             agent.app = app
             agent.process_graph(app.db)
+
+
+class WhyisServer(Server):
+    """
+    Customized runserver command.
+    """
+    def __call__(self, app, *args, **kwds):
+        if sys.platform != "win32":
+            # Start webpack in the static/ directories if it's configured
+            static_dir_paths = [app.static_folder]
+            if 'WHYIS_CDN_DIR' in app.config and app.config['WHYIS_CDN_DIR'] is not None:
+                static_dir_paths.append(app.config["WHYIS_CDN_DIR"])
+            webpack_static_dir_paths = \
+                [static_dir_path for static_dir_path in static_dir_paths
+                 if os.path.isfile(os.path.join(static_dir_path, "package.json")) and os.path.isfile(os.path.join(static_dir_path, "webpack.config.js"))]
+        else:
+            webpack_static_dir_paths = []
+
+        class CleanChildProcesses:
+            def __enter__(self):
+                os.setpgrp() # create new process group, become its leader
+
+            def __exit__(self, type, value, traceback):
+                try:
+                    import signal
+                    os.killpg(0, signal.SIGINT) # kill all processes in my group
+                except KeyboardInterrupt:
+                    # SIGINT is delievered to this process as well as the child processes.
+                    # Ignore it so that the existing exception, if any, is returned. This
+                    # leaves us with a clean exit code if there was no exception.
+                    pass
+        with CleanChildProcesses():
+            for static_dir_path in webpack_static_dir_paths:
+                subprocess.Popen(["npm", "start"], cwd=static_dir_path)
+
+            Server.__call__(self, app=app, *args, **kwds)
