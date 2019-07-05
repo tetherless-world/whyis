@@ -13,7 +13,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Install bash
-          command: apt update && apt add bash
+          command: apk update && apk add bash
       - run:
           name: Build application Docker image
           command: |
