@@ -17,7 +17,7 @@ jobs:
             docker build -t whyis -f dockerfiles/Dockerfile .
       - run:
           name: Run tests
-          command: .circleci/test.sh
+          command: test-ci.sh
       - store_test_results:
           path: test-results
   
