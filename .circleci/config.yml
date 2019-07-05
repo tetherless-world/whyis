@@ -12,13 +12,16 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
+          name: Install bash
+          command: apt update && apt add bash
+      - run:
           name: Build application Docker image
           command: |
             docker build -t whyis -f dockerfiles/Dockerfile .
       - run:
           name: Run tests
           command: |
-            sh .circleci/test-ci.sh
+            bash .circleci/test-ci.sh
       - store_test_results:
           path: test-results
   
