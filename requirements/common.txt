@@ -68,7 +68,7 @@ git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 redis==2.10.6
 requests[security]==2.22.0
 requests-testadapter==0.3.0
-sadi==0.5.6
+sadi==0.5.7
 scipy==1.2.1
 setlr==0.2.11
 six==1.12.0
