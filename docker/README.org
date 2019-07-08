@@ -21,17 +21,6 @@
    #+end_src
    While Docker images are meant to be fresh slates on each run, Docker *does* save each container instance. To prevent this behavior, add the ~--rm~ option to the command.
 
-*** Important:
-    /Docker containers do not have an initialization system such as systemd running on them./ 
-    
-    This means that important services such as Celery, Redis, Jetty, and Apache2 will not begin running on container startup. To avoid any errors, make sure that you run the following commands below after starting the container /as root/:
-    #+begin_src sh
-    service redis-server start
-    service jetty9 start
-    service apache2 start
-    service celeryd start
-    #+end_src
-
 ** Running your Whyis Application
    To bring your Whyis application into the container, you can make use of linked volumes, which essentially binds a directory on the host computer to a directory on the Docker instance. 
    
