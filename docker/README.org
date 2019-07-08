@@ -1,16 +1,4 @@
 * Whyis and Docker
-  The provided Dockerfile will build a fully functional Whyis Docker container.
-
-** Setup
-   1. Download the Dockerfile from the Github Repo:
-      #+begin_src sh
-      $ curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/dockerfiles/Dockerfile > Dockerfile
-      #+end_src
-   2. Build the Docker image with the following command:
-      #+begin_src sh
-      $ docker build . --tag tetherlessworld/whyis:master
-      #+end_src
-      If you want to build the docker image for a specific branch, you can add the argument ~--build-arg BUILD_MODE=branch_name~. It is also suggested that you change the tag from ~master~ to ~branch_name~ to not overwrite your ~master~ image.
 
 ** Running the container
    Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, /most/ changes done to the container will be erased after each run. 
@@ -36,3 +24,14 @@
    The issue (I think) is caused by Puppet trying to ensure that the service is running on startup, which creates the ~.pid~ file, but the container hasn't actually set up the service yet (because there is no ~systemd~ running on the container). When running the start command, the system will notice the discrepancy, but start up the service properly regardless.
 
    This will likely continue to show up unless the services are split up into different containers.
+
+** Development
+
+   There are currently two Docker images (Dockerfiles) in docker/image:
+
+   1. whyis-deps, which contains the environment and dependencies for whyis
+   2. whyis, which is the user-facing image and contains the custom code for whyis; it depends (FROM) on whyis-deps
+
+   We assume that whyis-deps changes infrequently, whereas whyis changes frequently.
+   The Continuous Integration server only builds and pushes whyis, retrieving whyis-deps from Dockerhub in the process.
+   When whyis-deps changes, you will need to push it to Dockerhub manually.
