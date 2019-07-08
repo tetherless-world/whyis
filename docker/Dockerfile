@@ -44,6 +44,6 @@ RUN apt-get install -y python3-venv
 RUN python3 -m venv venv
 RUN bash -c "source venv/bin/activate && python3 -m pip install --upgrade pip && pip install -r requirements/dev.txt"
 
-COPY /dockerfiles/docker-entrypoint.sh /
+COPY /docker/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 

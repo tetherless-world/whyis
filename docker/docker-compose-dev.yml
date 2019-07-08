@@ -14,7 +14,7 @@ services:
     container_name: "whyis"
     build:
       context: ..
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: docker/Dockerfile
     image: tetherlessworld/whyis:master
     ports:
       - "127.0.0.1:8080:8080"
