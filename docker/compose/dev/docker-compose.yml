@@ -13,9 +13,18 @@ services:
   whyis:
     container_name: "whyis"
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../../..
+      dockerfile: docker/image/whyis/Dockerfile
+    depends_on:
+      - whyis-deps
     image: tetherlessworld/whyis:master
     ports:
       - "127.0.0.1:8080:8080"
+    command: tail -f /dev/null
+  whyis-deps:
+    container_name: "whyis-deps"
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-deps/Dockerfile
+    image: tetherlessworld/whyis-deps:master
     command: tail -f /dev/null
