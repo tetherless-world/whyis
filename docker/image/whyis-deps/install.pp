@@ -8,17 +8,8 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-service { jetty8:
-    ensure => stopped,
-    subscribe => [Package["jetty8"]],
-
-}
-
 package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
   ensure => "installed"
-} ->
-package { "jetty8":
-  ensure => "absent",
 } ->
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
@@ -124,23 +115,11 @@ file { "/data/files":
   ensure => directory,
   owner => "whyis"
 } ->
-vcsrepo { '/apps/whyis':
-  ensure   => present,
-  provider => git,
-  source   => 'https://github.com/tetherless-world/whyis.git',
-  user     => 'whyis'
-} ->
 file { "/var/log/celery":
     owner => "whyis",
     ensure => directory,
     recurse => true,
     group => "whyis",
-} ->
-file { "/etc/default/celeryd":
-  source => "/apps/whyis/resources/celeryd",
-  owner => "root",
-  group => "root",
-  ensure => present
 } ->
 exec { "a2enmod wsgi":
   command => "a2enmod wsgi",
@@ -153,19 +132,6 @@ file { "/var/log/whyis":
   owner => "whyis",
   group => "whyis",
 } ->
-file { "/etc/apache2/sites-available/000-default.conf":
-  ensure => present,
-  source => "/apps/whyis/apache.conf",
-  owner => "root"
-}
-
-
-exec { "compile_java": 
-  command => "mvn clean compile assembly:single -PwhyisProfile",
-  creates => "/apps/whyis/java_compile.log",
-  user => "whyis",
-  cwd => "/apps/whyis/whyis-java",
-}
 
 
 include java

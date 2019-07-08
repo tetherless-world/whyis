@@ -1,11 +1,15 @@
 FROM tetherlessworld/whyis-deps:master
 
-# Delete the /apps/whyis installed by whyis-deps
-RUN rm -fr /apps/whyis
 COPY / /apps/whyis
-WORKDIR /apps/whyis
 # Remove any existing venv
-RUN rm -fr venv
+RUN rm -fr /apps/whyis/venv
+
+COPY /apache.conf /etc/apache2/sites-available/000-default.conf
+COPY /resources/celeryd /etc/default/celeryd
+
+WORKDIR /apps/whyis/whyis-java
+RUN mvn clean compile assembly:single -PwhyisProfile
 
 COPY /docker/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
+WORKDIR /apps/whyis
