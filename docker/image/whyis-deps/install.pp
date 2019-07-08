@@ -160,41 +160,12 @@ file { "/etc/apache2/sites-available/000-default.conf":
 }
 
 
-service { apache2:
-    ensure => running,
-    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
-}
-
-service { redis-server:
-    ensure => running,
-    subscribe => [File["/etc/apache2/sites-available/000-default.conf"]],
-}
-
-
-service { jetty9:
-    ensure => running,
-    subscribe => [File["/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
-} ->
-exec { "create_admin_namespace":
-  command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/admin_namespace.log",
-  creates => "/apps/whyis/admin_namespace.log",
-  user => "whyis",
-  cwd => "/apps/whyis",
-} -> 
-exec { "create_knowledge_namespace":
-  command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/knowledge_namespace.log",
-  creates => "/apps/whyis/knowledge_namespace.log",
-  user => "whyis",
-  cwd => "/apps/whyis",
-}
-
 exec { "compile_java": 
   command => "mvn clean compile assembly:single -PwhyisProfile",
   creates => "/apps/whyis/java_compile.log",
   user => "whyis",
   cwd => "/apps/whyis/whyis-java",
 }
-
 
 
 include java
