@@ -11,6 +11,6 @@ COPY /resources/celeryd /etc/default/celeryd
 WORKDIR /apps/whyis/whyis-java
 RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
 
-COPY /docker/docker-entrypoint.sh /
+COPY /docker/image/whyis/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 WORKDIR /apps/whyis
