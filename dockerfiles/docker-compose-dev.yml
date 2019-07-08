@@ -15,6 +15,7 @@ services:
     build:
       context: ..
       dockerfile: dockerfiles/Dockerfile
+    image: tetherlessworld/whyis:master
     ports:
       - "127.0.0.1:8080:8080"
     command: tail -f /dev/null
