@@ -35,6 +35,6 @@ RUN rm /install.pp
 
 # Install the Python requirements into the (container-)global interpreter rather than creating a virtual environment.
 # Don't copy in the code yet, will do that in the whyis Dockerfile.
-COPY requirements/ /
-RUN pip3 install -r requirements/dev.txt
+COPY /requirements/ /requirements
+RUN pip3 install -r /requirements/dev.txt
 RUN rm -f /requirements
