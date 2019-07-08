@@ -35,3 +35,10 @@
    We assume that whyis-deps changes infrequently, whereas whyis changes frequently.
    The Continuous Integration server only builds and pushes whyis, retrieving whyis-deps from Dockerhub in the process.
    When whyis-deps changes, you will need to push it to Dockerhub manually.
+
+   You can use docker/compose/dev to build images, as in
+
+   #+begin_src sh
+   $ cd docker/compose/dev
+   $ docker-compose build whyis-deps
+   #+end_src

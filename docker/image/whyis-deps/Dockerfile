@@ -46,5 +46,5 @@ RUN rm -fr /requirements
 
 # Install the Java requirements similarly
 COPY /whyis-java/pom.xml /pom.xml
-RUN mvn dependency:resolve -PwhyisProfile
+RUN sudo -u whyis mvn dependency:resolve -PwhyisProfile
 RUN rm /pom.xml

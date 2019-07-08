@@ -6,7 +6,7 @@ RUN rm -fr /apps/whyis/venv
 RUN chown -R whyis.whyis /apps/whyis
 
 COPY /apache.conf /etc/apache2/sites-available/000-default.conf
-COPY /resources/celeryd /etc/default/celeryd
+COPY /docker/image/whyis/celeryd /etc/default/celeryd
 
 WORKDIR /apps/whyis/whyis-java
 RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
