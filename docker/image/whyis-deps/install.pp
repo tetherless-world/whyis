@@ -131,7 +131,7 @@ file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
   group => "whyis",
-} ->
+}
 
 
 include java
