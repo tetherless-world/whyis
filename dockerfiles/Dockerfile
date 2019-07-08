@@ -34,9 +34,17 @@ RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_M
 
 RUN puppet apply /tmp/install_whyis.pp
 
+# Install node and npm
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get install -y nodejs
+
 # Delete the puppet installation (checked out from GitHub master) and replace it with the files in this checkout.
 RUN rm -fr /apps/whyis
-COPY / /apps/whyis
+COPY --chown=whyis:whyis / /apps/whyis
+
+WORKDIR /apps/whyis/static
+RUN npm install
+
 WORKDIR /apps/whyis
 # Remove any existing venv
 RUN rm -fr venv
