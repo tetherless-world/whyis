@@ -1,3 +1,8 @@
+# 20190708 Separate whyis and whyis-deps Docker images (Dockerfiles).
+# whyis is the user-facing image, and the one the CI will test. We assume it will change frequently. whyis relies on whyis-deps (FROM).
+# whyis-deps sets up the environment (apache, celery, redis) and installs our Python and Java dependencies. We assume it will change infrequently, because dependencies should change infrequently.
+# When requirements do change, we should build and push a new whyis-deps to Dockerhub for the CI to incorporate into the whyis build.
+
 FROM ubuntu:16.04
 
 # Installation of required packages
@@ -38,3 +43,8 @@ RUN rm /install.pp
 COPY /requirements/ /requirements
 RUN pip3 install -r /requirements/dev.txt
 RUN rm -fr /requirements
+
+# Install the Java requirements similarly
+COPY /whyis-java/pom.xml /pom.xml
+RUN mvn dependency:resolve -PwhyisProfile
+RUN rm /pom.xml
