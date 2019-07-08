@@ -37,4 +37,4 @@ RUN rm /install.pp
 # Don't copy in the code yet, will do that in the whyis Dockerfile.
 COPY /requirements/ /requirements
 RUN pip3 install -r /requirements/dev.txt
-RUN rm -f /requirements
+RUN rm -fr /requirements
