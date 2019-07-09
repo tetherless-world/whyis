@@ -19,11 +19,10 @@ jobs:
           command: |
             curl -s -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
-            mv ~/docker-compose /usr/bin/docker-compose
       - run:
           name: Build application Docker image
           command: |
-            cd docker/compose/dev && docker-compose build whyis
+            cd docker/compose/dev && ~/docker-compose build whyis
       - run:
           name: Run tests
           command: |
@@ -32,4 +31,4 @@ jobs:
           path: test-results
       - run:
           name: Push Docker image
-          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && ~/docker-compose push whyis
