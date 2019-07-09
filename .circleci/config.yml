@@ -30,4 +30,6 @@ jobs:
             bash .circleci/test-ci.sh
       - store_test_results:
           path: test-results
-  
+      - run:
+          name: Push Docker image
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
