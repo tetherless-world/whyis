@@ -13,6 +13,10 @@ RUN apt-get install -y sudo curl
 # This is neccessary because puppet checks the os codename, and base docker reports Debian instead of xenial
 RUN apt-get install -y lsb-release
 
+# Add nodejs
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get install -y nodejs
+
 # RUN apt-get install -y default-jdk build-essential automake subversion libapache2-mod-wsgi libblas3 libblas-dev celeryd redis-server apache2 libffi-dev libssl-dev maven python3-dev libdb5.3-dev
 
 # Puppet
