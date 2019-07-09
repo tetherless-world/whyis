@@ -26,4 +26,7 @@ jobs:
           path: test-results
       - run:
           name: Push Docker image
-          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ];
+              docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
+            fi
