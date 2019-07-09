@@ -9,10 +9,10 @@ jobs:
         environment:
           BUILD_MODE: master
     steps:
-      - checkout
       - run:
           name: Install system dependencies with apk
-          command: apk update && apk add bash curl git
+          command: apk update && apk add bash curl git ssh
+      - checkout
       - run:
           name: Install Docker Compose
           command: |
