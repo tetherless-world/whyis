@@ -21,7 +21,8 @@ CELERYD_NODES="w1"
 CELERYD_CHDIR="/apps/whyis"
 CELERYBEAT_CHDIR=$CELERYD_CHDIR
 
-ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"
+#ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"
+ENV_PYTHON="python3"
 
 # Extra arguments to celeryd
 CELERYD_OPTS="-A wsgi.celery --concurrency=8"
