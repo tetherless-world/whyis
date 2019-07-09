@@ -98,19 +98,21 @@ class ElasticSearchStore(Store):
         return self.__open
 
     def open(self, url, create=True):
-        print("URL IS",url)
         self.url, _, self.index = url.rpartition('/')
-
         self.es = Elasticsearch([self.url])
-#        self.session = requests.Session()
 
-        """TODO make a replacement for this
-        status = self.session.get(url)
-        if create and status.status_code == 404:
-            r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
-            if r.status_code != 201:
-                print(r.status_code)
-                print(r.content)"""
+        #self.session = requests.Session()
+
+        #status = self.session.get(url)
+        #if create and status.status_code == 404:
+        #    r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
+        #    if r.status_code != 201:
+        #        print(r.status_code)
+        #        print(r.content)
+
+        if not self.es.indices.exists(self.index):
+          self.es.indices.create(index=self.index, body=elastic_index_settings)
+
         self.__open = True
 
         return VALID_STORE
@@ -208,7 +210,7 @@ class ElasticSearchStore(Store):
         assert False, "remove() is not implemented."
 
     def elastic_query(self, query):
-        """query = {
+        query = {
             "query": {
                 "nested" : {
                     "path" : "graphs.@graph",
@@ -216,13 +218,8 @@ class ElasticSearchStore(Store):
                     "query" : query
                 }
             }
-        }"""
+        }
 
-        query = {"query" : query}
-
-        print(query)
-
-        #refponse = self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
         self.es.indices.refresh(index=self.index)
 
         #response = self.session.post(self.url+"/_search",data=json.dumps(query),
@@ -230,9 +227,7 @@ class ElasticSearchStore(Store):
 
         return self.es.search(index=[self.index], body=json.dumps(query))
 
-#        print(response)
-
-#        return response.json()
+        #return response.json()
 
     def subgraph(self, query):
         json_response = self.elastic_query(query)
@@ -292,7 +287,6 @@ class ElasticSearchStore(Store):
         if match_all:
             query = {'match_all': {}}
 
-        #print json.dumps(query)
         json_response = self.elastic_query(query)
 
         if isinstance(context, Graph):
@@ -302,7 +296,6 @@ class ElasticSearchStore(Store):
             yield (s, p, o), Graph(store=self, identifier=g)
 
     def json_ld_triples(self, json_response, subject=None, predicate=None, object=None, context=None):
-        #print json_response
         if 'hits' not in json_response:
             return
         for hit in json_response['hits']['hits']:
