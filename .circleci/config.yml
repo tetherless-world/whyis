@@ -17,7 +17,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker build -t whyis -f dockerfiles/Dockerfile .
+            cd docker/compose/dev && docker-compose build whyis
       - run:
           name: Run tests
           command: |
