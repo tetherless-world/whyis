@@ -10,19 +10,20 @@ jobs:
           BUILD_MODE: master
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Install system dependencies with apk
           command: apk update && apk add bash curl git
       - run:
           name: Install Docker Compose
           command: |
-            curl -s -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose &&
+            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+      - setup_remote_docker
       - run:
           name: Build application Docker image
           command: |
-            ls ~ && cd docker/compose/dev && ~/docker-compose build whyis
+            ls ~ && cd docker/compose/dev && docker-compose build whyis
       - run:
           name: Run tests
           command: |
@@ -31,4 +32,4 @@ jobs:
           path: test-results
       - run:
           name: Push Docker image
-          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && ~/docker-compose push whyis
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
