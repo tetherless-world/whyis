@@ -1,7 +1,7 @@
 #!/bin/bash
 mkdir -p test-results/python
 
-docker run tetherlessworld/whyis:master bash -c "python manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml
+docker run tetherlessworld/whyis:master bash -c "python3 manage.py test --ci &>/dev/null && cat test-results/python/results.xml" >test-results/python/results.xml
 
 cat test-results/python/results.xml
 
