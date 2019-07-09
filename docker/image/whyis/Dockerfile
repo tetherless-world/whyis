@@ -6,13 +6,12 @@ COPY /docker/image/whyis/celeryd /etc/default/celeryd
 COPY /docker/image/whyis/docker-entrypoint.sh /
 
 # Do the remainder as the whyis user
-USER whyis
-COPY / /apps/whyis
+COPY --chown=whyis:whyis / /apps/whyis
 # Remove any existing venv
 RUN rm -fr /apps/whyis/venv
 
 WORKDIR /apps/whyis/whyis-java
-RUN mvn clean compile assembly:single -PwhyisProfile
+RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 WORKDIR /apps/whyis
