@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Install Docker Compose
           command: |
-            apk add python-dev libffi-dev openssl-dev gcc libc-dev make
+            apk add python python-dev libffi-dev openssl-dev gcc libc-dev make py-pip
             pip install docker-compose
       - setup_remote_docker
       - run:
