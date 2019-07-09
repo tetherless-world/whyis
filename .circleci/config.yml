@@ -12,8 +12,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install bash and curl
-          command: apk update && apk add bash curl
+          name: Install system dependencies with apk
+          command: apk update && apk add bash curl git
       - run:
           name: Install Docker Compose
           command: |
