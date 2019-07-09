@@ -308,9 +308,16 @@ class WhyisServer(Server):
             static_dir_paths = [app.static_folder]
             if 'WHYIS_CDN_DIR' in app.config and app.config['WHYIS_CDN_DIR'] is not None:
                 static_dir_paths.append(app.config["WHYIS_CDN_DIR"])
-            webpack_static_dir_paths = \
-                [static_dir_path for static_dir_path in static_dir_paths
-                 if os.path.isfile(os.path.join(static_dir_path, "package.json")) and os.path.isfile(os.path.join(static_dir_path, "webpack.config.js"))]
+            webpack_static_dir_paths = []
+            for static_dir_path in static_dir_paths:
+                if not os.path.isfile(os.path.join(static_dir_path, "package.json")):
+                    continue
+                if not os.path.isfile(os.path.join(static_dir_path, "webpack.config.js")):
+                    continue
+                if not os.path.isdir(os.path.join(static_dir_path, "node_modules")):
+                    print("%s has a package.json but no node_modules; need to run 'npm install' to get webpack?", file=sys.stderr)
+                    continue
+                webpack_static_dir_paths.append(static_dir_path)
         else:
             webpack_static_dir_paths = []
 
