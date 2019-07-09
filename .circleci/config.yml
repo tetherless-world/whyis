@@ -17,12 +17,12 @@ jobs:
       - run:
           name: Install Docker Compose
           command: |
-            curl -s -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            curl -s -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > ~/docker-compose &&
             chmod +x ~/docker-compose
       - run:
           name: Build application Docker image
           command: |
-            cd docker/compose/dev && ~/docker-compose build whyis
+            cat ~/docker-compose && cd docker/compose/dev && ~/docker-compose build whyis
       - run:
           name: Run tests
           command: |
