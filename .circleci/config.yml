@@ -11,7 +11,7 @@ jobs:
     steps:
       - run:
           name: Install system dependencies with apk
-          command: apk update && apk add bash curl git ssh
+          command: apk update && apk add bash git
       - checkout
       - run:
           name: Install Docker Compose
