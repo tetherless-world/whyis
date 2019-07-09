@@ -5,7 +5,7 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: docker:18.06.0-ce
+      - image: docker/compose:1.24.1
         environment:
           BUILD_MODE: master
     steps:
@@ -13,11 +13,6 @@ jobs:
           name: Install system dependencies with apk
           command: apk update && apk add bash git
       - checkout
-      - run:
-          name: Install Docker Compose
-          command: |
-            apk add python python-dev libffi-dev openssl-dev gcc libc-dev make py-pip
-            pip install docker-compose
       - setup_remote_docker
       - run:
           name: Build application Docker image
