@@ -22,7 +22,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            cat ~/docker-compose && cd docker/compose/dev && ~/docker-compose build whyis
+            cd docker/compose/dev && ~/docker-compose build whyis
       - run:
           name: Run tests
           command: |
