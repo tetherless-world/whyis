@@ -9,7 +9,7 @@ billiard==3.5.0.5
 binaryornot==0.4.4
 blinker==1.4
 bsddb3==6.2.6
-celery==4.2.1
+celery==4.3.0
 certifi==2019.3.9
 cffi==1.12.3
 chardet==3.0.4
@@ -39,7 +39,7 @@ javabridge==1.0.18
 Jinja2==2.10.1
 jinja2-time==0.2.0
 keepalive==0.5
-kombu==4.3.0
+kombu==4.4.0
 lxml==4.3.4
 Markdown==3.1.1
 MarkupSafe==1.1.1
@@ -65,7 +65,7 @@ pytz==2019.1
 git+git://github.com/RDFLib/rdflib.git#egg=rdflib
 git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
-redis==2.10.6
+redis==3.2.0
 requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
