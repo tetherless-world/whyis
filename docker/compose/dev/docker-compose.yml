@@ -19,7 +19,7 @@ services:
       - whyis-deps
     image: tetherlessworld/whyis:master
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8080:80"
     command: tail -f /dev/null
   whyis-deps:
     container_name: "whyis-deps"
