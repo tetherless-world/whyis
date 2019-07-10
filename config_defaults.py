@@ -105,6 +105,9 @@ Config = dict(
     knowledge_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
     knowledge_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
 
+    knowledge_elasticsearch = 'http://localhost:9200',
+    knowledge_elasticIndex = 'test',
+
     LOGIN_USER_TEMPLATE = "auth/login.html",
     CELERY_BROKER_URL = 'redis://localhost:6379/0',
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',

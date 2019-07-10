@@ -97,8 +97,9 @@ class ElasticSearchStore(Store):
     def is_open(self):
         return self.__open
 
-    def open(self, url, create=True):
-        self.url, _, self.index = url.rpartition('/')
+    def open(self, url, index, create=True):
+        #self.url, _, self.index = url.rpartition('/')
+        self.url, self.index = url, index
         self.es = Elasticsearch([self.url])
 
         #self.session = requests.Session()
