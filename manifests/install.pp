@@ -231,7 +231,7 @@ exec { "install_js_dependencies":
   cwd => "/apps/whyis/static",
 }  ->
 exec { "compile_js":
-  command => "npm build",
+  command => "npm run build",
   creates => "/apps/whyis/js_compile.log",
   user => "whyis",
   cwd => "/apps/whyis/static",

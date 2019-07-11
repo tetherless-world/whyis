@@ -12,7 +12,7 @@ RUN rm -fr /apps/whyis/venv
 
 WORKDIR /apps/whyis/static
 RUN npm install
-RUN npm build
+RUN npm run build
 
 WORKDIR /apps/whyis/whyis-java
 RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
