@@ -127,9 +127,23 @@ def sparql_local(store, request):
 
 def engine_from_config(config, prefix):
     defaultgraph = None
+
+    print("Looking for prefix:",prefix)
+
     if prefix+"defaultGraph" in config:
         defaultgraph = URIRef(config[prefix+"defaultGraph"])
-    if prefix+"queryEndpoint" in config:
+    if prefix+'elasticsearch' in config:
+        store = elasticstore.ElasticSearchStore()
+        store.open(config[prefix+'elasticsearch'], create=True)
+        def publish(data, *graphs):
+            for graph in graphs:
+                store.addN([(s,p,o,g) for s,p,o,g in graph.quads()], graph.identifier.split('/')[-1])
+        publish.serialize = True
+        store.sparql = sparql_local
+
+        graph = ConjunctiveGraph(store=store)
+        graph.store.publish = publish
+    elif prefix+"queryEndpoint" in config:
         store = WhyisSPARQLUpdateStore(queryEndpoint=config[prefix+"queryEndpoint"],
                                   update_endpoint=config[prefix+"updateEndpoint"],
                                   method="POST",
@@ -153,17 +167,6 @@ def engine_from_config(config, prefix):
         graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)
         graph.store.batch_unification = False
         graph.store.open(config[prefix+"store"], create=True)
-    elif prefix+'elasticsearch' in config:
-        store = elasticstore.ElasticSearchStore()
-        store.open(config[prefix+'elasticsearch'], create=True)
-        def publish(data, *graphs):
-            for graph in graphs:
-                store.addN([(s,p,o,g) for s,p,o,g in graph.quads()], graph.identifier.split('/')[-1])
-        publish.serialize = True
-        store.sparql = sparql_local
-
-        graph = ConjunctiveGraph(store=store)
-        graph.store.publish = publish
     else:
         graph = ConjunctiveGraph() # memory_graphs[prefix]
         def publish(data, *graphs):
