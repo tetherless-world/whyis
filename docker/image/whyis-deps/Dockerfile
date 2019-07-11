@@ -35,6 +35,7 @@ RUN puppet module install maestrodev-wget
 RUN puppet module install puppetlabs-apt
 RUN puppet module install richardc-datacat
 RUN puppet module install puppetlabs-java
+RUN puppet module install puppetlabs-nodejs
 
 # RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_MODE/manifests/install.pp" > /tmp/install_whyis.pp
 # RUN puppet apply /tmp/install_whyis.pp
