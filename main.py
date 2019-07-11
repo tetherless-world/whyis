@@ -1174,6 +1174,12 @@ construct {
             #print Graph(store=resource.graph.store).serialize(format="trig")
         #self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
 
+    def get_send_file_max_age(self, filename):
+        if self.debug:
+            return 0
+        else:
+            return Empty.get_send_file_max_age(self, filename)
+
 
 def config_str_to_obj(cfg):
     if isinstance(cfg, basestring):

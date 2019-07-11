@@ -302,7 +302,18 @@ class WhyisServer(Server):
     """
     Customized runserver command.
     """
-    def __call__(self, app, *args, **kwds):
+    def get_options(self):
+        return\
+            list(Server.get_options(self)) + \
+            [
+                Option("--watch", action="store_true"),
+            ]
+
+    def __call__(self, app, watch, *args, **kwds):
+        if not watch:
+            return Server.__call__(self, app=app, *args, **kwds)
+
+
         if sys.platform != "win32":
             # Start webpack in the static/ directories if it's configured
             static_dir_paths = [app.static_folder]
