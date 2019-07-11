@@ -427,7 +427,7 @@ function whyis() {
     app.factory('SmartFacet', SmartFacet);
 
     /* ngInject */
-    function SmartFacet($q, _, BasicFacet, PREFIXES) {
+    function SmartFacet($q, _, BasicFacet, PREFIXES, $mdConstant) {
         function makeID () {
             // Math.random should be unique because of its seeding algorithm.
             // Convert it to base 36 (numbers + letters), and grab the first 9 characters
@@ -440,42 +440,40 @@ function whyis() {
         SmartFacetConstructor.prototype.getSelectedValue = getSelectedValue;
         SmartFacetConstructor.prototype.setSelectedValue = setSelectedValue;
         SmartFacetConstructor.prototype.getConstraint = getConstraint;
+        SmartFacetConstructor.prototype.search = function(searchText, items) {
+            return items.filter(function(d) {
+                if (d.selectionType === undefined) d.selectionType = "Include";
+                return d.text.toLowerCase().indexOf(searchText.toLowerCase()) != -1;
+            });
+        };
 
         return SmartFacetConstructor;
 
         function SmartFacetConstructor(options) {
-            
             BasicFacet.call(this, options);
             if (!this.config.multiType) this.config.multiType = "intersection";
+            this.selected = [];
+            this.keys = [$mdConstant.KEY_CODE.COMMA];
+            this.constraintTypes = ['Include','Exclude','Require','Show'];
         }
 
         function getSelectedValue() {
-            return _.filter(this.getState(), function(d) { return d.selected; })
-                .map(function(d) {
-                    return d.value
-                } );
+            return this.selected;
         }
 
         function setSelectedValue(value) {
-            console.log("where did this come from?");
-            _.forEach(this.getState(), function(d) { d.selected = d.value == value; });
+            this.selected = value;
         }
-
+        
         function getConstraint() {
             var self = this;
             var values = this.getSelectedValue();
             if (values == null || values.length == 0) {
                 return;
             } else {
-                if (this.config.multiType == "intersection") {
-                    return values
-                        .map(function(v) { return ' ?id ' + self.predicate + ' ' + v + ' . ' } )
-                        .join("\n");
-                } else {
-                    var selectionConstraint = '?var_'+makeID();
-                    return ' ?id ' + self.predicate + ' '+ selectionConstraint + ' \n values ' +
-                        selectionConstraint + ' { '+ values.join(" ") + ' }';
-                }
+                var selectionConstraint = '?var_'+makeID();
+                return ' ?id ' + self.predicate + ' '+ selectionConstraint + ' \n values ' +
+                    selectionConstraint + ' { '+ values.map(function(d){ return d.value}).join(" ") + ' }';
             }
         }
 
@@ -573,6 +571,20 @@ function whyis() {
         return window.encodeURIComponent;
     });
 
+    app.filter('uniq', function() {
+        return function(values, key) {
+            if (values['length'] === undefined) return values;
+            
+            var included = {};
+            return values.filter(function(d) {
+                if (included[d[key]] === undefined) {
+                    included[d[key]] = d;
+                    return true;
+                }
+                return false;
+            });
+        };
+    });
     
     app.factory('Service', ['$http', 'Graph', function($http, Graph) {
         function Service(endpoint) {
