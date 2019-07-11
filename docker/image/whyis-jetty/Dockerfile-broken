@@ -1,0 +1,7 @@
+FROM tetherlessworld/whyis-ubuntu
+
+COPY /resources/blazegraph.war /tmp/
+COPY /docker/image/whyis-jetty/install.pp /
+RUN puppet apply /install.pp
+
+ENTRYPOINT /usr/lib/jvm/default-java/bin/java -ea -Xmx4g -server -XX:+UseParallelOldGC -Djava.awt.headless=true -Dorg.eclipse.jetty.server.Request.maxFormContentSize=200000000 -Djava.io.tmpdir=/var/cache/jetty9/data -Djava.library.path=/usr/lib -Djetty.home=/usr/share/jetty9 -Djetty.logs=/var/log/jetty9 -Djetty.state=/var/lib/jetty9/jetty.state -jar /usr/share/jetty9/start.jar /etc/jetty9/jetty-started.xml
