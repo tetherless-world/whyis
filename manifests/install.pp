@@ -224,6 +224,18 @@ exec { "compile_java":
   cwd => "/apps/whyis/whyis-java",
 }
 
+exec { "install_js_dependencies":
+  command => "npm install",
+  creates => "/apps/whyis/js_install.log",
+  user => "whyis",
+  cwd => "/apps/whyis/static",
+}  ->
+exec { "compile_js":
+  command => "npm build",
+  creates => "/apps/whyis/js_compile.log",
+  user => "whyis",
+  cwd => "/apps/whyis/static",
+}
 
 
 include java
