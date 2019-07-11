@@ -11,4 +11,4 @@ RUN puppet apply /apps/whyis/docker/image/whyis-server/install.pp
 COPY --from=build-java /apps/whyis/jars /apps/whyis/jars
 COPY /docker/image/whyis-server/docker-entrypoint.sh /
 COPY /docker/image/whyis-server/celery-entrypoint.sh /
-
+WORKDIR /apps/whyis

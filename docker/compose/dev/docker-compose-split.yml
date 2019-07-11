@@ -40,12 +40,4 @@ services:
       - blazegraph
       - redis
     entrypoint: /docker-entrypoint.sh
-  celery:
-    container_name: "celery"
-    build:
-      context: ../../..
-      dockerfile: docker/image/whyis-server/Dockerfile
-    image: tetherlessworld/whyis-server
-    links:
-      - redis
-    entrypoint: /celery-entrypoint.sh
+    command: tail -f /dev/null
