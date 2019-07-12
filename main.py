@@ -12,12 +12,11 @@ import os
 import sys, collections
 from empty import Empty
 from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
-from utils import lru
+from functools import lru_cache
 
 from flask.views import MethodView
 
 import jinja2
-#from api import LinkedDataApi
 
 from nanopub import NanopublicationManager, Nanopublication
 import requests
@@ -612,7 +611,7 @@ construct {
 
         label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
-        @lru
+        @lru_cache
         def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
                 g = Graph()
@@ -1012,9 +1011,6 @@ construct {
             resp = make_response(data, code)
             resp.headers.extend(headers or {})
             return resp
-        
-        #self.api = LinkedDataApi(self, "", self.db.store, "")
-        #self.api.representations['text/html'] = render_nanopub
 
         #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
         #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
@@ -1172,7 +1168,6 @@ construct {
 #                        except:
 #                            pass
             #print Graph(store=resource.graph.store).serialize(format="trig")
-        #self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
 
     def get_send_file_max_age(self, filename):
         if self.debug:
