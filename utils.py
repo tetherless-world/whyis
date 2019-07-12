@@ -51,28 +51,3 @@ def slugify(value):
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
     value = str(_slugify_strip_re.sub('', value).strip().lower())
     return _slugify_hyphenate_re.sub('-', value)
-
-# TODO: There's a risk of the exlusive lock being starved during lots of reads.
-class ShLock(object):
-    xlock = threading.RLock()
-    shlock = threading.Condition()
-    lock_count = 0
-
-    def acquire(self,exclusive=True):
-        if exclusive:
-            self.xlock.acquire()
-        else:
-            self.shlock.acquire()
-            while self.lock_count == 0 and not self.xlock.acquire(False):
-                self.shlock.wait()
-            self.lock_count += 1
-            self.shlock.release()
-
-    def release(self,exclusive=True):
-        if exclusive:
-            self.xlock.release()
-            self.shlock.notify_all()
-        else:
-            self.shlock.acquire()
-            self.lock_count -= 1
-            self.shlock.release()
