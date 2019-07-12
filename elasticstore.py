@@ -361,8 +361,7 @@ class ElasticSearchStore(Store):
     def remove_graph(self, graph):
         if isinstance(graph, Graph):
             graph = graph.identifier
-        
-        response = self.session.delete(self.url+"/nanopublication",graph.split('/')[-1])
+        response = self.session.delete(self.url+"/nanopublication/"+graph.split('/')[-1])
 
 def evalBGP(ctx, part=None, bgp=None):
 
