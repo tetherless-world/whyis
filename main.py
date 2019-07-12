@@ -611,7 +611,7 @@ construct {
 
         label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
-        @lru_cache
+        @lru_cache(maxsize=1000)
         def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
                 g = Graph()
