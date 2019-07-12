@@ -5,18 +5,14 @@ services:
     image: "redis:3.0.6-alpine"
     ports:
       - "6379:6379"
-    expose:
-      - 6379
   blazegraph:
     container_name: "blazegraph"
     build:
       context: ../../..
-      dockerfile: docker/image/whyis-jetty/Dockerfile
+      dockerfile: docker/image/whyis-blazegraph/Dockerfile
     image: tetherlessworld/whyis-blazegraph
     ports:
       - "8080:8080"
-    expose:
-      - 8080
   whyis-ubuntu:
     build:
       context: ../../..
