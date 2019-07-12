@@ -4,3 +4,4 @@ flask-testing
 selenium==3.141.0
 chromedriver_binary
 unittest-xml-reporting
+vulture==1.0

@@ -10,6 +10,10 @@ COPY --chown=whyis:whyis / /apps/whyis
 # Remove any existing venv
 RUN rm -fr /apps/whyis/venv
 
+WORKDIR /apps/whyis/static
+RUN npm install
+RUN npm run build
+
 WORKDIR /apps/whyis/whyis-java
 RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
 

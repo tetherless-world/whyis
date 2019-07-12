@@ -4,7 +4,6 @@
 #standard_library.install_aliases()
 #from builtins import map
 #from past.utils import old_div
-from utils import lru
 
 import urllib.request, urllib.parse, urllib.error
 from markupsafe import Markup
