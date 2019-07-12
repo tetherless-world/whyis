@@ -12,7 +12,7 @@ import os
 import sys, collections
 from empty import Empty
 from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
-from utils import lru
+from functools import lru_cache
 
 from flask.views import MethodView
 
@@ -612,7 +612,7 @@ construct {
 
         label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
 
-        @lru
+        @lru_cache
         def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
                 g = Graph()
