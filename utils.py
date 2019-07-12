@@ -32,10 +32,6 @@ def get_max_id(c, graph):
         else:
             return Literal(result)
 
-def print_stacktrace():
-    for line in traceback.format_stack()[:-1]:
-        print(line.strip())
-
 _slugify_strip_re = re.compile(r'[^\w\s-]')
 _slugify_hyphenate_re = re.compile(r'[-\s]+')
 def slugify(value):
