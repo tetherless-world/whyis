@@ -74,7 +74,3 @@ file { "/var/log/whyis":
   owner => "whyis",
   group => "whyis",
 }
-
-class { "nodejs":
-  repo_url_suffix => "12.x",
-}
