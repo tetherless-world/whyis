@@ -128,8 +128,6 @@ def sparql_local(store, request):
 def engine_from_config(config, prefix):
     defaultgraph = None
 
-    print("Looking for prefix:",prefix)
-
     if prefix+"defaultGraph" in config:
         defaultgraph = URIRef(config[prefix+"defaultGraph"])
     if prefix+'elasticsearch' in config:

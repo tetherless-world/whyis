@@ -44,10 +44,10 @@ class Service(sadi.Service):
     def annotateServiceDescription(self, desc):
         desc.add(self.query_predicate, rdflib.Literal(self.get_query()))
 
-    def processGraph(self,content, type):
-        inputGraph = sadi.SADIGraph()
-        self.deserialize(inputGraph, content, type)
-        return process
+    #def processGraph(self,content, type):
+    #    inputGraph = sadi.SADIGraph()
+    #    self.deserialize(inputGraph, content, type)
+    #    return process
 
     def explain(self, nanopub, i, o):
         activity = nanopub.provenance.resource(rdflib.BNode())

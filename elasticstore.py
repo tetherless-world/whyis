@@ -210,8 +210,7 @@ class ElasticSearchStore(Store):
             }
         }
 
-        refponse = self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
-        print(refponse, refponse.status_code, refponse.content)
+        self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
 
         response = self.session.post(self.url+"/_search",data=json.dumps(query),
                                      headers={"Content-Type":"application/json"})
