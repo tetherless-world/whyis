@@ -9,15 +9,6 @@ from datetime import datetime
 def create_id():
     return base64.encodestring(str(random.random()*datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip('=\n')
 
-def timer(fn):
-    def wrapper(*args, **kw):
-        start = datetime.datetime.now()
-        result = fn(*args, **kw)
-        end = datetime.datetime.now()
-        print(fn.__name__, "(",args, kw,")", (end-start))
-        return result
-    return wrapper
-
 def get_max_id(c, graph):
     query = '''select ?id where { ?s a %s ;
                <http://purl.org/dc/terms/identifier> ?id.
