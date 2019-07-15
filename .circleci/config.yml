@@ -4,6 +4,9 @@ version: 2
 jobs:
   build:
     working_directory: /app
+    branches:
+      ignore:
+        - elasticstore
     docker:
       - image: docker/compose:1.24.1
     steps:
