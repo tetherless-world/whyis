@@ -1,4 +1,5 @@
-FROM tetherlessworld/whyis-ubuntu
+ARG WHYIS_IMAGE_TAG=latest
+FROM tetherlessworld/whyis-ubuntu:$WHYIS_IMAGE_TAG
 
 RUN puppet module install\
 	puppet-python --version 3.0.1

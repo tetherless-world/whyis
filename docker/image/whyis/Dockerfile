@@ -1,4 +1,5 @@
-FROM tetherlessworld/whyis-deps:master
+ARG WHYIS_IMAGE_TAG=latest
+FROM tetherlessworld/whyis-deps:$WHYIS_IMAGE_TAG
 
 # Copy files as root
 COPY /apache.conf /etc/apache2/sites-available/000-default.conf

@@ -1,3 +1,5 @@
+ARG WHYIS_IMAGE_TAG=latest
+
 FROM maven:3.6-jdk-8 as build-java
 WORKDIR /apps/whyis/whyis-java
 COPY /whyis-java /apps/whyis/whyis-java
@@ -9,7 +11,7 @@ WORKDIR /static
 RUN npm install &&\
 	npm run build
 
-FROM tetherlessworld/whyis-server-deps
+FROM tetherlessworld/whyis-server-deps:$WHYIS_IMAGE_TAG
 COPY --chown=whyis:whyis / /apps/whyis
 RUN puppet apply /apps/whyis/docker/image/whyis-server/install.pp
 
