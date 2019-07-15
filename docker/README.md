@@ -41,9 +41,8 @@ When whyis-deps changes, you will need to push it to Dockerhub manually.
 Assuming you have logged in with `docker login`, you can use docker/compose/dev to build whyis-deps and push it to Dockerhub:
 
     cd docker/compose/monolithic
-    docker-compose build whyis-deps
-    docker-compose push whyis-deps
- 
+    ./build-deps.sh
+    ./push-deps.sh 
 
 ## Split images
 
@@ -65,12 +64,8 @@ which starts both the database (`db/`) and server (`app/`) containers.
 Similar to the monolithic image, the _whyis-server_ image is built from multiple parent images, which change less frequently than the code.
 
     cd docker/compose/split
-    docker-compose -f db/docker-compose.yml build
-    docker-compose -f db/docker-compose.yml push
-    docker-compose -f app/docker-compose.yml build whyis-ubuntu
-    docker-compose -f app/docker-compose.yml push whyis-ubuntu
-    docker-compose -f app/docker-compose.yml build whyis-server-deps
-    docker-compose -f app/docker-compose.yml push whyis-server-deps
+    ./build-deps.sh
+    ./push-deps.sh
 
 The `db/docker-compose.yml` can be used to start the databases without the server, so that the server can e.g., be run locally:
 
