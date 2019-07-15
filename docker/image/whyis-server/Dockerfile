@@ -9,7 +9,8 @@ WORKDIR /static
 RUN npm install &&\
 	npm run build
 
-FROM tetherlessworld/whyis-server-deps
+ARG WHYIS_IMAGE_TAG=latest
+FROM tetherlessworld/whyis-server-deps:$WHYIS_IMAGE_TAG
 COPY --chown=whyis:whyis / /apps/whyis
 RUN puppet apply /apps/whyis/docker/image/whyis-server/install.pp
 

@@ -2,17 +2,23 @@ version: '3'
 services:
   whyis-ubuntu:
     build:
+      args:
+        WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../../..
       dockerfile: docker/image/whyis-ubuntu/Dockerfile
     image: tetherlessworld/whyis-ubuntu:${WHYIS_IMAGE_TAG:-latest}
   whyis-server-deps:
     build:
+      args:
+        WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../../..
       dockerfile: docker/image/whyis-server-deps/Dockerfile
     image: tetherlessworld/whyis-server-deps:${WHYIS_IMAGE_TAG:-latest}
   whyis-server:
     container_name: "whyis-server"
     build:
+      args:
+        WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../../..
       dockerfile: docker/image/whyis-server/Dockerfile
     image: tetherlessworld/whyis-server:${WHYIS_IMAGE_TAG:-latest}
