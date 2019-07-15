@@ -29,7 +29,7 @@ jobs:
       - run:
           name: Build and push Docker images
           command: |
-            # if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
 
               # Monolithic latest, push (build above)
@@ -39,4 +39,4 @@ jobs:
 
               # Split latest, push (build above)
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
-            # fi
+            fi
