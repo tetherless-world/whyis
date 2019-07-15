@@ -17,7 +17,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            ls ~ && cd docker/compose/dev && docker-compose build whyis
+            ls ~ && cd docker/compose/dev-monolithic && docker-compose build whyis
       - run:
           name: Run tests
           command: |
@@ -28,7 +28,7 @@ jobs:
           name: Push Docker image
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
+              docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev-monolithic && docker-compose push whyis
             fi
 
 workflows:
