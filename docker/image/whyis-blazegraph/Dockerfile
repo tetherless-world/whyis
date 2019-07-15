@@ -7,10 +7,9 @@ RUN apt-get update && apt-get install -y unzip
 COPY ./resources/blazegraph.war /tmp/.
 
 # Creates the directory
-# WORKDIR /var/lib/jetty/webapps/blazegraph
-WORKDIR /usr/local/jetty/webapps/blazegraph
+WORKDIR /var/lib/jetty/webapps/blazegraph
 
-RUN unzip -u /tmp/blazegraph.war
+RUN unzip -u /tmp/blazegraph.war -d /var/lib/jetty/webapps/blazegraph
 
 RUN mkdir -p /data &&\
 	chown -R jetty /data
@@ -48,11 +47,10 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400\n\
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024\n' > ./WEB-INF/GraphStore.properties
 
-RUN sed -i 's/.*RWStore.properties<\/param-value>.*/   <param-value>\/usr\/local\/jetty\/webapps\/blazegraph\/WEB-INF\/RWStore.properties<\/param-value>/' ./WEB-INF/web.xml
+RUN sed -i 's/.*RWStore.properties<\/param-value>.*/   <param-value>\/var\/lib\/jetty\/webapps\/blazegraph\/WEB-INF\/RWStore.properties<\/param-value>/' ./WEB-INF/web.xml
 
 USER jetty
 
 ENV JAVA_OPTIONS="-ea -Xmx4g -server -XX:+UseParallelOldGC -Djava.awt.headless=true -Dorg.eclipse.jetty.server.Request.maxFormContentSize=200000000"
 
-# WORKDIR /var/lib/jetty
-WORKDIR /usr/local/jetty
+WORKDIR /var/lib/jetty
