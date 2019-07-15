@@ -1,18 +1,5 @@
 version: '3'
 services:
-  redis:
-    container_name: "redis"
-    image: "redis:3.0.6-alpine"
-    ports:
-      - "6379:6379"
-  blazegraph:
-    container_name: "blazegraph"
-    build:
-      context: ../../..
-      dockerfile: docker/image/whyis-blazegraph/Dockerfile
-    image: tetherlessworld/whyis-blazegraph
-    ports:
-      - "8080:8080"
   whyis-ubuntu:
     build:
       context: ../../..
@@ -32,7 +19,7 @@ services:
     ports:
       - "80:80"
       - "5000:5000"
-    links:
+    external_links:
       - blazegraph
       - redis
     entrypoint: /docker-entrypoint.sh
