@@ -8,7 +8,6 @@ jobs:
       - image: docker/compose:1.24.1
         environment:
           BUILD_MODE: master
-      - image:
     steps:
       - run:
           name: Install system dependencies with apk
