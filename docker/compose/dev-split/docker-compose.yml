@@ -1,0 +1,39 @@
+version: '3'
+services:
+  redis:
+    container_name: "redis"
+    image: "redis:3.0.6-alpine"
+    ports:
+      - "6379:6379"
+  blazegraph:
+    container_name: "blazegraph"
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-blazegraph/Dockerfile
+    image: tetherlessworld/whyis-blazegraph
+    ports:
+      - "8080:8080"
+  whyis-ubuntu:
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-ubuntu/Dockerfile
+    image: tetherlessworld/whyis-ubuntu
+  whyis-server-deps:
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-server-deps/Dockerfile
+    image: tetherlessworld/whyis-server-deps
+  whyis-server:
+    container_name: "whyis-server"
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-server/Dockerfile
+    image: tetherlessworld/whyis-server
+    ports:
+      - "80:80"
+      - "5000:5000"
+    links:
+      - blazegraph
+      - redis
+    entrypoint: /docker-entrypoint.sh
+    command: tail -f /dev/null

@@ -15,7 +15,7 @@
    You can make use of these by adding ~-v $PWD/application_dir:/apps/application_name~ to the run command.
 
 *** Automation
-    You can also make use of linked volumes to automatically provision the container for your application by creating another directory to hold scripts to run on container startup. To run these when the container starts up, add ~--entrypoint /path/in/container~ as an argument to the run command.
+    You can also make use of linked volumes to automatically provision the container for your application by creating another directory to hold scripts to run on container startup. To run these when the container starts up, add ~/path/in/container~ as an argument to the run command.
 
 ** Known Issues
    - Jetty9 issues an error message about failing to start when building the image/when starting the service 
