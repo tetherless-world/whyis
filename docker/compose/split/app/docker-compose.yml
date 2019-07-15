@@ -2,18 +2,18 @@ version: '3'
 services:
   whyis-ubuntu:
     build:
-      context: ../../..
+      context: ../../../..
       dockerfile: docker/image/whyis-ubuntu/Dockerfile
     image: tetherlessworld/whyis-ubuntu
   whyis-server-deps:
     build:
-      context: ../../..
+      context: ../../../..
       dockerfile: docker/image/whyis-server-deps/Dockerfile
     image: tetherlessworld/whyis-server-deps
   whyis-server:
     container_name: "whyis-server"
     build:
-      context: ../../..
+      context: ../../../..
       dockerfile: docker/image/whyis-server/Dockerfile
     image: tetherlessworld/whyis-server
     ports:
