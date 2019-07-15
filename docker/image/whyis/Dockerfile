@@ -1,4 +1,4 @@
-FROM tetherlessworld/whyis-deps:master
+FROM tetherlessworld/whyis-deps
 
 # Copy files as root
 COPY /apache.conf /etc/apache2/sites-available/000-default.conf
