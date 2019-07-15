@@ -8,8 +8,6 @@ COPY /docker/image/whyis/docker-entrypoint.sh /
 
 # Do the remainder as the whyis user
 COPY --chown=whyis:whyis / /apps/whyis
-# Remove any existing venv
-RUN rm -fr /apps/whyis/venv
 
 WORKDIR /apps/whyis/static
 RUN npm install
