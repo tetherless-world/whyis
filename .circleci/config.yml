@@ -2,12 +2,13 @@
 # Adapted from https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
 version: 2
 jobs:
-  build:
+  build-monolithic:
     working_directory: /app
     docker:
       - image: docker/compose:1.24.1
         environment:
           BUILD_MODE: master
+      - image:
     steps:
       - run:
           name: Install system dependencies with apk
@@ -30,3 +31,10 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS && cd docker/compose/dev && docker-compose push whyis
             fi
+
+workflows:
+  version: 2
+  build_all:
+    jobs:
+      - build-monolithic
+      # - build-split
