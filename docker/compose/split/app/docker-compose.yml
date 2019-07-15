@@ -4,18 +4,18 @@ services:
     build:
       context: ../../../..
       dockerfile: docker/image/whyis-ubuntu/Dockerfile
-    image: tetherlessworld/whyis-ubuntu:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis-ubuntu:${WHYIS_IMAGE_TAG:-latest}
   whyis-server-deps:
     build:
       context: ../../../..
       dockerfile: docker/image/whyis-server-deps/Dockerfile
-    image: tetherlessworld/whyis-server-deps:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis-server-deps:${WHYIS_IMAGE_TAG:-latest}
   whyis-server:
     container_name: "whyis-server"
     build:
       context: ../../../..
       dockerfile: docker/image/whyis-server/Dockerfile
-    image: tetherlessworld/whyis-server:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis-server:${WHYIS_IMAGE_TAG:-latest}
     ports:
       - "80:80"
       - "5000:5000"

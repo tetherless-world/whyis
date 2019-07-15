@@ -12,7 +12,7 @@ services:
       dockerfile: docker/image/whyis/Dockerfile
     depends_on:
       - whyis-deps
-    image: tetherlessworld/whyis:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis:${WHYIS_IMAGE_TAG:-latest}
     ports:
       - "127.0.0.1:80:80"
       - "127.0.0.1:6379:6379"
@@ -23,5 +23,5 @@ services:
     build:
       context: ../../..
       dockerfile: docker/image/whyis-deps/Dockerfile
-    image: tetherlessworld/whyis-deps:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
     command: tail -f /dev/null

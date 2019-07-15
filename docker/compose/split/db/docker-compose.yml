@@ -10,6 +10,6 @@ services:
     build:
       context: ../../../..
       dockerfile: docker/image/whyis-blazegraph/Dockerfile
-    image: tetherlessworld/whyis-blazegraph:${DOCKER_COMPOSE_IMAGE_TAG:-latest}
+    image: tetherlessworld/whyis-blazegraph:${WHYIS_IMAGE_TAG:-latest}
     ports:
       - "8080:8080"
