@@ -16,5 +16,4 @@ RUN puppet apply /apps/whyis/docker/image/whyis-server/install.pp
 COPY --from=build-java /apps/whyis/jars /apps/whyis/jars
 COPY --from=build-bundle /static/js/whyis_vue_bundle.js /apps/whyis/static/js
 COPY --chown=whyis:whyis /docker/image/whyis-server/docker-entrypoint.sh /
-COPY --chown=whyis:whyis /docker/image/whyis-server/celery-entrypoint.sh /
 WORKDIR /apps/whyis
