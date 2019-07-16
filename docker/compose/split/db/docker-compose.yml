@@ -6,7 +6,7 @@ services:
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
-      - /data:/data
+      - ./../../../../../../data:/data
   blazegraph:
     container_name: "blazegraph"
     build:
@@ -18,4 +18,4 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - /data:/data
+      - ./../../../../../../data:/data
