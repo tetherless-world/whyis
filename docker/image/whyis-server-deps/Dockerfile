@@ -10,3 +10,5 @@ RUN puppet apply /install.pp &&\
 	rm -rf /install.pp\
 	/requirements
 
+# Remove pip cache
+RUN rm -fr /root/.cache
