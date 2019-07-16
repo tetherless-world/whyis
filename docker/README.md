@@ -9,7 +9,15 @@ New users should start with the monolithic image.
 
 ## Common concerns
 
-All of the whyis images mount `/data` on the host for persistent storage. On Mac OS X you must allow Docker to mount this directory by going into Docker's Preferences -> File Sharing and adding it.
+All of the whyis images mount two directories from the host in the `docker-compose.yml` files:
+
+* `/data` for persistent storage, mounted as `/data` in the container
+* `apps`, the parent directory of the current whyis checkout, as `/apps` in the container
+
+On Mac OS X you must allow Docker to mount these directories by going into Docker's Preferences -> File Sharing and adding their absolute paths. For example:
+
+* Add `/data` assuming you have a `/data` directory on your host
+* Add `/apps` assuming you have checked out whyis at `/apps/whyis`
 
 ## Monolithic image
 
