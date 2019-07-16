@@ -6,12 +6,13 @@
 version: '3'
 services:
   whyis:
-    container_name: "whyis"
     build:
       args:
         WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../..
       dockerfile: docker/image/whyis/Dockerfile
+    command: tail -f /dev/null
+    container_name: "whyis"
     depends_on:
       - whyis-deps
     image: tetherlessworld/whyis:${WHYIS_IMAGE_TAG:-latest}
@@ -19,11 +20,12 @@ services:
       - "127.0.0.1:80:80"
       - "127.0.0.1:6379:6379"
       - "127.0.0.1:8080:8080"
-    command: tail -f /dev/null
+    volumes:
+      - /data:/data
   whyis-deps:
-    container_name: "whyis-deps"
     build:
       context: ../../..
       dockerfile: docker/image/whyis-deps/Dockerfile
-    image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
     command: tail -f /dev/null
+    container_name: "whyis-deps"
+    image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
