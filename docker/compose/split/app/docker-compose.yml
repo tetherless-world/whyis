@@ -21,12 +21,14 @@ services:
         WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../../..
       dockerfile: docker/image/whyis-server/Dockerfile
+    command: tail -f /dev/null
+    entrypoint: /docker-entrypoint.sh
+    external_links:
+      - blazegraph
+      - redis
     image: tetherlessworld/whyis-server:${WHYIS_IMAGE_TAG:-latest}
     ports:
       - "80:80"
       - "5000:5000"
-    external_links:
-      - blazegraph
-      - redis
-    entrypoint: /docker-entrypoint.sh
-    command: tail -f /dev/null
+    volumes:
+      - /data:/data
