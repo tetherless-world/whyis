@@ -401,6 +401,5 @@ WHERE {
         else:
             variables = []
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
-        print (query)
         return query
         

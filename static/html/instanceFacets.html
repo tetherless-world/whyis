@@ -57,7 +57,7 @@
         <table class="table">
           <thead>
             <th scope="col">Identifier</th>
-            <th ng-repeat="facet in facetValues">{{facet.name}} <span ng-if="facet.unit_label">{{facet.unit_label}}</span></th>
+            <th ng-repeat="facet in facetValues">{{facet.name}} <span ng-if="facet.unit_label">({{facet.unit_label}})</span></th>
           </thead>
           <tbody>
             <tr ng-repeat="row in vizConfig.data.values">
