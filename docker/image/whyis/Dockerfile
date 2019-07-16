@@ -2,8 +2,16 @@ ARG WHYIS_IMAGE_TAG=latest
 FROM tetherlessworld/whyis-deps:$WHYIS_IMAGE_TAG
 
 # Copy files as root
-COPY /apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Apache configuration
+COPY /apache.conf /apache.conf
+RUN sed '1d' /apache.conf > /etc/apache2/sites-available/000-default.conf
+RUN rm /apache.conf
+
+# Celery configuration
 COPY /docker/image/whyis/celeryd /etc/default/celeryd
+
+# Entrypoint
 COPY /docker/image/whyis/docker-entrypoint.sh /
 
 # Do the remainder as the whyis user
