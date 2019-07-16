@@ -49,6 +49,9 @@ com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024\n' > .
 
 RUN sed -i 's/.*RWStore.properties<\/param-value>.*/   <param-value>\/var\/lib\/jetty\/webapps\/blazegraph\/WEB-INF\/RWStore.properties<\/param-value>/' ./WEB-INF/web.xml
 
+RUN mv /docker-entrypoint.sh /jetty-docker-entrypoint.sh
+COPY /docker/image/whyis-blazegraph/docker-entrypoint.sh /docker-entrypoint.sh
+
 USER jetty
 
 ENV JAVA_OPTIONS="-ea -Xmx4g -server -XX:+UseParallelOldGC -Djava.awt.headless=true -Dorg.eclipse.jetty.server.Request.maxFormContentSize=200000000"
