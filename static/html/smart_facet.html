@@ -14,12 +14,12 @@
        md-min-length="0"
        placeholder="+"
        input-aria-describedby="facet{{vm.facet.facetId}}Label"
-       md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | uniq:'value' | orderBy:'-count')"
+       md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
        md-item-text="item.name" >
-      <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.text }} ({{item.count}})</span>
+      <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} {{item.unit_label}}</span>
     </md-autocomplete>
     <md-chip-template>
-      <span>{{ $chip.text }}</span>
+      <span>{{ $chip.name }} <span ng-if="$chip.unit_label">({{$chip.unit_label}})</span></span>
     <!--<md-menu>
       <md-button aria-label="Inclusion criteria menu" class="md-icon-button" ng-click="$mdMenu.open($event)">
         <md-icon ng-show="$chip.selectionType == 'Include'">add_circle</md-icon>

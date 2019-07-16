@@ -362,6 +362,9 @@ WHERE {
                 results.append(facet)
         iter_labelize(results, key='value', label_key='name')
         iter_labelize(results, key='unit', label_key='unit_label')
+        for result in results:
+            if 'value' in result:
+                result['value'] = result['value'].n3()
         return results
 
     instance_data_template = env.from_string('''
@@ -370,19 +373,20 @@ WHERE {
     {% for constraint in constraints %}{{constraint}}{% endfor %}
 
     {% for variable in variables %}
+    {% if variable.selectionType == 'Show' %}optional { {% endif %}
     {% if 'valuePredicate' in variable %}
       ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['typeProperty']}} {{variable['value']}};
         {{variable['valuePredicate']}} ?{{variable['field']}};
         {% if 'unit' in variable %}
           {{variable['unitPredicate']}} <{{variable['unit']}}>;
         {% endif %}
       ].
     {% else %}
-      ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} [ rdfs:label ?{{variable['field']}}];
-      ].
+      {{variable['specifier'].replace('?value', '?uri_'+variable['field'])}}
+      ?uri_{{variable['field']}} rdfs:label ?{{variable['field']}}.
     {% endif %}
+    {% if variable.selectionType == 'Show' %}} {% endif %}
   {% endfor %}
   
 }''')
@@ -390,9 +394,13 @@ WHERE {
     def instance_data(this, variables, constraints):
         if len(constraints) > 0:
             constraints = json.loads(constraints)
+        else:
+            constraints = []
         if len(variables) > 0:
             variables = json.loads(variables)
+        else:
+            variables = []
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
-        
+        print (query)
         return query
         

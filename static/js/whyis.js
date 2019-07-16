@@ -440,10 +440,30 @@ function whyis() {
         SmartFacetConstructor.prototype.getSelectedValue = getSelectedValue;
         SmartFacetConstructor.prototype.setSelectedValue = setSelectedValue;
         SmartFacetConstructor.prototype.getConstraint = getConstraint;
+
+        SmartFacetConstructor.prototype.getState = function() {
+            var self = this;
+            var facetValues = this.config.scope.getFacetValues().filter(function(facetValue) {
+                return facetValue.facetId == self.config.facetId;
+            });
+            if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
+                facetValues.forEach(function(d) { console.log(d); d.unit_label = "All"});
+                this.getBasicState().forEach(function(d) {
+                    d.name = d.text;
+                    facetValues.push(d);
+                });
+            }
+            return facetValues;
+        };
+        SmartFacetConstructor.prototype.includeChanged = function(updater) {
+            this.config.scope.includeFacetsAsCategory[this.config.facetId] = !this.config.scope.includeFacetsAsCategory[this.config.facetId];
+            updater();
+        };
+        SmartFacetConstructor.prototype.getBasicState = BasicFacet.prototype.getState;
         SmartFacetConstructor.prototype.search = function(searchText, items) {
             return items.filter(function(d) {
                 if (d.selectionType === undefined) d.selectionType = "Include";
-                return d.text.toLowerCase().indexOf(searchText.toLowerCase()) != -1;
+                return d.name.toLowerCase().indexOf(searchText.toLowerCase()) != -1;
             });
         };
 
@@ -472,8 +492,12 @@ function whyis() {
                 return;
             } else {
                 var selectionConstraint = '?var_'+makeID();
-                return ' ?id ' + self.predicate + ' '+ selectionConstraint + ' \n values ' +
-                    selectionConstraint + ' { '+ values.map(function(d){ return d.value}).join(" ") + ' }';
+                var result = ' ?id ' + self.predicate + ' '+ selectionConstraint + '. \n';
+                var filteredValues = values.filter(function(d) { return d.value; }).map(function(d) {return d.value});
+                if (filteredValues.length > 0) {
+                    result += ' values ' + selectionConstraint + ' { '+ values.map(function(d){ return d.value}).join(" ") + ' }\n';
+                }
+                return result;
             }
         }
 
@@ -2525,7 +2549,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
      * DBpedia service
      * Handles SPARQL queries and defines facet configurations.
      */
-    app.service('instanceFacetService', function(FacetResultHandler, $http) {
+    app.service('instanceFacetService', function(FacetResultHandler, $http, loadAttributes) {
 
         function instanceFacetService(type, constraints) {
             /* Public API */
@@ -2672,7 +2696,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 $http.get(ROOT_URL+'about', { params: {uri:type,view:'facets'}, responseType:'json'})
                     .then(processConstraints);
             }
-            
+
             var endpointUrl = ROOT_URL+'sparql';
 
             // We are building a faceted search for classes.
@@ -2731,6 +2755,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 paging: true // optional (default is true), if true, enable paging of the results
             };
 
+            result._facetValues = [];
+            loadAttributes(type, [facetOptions.constraint])
+                .then(function(attrs) {
+                    result._facetValues = attrs;
+                    //result._facetValues.splice(0, 0, {
+                    //    "field" : "id",
+                    //    "type" : "nominal",
+                    //    "name" : "By Instance"
+                    //});
+                });
+            result.getFacetValues = function() { return result._facetValues; };
+            
+            
             // FacetResultHandler is a service that queries the endpoint with
             // the query and maps the results to objects.
             var resultHandler = new FacetResultHandler(endpointUrl, resultOptions);
@@ -2823,23 +2860,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             restrict: 'E',
             link: function(scope, element, attrs) {
                 scope.$watch("spec", function(oldvalue, newvalue) {
-                    scope.spec.data.variables = [];
-                    var variable_names = {};
-                    for (var property in scope.spec.encoding) {
-                        if (property != 'id' &&
-                            scope.spec.encoding.hasOwnProperty(property) &&
-                            scope.spec.encoding[property].field &&
-                            variable_names[scope.spec.encoding[property].field] == null) {
-                            scope.spec.data.variables.push(scope.spec.encoding[property]);
-                            variable_names[scope.spec.encoding[property].field] = scope.spec.encoding[property];
-                        }
-                    }
-                    scope.spec.data.url = scope.spec.data.baseurl;
-                    scope.spec.data.url += '&variables='+encodeURIComponent(JSON.stringify(scope.spec.data.variables));
-                    if (scope.spec.data.constraints) {
-                        scope.spec.data.url += "&constraints="+encodeURIComponent(JSON.stringify(scope.spec.data.constraints));
-                    }
-                    console.log(scope.spec.data.url);
                     var result = vegaEmbed(element[0], scope.spec, scope.opt);
                     if (scope.then) result.then(scope.then);
                 }, true);
@@ -2858,8 +2878,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             link: function (scope, element, attrs) {
                 scope.variables = {}
                 scope.scales = [
-                    {"type": "linear", "zero" : false},
-                    {"type": "log", "zero" : false}
+                    {"type": "linear", "zero" : false, nice: true},
+                    {"type": "log", "zero" : false, nice: true}
                 ];
                 scope.views = [
                     //{
@@ -2867,7 +2887,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //    label: "Area Plot",
                     //},
                     {
-                        mark: "point",
+                        mark: {"type" : "point", "tooltip": {"content":"data"}},
                         label: "Scatter Plot",
                         dimensions: {
                             x: {
@@ -2888,7 +2908,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             },
                         }
                     },                    {
-                        mark:"bar",
+                        mark: {"type" : "bar", "tooltip": {"content":"data"}},
                         label: "Histogram",
                         dimensions: {
                             x: {
@@ -2902,7 +2922,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     },
                     {
-                        mark:"bar",
+                        mark: {"type" : "bar", "tooltip": {"content":"data"}},
                         label: "Bar Chart",
                         dimensions: {
                             x: {
@@ -2917,7 +2937,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     },
                     {
-                        mark:"boxplot",
+                        mark: {"type" : "boxplot", "tooltip": {"content":"data"}},
                         label: "Box Plot",
                         dimensions: {
                             x: {
@@ -2944,7 +2964,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //},
 
                     {
-                        mark: "rect",
+                        mark: {"type" : "rect", "tooltip": {"content":"data"}},
                         label: "Heatmap",
                         dimensions: {
                             x: {
@@ -2960,7 +2980,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     },
                     {
-                        mark: "rect",
+                        mark: {"type" : "rect", "tooltip": {"content":"data"}},
                         label: "Density",
                         dimensions: {
                             x: {
@@ -2987,7 +3007,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //    mark: "text",
                     //},
                     {
-                        mark: "tick",
+                        mark: {"type" : "tick", "tooltip": {"content":"data"}},
                         label: "Strip Plot",
                         dimensions: {
                             x: {
@@ -3009,7 +3029,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         }
                     },
                     {
-                        mark: "trail",
+                        mark: {"type" : "trail", "tooltip": {"content":"data"}},
                         label: "Line Plot",
                         dimensions: {
                             x: {
@@ -3084,17 +3104,20 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     
                     var updateId = 0;
 
+                    var dataConfig = {
+                        "url": null,
+                        "baseurl" : ROOT_URL+'about?uri='+encodeURIComponent(scope.type)+"&view=instance_data",
+                    };
                     scope.vizConfig = {
-                        "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+                        "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
                         "data": {
-                            "url": null,
-                            "baseurl" : ROOT_URL+'about?uri='+encodeURIComponent(scope.type)+"&view=instance_data",
                         },
                         "view" : "instanceAttributes",
                         "mark": "point",
                         "autosize": {
                             "type": "fit",
-                            "contains": "padding"
+                            "contains": "padding",
+                            "resize" : "true"
                         },
                         "encoding" : {},
                         "width" : 1000,
@@ -3102,14 +3125,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "resize" : "true"
                     };
                     
-                    instanceFacets = instanceFacetService(scope.type, scope.constraints);
+                    var instanceFacets = instanceFacetService(scope.type, scope.constraints);
                     
                     // page is the current page of results.
                     vm.makeArray = makeArray;
                     vm.getLabel = getLabel;
                     
                     vm.disableFacets = disableFacets;
-                    scope.view = "list";
+                    scope.view = "table";
                     
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
@@ -3142,6 +3165,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         return options;
                     }
                     
+                    scope.includeFacetsAsCategory = {};
                     
                     // Get results based on facet selections (each time the selections change).
                     function updateResults(event, facetSelections) {
@@ -3149,10 +3173,63 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
                             vm.isLoadingResults = false;
-                            vm.vizConfig.data.constraints = [];
+                            dataConfig.constraints = [];
                             if (facetSelections.constraint) {
-                                vm.vizConfig.data.constraints = facetSelections.constraint;
+                                dataConfig.constraints = facetSelections.constraint;
                             }
+                            
+                            //var variable_names = {};
+                            //for (facetName in facetSelections.facets) {
+                            //    variable_names[facetName] = {};
+                            //    if (facetSelections.facets[facetName].id) {
+                            //        facetSelections.facets[facetName].value.forEach(function(val) {
+                            //            variable_names[facetName][val.value.replace(/^<|>$/g,"")] = true;
+                            //        });
+                            //    }
+                            //}
+
+                            scope.getFacetValues = instanceFacets.getFacetValues;
+                            
+                            scope.facetValues = [];
+                            for (facetName in facetSelections.facets) {
+                                if (facetSelections.facets[facetName].id) {
+                                    facetSelections.facets[facetName].value.forEach(function(val) {
+                                        if (val.field !== undefined) 
+                                            scope.facetValues.push(val);
+                                    });
+                                }
+                            }
+
+                            scope.getFacetValues().forEach(function(facetValue) {
+                                if (facetValue.value === undefined) {
+                                    if (scope.includeFacetsAsCategory[facetValue.facetId]) {
+                                        facetValue.selectionType = "Show";
+                                        scope.facetValues.push(facetValue);
+                                    }
+                                }
+                            });
+                                    //return true; // Include top level categories.
+                            //    if (variable_names[facetValue.facetId] && variable_names[facetValue.facetId][facetValue.value])
+                            //        return true;
+                            //    else return false;
+                            //});
+                            //dataConfig.url = scope.spec.data.baseurl;
+                            //dataConfig.url += '&variables='+encodeURIComponent(JSON.stringify(scope.facetValues));
+                            //if (facetSelections.constraints) {
+                            //    dataConfig.url += "&constraints="+encodeURIComponent(JSON.stringify(facetSelections.constraints));
+                            //}
+                            //console.log(scope.spec.data.url);
+                            $http.get(ROOT_URL+'about', {
+                                params: {
+                                    uri: scope.type,
+                                    view:'instance_data',
+                                    constraints: JSON.stringify(facetSelections.constraint),
+                                    variables: JSON.stringify(scope.facetValues)
+                                }, responseType:'json'})
+                                .then(function(response) {
+                                    scope.vizConfig.data = { values: response.data };
+                                });
+                            
                         });
                     }
                     
@@ -3160,21 +3237,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         return angular.isArray(val) ? val : [val];
                     }
 
-                    function updateAttributes() {
-                        console.log(vm.vizConfig);
-                        loadAttributes(scope.type, vm.vizConfig.data.constraints, vm.vizConfig.data.variables)
-                            .then(function(attrs) {
-                                scope.facetValues = attrs;
-                                scope.facetValues.splice(0, 0, {
-                                    "field" : "id",
-                                    "type" : "nominal",
-                                    "name" : "By Instance"
-                                });
-                            });
-                        
-                    }
-                    vm.$watch('vizConfig.data.constraints', updateAttributes);
-                    vm.$watch('vizConfig.data.variables', updateAttributes);
                 }
             };
         }]);
