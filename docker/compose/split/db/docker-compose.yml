@@ -16,6 +16,6 @@ services:
       dockerfile: docker/image/whyis-blazegraph/Dockerfile
     image: tetherlessworld/whyis-blazegraph:${WHYIS_IMAGE_TAG:-latest}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - /data:/data

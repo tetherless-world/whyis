@@ -28,7 +28,7 @@ services:
       - redis
     image: tetherlessworld/whyis-server:${WHYIS_IMAGE_TAG:-latest}
     ports:
-      - "80:80"
-      - "5000:5000"
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:5000:5000"
     volumes:
       - /data:/data
