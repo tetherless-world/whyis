@@ -7,6 +7,9 @@ Whyis is packaged as two sets of Docker images:
 
 New users should start with the monolithic image.
 
+## Common concerns
+
+All of the whyis images mount `/data` on the host for persistent storage. On Mac OS X you must allow Docker to mount this directory by going into Docker's Preferences -> File Sharing and adding it.
 
 ## Monolithic image
 
