@@ -1,0 +1,21 @@
+version: '3'
+services:
+  whyis-server:
+    container_name: "whyis-server"
+    build:
+      args:
+        WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
+      context: ../../../..
+      dockerfile: docker/image/whyis-server/Dockerfile
+    command: tail -f /dev/null
+    entrypoint: /docker-entrypoint.sh
+    external_links:
+      - blazegraph
+      - redis
+    image: tetherlessworld/whyis-server:${WHYIS_IMAGE_TAG:-latest}
+    ports:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - $PWD/../../../..:/apps
+      - /data:/data

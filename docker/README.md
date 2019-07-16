@@ -9,15 +9,13 @@ New users should start with the monolithic image.
 
 ## Common concerns
 
-All of the whyis images mount two directories from the host in the `docker-compose.yml` files:
+All of the whyis images mount directories from the host in the `docker-compose.yml` files:
 
 * `/data` for persistent storage, mounted as `/data` in the container
-* `apps`, the parent directory of the current whyis checkout, as `/apps` in the container
 
 On Mac OS X you must allow Docker to mount these directories by going into Docker's Preferences -> File Sharing and adding their absolute paths. For example:
 
 * Add `/data` assuming you have a `/data` directory on your host
-* Add `/apps` assuming you have checked out whyis at `/apps/whyis`
 
 ## Monolithic image
 
@@ -83,6 +81,7 @@ The `db/docker-compose.yml` can be used to start the databases without the serve
     cd docker-compose/split
     docker-compose -f db/docker-compose.yml
 
+Further, `docker/compose/split/app-dev` references a version of `whyis-server` that mounts `/apps` from the parent directory of the current whyis checkout, for local development.
 
 ## Other notes
 
