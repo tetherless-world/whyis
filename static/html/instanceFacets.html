@@ -11,6 +11,13 @@
                  data-ng-click="view='list'">
         <md-icon>view_list</md-icon>
       </md-button>
+      <md-button class="md-mini md-icon-button"
+                 ng-class="{'md-primary' : view=='table'}"
+                 aria-label="Table View"
+                 title="Table View"
+                 data-ng-click="view='table'">
+        <md-icon>table_chart</md-icon>
+      </md-button>
       <md-button class=" md-mini md-icon-button"
                  ng-class="{'md-primary' : view=='chart'}"
                  aria-label="Chart View"
@@ -45,6 +52,20 @@
       </md-content>
       <md-content layout="column" ng-if="view=='chart'" ng-show="view=='chart'" >
         <vega spec="vizConfig" viewBox="0 0 60 55"></vega>
+      </md-content>
+      <md-content layout="column" ng-if="view=='table'" ng-show="view=='table'" >
+        <table class="table">
+          <thead>
+            <th scope="col">Identifier</th>
+            <th ng-repeat="facet in facetValues">{{facet.name}} <span ng-if="facet.unit_label">({{facet.unit_label}})</span></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in vizConfig.data.values">
+              <td scope="row">{{row['id']}}</td>
+              <td ng-repeat="facet in facetValues">{{row[facet.field]}}</td>
+            </tr>
+          </tbody>
+        </table>
       </md-content>
     </div>
   </div>
