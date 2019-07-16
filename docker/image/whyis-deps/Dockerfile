@@ -48,6 +48,7 @@ RUN rm /install.pp
 COPY /requirements/ /requirements
 RUN pip3 install -r /requirements/dev.txt
 RUN rm -fr /requirements
+RUN rm -fr /root/.cache
 
 # Install the Java requirements similarly
 COPY /whyis-java/pom.xml /pom.xml
