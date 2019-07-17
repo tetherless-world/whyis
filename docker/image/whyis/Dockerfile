@@ -24,5 +24,6 @@ RUN npm run build
 WORKDIR /apps/whyis/whyis-java
 RUN sudo -u whyis mvn clean compile assembly:single -PwhyisProfile
 
+CMD ["tail", "-f", "/dev/null"]
 ENTRYPOINT ["/docker-entrypoint.sh"]
 WORKDIR /apps/whyis

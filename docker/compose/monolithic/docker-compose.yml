@@ -11,7 +11,6 @@ services:
         WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../..
       dockerfile: docker/image/whyis/Dockerfile
-    command: tail -f /dev/null
     container_name: "whyis"
     depends_on:
       - whyis-deps
@@ -26,6 +25,5 @@ services:
     build:
       context: ../../..
       dockerfile: docker/image/whyis-deps/Dockerfile
-    command: tail -f /dev/null
     container_name: "whyis-deps"
     image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
