@@ -8,8 +8,8 @@ RUN mvn clean compile assembly:single -PwhyisProfile
 FROM node:12-alpine as build-bundle
 COPY static /static
 WORKDIR /static
-RUN npm install &&\
-	npm run build
+RUN npm install
+RUN npm run build
 
 FROM tetherlessworld/whyis-server-deps:$WHYIS_IMAGE_TAG
 COPY --chown=whyis:whyis / /apps/whyis
