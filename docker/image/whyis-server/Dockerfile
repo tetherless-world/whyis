@@ -19,3 +19,6 @@ COPY --from=build-java /apps/whyis/jars /apps/whyis/jars
 COPY --from=build-bundle /static/js/whyis_vue_bundle.js /apps/whyis/static/js
 COPY --chown=whyis:whyis /docker/image/whyis-server/docker-entrypoint.sh /
 WORKDIR /apps/whyis
+
+CMD ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -21,8 +21,6 @@ services:
         WHYIS_IMAGE_TAG: ${WHYIS_IMAGE_TAG:-latest}
       context: ../../../..
       dockerfile: docker/image/whyis-server/Dockerfile
-    command: tail -f /dev/null
-    entrypoint: /docker-entrypoint.sh
     external_links:
       - blazegraph
       - redis
