@@ -21,10 +21,14 @@ jobs:
             cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
       - run:
           name: Run tests
-          command: |
-            bash .circleci/test-ci.sh tetherlessworld/whyis:latest
+          command: .circleci/test-ci.sh tetherlessworld/whyis:latest
       - store_test_results:
           path: test-results
+      - run:
+          name: Lint the code
+          command: .circleci/lint.sh
+      - store_artifacts:
+          path: lint-results
       - run:
           name: Build split Docker image
           command: |
