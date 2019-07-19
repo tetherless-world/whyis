@@ -13,8 +13,7 @@ jobs:
       - run:
           name: Install system dependencies with apk
           command: |
-            apk update && apk add bash git python3
-            python3 -m ensurepip
+            apk update && apk add bash
       - checkout
       - setup_remote_docker
       - run:
@@ -26,11 +25,6 @@ jobs:
           command: .circleci/test.sh tetherlessworld/whyis:latest
       - store_test_results:
           path: test-results
-      - run:
-          name: Lint the code
-          command: pip3 install pylint && .circleci/lint.sh
-      - store_artifacts:
-          path: lint-results
       - run:
           name: Build split Docker image
           command: |
@@ -49,3 +43,27 @@ jobs:
               # Split latest, push (build above)
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
             fi
+  lint:
+    working_directory: /app
+    branches:
+      ignore:
+        - elasticstore
+    docker:
+      - image: python/3.6-alpine
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip3 install pylint
+      - run:
+          name: Lint the code
+          command: .circleci/lint.sh
+      - store_artifacts:
+          path: lint-results
+
+workflows:
+  version: 2
+  build_lint:
+    jobs:
+      - build
+      - lint
