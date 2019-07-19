@@ -4,9 +4,6 @@ version: 2
 jobs:
   build:
     working_directory: /app
-    branches:
-      ignore:
-        - elasticstore
     docker:
       - image: docker/compose:1.24.1
     steps:
@@ -45,9 +42,6 @@ jobs:
             fi
   lint:
     working_directory: /app
-    branches:
-      ignore:
-        - elasticstore
     docker:
       - image: python/3.6-alpine
     steps:
@@ -66,4 +60,12 @@ workflows:
   build_lint:
     jobs:
       - build
+        filters:
+          branches:
+            ignore:
+              - elasticstore
       - lint
+        filters:
+          branches:
+            ignore:
+              - elasticstore
