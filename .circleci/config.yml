@@ -12,7 +12,9 @@ jobs:
     steps:
       - run:
           name: Install system dependencies with apk
-          command: apk update && apk add bash git python3 python3-pip
+          command: |
+            apk update && apk add bash git python3
+            python3 -m ensurepip
       - checkout
       - setup_remote_docker
       - run:
