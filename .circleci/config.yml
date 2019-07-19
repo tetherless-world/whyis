@@ -4,15 +4,13 @@ version: 2
 jobs:
   build:
     working_directory: /app
-    branches:
-      ignore:
-        - elasticstore
     docker:
       - image: docker/compose:1.24.1
     steps:
       - run:
           name: Install system dependencies with apk
-          command: apk update && apk add bash git
+          command: |
+            apk update && apk add bash
       - checkout
       - setup_remote_docker
       - run:
@@ -21,8 +19,7 @@ jobs:
             cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
       - run:
           name: Run tests
-          command: |
-            bash .circleci/test-ci.sh tetherlessworld/whyis:latest
+          command: .circleci/test.sh tetherlessworld/whyis:latest
       - store_test_results:
           path: test-results
       - run:
@@ -43,3 +40,24 @@ jobs:
               # Split latest, push (build above)
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
             fi
+  lint:
+    working_directory: /whyis
+    docker:
+      - image: python:3.7-stretch
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip3 install flake8 pycodestyle pylint
+      - run:
+          name: Lint the code
+          command: .circleci/lint.sh
+      - store_artifacts:
+          path: lint-results
+
+workflows:
+  version: 2
+  build_lint:
+    jobs:
+      - build
+      - lint

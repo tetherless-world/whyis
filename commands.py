@@ -271,7 +271,7 @@ class Test(Command):
 
         if ci:
             import xmlrunner
-            test_results_dir_path = os.path.join("test-results", "python")
+            test_results_dir_path = os.path.join("test-results", "py")
             if not os.path.isdir(test_results_dir_path):
                 os.makedirs(test_results_dir_path)
             with open(os.path.join(test_results_dir_path, "results.xml"), "wb") as output:
