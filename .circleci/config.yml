@@ -51,7 +51,7 @@ jobs:
           command: cd static && npm install
       - run:
           name: Lint the code
-          command: .circleci/lint-js.sh
+          command: cd static && npm run lint
       - store_artifacts:
           path: lint-results
   lint-py:
