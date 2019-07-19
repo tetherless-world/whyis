@@ -2636,8 +2636,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     d.enabled = true;
                     d.preferredLang = "en";
-                    if (!d.type) 
-                        d.type = "basic";
+                    if (!d.type) {
+                        if (d.count > 1000) {
+                            d.type = "text";
+                        } else {
+                            d.type = "basic";
+                        }
+                    }
                 },
                 'http://semanticscience.org/resource/Quality' : function(d) {
                     d.name = "Qualities";
