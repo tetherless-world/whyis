@@ -48,7 +48,7 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: pip3 install flake8 pep8 pylint
+          command: pip3 install flake8 pycodestyle pylint
       - run:
           name: Lint the code
           command: .circleci/lint.sh
