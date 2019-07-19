@@ -21,7 +21,7 @@
     "style-loader": "0.23.1"
   },
   "scripts": {
-    "lint": "eslint js/whyis.js js/whyis_vue/**",
+    "lint": "eslint",
     "start": "webpack --mode development --info-verbosity verbose --watch",
     "build": "webpack --mode production -p"
   }
