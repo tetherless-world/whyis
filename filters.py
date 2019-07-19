@@ -61,6 +61,12 @@ def configure(app):
         return entries
 
     app.labelize = labelize
+    
+    @app.template_filter('map_list')
+    def map_list(entries, source, destination, fn):
+        for entry in entries:
+            entry[destination] = fn(entry[source])
+        return entries
         
     @app.template_filter('lang')
     def lang_filter(terms):

@@ -45,6 +45,7 @@ from wtforms import TextField, TextAreaField, StringField, validators
 import sadi
 import json
 import sadi.mimeparse
+from slugify import slugify
 
 import werkzeug.utils
 
@@ -609,7 +610,7 @@ construct {
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name]
 
         @lru_cache(maxsize=1000)
         def get_remote_label(uri):
@@ -674,6 +675,7 @@ construct {
             g.rdflib = rdflib
             g.isinstance = isinstance
             g.current_user = current_user
+            g.slugify = slugify
             g.db = self.db
 
         @self.login_manager.user_loader
