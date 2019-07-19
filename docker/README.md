@@ -1,11 +1,19 @@
 # Whyis and Docker
 
+Whyis can be used with Docker and Docker Compose to instantiate a fully functional Whyis Docker instance that can be run as many times as required. For an introduction to Docker concepts and terminology, see:
+- [A Beginner-Friendly Introduction to Containers, VMs and Docker by freeCodeCamp](https://medium.freecodecamp.org/a-beginner-friendly-introduction-to-containers-vms-and-docker-79a9e3e119b)
+- [Docker overview by Docker](https://docs.docker.com/engine/docker-overview/)
+
 Whyis is packaged as two sets of Docker images:
 
 1. a *monolithic* image, which includes everything needed to run whyis is a single image
-1. *split* images, which separates services into different containers and must be run with docker-compose or another orchestration system
 
 New users should start with the monolithic image.
+
+2. *split* images, which separates services into different containers and must be run with docker-compose or another orchestration system
+
+For an introduction to Docker Compose, see:
+- [Docker Compose overview](https://docs.docker.com/compose/)
 
 ## Common concerns
 
@@ -19,16 +27,23 @@ On Mac OS X you must allow Docker to mount these directories by going into Docke
 
 ## Monolithic image
 
-### Use
+### Installation and Use
 
 #### Prerequisites
 * Docker
 
-Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, /most/ changes done to the container will be erased after each run. 
+#### Instructions
+Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, *most* changes done to the container will be erased after each run. 
 
 To start the monolithic image from Dockerhub, run:
 
     docker run -p 80:80 -it tetherlessworld/whyis
+
+This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). To just pull the image or update the image to the latest version, run:
+
+```shell
+$ docker pull tetherlessworld/whyis
+```
 
 ### Development
 
@@ -52,6 +67,8 @@ Assuming you have logged in with `docker login`, you can use docker/compose/dev 
     cd docker/compose/monolithic
     ./build-deps.sh
     ./push-deps.sh 
+
+Note: You will have to be be a member of the [Tetherless World](https://hub.docker.com/u/tetherlessworld/) organization to be able to run these steps.
 
 ## Split images
 
