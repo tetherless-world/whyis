@@ -62,6 +62,7 @@ confidence=
 # --disable=W".
 disable=bad-continuation,
         bad-whitespace,
+        import-error,
         invalid-name,
    	    line-too-long,
         missing-docstring,
@@ -69,6 +70,7 @@ disable=bad-continuation,
         possibly-unused-variable,
         too-many-arguments,
         trailing-whitespace,
+        unused-argument,
         unused-wildcard-import,
         wrong-import-order
 
