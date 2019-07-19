@@ -60,12 +60,4 @@ workflows:
   build_lint:
     jobs:
       - build
-        filters:
-          branches:
-            ignore:
-              - elasticstore
       - lint
-        filters:
-          branches:
-            ignore:
-              - elasticstore
