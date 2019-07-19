@@ -41,7 +41,7 @@ jobs:
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
             fi
   lint:
-    working_directory: /app
+    working_directory: /whyis
     docker:
       - image: python:3.7-stretch
     steps:
