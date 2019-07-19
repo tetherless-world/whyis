@@ -39,7 +39,7 @@ file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/master/resources/blazegraph.war":
+} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/release/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
   timeout => 0
 } ->
@@ -128,6 +128,7 @@ vcsrepo { '/apps/whyis':
   ensure   => present,
   provider => git,
   source   => 'https://github.com/tetherless-world/whyis.git',
+  revision => 'release',
   user     => 'whyis'
 } ->
 python::virtualenv { '/apps/whyis/venv' :
