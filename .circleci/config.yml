@@ -51,7 +51,7 @@ jobs:
           command: cd static && npm install
       - run:
           name: Lint the code
-          command: cd static && npm run lint
+          command: mkdir -p lint-results/js && cd static && npm run lint &>../lint-results/js/eslint.txt
       - store_artifacts:
           path: lint-results
   lint-py:
