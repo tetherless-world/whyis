@@ -1,118 +1,107 @@
-# Whyis Docker Instructions
+# Whyis and Docker
 
-The Whyis Docker container downloads and provisions a fully functional Whyis Docker *container*. After building the container, it can be instantiated and run as many times as required. For an introduction to Docker concepts and terminology, see:
+Whyis can be used with Docker and Docker Compose to instantiate a fully functional Whyis Docker instance that can be run as many times as required. For an introduction to Docker concepts and terminology, see:
 - [A Beginner-Friendly Introduction to Containers, VMs and Docker by freeCodeCamp](https://medium.freecodecamp.org/a-beginner-friendly-introduction-to-containers-vms-and-docker-79a9e3e119b)
 - [Docker overview by Docker](https://docs.docker.com/engine/docker-overview/)
 
+Whyis is packaged as two sets of Docker images:
 
-## Docker Installation
+1. a *monolithic* image, which includes everything needed to run whyis is a single image
 
-There are two possible avenues of installation depending on your needs. For a stable version of Whyis, use the `release` instructions, and for the latest version, use the `master` instructions.
+New users should start with the monolithic image.
 
-### `release` Installation Instructions
+2. *split* images, which separates services into different containers and must be run with docker-compose or another orchestration system
 
-1. Download the Whyis `release` version Docker image directly from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/)
+For an introduction to Docker Compose, see:
+- [Docker Compose overview](https://docs.docker.com/compose/)
 
-```shell
-$ docker pull tetherlessworld/whyis:release
-```
+## Common concerns
 
-### `master` Installation Instructions
+All of the whyis images mount directories from the host in the `docker-compose.yml` files:
 
-1. Download the Dockerfile from the [GitHub Repository](https://github.com/tetherless-world/whyis).
+* `/data` for persistent storage, mounted as `/data` in the container
 
-```shell
-$ curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/Dockerfile > Dockerfile
-```
+On Mac OS X you must allow Docker to mount these directories by going into Docker's Preferences -> File Sharing and adding their absolute paths. For example:
 
-2. Build the `master` Docker image, with the label `tetherlessworld/whyis:master`
+* Add `/data` assuming you have a `/data` directory on your host
 
-```shell
-$ docker build . --tag tetherlessworld/whyis:master --build-arg BUILD_MODE=master
-```
+## Monolithic image
 
-## Launching and using the Docker Container
+### Installation and Use
 
-The Docker containers built above should be treated as a reusable resource. That is, any work done using the `Whyis` platform should utilize the Docker images above as a starting point; it should be utilized as an extensible architecture. To launch the Containers above (in interactive mode), run the following:
+#### Prerequisites
+* Docker
 
-*NOTE: For further instructions and information regarding port passthrough, see the Networking in the Troubleshooting section of this document*
+#### Instructions
+Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, *most* changes done to the container will be erased after each run. 
 
-- `release`
+To start the monolithic image from Dockerhub, run:
 
-```shell
-$ docker run --publish 5000:5000 -it tetherlessworld/whyis:release
-```
+    docker run -p 80:80 -it tetherlessworld/whyis
 
-- `master`
+This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). To just pull the image or update the image to the latest version, run:
 
 ```shell
-$ docker run --publish 5000:5000 -it tetherlessworld/whyis:master
+$ docker pull tetherlessworld/whyis
 ```
 
-## Troubleshooting
+### Development
 
-Docker generally has a steep learning curve, and if the installation runs into problems, it does not fail gracefully. Because of this, the following macros may be useful to try if installation or running problems exist.
+#### Prerequisites
 
-### Delete all Containers
+* `docker-compose`
 
-```shell
-$ docker rm $(docker ps -aq)
-```
+#### Building and pushing
 
-### Delete all Images
+The _whyis_ monolithic image is built in two parts:
 
-```shell
-$ docker image rm $(docker image ls -aq)
-```
+1. a _whyis-deps_ image, which contains the environment and dependencies for whyis
+2. the _whyis_ image, which is the user-facing image and contains the custom code for whyis; it depends (FROM) on whyis-deps
 
-### Delete Network Interface
+We assume that _whyis-deps_ changes infrequently, whereas whyis changes frequently.
+The Continuous Integration server only builds and pushes whyis, retrieving whyis-deps from Dockerhub in the process.
+When whyis-deps changes, you will need to push it to Dockerhub manually.
 
-```shell
-$ docker network rm <network_id>
-```
+Assuming you have logged in with `docker login`, you can use docker/compose/dev to build whyis-deps and push it to Dockerhub:
 
-### List Network Interfaces
+    cd docker/compose/monolithic
+    ./build-deps.sh
+    ./push-deps.sh 
 
-```shell
-$ docker network ls
-```
+Note: You will have to be be a member of the [Tetherless World](https://hub.docker.com/u/tetherlessworld/) organization to be able to run these steps.
 
-### Port Passthrough Information
+## Split images
 
-The syntax of port passthrough at runtime is as follows:
+The monolithic image was split into images for the databases Whyis relies on (_redis_, _blazegraph_) and the Whyis server application (_whyis-server_).
 
-```shell
-$ docker run -p HOST_PORT:CONTAINER_PORT IMAGE_NAME
-```
+#### Prerequisites 
+* Docker
+* `docker-compose`
 
-Alternatively, all container ports can be passed through:
+### Use
 
-```shell
-$ docker run -P IMAGE_NAME
-```
+    cd docker/compose/split
+    docker-compose -f db/docker-compose.yml -f app/docker-compose.yml
 
-## Pushing to Docker Hub
+which starts both the database (`db/`) and server (`app/`) containers.
 
-Run the following to update the [Docker Hub deployment](https://hub.docker.com/r/tetherlessworld/whyis/) of the `release` distribution.
+### Development
 
-```shell
-$ docker build . --tag tetherlessworld/whyis:release --build-arg BUILD_MODE=release
-$ docker push tetherlessworld/whyis:release
-```
+Similar to the monolithic image, the _whyis-server_ image is built from multiple parent images, which change less frequently than the code.
 
-Note: You will have to be logged in to Docker, and be a member of the [Tetherless World](https://hub.docker.com/u/tetherlessworld/) organization to be able to run these steps. To log in:
+    cd docker/compose/split
+    ./build-deps.sh
+    ./push-deps.sh
 
-```shell
-$ docker login
-```
+The `db/docker-compose.yml` can be used to start the databases without the server, so that the server can e.g., be run locally:
 
-## Networking [ALPHA]
+    cd docker-compose/split
+    docker-compose -f db/docker-compose.yml
 
-***NOTE: This section is not complete, and may not function as expected.***
+Further, `docker/compose/split/app-dev` references a version of `whyis-server` that mounts `/apps` from the parent directory of the current whyis checkout, for local development.
 
-Unlike Vagrant and VirtualBox, Docker containers are not typically designed to be exposed to the host machine. However, to maintain Vagrant functionality, the Docker daemon can be configure to operate in the same manner.
+## Other notes
 
-This is done by creating a virtual network within Docker, and then mapping the `whyis` container to this network at startup.
-```shell
-$ docker network create -d macvlan --subnet=192.168.33.0/24 --gateway=192.168.33.36 whyis_net
-```
+### Whyis image tags
+
+By default the `docker-compose.yml` use `latest` tags for the whyis images. This can be overriden by specifying the environment variable `WHYIS_IMAGE_TAG`.
