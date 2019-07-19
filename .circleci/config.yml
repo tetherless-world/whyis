@@ -28,7 +28,9 @@ jobs:
           path: test-results
       - run:
           name: Lint the code
-          command: .circleci/lint.sh
+          command: |
+             pip3 install pylint
+            .circleci/lint.sh
       - store_artifacts:
           path: lint-results
       - run:
