@@ -1,18 +1,15 @@
 # -*- config:utf-8 -*-
 
-from builtins import str
-import os
+import importer
+import autonomic
+import rdflib
 import logging
+
+from datetime import datetime
+from builtins import str
 from datetime import timedelta
 
 project_name = "whyis"
-import importer
-
-import autonomic
-import agents.nlp as nlp
-import agents.hermit as hermit
-import rdflib
-from datetime import datetime
 
 # Set to be custom for your project
 LOD_PREFIX = 'http://localhost:5000'
@@ -155,8 +152,7 @@ Config = dict(
 #        )
     ],
     reasoning_profiles = {
-        "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"
-        ],
+        "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"],
         "OWL2 EL" : [ 
             "Class Inclusion", 
             "Class Equivalence", 
@@ -425,4 +421,3 @@ Test.update(dict(
     TESTING = True,
     WTF_CSRF_ENABLED = False
 ))
-
