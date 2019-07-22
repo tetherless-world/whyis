@@ -1,7 +1,6 @@
 #from __future__ import print_function
 #from future import standard_library
 #standard_library.install_aliases()
-from testcase import WhyisTestCase
 
 from base64 import b64encode
 
@@ -13,8 +12,10 @@ from io import StringIO
 import nanopub
 
 import autonomic
+from .unit_test_case import UnitTestCase
 
-class OntologyImportAgentTestCase(WhyisTestCase):
+
+class OntologyImportAgentTestCase(UnitTestCase):
 
     def test_foaf_import(self):
         np = nanopub.Nanopublication()

@@ -1,8 +1,6 @@
 #from __future__ import print_function
 #from future import standard_library
 #standard_library.install_aliases()
-from testcase import WhyisTestCase
-
 from base64 import b64encode
 
 from rdflib import *
@@ -16,7 +14,10 @@ from flask_login import login_user
 import json
 from io import StringIO
 
-class LoginTest(WhyisTestCase):
+from .api_test_case import ApiTestCase
+
+
+class LoginTest(ApiTestCase):
     
     def test_direct_login(self):
         user_details = self.create_user("user@example.com","password")
