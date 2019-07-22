@@ -4,6 +4,7 @@ from flask_security import UserMixin, RoleMixin
 from flask_security.utils import verify_and_update_password
 from flask_security.datastore import Datastore, UserDatastore
 from main import NS
+from namespace import dc, auth, foaf, prov
 from rdflib import BNode, Literal, URIRef, Namespace, Graph
 from rdflib.graph import ConjunctiveGraph
 from rdflib.resource import Resource
@@ -15,10 +16,11 @@ def value2object(value):
     suitable for a triple"""
     if isinstance(value, Resource):
         return value.identifier
-    elif isinstance(value, Identifier) or isinstance(value, BNode) or isinstance(value, URIRef):
+
+    if isinstance(value, (Identifier, BNode, URIRef)):
         return value
-    else:
-        return Literal(value)
+    
+    return Literal(value)
 
 def tag_datastore(fn):
     def f(self,*args,**kw):
@@ -58,17 +60,18 @@ def getList(sub, pred=None, db=None):
         return members
     # OK let's work at returning a Collection (Seq,Bag or Alt)
     # if was no NS.RDF.first
-    else:
-        i = 1
-        first = db.value(base, NS.RDF._1)
-        if not first:
-            raise AttributeError(
-                "Not a list, or collection but another type of BNode")
-        while first:
-            members.append(first)
-            i += 1
-            first = db.value(base, NS.RDF['_%d' % i])
-        return members
+    
+    i = 1
+    # first = db.value(base, NS.RDF._1) # _1 ???
+    first = db.value(base, NS.RDF.first)
+    if not first:
+        raise AttributeError(
+            "Not a list, or collection but another type of BNode")
+    while first:
+        members.append(first)
+        i += 1
+        first = db.value(base, NS.RDF['_%d' % i])
+    return members
 
         
 class single:
@@ -108,14 +111,10 @@ class multiple:
         val = list(obj.graph.objects(obj.identifier, self._predicate))
         # check to see if this is a Container or Collection
         # if so, return collection as a list
-        if (len(val) == 1
-            ) and (
-                not isinstance(val[0], Literal)
-            ) and (
-                obj.graph.value(val[0], NS.RDF.first
-                             ) ):
+        if len(val) == 1 and not isinstance(val[0], Literal) and obj.graph.value(val[0], NS.RDF.first):
             val = getList(obj, self._predicate)
-        #print(val)
+            
+        # print(val)
         val = [(obj.datastore.get(v) if isinstance(v, (BNode, URIRef))
                 else v.toPython())
                for v in val]
@@ -125,9 +124,8 @@ class multiple:
 
     def __set__(self, obj, newvals):
         if not isinstance(newvals, (list, tuple)):
-            raise AttributeError(
-                "to set a rdfMultiple you must pass in " +
-                "a list (it can be a list of one)")
+            raise AttributeError("to set a rdfMultiple you must pass in "
+                                 + "a list (it can be a list of one)" )
         try:
             oldvals = obj.__dict__[self._predicate]
         except KeyError:
@@ -135,7 +133,7 @@ class multiple:
             obj.__dict__[self._predicate] = oldvals
         db = obj.graph
         for value in oldvals:
-            if value and not value in newvals:
+            if value and value not in newvals:
                 db.remove((obj.identifier, self._predicate, value2object(value)))
         for value in newvals:
             if value not in oldvals:
@@ -187,10 +185,6 @@ class MappedResource(Resource):
 
 #    def __str__(self):
 #        return type(self).__name__ + ' ' + super().__str__() + ' a ' + self.rdf_type
-
-
-from namespace import dc, auth, foaf, prov
-
 
 class User(MappedResource, UserMixin):
     rdf_type = prov.Agent
