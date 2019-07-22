@@ -1,17 +1,13 @@
-#from __future__ import print_function
-#from future import standard_library
-#standard_library.install_aliases()
-from testcase import WhyisTestCase
-
 from base64 import b64encode
 
 from rdflib import *
 
-import json
 from io import BytesIO
-from flask_login import login_user
 
-class UploadTest(WhyisTestCase):
+from .api_test_case import ApiTestCase
+
+
+class UploadTest(ApiTestCase):
     
     def test_plain_text_upload(self):
         self.login(*self.create_user("user@example.com","password"))

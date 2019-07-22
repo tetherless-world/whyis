@@ -188,12 +188,10 @@ class MappedResource(Resource):
 #    def __str__(self):
 #        return type(self).__name__ + ' ' + super().__str__() + ' a ' + self.rdf_type
 
-    
-dc = Namespace("http://purl.org/dc/terms/")
-auth = Namespace("http://vocab.rpi.edu/auth/")
-foaf = Namespace("http://xmlns.com/foaf/0.1/")
-prov  = Namespace("http://www.w3.org/ns/prov#")
-            
+
+from namespace import dc, auth, foaf, prov
+
+
 class User(MappedResource, UserMixin):
     rdf_type = prov.Agent
 

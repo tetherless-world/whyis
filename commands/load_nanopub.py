@@ -8,7 +8,7 @@ import rdflib
 from nanopub import Nanopublication
 import tempfile
 
-np = rdflib.Namespace("http://www.nanopub.org/nschema#")
+from namespace import np
 
 
 class LoadNanopub(Command):

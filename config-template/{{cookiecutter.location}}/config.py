@@ -12,12 +12,12 @@ import agents.nlp as nlp
 import agents.hermit as hermit
 import rdflib
 from datetime import datetime
+from namespace import skos
 
 # Set to be custom for your project
 LOD_PREFIX = '{{cookiecutter.linked_data_prefix}}'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
 
-skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
 
 from {{cookiecutter.project_slug}}.agent import *
 

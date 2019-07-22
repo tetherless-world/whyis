@@ -5,6 +5,7 @@ from .deductor import Deductor
 from .email_notifier import EmailNotifier
 from .global_change_service import GlobalChangeService
 from .importer_crawler import ImporterCrawler
+from namespace import *
 from .ontology_importer import OntologyImporter
 from .service import Service
 from .setl_maker import SETLMaker

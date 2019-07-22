@@ -1,14 +1,15 @@
-#from __future__ import print_function
-#from future import standard_library
-#standard_library.install_aliases()
+# from __future__ import print_function
+# from future import standard_library
+# standard_library.install_aliases()
 import urllib.request, urllib.error, urllib.parse
 from flask import Flask, g
 from flask_testing import TestCase
 from flask_login import login_user, current_user, current_app
 import requests
 
-class WhyisTestCase(TestCase):
-    
+
+class IntegrationTestCase(TestCase):
+
     def create_app(self):
         from main import app_factory
         from depot.manager import DepotManager
@@ -40,7 +41,8 @@ class WhyisTestCase(TestCase):
         return email, password
 
     def login(self, email, password):
-        return self.client.post('/login', data={ 'email': email, 'password': password, 'remember':'y' }, follow_redirects=True)
+        return self.client.post('/login', data={'email': email, 'password': password, 'remember': 'y'},
+                                follow_redirects=True)
 
     def run_agent(self, agent, nanopublication=None):
         app = self.app
