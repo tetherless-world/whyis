@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
-import requests
 import importlib
 
 import os
-import sys, collections
+import sys
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
+from flask import render_template, g, redirect, url_for, request, flash, Response, \
+    send_from_directory, make_response, abort
 from functools import lru_cache
-
-from flask.views import MethodView
 
 import jinja2
 
@@ -16,36 +14,26 @@ from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
 import pytz
-from dataurl import DataURLStorage
 
 from werkzeug.exceptions import Unauthorized
-from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-
-from flask_admin import Admin, BaseView, expose
 
 from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 
 import rdflib
 from flask_security import Security, \
-    UserMixin, RoleMixin, login_required
+    login_required
 from flask_security.core import current_user
 from flask_security.forms import RegisterForm
-from flask_security.utils import encrypt_password
-from werkzeug.datastructures import ImmutableList
-from flask_wtf import Form, RecaptchaField
-from wtforms import TextField, TextAreaField, StringField, validators
+from flask_wtf import Form
+from wtforms import TextField, StringField, validators
 import sadi
 import json
 import sadi.mimeparse
 from slugify import slugify
 
-import werkzeug.utils
-
 from urllib.parse import urlencode
-
-from flask_mail import Mail, Message
 
 from celery import Celery
 from celery.schedules import crontab
@@ -58,11 +46,7 @@ from datetime import datetime
 import markdown
 
 import rdflib.plugin
-from rdflib.store import Store
-from rdflib.parser import Parser
-from rdflib.serializer import Serializer
-from rdflib.query import ResultParser, ResultSerializer, Processor, Result, UpdateProcessor
-from rdflib.exceptions import Error
+from rdflib.query import Processor, Result, UpdateProcessor
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
 rdflib.plugin.register('sparql', Processor,
@@ -368,7 +352,6 @@ class App(Empty):
         self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
-        #self.mail = Mail(self)
 
         self.file_depot = DepotManager.get('files')
         if self.file_depot is None:
@@ -1007,11 +990,6 @@ construct {
             resp = make_response(data, code)
             resp.headers.extend(headers or {})
             return resp
-
-        #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
-        #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
-        #self.admin.add_view(ld.ModelView(self.role_api, default_sort=RDFS.label))
-        #self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
 
         app = self
 
