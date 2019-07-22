@@ -9,12 +9,7 @@ import nanopub
 from math import log10
 import collections
 
-sioc_types = Namespace("http://rdfs.org/sioc/types#")
-sioc = Namespace("http://rdfs.org/sioc/ns#")
-sio = Namespace("http://semanticscience.org/resource/")
-dc = Namespace("http://purl.org/dc/terms/")
-prov = autonomic.prov
-whyis = autonomic.whyis
+from namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class HTML2Text(autonomic.UpdateChangeService):
     activity_class = whyis.TextFromHTML
