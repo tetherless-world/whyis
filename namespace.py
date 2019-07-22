@@ -1,7 +1,6 @@
 import rdflib
 
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
-whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 np = rdflib.Namespace("http://www.nanopub.org/nschema#")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 dc = rdflib.Namespace("http://purl.org/dc/terms/")

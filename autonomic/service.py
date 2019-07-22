@@ -19,7 +19,7 @@ import tempfile
 
 from depot.io.interfaces import StoredFile
 
-from .namespaces import *
+from namespace import *
 
 
 class Service(sadi.Service):
