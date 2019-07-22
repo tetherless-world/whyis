@@ -71,7 +71,8 @@ class Empty(Flask):
             self.logger.addHandler(log_file)
             self.logger.info("Logger started")
         except:
-            print("Could not configure logger, using defaults.")
+            pass
+            # print("Could not configure logger, using defaults.")
             
     def configure_error_handlers(app):
         @app.errorhandler(403)
