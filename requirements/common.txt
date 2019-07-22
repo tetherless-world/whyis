@@ -20,9 +20,11 @@ Cython==0.29.10
 fabric==2.4.0
 filedepot==0.6.0
 Flask==1.0.3
-Flask-BabelEx==0.9.3
+#Flask-Admin==1.5.3
+#Flask-BabelEx==0.9.3
 Flask-Login==0.3.2
-Flask-Principal==0.4.0
+#Flask-Mail==0.9.1
+#Flask-Principal==0.4.0
 Flask-Script==2.0.6
 Flask-Security==3.0.0
 Flask-WTF==0.14.2
