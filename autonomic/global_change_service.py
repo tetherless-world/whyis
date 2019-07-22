@@ -4,6 +4,8 @@ import sadi
 import rdflib
 import setlr
 from datetime import datetime
+
+from autonomic.service import Service
 from nanopub import Nanopublication
 from datastore import create_id
 import flask
