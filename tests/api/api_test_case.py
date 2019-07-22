@@ -7,7 +7,7 @@ from flask_testing import TestCase
 from flask_login import login_user, current_user, current_app
 import requests
 
-from ..whyis_test_case import WhyisTestCase
+from whyis_test_case import WhyisTestCase
 
 
 class ApiTestCase(WhyisTestCase):
