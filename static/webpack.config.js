@@ -1,6 +1,6 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = (env, argv) => ({
     devtool: argv.mode === "production" ? 'hidden-source-map' : 'cheap-module-eval-source-map',
@@ -11,10 +11,16 @@ module.exports = (env, argv) => ({
         "jquery": "jQuery"
     },
     module: {
-        rules: [{
+        rules: [
+            {
             test: /(\.css$)/,
             use: [MiniCssExtractPlugin.loader, "css-loader"]
-        }]
+            },
+            {
+                test: /\.vue$/,
+                loader: 'vue-loader'
+            }
+        ]
     },
     name: "whyis",
     output: {
@@ -25,13 +31,14 @@ module.exports = (env, argv) => ({
     plugins: [
         new MiniCssExtractPlugin({
             filename: "css/whyis_vue_bundle.css"
-        })
+        }),
+        new VueLoaderPlugin()
     ],
     resolve: {
         alias: {
             'vue$': 'vue/dist/vue.esm.js' // Include the runtime template compiler
         },
-        extensions: ['.js'],
+        extensions: ['.js', '.vue'],
         modules: [path.join(__dirname, 'js', 'whyis_vue'), path.join(__dirname, 'node_modules')]
     },
     resolveLoader: {
