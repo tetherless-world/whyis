@@ -1,17 +1,11 @@
-#from __future__ import print_function
-#from future import standard_library
-#standard_library.install_aliases()
-from testcase import WhyisTestCase
-
-from base64 import b64encode
-
 from rdflib import *
 
 import json
-from io import StringIO
-from flask_login import login_user
 
-class NanopubTest(WhyisTestCase):
+from .api_test_case import ApiTestCase
+
+
+class NanopubTest(ApiTestCase):
 
     turtle  = '''
 <http://example.com/janedoe> <http://schema.org/jobTitle> "Professor";
