@@ -12,10 +12,10 @@ from io import StringIO
 import nanopub
 
 import autonomic
-from .unit_test_case import UnitTestCase
+from .agent_unit_test_case import AgentUnitTestCase
 
 
-class OntologyImportAgentTestCase(UnitTestCase):
+class OntologyImportAgentTestCase(AgentUnitTestCase):
 
     def test_foaf_import(self):
         np = nanopub.Nanopublication()
