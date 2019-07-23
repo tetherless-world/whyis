@@ -29,6 +29,18 @@ class Test(Command):
         ]
 
     def run(self, verbosity, failfast, tests, ci):
+        if ci:
+            # Start coverage before importing, so the definitions are marked as executed
+            import coverage
+            cov = coverage.coverage(
+                branch=True,
+                omit=[
+                    'templates/*',
+                    'venv/*'
+                ]
+            )
+            cov.start()
+
         import sys
         import glob
         import unittest
@@ -73,13 +85,24 @@ class Test(Command):
 
         if ci:
             import xmlrunner
+
             test_results_dir_path = os.path.join("test-results", "py")
             if not os.path.isdir(test_results_dir_path):
                 os.makedirs(test_results_dir_path)
+
             with open(os.path.join(test_results_dir_path, "results.xml"), "wb") as output:
-                xmlrunner.XMLTestRunner(output=output,
-                                        verbosity=verbosity, failfast=failfast).run(test_suite)
-                print("Wrote test results to", os.path.abspath(test_results_dir_path))
+                result = \
+                    xmlrunner.XMLTestRunner(output=output,
+                                            verbosity=verbosity, failfast=failfast).run(test_suite)
+                print("wrote test results to", os.path.abspath(test_results_dir_path))
+
+                if result.wasSuccessful():
+                    cov.stop()
+                    cov.save()
+                    coverage_html_report_dir_path = os.path.join(test_results_dir_path, "htmlcov")
+                    cov.html_report(directory=coverage_html_report_dir_path)
+                    cov.erase()
+                    print("wrote coverage report HTML to", coverage_html_report_dir_path)
         else:
             unittest.TextTestRunner(
                 verbosity=verbosity, failfast=failfast).run(test_suite)
