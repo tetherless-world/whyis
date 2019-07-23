@@ -72,6 +72,7 @@ disable=bad-continuation,
 	too-few-public-methods,
         too-many-arguments,
         trailing-whitespace,
+	unnecessary-pass,
         unused-argument,
         unused-wildcard-import,
         wrong-import-order

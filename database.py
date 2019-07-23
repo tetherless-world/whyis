@@ -24,7 +24,9 @@ def node_to_sparql(node):
 #        return _node_from_result(node)
 
 class WhyisSPARQLStore(SPARQLStore):
-    def _inject_prefixes(self, query, extra_bindings):
+    
+    @staticmethod
+    def _inject_prefixes(query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
             return query
@@ -35,7 +37,15 @@ class WhyisSPARQLStore(SPARQLStore):
         ])
 
 class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
-    def _inject_prefixes(self, query, extra_bindings):
+
+    # To resolve linter warning
+    # "attribute defined outside  __init__"
+    def __init__(self, *args, **kwargs):
+        self.publish = None
+        SPARQLUpdateStore.__init__(self, *args, **kwargs)
+
+    @staticmethod
+    def _inject_prefixes(query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
             return query
@@ -96,7 +106,8 @@ def engine_from_config(config, prefix):
         def publish(data, *graphs):
             s = requests.session()
             s.keep_alive = False
-            # result =
+            
+            # result unused
             s.post(store.query_endpoint,
                    data=data,
                    # params={"context-uri":graph.identifier},

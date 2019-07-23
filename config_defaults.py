@@ -2,12 +2,10 @@
 
 import importer
 import autonomic
-import rdflib
 import logging
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from builtins import str
-from datetime import timedelta
 
 project_name = "whyis"
 
@@ -15,7 +13,7 @@ project_name = "whyis"
 LOD_PREFIX = 'http://localhost:5000'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
 
-from namespace import skos
+# from namespace import skos
 
 # base config class; extend it to your needs.
 Config = dict(

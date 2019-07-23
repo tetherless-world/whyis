@@ -3,28 +3,18 @@
 #standard_library.install_aliases()
 #from builtins import str
 #from builtins import range
-import sadi
 import rdflib
-import setlr
-import re
 from datetime import datetime
-import time
 from nanopub import Nanopublication
-import flask
-from flask import render_template
 import logging
-import database
-import tempfile
-import urllib.request, urllib.error, urllib.parse
-import csv
 import sys
 import pandas as pd
-import configparser as configparser
+import configparser
 import hashlib
 
 import autonomic
 
-from namespace import whyis, np, prov, dc, sio, setl, pv, skos
+from namespace import whyis, prov, sio
 
 class Interpreter(autonomic.UpdateChangeService):
     kb = ":"
@@ -86,7 +76,7 @@ class Interpreter(autonomic.UpdateChangeService):
                     dm_file = pd.read_csv(dm_fn, dtype=object)
                     try: # Populate virtual and explicit entry lists
                         for row in dm_file.itertuples() :
-                            if (pd.isnull(row.Column)) :
+                            if pd.isnull(row.Column) :
                                 logging.exception("Error: The SDD must have a column named 'Column'")
                                 sys.exit(1)
                             if row.Column.startswith("??") :
@@ -120,11 +110,11 @@ class Interpreter(autonomic.UpdateChangeService):
                                 inner_tuple_list=[]
                             inner_tuple = {}
                             inner_tuple["Code"]=row.Code
-                            if(pd.notnull(row.Label)):
+                            if pd.notnull(row.Label):
                                 inner_tuple["Label"]=row.Label
-                            if(pd.notnull(row.Class)) :
+                            if pd.notnull(row.Class):
                                 inner_tuple["Class"]=row.Class
-                            if ("Resource" in row and pd.notnull(row.Resource)) :
+                            if "Resource" in row and pd.notnull(row.Resource):
                                 inner_tuple["Resource"]=row.Resource
                             inner_tuple_list.append(inner_tuple)
                             self.cb_tuple[row.Column]=inner_tuple_list
@@ -150,19 +140,19 @@ class Interpreter(autonomic.UpdateChangeService):
                     try :
                         inner_tuple_list = []
                         for row in timeline_file.itertuples():
-                            if (pd.notnull(row.Name) and row.Name not in self.timeline_tuple) :
+                            if pd.notnull(row.Name) and row.Name not in self.timeline_tuple :
                                 inner_tuple_list=[]
                             inner_tuple = {}
                             inner_tuple["Type"]=row.Type
-                            if(pd.notnull(row.Label)):
+                            if pd.notnull(row.Label):
                                 inner_tuple["Label"]=row.Label
-                            if(pd.notnull(row.Start)) :
+                            if pd.notnull(row.Start):
                                 inner_tuple["Start"]=row.Start
-                            if(pd.notnull(row.End)) :
+                            if pd.notnull(row.End):
                                 inner_tuple["End"]=row.End
-                            if(pd.notnull(row.Unit)) :
+                            if pd.notnull(row.Unit):
                                 inner_tuple["Unit"]=row.Unit
-                            if(pd.notnull(row.inRelationTo)) :
+                            if pd.notnull(row.inRelationTo):
                                 inner_tuple["inRelationTo"]=row.inRelationTo
                             inner_tuple_list.append(inner_tuple)
                             self.timeline_tuple[row.Name]=inner_tuple_list
@@ -214,7 +204,7 @@ class Interpreter(autonomic.UpdateChangeService):
         self.writeExplicitEntryNano(npub)
         self.interpretData(npub)
 
-    def parseString(self,input_string, delim) :
+    def parseString(self,input_string, delim):
         my_list = input_string.split(delim)
         for i in range(0,len(my_list)) :
             my_list[i] = my_list[i].strip()
@@ -223,52 +213,49 @@ class Interpreter(autonomic.UpdateChangeService):
     def rdflibConverter(self,input_word) :
         if "http" in input_word :
             return rdflib.term.URIRef(input_word)
-        elif ':' in input_word :
+
+        if ':' in input_word :
             word_list = input_word.split(":")
             term = self.prefixes[word_list[0]] + word_list[1]
             return rdflib.term.URIRef(term)
-        else :
-            return rdflib.Literal(input_word, datatype=rdflib.XSD.string)
+        
+        return rdflib.Literal(input_word, datatype=rdflib.XSD.string)
 
     def codeMapper(self,input_word) :
         unitVal = input_word
         for unit_label in self.unit_label_list :
-            if (unit_label == input_word) :
+            if unit_label == input_word:
                 unit_index = self.unit_label_list.index(unit_label)
                 unitVal = self.unit_uri_list[unit_index]
-        for unit_code in self.unit_code_list :
-            if (unit_code == input_word) :
+        for unit_code in self.unit_code_list:
+            if unit_code == input_word:
                 unit_index = self.unit_code_list.index(unit_code)
                 unitVal = self.unit_uri_list[unit_index]
         return unitVal    
 
     def convertVirtualToKGEntry(self,*args) :
-        if (args[0][:2] == "??") :
-            if (self.studyRef is not None ) :
-                if (args[0]==self.studyRef) :
+        if args[0][:2] == "??":
+            if self.studyRef is not None :
+                if args[0]==self.studyRef:
                     return self.prefixes[self.kb] + args[0][2:]
-            if (len(args) == 2) :
+            if len(args) == 2:
                 return self.prefixes[self.kb] + args[0][2:] + "-" + args[1]
-            else : 
-                return self.prefixes[self.kb] + args[0][2:]
-        elif (':' not in args[0]) :
+            return self.prefixes[self.kb] + args[0][2:]
+        if ':' not in args[0]:
             # Check for entry in column list
             for item in self.explicit_entry_list :
                 if args[0] == item.Column :
-                    if (len(args) == 2) :
+                    if len(args) == 2:
                         return self.prefixes[self.kb] + args[0].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-") + "-" + args[1]
-                    else :
-                        return self.prefixes[self.kb] + args[0].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")
+                    return self.prefixes[self.kb] + args[0].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")
             return '"' + args[0] + "\"^^xsd:string"
-        else :
-            return args[0]
+        return args[0]
 
     def checkVirtual(self,input_word) :
         try:
-            if (input_word[:2] == "??") :
+            if input_word[:2] == "??":
                 return True
-            else :
-                return False
+            return False
         except Exception as e :
             logging.exception("Something went wrong in Interpreter.checkVirtual(): ")
             if hasattr(e, 'message'):
@@ -300,7 +287,7 @@ class Interpreter(autonomic.UpdateChangeService):
                     nanopub.assertion.add((term,rdflib.RDFS.subClassOf,self.rdflibConverter(self.codeMapper(item.Entity))))
                 virtual_tuple["Column"]=item.Column
                 virtual_tuple["Entity"]=self.codeMapper(item.Entity)
-                if (virtual_tuple["Entity"] == "hasco:Study") :
+                if virtual_tuple["Entity"] == "hasco:Study":
                     self.studyRef = item.Column
                     virtual_tuple["Study"] = item.Column
             elif (pd.isnull(item.Entity)) and (pd.notnull(item.Attribute)) :
@@ -311,13 +298,13 @@ class Interpreter(autonomic.UpdateChangeService):
                 else :
                     nanopub.assertion.add((term,rdflib.RDFS.subClassOf,self.rdflibConverter(self.codeMapper(item.Attribute))))
                 virtual_tuple["Column"]=item.Column
-                virtual_tuple["Attribute"]=codeMapper(item.Attribute)
+                virtual_tuple["Attribute"]=self.codeMapper(item.Attribute)
             else :
                 logging.warning("Warning: Virtual entry not assigned an Entity or Attribute value, or was assigned both.")
                 virtual_tuple["Column"]=item.Column
             
             # If there is a value in the inRelationTo column ...
-            if (pd.notnull(item.inRelationTo)) :
+            if pd.notnull(item.inRelationTo):
                 virtual_tuple["inRelationTo"]=item.inRelationTo
                 # If there is a value in the Relation column but not the Role column ...
                 if (pd.notnull(item.Relation)) and (pd.isnull(item.Role)) :
@@ -359,7 +346,7 @@ class Interpreter(autonomic.UpdateChangeService):
             for key in self.timeline_tuple :
                 tl_term = self.rdflibConverter(self.convertVirtualToKGEntry(key))
                 nanopub.assertion.add((tl_term,rdflib.RDF.type,rdflib.OWL.Class))
-                for timeEntry in timeline_tuple[key] :
+                for timeEntry in self.timeline_tuple[key] :
                     if 'Type' in timeEntry :
                         nanopub.assertion.add((tl_term,rdflib.RDFS.subClassOf,self.rdflibConverter(timeEntry['Type'])))
                     if 'Label' in timeEntry :
@@ -385,7 +372,7 @@ class Interpreter(autonomic.UpdateChangeService):
             explicit_entry_tuple = {}
             term = rdflib.term.URIRef(self.prefixes[self.kb] + str(item.Column.replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")))
             nanopub.assertion.add((term,rdflib.RDF.type,rdflib.OWL.Class))
-            if (pd.notnull(item.Attribute)) :
+            if pd.notnull(item.Attribute):
                 if ',' in item.Attribute :
                     attributes = self.parseString(item.Attribute,',')
                     for attribute in attributes :
@@ -394,7 +381,7 @@ class Interpreter(autonomic.UpdateChangeService):
                     nanopub.assertion.add((term,rdflib.RDFS.subClassOf,self.rdflibConverter(self.codeMapper(item.Attribute))))
                 explicit_entry_tuple["Column"]=item.Column
                 explicit_entry_tuple["Attribute"]=self.codeMapper(item.Attribute)
-            elif (pd.notnull(item.Entity)) :
+            elif pd.notnull(item.Entity) :
                 if ',' in item.Entity :
                     entities = self.parseString(item.Entity,',')
                     for entity in entities :
@@ -408,18 +395,18 @@ class Interpreter(autonomic.UpdateChangeService):
                 explicit_entry_tuple["Column"]=item.Column
                 explicit_entry_tuple["Attribute"]=self.codeMapper("sio:Attribute")
                 logging.warning("Warning: Explicit entry not assigned an Attribute or Entity value.")
-            if (pd.notnull(item.attributeOf)) :
+            if pd.notnull(item.attributeOf) :
                 nanopub.assertion.add((term,sio.isAttributeOf,self.rdflibConverter(self.convertVirtualToKGEntry(item.attributeOf))))
                 explicit_entry_tuple["isAttributeOf"]=self.convertVirtualToKGEntry(item.attributeOf)
             else :
                 logging.warning("Warning: Explicit entry not assigned an isAttributeOf value.")
-            if (pd.notnull(item.Unit)) :
+            if pd.notnull(item.Unit):
                 nanopub.assertion.add((term,sio.hasUnit,self.rdflibConverter(self.convertVirtualToKGEntry(self.codeMapper(item.Unit)))))
                 explicit_entry_tuple["Unit"] = self.convertVirtualToKGEntry(self.codeMapper(item.Unit))
-            if (pd.notnull(item.Time)) :
+            if pd.notnull(item.Time):
                 nanopub.assertion.add((term,sio.existsAt,self.rdflibConverter(self.convertVirtualToKGEntry(item.Time))))
                 explicit_entry_tuple["Time"]=item.Time
-            if (pd.notnull(item.inRelationTo)) :
+            if pd.notnull(item.inRelationTo):
                 explicit_entry_tuple["inRelationTo"]=item.inRelationTo
                 # If there is a value in the Relation column but not the Role column ...
                 if (pd.notnull(item.Relation)) and (pd.isnull(item.Role)) :
@@ -493,7 +480,7 @@ class Interpreter(autonomic.UpdateChangeService):
                             if self.checkVirtual(timeEntry['inRelationTo']) and timeEntry['inRelationTo'] not in vref_list :
                                 vref_list.append(timeEntry['inRelationTo'])
             for v_tuple in self.virtual_entry_tuples :
-                if (v_tuple["Column"] == v_column) :
+                if v_tuple["Column"] == v_column:
                     if "Study" in v_tuple :
                         continue
                     else :
@@ -501,14 +488,14 @@ class Interpreter(autonomic.UpdateChangeService):
                         nanopub.assertion.add((v_term,rdflib.RDF.type,rdflib.term.URIRef(self.prefixes[self.kb] + str(v_tuple["Column"][2:]))))
                         if "Entity" in v_tuple :
                             if ',' in v_tuple["Entity"] :
-                                entities = parseString(v_tuple["Entity"],',')
+                                entities = self.parseString(v_tuple["Entity"],',')
                                 for entity in entities :
                                     nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(entity))))
                             else :
                                 nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(v_tuple["Entity"]))))
                         if "Attribute" in v_tuple :
                             if ',' in v_tuple["Attribute"] :
-                                attributes = parseString(v_tuple["Attribute"],',')
+                                attributes = self.parseString(v_tuple["Attribute"],',')
                                 for attribute in attributes :
                                     nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(attribute))))
                             else :
@@ -529,7 +516,7 @@ class Interpreter(autonomic.UpdateChangeService):
                         
                         if "wasGeneratedBy" in v_tuple : 
                             if ',' in v_tuple["wasGeneratedBy"] :
-                                generatedByTerms = parseString(v_tuple["wasGeneratedBy"],',')
+                                generatedByTerms = self.parseString(v_tuple["wasGeneratedBy"],',')
                                 for generatedByTerm in generatedByTerms :
                                     nanopub.provenance.add((term,prov.wasGeneratedBy, self.rdflibConverter(self.convertVirtualToKGEntry(generatedByTerm,index))))
                                     if self.checkVirtual(generatedByTerm) and generatedByTerm not in vref_list :
@@ -540,7 +527,7 @@ class Interpreter(autonomic.UpdateChangeService):
                                     vref_list.append(v_tuple["wasGeneratedBy"]);
                         if "wasDerivedFrom" in v_tuple : 
                             if ',' in v_tuple["wasDerivedFrom"] :
-                                derivedFromTerms = parseString(v_tuple["wasDerivedFrom"],',')
+                                derivedFromTerms = self.parseString(v_tuple["wasDerivedFrom"],',')
                                 for derivedFromTerm in derivedFromTerms :
                                     nanopub.provenance.add((term,prov.wasDerivedFrom, self.rdflibConverter(self.convertVirtualToKGEntry(derivedFromTerm,index))))
                                     if self.checkVirtual(derivedFromTerm) and derivedFromTerm not in vref_list :
@@ -601,14 +588,14 @@ class Interpreter(autonomic.UpdateChangeService):
                                     print(term)
                                     if "Attribute" in a_tuple :
                                         if ',' in a_tuple["Attribute"] :
-                                            attributes = parseString(a_tuple["Attribute"],',')
+                                            attributes = self.parseString(a_tuple["Attribute"],',')
                                             for attribute in attributes :
                                                 nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(attribute))))
                                         else :
                                             nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(a_tuple["Attribute"]))))
                                     if "Entity" in a_tuple :
                                         if ',' in a_tuple["Entity"] :
-                                            entities = parseString(a_tuple["Entity"],',')
+                                            entities = self.parseString(a_tuple["Entity"],',')
                                             for entity in entities :
                                                 nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(entity))))
                                         else :
@@ -653,20 +640,20 @@ class Interpreter(autonomic.UpdateChangeService):
                                             if a_tuple["Column"] in self.cb_tuple :
                                                 for tuple_row in self.cb_tuple[a_tuple["Column"]] :
                                                     if ("Code" in tuple_row) and (str(tuple_row['Code']) == str(row[col_headers.index(a_tuple["Column"])+1]) ):
-                                                        if ("Class" in tuple_row) and (tuple_row['Class'] is not "") :
+                                                        if ("Class" in tuple_row) and (tuple_row['Class'] != "") :
                                                             if ',' in tuple_row['Class'] :
-                                                                classTerms = parseString(tuple_row['Class'],',')
+                                                                classTerms = self.parseString(tuple_row['Class'],',')
                                                                 for classTerm in classTerms :
                                                                     nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(classTerm))))
                                                             else :
                                                                 nanopub.assertion.add((term,rdflib.RDF.type,self.rdflibConverter(self.codeMapper(tuple_row['Class']))))
-                                                        if ("Resource" in tuple_row) and (tuple_row['Resource'] is not "") :
+                                                        if ("Resource" in tuple_row) and (tuple_row['Resource'] != "") :
                                                             if ',' in tuple_row['Resource'] :
-                                                                resourceTerms = parseString(tuple_row['Resource'],',')
+                                                                resourceTerms = self.parseString(tuple_row['Resource'],',')
                                                                 for resourceTerm in resourceTerms :
-                                                                    nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(convertVirtualToKGEntry(self.codeMapper(resourceTerm)))))
+                                                                    nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(self.convertVirtualToKGEntry(self.codeMapper(resourceTerm)))))
                                                             else :
-                                                                nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(convertVirtualToKGEntry(self.codeMapper(tuple_row['Resource'])))))
+                                                                nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(self.convertVirtualToKGEntry(self.codeMapper(tuple_row['Resource'])))))
                                                         if ("Label" in tuple_row) and (tuple_row['Label'] is not "") :
                                                             nanopub.assertion.add((term,rdflib.RDFS.label,self.rdflibConverter(tuple_row["Label"])))
                                         try :
