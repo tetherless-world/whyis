@@ -913,8 +913,8 @@ construct {
             if 'as' in request.args:
                 types = [URIRef(request.args['as']), 0]
 
-            types.extend([(x, 1) for x in self.vocab[resource.identifier : NS.RDF.type]])
-            if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
+            types.extend((x, 1) for x in self.vocab[resource.identifier : NS.RDF.type])
+            if not types: # KG types cannot override vocab types. This should keep views stable where critical.
                 types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])

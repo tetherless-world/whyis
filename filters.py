@@ -80,7 +80,7 @@ def configure(app):
 
     @app.template_filter('query')
     def query_filter(query, graph=app.db, prefixes=None, values=None):
-        if not prefixes: # default arguments are evaluated once, ever
+        if prefixes is None: # default arguments are evaluated once, ever
             prefixes = {}
         
         namespaces = dict(app.NS.prefixes)
@@ -105,7 +105,7 @@ def configure(app):
                 return rdflib.BNode(x.replace('bnode:',''))
             return x
         namespaces = dict(app.NS.prefixes)
-        namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
+        namespaces.update({ key: rdflib.URIRef(value) for key, value in prefixes.items() })
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
@@ -157,9 +157,7 @@ def configure(app):
         if not kwargs:
             kwargs = None
 
-        # status and headers are unused
-        result = app.render_view(entity, view=view, args=kwargs)[0]
-        return result
+        return app.render_view(entity, view=view, args=kwargs)[0]
         
     @app.template_filter('probquery')
     def probquery(select):

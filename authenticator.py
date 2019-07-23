@@ -49,7 +49,7 @@ default_jwt_mapping = {
         
 class JWTAuthenticator:
     def __init__(self,  key, cookie="token", algorithm='HS256', mapping=None):
-        if not mapping:
+        if mapping is None:
             mapping = default_jwt_mapping
         
         import jwt
