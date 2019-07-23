@@ -22,7 +22,8 @@ from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 
 import rdflib
-from rdflib import Namespace
+from rdflib import Literal, Graph, Namespace, URIRef
+from rdflib.graph import ConjunctiveGraph
 from rdflib.query import Processor, Result, UpdateProcessor
 
 from flask_security import Security, login_required
@@ -44,6 +45,8 @@ from celery.task.control import inspect
 import database
 
 from datetime import datetime
+
+from datastore import WhyisUserDatastore
 
 import markdown
 import search
@@ -84,7 +87,7 @@ class SearchForm(Form):
     search_query = StringField('search_query', [validators.DataRequired()])
 
 def to_json(result):
-    return json.dumps([dict([(key, value.value if isinstance(value, Literal) else value) for key, value in list(x.items())]) for x in result.bindings])
+    return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
 
 def conditional_login_required(func):
     from flask import current_app
@@ -92,11 +95,11 @@ def conditional_login_required(func):
     def decorated_view(*args, **kwargs):
         if request.method in ['OPTIONS']:# EXEMPT_METHODS:
             return func(*args, **kwargs)
-        elif current_app.login_manager._login_disabled:
+        if current_app.login_manager._login_disabled:
             return func(*args, **kwargs)
-        elif 'DEFAULT_ANONYMOUS_READ' in current_app.config and current_app.config['DEFAULT_ANONYMOUS_READ']:
+        if 'DEFAULT_ANONYMOUS_READ' in current_app.config and current_app.config['DEFAULT_ANONYMOUS_READ']:
             return func(*args, **kwargs)
-        elif not current_user.is_authenticated:
+        if not current_user.is_authenticated:
             return current_app.login_manager.unauthorized()
         return func(*args, **kwargs)
     return decorated_view
@@ -120,8 +123,8 @@ class App(Empty):
         
         if 'WHYIS_TEMPLATE_DIR' in self.config and app.config['WHYIS_TEMPLATE_DIR'] is not None:
             my_loader = jinja2.ChoiceLoader(
-                [jinja2.FileSystemLoader(p) for p in self.config['WHYIS_TEMPLATE_DIR']] + 
-                [app.jinja_loader]
+                [jinja2.FileSystemLoader(p) for p in self.config['WHYIS_TEMPLATE_DIR']] 
+                + [app.jinja_loader]
             )
             app.jinja_loader = my_loader
         
@@ -166,7 +169,9 @@ class App(Empty):
             def do_task(uri):
                 print("Running task", task['name'], 'on', uri)
                 resource = app.get_resource(uri)
-                result = task['service'].process_graph(resource.graph)
+
+                # result never used
+                task['service'].process_graph(resource.graph)
 
             task['service'].app = app
             task['find_instances'] = find_instances
@@ -233,7 +238,7 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         #print "checking", name, nanopub_uri, service.get_query()
-                        if len(service.getInstances(nanopub_graph)) > 0:
+                        if service.getInstances(nanopub_graph):
                             print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in list(self.config['inferencers'].items()):
@@ -285,7 +290,7 @@ class App(Empty):
                 try:
                     m = importlib.import_module(imp)
                     self.template_imports[name] = m
-                except Exception as e:
+                except Exception:
                     print("Error importing module %s into template variable %s." % (imp, name))
                     raise
         
@@ -400,7 +405,8 @@ construct {
                     if len(quad) == 3:
                         s,p,o = quad
                     else:
-                        s,p,o,c = quad
+                        # Last term is never used
+                        s,p,o,_ = quad
                     result.add((s,p,o))
 #                except:
 #                    pass
@@ -666,7 +672,7 @@ construct {
             query = query % ' '.join([graph.n3() for graph in graphs])
             #print query
             quads = self.db.store.query(query, initNs=self.NS.prefixes)
-            result = Dataset()
+            result = rdflib.Dataset()
             result.addN(quads)
             return result
 
@@ -907,9 +913,9 @@ construct {
             if 'as' in request.args:
                 types = [URIRef(request.args['as']), 0]
 
-            types.extend([(x, 1) for x in self.vocab[resource.identifier : RDF.type]])
+            types.extend([(x, 1) for x in self.vocab[resource.identifier : NS.RDF.type]])
             if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
-                types.extend([(x.identifier, 1) for x in resource[RDF.type]])
+                types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
@@ -1067,7 +1073,7 @@ construct {
                 #print 'Content type:', content_type, resource.identifier
                 html = None
                 if content_type in ["text/html", "application/xhtml+xml"]:
-                    html = Literal(text.value, datatype=RDF.HTML)
+                    html = Literal(text.value, datatype=NS.RDF.HTML)
                 if content_type == 'text/markdown':
                     #print "Aha, markdown!"
                     #print text.value
@@ -1078,7 +1084,7 @@ construct {
                     if about is not None:
                         attributes.append('resource="%s"' % about)
                     html = '<div %s>%s</div>' % (' '.join(attributes), html)
-                    html = Literal(html, datatype=RDF.HTML)
+                    html = Literal(html, datatype=NS.RDF.HTML)
                     text = html
                     content_type = "text/html"
                 #print resource.identifier, content_type
