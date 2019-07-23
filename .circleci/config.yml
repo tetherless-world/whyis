@@ -20,6 +20,8 @@ jobs:
       - run:
           name: Run tests
           command: .circleci/test.sh tetherlessworld/whyis:latest
+      - store_artifacts:
+          path: test-results/py/htmlcov
       - store_test_results:
           path: test-results
       - run:
