@@ -184,12 +184,10 @@ class Interpreter(autonomic.UpdateChangeService):
             if self.config.has_option('Source Files','data_file') :
                 self.data_fn = self.config.get('Source Files','data_file')
 
-    @staticmethod
-    def getInputClass():
+    def getInputClass(self):
         return whyis.SemanticDataDictionary
 
-    @staticmethod
-    def getOutputClass():
+    def getOutputClass(self):
         return whyis.SemanticDataDictionaryInterpretation
 
     def get_query(self):
@@ -206,8 +204,7 @@ class Interpreter(autonomic.UpdateChangeService):
         self.writeExplicitEntryNano(npub)
         self.interpretData(npub)
 
-    @staticmethod
-    def parseString(input_string, delim):
+    def parseString(self, input_string, delim):
         my_list = input_string.split(delim)
         my_list = [element.strip() for element in my_list]
         return my_list
@@ -253,8 +250,7 @@ class Interpreter(autonomic.UpdateChangeService):
             return '"' + args[0] + "\"^^xsd:string"
         return args[0]
 
-    @staticmethod
-    def checkVirtual(input_word) :
+    def checkVirtual(self, input_word) :
         try:
             if input_word[:2] == "??":
                 return True
@@ -267,8 +263,7 @@ class Interpreter(autonomic.UpdateChangeService):
                 logging.exception(e)
             sys.exit(1)
 
-    @staticmethod
-    def isfloat(value):
+    def isfloat(self, value):
         try:
             float(value)
             return True

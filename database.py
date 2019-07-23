@@ -25,8 +25,7 @@ def node_to_sparql(node):
 
 class WhyisSPARQLStore(SPARQLStore):
     
-    @staticmethod
-    def _inject_prefixes(query, extra_bindings):
+    def _inject_prefixes(self, query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
             return query
@@ -44,8 +43,7 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
         self.publish = None
         SPARQLUpdateStore.__init__(self, *args, **kwargs)
 
-    @staticmethod
-    def _inject_prefixes(query, extra_bindings):
+    def _inject_prefixes(self, query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
             return query

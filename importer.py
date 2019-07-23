@@ -32,8 +32,7 @@ class Importer:
 
     import_once=False
 
-    @staticmethod
-    def last_modified(entity_name, db, nanopubs):
+    def last_modified(self, entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.

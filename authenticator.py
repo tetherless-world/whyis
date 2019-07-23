@@ -9,13 +9,11 @@ class InvitedAnonymousUser(AnonymousUserMixin):
     def __init__(self):
         self.roles = ImmutableList()
 
-    @staticmethod
-    def has_role(*args):
+    def has_role(self, *args):
         """Returns `False`"""
         return False
 
-    @staticmethod
-    def is_active():
+    def is_active(self):
         return True
 
     @property
