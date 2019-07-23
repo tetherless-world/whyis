@@ -1,5 +1,5 @@
 #!/bin/bash
-mkdir -p test-results/python
+mkdir -p test-results/py
 
 docker run $1 bash -c "python3 manage.py test --ci &>/dev/null && cat test-results/py/results.xml" >test-results/py/results.xml
 

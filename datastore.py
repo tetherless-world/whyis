@@ -3,12 +3,20 @@ from flask import abort
 from flask_security import UserMixin, RoleMixin
 from flask_security.utils import verify_and_update_password
 from flask_security.datastore import Datastore, UserDatastore
-from main import NS
 from namespace import dc, auth, foaf, prov
-from rdflib import BNode, Literal, URIRef, Namespace, Graph
+from rdflib import BNode, Literal, URIRef, Namespace, Graph, RDF, RDFS
 from rdflib.graph import ConjunctiveGraph
 from rdflib.resource import Resource
 from rdflib.term import Identifier
+
+import base64
+import random
+from datetime import datetime
+
+
+def create_id():
+    return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
+        '=\n')
 
 def value2object(value):
     """
@@ -50,27 +58,27 @@ def getList(sub, pred=None, db=None):
         val = [o for o in db.objects(sub, pred)]
         return val
     members = []
-    first = db.value(base, NS.RDF.first)
-    # OK let's work at returning a list if there is an NS.RDF.first
+    first = db.value(base, RDF.first)
+    # OK let's work at returning a list if there is an RDF.first
     if first:
         while first:
             members.append(first)
-            base = db.value(base, NS.RDF.rest)
-            first = db.value(base, NS.RDF.first)
+            base = db.value(base, RDF.rest)
+            first = db.value(base, RDF.first)
         return members
     # OK let's work at returning a Collection (Seq,Bag or Alt)
-    # if was no NS.RDF.first
+    # if was no RDF.first
     
     i = 1
-    # first = db.value(base, NS.RDF._1) # _1 ???
-    first = db.value(base, NS.RDF.first)
+    # first = db.value(base, RDF._1) # _1 ???
+    first = db.value(base, RDF.first)
     if not first:
         raise AttributeError(
             "Not a list, or collection but another type of BNode")
     while first:
         members.append(first)
         i += 1
-        first = db.value(base, NS.RDF['_%d' % i])
+        first = db.value(base, RDF['_%d' % i])
     return members
 
         
@@ -111,7 +119,7 @@ class multiple:
         val = list(obj.graph.objects(obj.identifier, self._predicate))
         # check to see if this is a Container or Collection
         # if so, return collection as a list
-        if len(val) == 1 and not isinstance(val[0], Literal) and obj.graph.value(val[0], NS.RDF.first):
+        if len(val) == 1 and not isinstance(val[0], Literal) and obj.graph.value(val[0], RDF.first):
             val = getList(obj, self._predicate)
             
         # print(val)
@@ -155,8 +163,8 @@ class MappedResource(Resource):
             
         Resource.__init__(self,graph, subject)
 
-        if self.rdf_type and not self[NS.RDF.type:self.rdf_type]:
-            self.graph.add((self.identifier, NS.RDF.type, self.rdf_type))
+        if self.rdf_type and not self[RDF.type:self.rdf_type]:
+            self.graph.add((self.identifier, RDF.type, self.rdf_type))
             
         if kwargs:
             self._set_with_dict(kwargs)
@@ -216,7 +224,7 @@ class User(MappedResource, UserMixin):
 
 class Role(MappedResource, RoleMixin):
     rdf_type = prov.Role
-    name = single(NS.RDFS.label)
+    name = single(RDFS.label)
     key = 'name'
 
     def __init__(self, *args, **kwargs):
@@ -238,7 +246,7 @@ class WhyisDatastore(Datastore):
     def put(self, model):
         #self.db.add(model)
         idb = Graph(self.db.store,model.identifier)
-        if len(idb) > 0:
+        if idb:
             idb.remove((None,None,None))
         idb += model.graph
         self.db.store.commit()
@@ -248,7 +256,7 @@ class WhyisDatastore(Datastore):
     def delete(self, model):
         uri = model.identifier
         idb = ConjunctiveGraph(self.db.store,uri)
-        if len(idb) == 0:
+        if not idb:
             abort(404, "Resource does not exist or is not deletable.")
         idb.remove((None,None,None))
         g = ConjunctiveGraph(self.db.store)
@@ -262,7 +270,7 @@ class WhyisDatastore(Datastore):
         result += idb
         if c is None:
             c = Resource
-            for t in result.objects(resUri, NS.RDF.type):
+            for t in result.objects(resUri, RDF.type):
                 #print (resUri, t, t in self.classes)
                 if t in self.classes:
                     c = self.classes[t]
@@ -282,7 +290,7 @@ class WhyisDatastore(Datastore):
         .
         }'''
         result = list(self.db.query(query, initBindings=bindings))
-        if len(result) > 0:
+        if result:
             return self.get(result[0][0], model)
 
 
@@ -315,7 +323,7 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
     @tag_datastore
     def find_role(self, role_name, **kwargs):
         role_uri = self.Role.prefix[role_name]
-        if (role_uri, NS.RDF.type, self.Role.rdf_type) not in self.db:
+        if (role_uri, RDF.type, self.Role.rdf_type) not in self.db:
             self.put(self.Role(name=role_name))
         role = self.get(self.Role.prefix[role_name], self.Role)
         return role

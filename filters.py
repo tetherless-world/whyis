@@ -9,12 +9,12 @@ import collections
 import json
 import rdflib
 
-from flask import g
+from flask import g, request
 from functools import reduce
 from jinja2 import Environment
 from markupsafe import Markup
 from slugify import slugify
-from urllib import request, parse
+from urllib import parse
 
 from scipy.stats import norm
 from scipy.stats import combine_pvalues
