@@ -1,17 +1,16 @@
 # -*- coding:utf-8 -*-
 
-from rdflib import *
-SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
+import requests
+import collections
+from rdflib import Namespace, BNode, URIRef
+from rdflib.graph import ConjunctiveGraph
 from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore, _node_to_sparql
-from SPARQLWrapper import *
-
 from rdflib.plugins.stores.sparqlconnector import SPARQLConnectorException, _response_mime_types
 
-import requests
+# from SPARQLWrapper import *
 
-import collections
-
-
+# from rdflib import *
+SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 
 def node_to_sparql(node):
     if isinstance(node, BNode):
@@ -25,6 +24,7 @@ def node_to_sparql(node):
 #        return _node_from_result(node)
 
 class WhyisSPARQLStore(SPARQLStore):
+    
     def _inject_prefixes(self, query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
@@ -36,6 +36,13 @@ class WhyisSPARQLStore(SPARQLStore):
         ])
 
 class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
+
+    # To resolve linter warning
+    # "attribute defined outside  __init__"
+    def __init__(self, *args, **kwargs):
+        self.publish = None
+        SPARQLUpdateStore.__init__(self, *args, **kwargs)
+
     def _inject_prefixes(self, query, extra_bindings):
         bindings = list(extra_bindings.items())
         if not bindings:
@@ -93,13 +100,16 @@ def engine_from_config(config, prefix):
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
+        
         def publish(data, *graphs):
             s = requests.session()
             s.keep_alive = False
-            result = s.post(store.query_endpoint,
-                            data=data,
-#                            params={"context-uri":graph.identifier},
-                            headers={'Content-Type':'application/x-trig'})
+            
+            # result unused
+            s.post(store.query_endpoint,
+                   data=data,
+                   # params={"context-uri":graph.identifier},
+                   headers={'Content-Type':'application/x-trig'})
 
         store.publish = publish
 
@@ -110,11 +120,12 @@ def engine_from_config(config, prefix):
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph() # memory_graphs[prefix]
+        
         def publish(data, *graphs):
             for nanopub in graphs:
                 graph.addN(nanopub.quads())
+                
         graph.store.publish = publish
 
         
     return graph
-

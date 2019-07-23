@@ -1,8 +1,8 @@
-from __future__ import print_function
-from builtins import object
 from flask import current_app
 from flask_login import AnonymousUserMixin, login_user
 import datetime
+
+from werkzeug.datastructures import ImmutableList
 
 class InvitedAnonymousUser(AnonymousUserMixin):
     '''A user that has been referred via an external application references but does not have a user account.'''
@@ -21,11 +21,11 @@ class InvitedAnonymousUser(AnonymousUserMixin):
         return True
 
 
-class Authenticator(object):
+class Authenticator:
     def authenticate(self, request, datastore, config):
         pass
 
-class APIKeyAuthenticator(object):
+class APIKeyAuthenticator:
     def __init__(self, key, request_arg='API_KEY'):
         self.key = key
         self.request_arg = request_arg
@@ -36,6 +36,7 @@ class APIKeyAuthenticator(object):
             user = InvitedAnonymousUser()
             login_user(user)
             return user
+        return None
 
 default_jwt_mapping = {
     'identifier':'sub',
@@ -46,8 +47,11 @@ default_jwt_mapping = {
     'familyName' : 'sn'
 }
         
-class JWTAuthenticator(object):
-    def __init__(self,  key, cookie="token", algorithm='HS256', mapping=default_jwt_mapping):
+class JWTAuthenticator:
+    def __init__(self,  key, cookie="token", algorithm='HS256', mapping=None):
+        if mapping is None:
+            mapping = default_jwt_mapping
+        
         import jwt
         self.jwt = jwt
         self.cookie = cookie
@@ -66,7 +70,7 @@ class JWTAuthenticator(object):
                     if self.mapping['roles'] in payload:
                         role_objects = payload[self.mapping['roles']]
                     if self.mapping['admin'] in payload:
-                        if payload[self.mapping['admin']] == True:
+                        if payload[self.mapping['admin']] is True:
                             role_objects.append('admin')
                     user = dict(identifier=payload[self.mapping['identifier']],
                                 email=payload[self.mapping['email']],
@@ -77,9 +81,9 @@ class JWTAuthenticator(object):
                     #user_obj = flask.current_app.datastore.create_user(**user)
                     user_obj = current_app.datastore.create_user(**user)
                 else :
-                  user_obj = user
+                    user_obj = user
                 login_user(user_obj)
                 return user_obj
             except self.jwt.ExpiredSignatureError:
                 return None
-            
+        return None
