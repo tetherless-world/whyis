@@ -52,5 +52,5 @@ RUN rm -fr /root/.cache
 
 # Install the Java requirements similarly
 COPY /whyis-java/pom.xml /pom.xml
-RUN sudo -u whyis mvn dependency:go-offline -PwhyisProfile
+RUN sudo -u whyis mvn -q dependency:go-offline -PwhyisProfile
 RUN rm /pom.xml

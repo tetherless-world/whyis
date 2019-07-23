@@ -3,7 +3,7 @@ ARG WHYIS_IMAGE_TAG=latest
 FROM maven:3.6-jdk-8 as build-java
 WORKDIR /apps/whyis/whyis-java
 COPY /whyis-java /apps/whyis/whyis-java
-RUN mvn clean compile assembly:single -PwhyisProfile
+RUN mvn -q clean compile assembly:single -PwhyisProfile
 
 FROM node:12-alpine as build-js
 COPY static /static

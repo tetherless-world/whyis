@@ -218,11 +218,11 @@ exec { "create_knowledge_namespace":
   cwd => "/apps/whyis",
 }
 
-exec { "compile_java": 
-  command => "mvn clean compile assembly:single -PwhyisProfile",
+exec { "compile_java":
+  command => "mvn -q clean compile assembly:single -PwhyisProfile",
   creates => "/apps/whyis/java_compile.log",
-  user => "whyis",
-  cwd => "/apps/whyis/whyis-java",
+  user    => "whyis",
+  cwd     => "/apps/whyis/whyis-java",
 }
 
 exec { "install_js_dependencies":
