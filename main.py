@@ -69,45 +69,7 @@ top_compare_key = False, -100, [(-2, 0)]
 # increase probability that the rule will be near or at the bottom 
 bottom_compare_key = True, 100, [(2, 0)]
 
-class NamespaceContainer(object):
-    @property
-    def prefixes(self):
-        result = {}
-        for key, value in list(self.__dict__.items()):
-            if isinstance(value, Namespace):
-                result[key] = value
-        return result
-
-NS = NamespaceContainer()
-NS.RDFS = rdflib.RDFS
-NS.RDF = rdflib.RDF
-NS.rdfs = rdflib.Namespace(rdflib.RDFS)
-NS.rdf = rdflib.Namespace(rdflib.RDF)
-NS.owl = rdflib.OWL
-NS.xsd   = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
-NS.dc    = rdflib.Namespace("http://purl.org/dc/terms/")
-NS.dcelements    = rdflib.Namespace("http://purl.org/dc/elements/1.1/")
-NS.auth  = rdflib.Namespace("http://vocab.rpi.edu/auth/")
-NS.foaf  = rdflib.Namespace("http://xmlns.com/foaf/0.1/")
-NS.prov  = rdflib.Namespace("http://www.w3.org/ns/prov#")
-NS.skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
-NS.cmo = rdflib.Namespace("http://purl.org/twc/ontologies/cmo.owl#")
-NS.sio = rdflib.Namespace("http://semanticscience.org/resource/")
-NS.sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
-NS.sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
-NS.np = rdflib.Namespace("http://www.nanopub.org/nschema#")
-NS.whyis = rdflib.Namespace("http://vocab.rpi.edu/whyis/")
-NS.ov = rdflib.Namespace("http://open.vocab.org/terms/")
-NS.frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
-NS.mediaTypes = rdflib.Namespace("https://www.iana.org/assignments/media-types/")
-NS.pv = rdflib.Namespace("http://purl.org/net/provenance/ns#")
-NS.sd = rdflib.Namespace('http://www.w3.org/ns/sparql-service-description#')
-NS.ld = rdflib.Namespace('http://purl.org/linked-data/api/vocab#')
-NS.dcat = rdflib.Namespace("http://www.w3.org/ns/dcat#")
-NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
-NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
-NS.schema = rdflib.Namespace("http://schema.org/")
-    
+from namespace import NS
 from datastore import *
 
 #from flask_login.config import EXEMPT_METHODS
