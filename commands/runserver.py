@@ -43,6 +43,9 @@ class WhyisServer(Server):
         else:
             webpack_static_dir_paths = []
 
+        for static_dir_path in webpack_static_dir_paths:
+            subprocess.call(["npm", "install"], cwd=static_dir_path)
+
         class CleanChildProcesses:
             def __enter__(self):
                 os.setpgrp()  # create new process group, become its leader
