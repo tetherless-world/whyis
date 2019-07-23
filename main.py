@@ -1,57 +1,39 @@
 # -*- coding:utf-8 -*-
-#from __future__ import print_function
-#from future import standard_library
-#standard_library.install_aliases()
-#from builtins import str
-#from past.builtins import basestring
-#from builtins import object
-import requests
 import importlib
 
 import os
-import sys, collections
+import sys
 from empty import Empty
-from flask import Flask, render_template, g, session, redirect, url_for, request, flash, abort, Response, stream_with_context, send_from_directory, make_response, abort
-from utils import lru
-
-from flask.views import MethodView
+from flask import render_template, g, redirect, url_for, request, flash, Response, \
+    send_from_directory, make_response, abort
+from functools import lru_cache
 
 import jinja2
-#from api import LinkedDataApi
 
 from nanopub import NanopublicationManager, Nanopublication
 import requests
 from re import finditer
 import pytz
-from dataurl import DataURLStorage
 
 from werkzeug.exceptions import Unauthorized
-from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-
-from flask_admin import Admin, BaseView, expose
 
 from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 
 import rdflib
 from flask_security import Security, \
-    UserMixin, RoleMixin, login_required
+    login_required
 from flask_security.core import current_user
 from flask_security.forms import RegisterForm
-from flask_security.utils import encrypt_password
-from werkzeug.datastructures import ImmutableList
-from flask_wtf import Form, RecaptchaField
-from wtforms import TextField, TextAreaField, StringField, validators
+from flask_wtf import Form
+from wtforms import TextField, StringField, validators
 import sadi
 import json
 import sadi.mimeparse
-
-import werkzeug.utils
+from slugify import slugify
 
 from urllib.parse import urlencode
-
-from flask_mail import Mail, Message
 
 from celery import Celery
 from celery.schedules import crontab
@@ -64,11 +46,7 @@ from datetime import datetime
 import markdown
 
 import rdflib.plugin
-from rdflib.store import Store
-from rdflib.parser import Parser
-from rdflib.serializer import Serializer
-from rdflib.query import ResultParser, ResultSerializer, Processor, Result, UpdateProcessor
-from rdflib.exceptions import Error
+from rdflib.query import Processor, Result, UpdateProcessor
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
 rdflib.plugin.register('sparql', Processor,
@@ -374,7 +352,6 @@ class App(Empty):
         self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
-        #self.mail = Mail(self)
 
         self.file_depot = DepotManager.get('files')
         if self.file_depot is None:
@@ -472,7 +449,7 @@ class App(Empty):
 #                    raise e
             return self._description
         
-    def get_resource(self, entity, async=True, retrieve=True):
+    def get_resource(self, entity, async_=True, retrieve=True):
         if retrieve:
             mapped_name, importer = self.map_entity(entity)
     
@@ -485,7 +462,7 @@ class App(Empty):
 
             if importer is not None:
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
-                if modified is None or async is False:
+                if modified is None or async_ is False:
                     self.run_importer(entity)
                 elif not importer.import_once:
                     print("Type of modified is",type(modified))
@@ -495,6 +472,10 @@ class App(Empty):
     
     def configure_template_filters(self):
         filters.configure(self)
+        if 'filters' in self.config:
+            for name, fn in self.config['filters'].items():
+                self.template_filter(name)(fn)
+
 
     def add_file(self, f, entity, nanopub):
         entity = rdflib.URIRef(entity)
@@ -605,9 +586,9 @@ class App(Empty):
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name]
 
-        @lru
+        @lru_cache(maxsize=1000)
         def get_remote_label(uri):
             for db in [self.db, self.admin_db]:
                 g = Graph()
@@ -670,6 +651,7 @@ class App(Empty):
             g.rdflib = rdflib
             g.isinstance = isinstance
             g.current_user = current_user
+            g.slugify = slugify
             g.db = self.db
 
         @self.login_manager.user_loader
@@ -1008,14 +990,6 @@ class App(Empty):
             resp = make_response(data, code)
             resp.headers.extend(headers or {})
             return resp
-        
-        #self.api = LinkedDataApi(self, "", self.db.store, "")
-        #self.api.representations['text/html'] = render_nanopub
-
-        #self.admin = Admin(self, name="whyis", template_mode='bootstrap3')
-        #self.admin.add_view(ld.ModelView(self.nanopub_api, default_sort=RDFS.label))
-        #self.admin.add_view(ld.ModelView(self.role_api, default_sort=RDFS.label))
-        #self.admin.add_view(ld.ModelView(self.user_api, default_sort=foaf.familyName))
 
         app = self
 
@@ -1168,7 +1142,12 @@ class App(Empty):
 #                        except:
 #                            pass
             #print Graph(store=resource.graph.store).serialize(format="trig")
-        #self.api.add_resource(NanopublicationResource, '/pub', '/pub/<ident>')
+
+    def get_send_file_max_age(self, filename):
+        if self.debug:
+            return 0
+        else:
+            return Empty.get_send_file_max_age(self, filename)
 
 
 def config_str_to_obj(cfg):

@@ -1,0 +1,78 @@
+# whyis testing
+# Adapted from https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
+version: 2
+jobs:
+  build:
+    working_directory: /apps/whyis
+    docker:
+      - image: docker/compose:1.24.1
+    steps:
+      - run:
+          name: Install system dependencies with apk
+          command: |
+            apk update && apk add bash
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build monolithic Docker image
+          command: |
+            cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
+      - run:
+          name: Run tests
+          command: .circleci/test.sh tetherlessworld/whyis:latest
+      - store_test_results:
+          path: test-results
+      - run:
+          name: Build split Docker image
+          command: |
+            cd docker/compose/split/app && WHYIS_IMAGE_TAG=latest docker-compose build whyis-server
+      - run:
+          name: Build and push Docker images
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+              # Monolithic latest, push (build above)
+              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
+              # Monolithic master, build and push
+              WHYIS_IMAGE_TAG=master docker-compose -f docker/compose/monolithic/docker-compose.yml build whyis && WHYIS_IMAGE_TAG=master docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
+
+              # Split latest, push (build above)
+              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
+            fi
+  lint-js:
+    working_directory: /whyis
+    docker:
+      - image: node:12.6-stretch
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd static && npm install
+      - run:
+          name: Lint the code
+          command: .circleci/lint-js.sh
+      - store_artifacts:
+          path: lint-results
+  lint-py:
+    working_directory: /whyis
+    docker:
+      - image: python:3.7-stretch
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip3 install flake8 pycodestyle pylint
+      - run:
+          name: Lint the code
+          command: .circleci/lint-py.sh
+      - store_artifacts:
+          path: lint-results
+
+workflows:
+  version: 2
+  build_lint:
+    jobs:
+      - build
+      - lint-js
+      - lint-py

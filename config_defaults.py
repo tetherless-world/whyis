@@ -18,7 +18,7 @@ from datetime import datetime
 LOD_PREFIX = 'http://localhost:5000'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
 
-skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+from namespace import skos
 
 # base config class; extend it to your needs.
 Config = dict(

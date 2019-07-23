@@ -18,8 +18,9 @@ sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
+sudo /opt/puppetlabs/bin/puppet module install puppetlabs-nodejs
 
-curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
+curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/release/manifests/install.pp' > /tmp/install_whyis.pp
 
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp

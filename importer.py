@@ -19,10 +19,7 @@ import magic
 import mimetypes
 import traceback, sys
 
-np = rdflib.Namespace('http://www.nanopub.org/nschema#')
-prov = rdflib.Namespace('http://www.w3.org/ns/prov#')
-dc = rdflib.Namespace('http://purl.org/dc/terms/')
-sio = rdflib.Namespace('http://semanticscience.org/resource/')
+from namespace import np, prov, dc, sio
 
 import re
 invalid_escape = re.compile(r'\\[0-7]{1,3}')  # up to 3 digits for byte values up to FF
@@ -31,7 +28,7 @@ def replace_with_byte(match):
     return chr(int(match.group(0)[1:], 8))
 
 def repair(brokenjson):
-    return invalid_escape.sub(replace_with_byte, brokenjson.replace(b'\u000',''))
+    return invalid_escape.sub(replace_with_byte, brokenjson.encode('utf8').replace(b'\u000','').decode('utf8'))
 
 class Importer(object):
 
@@ -49,7 +46,7 @@ class Importer(object):
             m = old_np.modified
             if m is not None:
                 m = m
-                m = pytz.utc.localize(m)
+                #m = pytz.utc.localize(m)
             if m is None:
                 continue
             if modified is None or m > modified:
@@ -156,7 +153,7 @@ class LinkedData (Importer):
         r = requests.get(u, headers = self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.URIRef("urn:default_assertion"))
-        local.parse(data=repair(r.text), format=self.format)
+        local.parse(data=r.text, format=self.format)
         #print self.postprocess_update
         if self.postprocess_update is not None:
             #print "update postprocess query."

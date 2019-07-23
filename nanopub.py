@@ -16,10 +16,7 @@ from depot.manager import DepotManager
 from datetime import datetime
 import pytz
 
-np = rdflib.Namespace("http://www.nanopub.org/nschema#")
-prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
-dc = rdflib.Namespace("http://purl.org/dc/terms/")
-frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
+from namespace import np, prov, dc, frbr
 from uuid import uuid4
 
 from datastore import create_id

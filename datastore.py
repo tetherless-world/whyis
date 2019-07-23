@@ -2,13 +2,18 @@ from flask_security.datastore import Datastore, UserDatastore
 from rdflib import *
 from rdflib.resource import Resource
 from rdflib.term import Identifier
-from flask import make_response
 from copy import copy
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
 from flask_security.utils import  hash_password, verify_and_update_password
+import base64
+import random
+from datetime import datetime
 
-from utils import create_id
+
+def create_id():
+    return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
+        '=\n')
 
 def value2object(value):
     """
@@ -189,12 +194,10 @@ class MappedResource(Resource):
 #    def __str__(self):
 #        return type(self).__name__ + ' ' + super().__str__() + ' a ' + self.rdf_type
 
-    
-dc = Namespace("http://purl.org/dc/terms/")
-auth = Namespace("http://vocab.rpi.edu/auth/")
-foaf = Namespace("http://xmlns.com/foaf/0.1/")
-prov  = Namespace("http://www.w3.org/ns/prov#")
-            
+
+from namespace import dc, auth, foaf, prov
+
+
 class User(MappedResource, UserMixin):
     rdf_type = prov.Agent
 
