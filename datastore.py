@@ -2,13 +2,18 @@ from flask_security.datastore import Datastore, UserDatastore
 from rdflib import *
 from rdflib.resource import Resource
 from rdflib.term import Identifier
-from flask import make_response
 from copy import copy
 from flask_security import Security, \
     UserMixin, RoleMixin, login_required
 from flask_security.utils import  hash_password, verify_and_update_password
+import base64
+import random
+from datetime import datetime
 
-from utils import create_id
+
+def create_id():
+    return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
+        '=\n')
 
 def value2object(value):
     """
