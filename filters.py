@@ -73,13 +73,16 @@ def configure(app):
         best_terms = [x for x in literals if x.language == best_lang]
         if not best_terms:
             best_terms = [x for x in literals if x.language == app.config['default_language']]
-        if not best_terms:
+        if best_terms:
             return resources + best_terms
         return resources
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes={}, values=None):
+    def query_filter(query, graph=app.db, prefixes=None, values=None):
+        if not prefixes: # default arguments are evaluated once, ever
+            prefixes = {}
+        
         namespaces = dict(app.NS.prefixes)
         namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
         params = { 'initNs': namespaces}
@@ -93,8 +96,10 @@ def configure(app):
         return json.loads(json_text)
         
     @app.template_filter('construct')
-    def construct_filter(query, graph=app.db, prefixes={}, values=None):
-
+    def construct_filter(query, graph=app.db, prefixes=None, values=None):
+        if not prefixes:
+            prefixes = {}
+        
         def remap_bnode(x):
             if isinstance(x, rdflib.URIRef) and x.startswith('bnode:'):
                 return rdflib.BNode(x.replace('bnode:',''))
@@ -104,11 +109,11 @@ def configure(app):
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        g = rdflib.graph.ConjunctiveGraph()
+        graph = rdflib.graph.ConjunctiveGraph()
         for stmt in graph.query(query, **params):
-            g.add(tuple([remap_bnode(x) for x in stmt]))
-        print(len(g))
-        return g
+            graph.add(tuple([remap_bnode(x) for x in stmt]))
+        print(len(graph))
+        return graph
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
@@ -227,7 +232,7 @@ where {
                         tfidf = (0.5+i['frequency'].value) * idf
 
                         # old_div is no longer defined!
-                        i['probability'] = combine_pvalues([old_div(tfidf,(1+tfidf))],method='stouffer')[1]
+                        i['probability'] = combine_pvalues([tfidf/(1+tfidf)],method='stouffer')[1]
                 else:
                     i['probability'] = i['probability'].value
                 result['from'].append(i['np'])
@@ -287,13 +292,13 @@ where {
         if 'target' not in values:
             results = iter_labelize(results,'target','target_label')
             for r in results:
-                r['target_types'] = [x for x,
-                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['target']))]
+                r['target_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
+                                                             initBindings=dict(x=r['target']))]
         if 'source' not in values:
             results = iter_labelize(results,'source','source_label')
             for r in results:
-                r['source_types'] = [x for x,
-                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['source']))]
+                r['source_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
+                                                             initBindings=dict(x=r['source']))]
         return results
 
     env = Environment()

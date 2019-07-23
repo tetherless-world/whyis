@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import chr
 import requests
 import rdflib
 import nanopub
@@ -33,8 +31,9 @@ class Importer:
     min_modified = 0
 
     import_once=False
-    
-    def last_modified(self, entity_name, db, nanopubs):
+
+    @staticmethod
+    def last_modified(entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
@@ -197,7 +196,7 @@ class FileImporter (LinkedData):
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
         r = requests_session.get(u, headers = self.headers, allow_redirects=True, stream=True)
-        np = nanopub.Nanopublication()
+        npub = nanopub.Nanopublication()
         if 'content-disposition' in r.headers:
             d = r.headers['content-disposition']
             fname = re.findall("filename=(.+)", d)
@@ -207,11 +206,13 @@ class FileImporter (LinkedData):
 
         if self.file_types is not None:
             for file_type in self.file_types:
-                np.assertion.add((entity_name, rdflib.RDF.type, file_type))
+                npub.assertion.add((entity_name, rdflib.RDF.type, file_type))
         f = FileStorage(FileLikeFromIter(r.iter_content()), fname, content_type=content_type)
-        old_nanopubs = self.app.add_file(f, entity_name, np)
-        np.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
-        for old_np, old_np_assertion in old_nanopubs:
-            np.pubinfo.add((np.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
+        old_nanopubs = self.app.add_file(f, entity_name, npub)
+        npub.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
+        
+        # old_np variable unused
+        for _, old_np_assertion in old_nanopubs:
+            npub.pubinfo.add((npub.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
 
-        return np
+        return npub

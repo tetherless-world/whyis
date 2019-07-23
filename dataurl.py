@@ -13,7 +13,7 @@ from urllib.parse import unquote_to_bytes
 
 from werkzeug.datastructures import FileStorage
 
-__all__ = ['parse_data_url','DataResponse','DataURLStorage']
+# __all__ = ['parse_data_url','DataResponse','DataURLStorage']
 
 def parse_data_url(url):
     scheme, data = url.split(":",1)

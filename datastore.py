@@ -13,7 +13,6 @@ import base64
 import random
 from datetime import datetime
 
-
 def create_id():
     return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
         '=\n')
@@ -283,7 +282,7 @@ class WhyisDatastore(Datastore):
     def find(self, model, **kwargs):
         rdf_type = model.rdf_type
         predicates = [(model.__dict__[key]._predicate, key) for key, value in kwargs.items()]
-        bindings = dict([(key, value2object(value)) for key, value in kwargs.items()])
+        bindings = { key: value2object(value) for key, value in kwargs.items() }
         query = ''' select ?identifier where {
         ?identifier a %s;
         ''' % rdf_type.n3() + '\n'.join(['    %s ?%s;' % (p.n3(), v) for p, v in predicates]) + '''
@@ -292,6 +291,7 @@ class WhyisDatastore(Datastore):
         result = list(self.db.query(query, initBindings=bindings))
         if result:
             return self.get(result[0][0], model)
+        return None
 
 
 class WhyisUserDatastore(WhyisDatastore, UserDatastore):
@@ -313,6 +313,7 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
             uri = self.db.value(predicate=attr, object=Literal(identifier))
             if uri is not None:
                 return self.get(uri, self.User)
+        return None
 
     @tag_datastore
     def find_user(self, **kwargs):

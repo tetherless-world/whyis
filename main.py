@@ -6,11 +6,11 @@ import sys
 from empty import Empty
 from flask import render_template, g, redirect, url_for, request, flash, Response, \
     send_from_directory, make_response, abort
-from functools import lru_cache
+from functools import lru_cache, wraps
 
 import jinja2
 
-from nanopub import NanopublicationManager, Nanopublication
+from nanopub import NanopublicationManager
 import requests
 from re import finditer
 import pytz
@@ -22,8 +22,10 @@ from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 
 import rdflib
-from flask_security import Security, \
-    login_required
+from rdflib import Namespace
+from rdflib.query import Processor, Result, UpdateProcessor
+
+from flask_security import Security, login_required
 from flask_security.core import current_user
 from flask_security.forms import RegisterForm
 from flask_wtf import Form
@@ -44,18 +46,17 @@ import database
 from datetime import datetime
 
 import markdown
+import search
+import filters
 
-import rdflib.plugin
-from rdflib.query import Processor, Result, UpdateProcessor
+#from flask_login.config import EXEMPT_METHODS
+
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
 rdflib.plugin.register('sparql', Processor,
         'rdflib.plugins.sparql.processor', 'SPARQLProcessor')
 rdflib.plugin.register('sparql', UpdateProcessor,
         'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
-
-import search
-import filters
 
 # apps is a special folder where you can place your blueprints
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -69,7 +70,7 @@ top_compare_key = False, -100, [(-2, 0)]
 # increase probability that the rule will be near or at the bottom 
 bottom_compare_key = True, 100, [(2, 0)]
 
-class NamespaceContainer(object):
+class NamespaceContainer:
     @property
     def prefixes(self):
         result = {}
@@ -108,10 +109,6 @@ NS.hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
 NS.void = rdflib.Namespace("http://rdfs.org/ns/void#")
 NS.schema = rdflib.Namespace("http://schema.org/")
     
-from datastore import *
-
-#from flask_login.config import EXEMPT_METHODS
-from functools import wraps
 
 # Setup Flask-Security
 class ExtendedRegisterForm(RegisterForm):

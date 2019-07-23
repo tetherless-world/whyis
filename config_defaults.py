@@ -5,7 +5,6 @@ import autonomic
 import logging
 
 from datetime import datetime, timedelta
-from builtins import str
 
 project_name = "whyis"
 

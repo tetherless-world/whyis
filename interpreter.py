@@ -183,11 +183,13 @@ class Interpreter(autonomic.UpdateChangeService):
 
             if self.config.has_option('Source Files','data_file') :
                 self.data_fn = self.config.get('Source Files','data_file')
-    
-    def getInputClass(self):
+
+    @staticmethod
+    def getInputClass():
         return whyis.SemanticDataDictionary
 
-    def getOutputClass(self):
+    @staticmethod
+    def getOutputClass():
         return whyis.SemanticDataDictionaryInterpretation
 
     def get_query(self):
@@ -204,10 +206,10 @@ class Interpreter(autonomic.UpdateChangeService):
         self.writeExplicitEntryNano(npub)
         self.interpretData(npub)
 
-    def parseString(self,input_string, delim):
+    @staticmethod
+    def parseString(input_string, delim):
         my_list = input_string.split(delim)
-        for i in range(0,len(my_list)) :
-            my_list[i] = my_list[i].strip()
+        my_list = [element.strip() for element in my_list]
         return my_list
 
     def rdflibConverter(self,input_word) :
@@ -251,7 +253,8 @@ class Interpreter(autonomic.UpdateChangeService):
             return '"' + args[0] + "\"^^xsd:string"
         return args[0]
 
-    def checkVirtual(self,input_word) :
+    @staticmethod
+    def checkVirtual(input_word) :
         try:
             if input_word[:2] == "??":
                 return True
@@ -264,7 +267,8 @@ class Interpreter(autonomic.UpdateChangeService):
                 logging.exception(e)
             sys.exit(1)
 
-    def isfloat(self,value):
+    @staticmethod
+    def isfloat(value):
         try:
             float(value)
             return True
@@ -524,20 +528,21 @@ class Interpreter(autonomic.UpdateChangeService):
                             else :
                                 nanopub.provenance.add((term,prov.wasGeneratedBy, self.rdflibConverter(self.convertVirtualToKGEntry(v_tuple["wasGeneratedBy"],index))))
                                 if self.checkVirtual(v_tuple["wasGeneratedBy"]) and v_tuple["wasGeneratedBy"] not in vref_list :
-                                    vref_list.append(v_tuple["wasGeneratedBy"]);
+                                    vref_list.append(v_tuple["wasGeneratedBy"])
                         if "wasDerivedFrom" in v_tuple : 
                             if ',' in v_tuple["wasDerivedFrom"] :
                                 derivedFromTerms = self.parseString(v_tuple["wasDerivedFrom"],',')
                                 for derivedFromTerm in derivedFromTerms :
                                     nanopub.provenance.add((term,prov.wasDerivedFrom, self.rdflibConverter(self.convertVirtualToKGEntry(derivedFromTerm,index))))
                                     if self.checkVirtual(derivedFromTerm) and derivedFromTerm not in vref_list :
-                                        vref_list.append(derivedFromTerm);
+                                        vref_list.append(derivedFromTerm)
                             else :
                                 nanopub.provenance.add((term,prov.wasDerivedFrom, self.rdflibConverter(self.convertVirtualToKGEntry(v_tuple["wasDerivedFrom"],index))))
                                 if self.checkVirtual(v_tuple["wasDerivedFrom"]) and v_tuple["wasDerivedFrom"] not in vref_list :
-                                    vref_list.append(v_tuple["wasDerivedFrom"]);
+                                    vref_list.append(v_tuple["wasDerivedFrom"])
             return vref_list
-        except :
+
+        except Exception as e:
             logging.warning("Warning: Unable to create virtual entry:")
             if hasattr(e, 'message'):
                 logging.warning(e.message)
@@ -545,10 +550,10 @@ class Interpreter(autonomic.UpdateChangeService):
                 logging.warning(e)
 
     def interpretData(self,nanopub) :
-        if self.data_fn != None :
+        if self.data_fn is not None :
             try :
                 data_file = pd.read_csv(self.data_fn, dtype=object)
-            except :
+            except Exception as e:
                 logging.exception("Error: The specified Data file does not exist: ")
                 if hasattr(e, 'message'):
                     logging.exception(e.message)
@@ -561,10 +566,10 @@ class Interpreter(autonomic.UpdateChangeService):
                 for a_tuple in self.explicit_entry_tuples :
                     if "Attribute" in a_tuple :
                         if ((a_tuple["Attribute"] == "hasco:originalID") or (a_tuple["Attribute"] == "sio:Identifier")) :
-                            if(a_tuple["Column"] in col_headers) :
+                            if a_tuple["Column"] in col_headers:
                                 for v_tuple in self.virtual_entry_tuples :
                                     if "isAttributeOf" in a_tuple :
-                                        if (a_tuple["isAttributeOf"] == v_tuple["Column"]) :
+                                        if a_tuple["isAttributeOf"] == v_tuple["Column"]:
                                             v_tuple["Subject"]=a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")
             except Exception as e : 
                 logging.exception("Error: Something went wrong when processing column headers:")
@@ -580,7 +585,7 @@ class Interpreter(autonomic.UpdateChangeService):
                 try:
                     vref_list = []
                     for a_tuple in self.explicit_entry_tuples :
-                        if (a_tuple["Column"] in col_headers ) :
+                        if a_tuple["Column"] in col_headers:
                             try :
                                 try :
                                     term = rdflib.term.URIRef(self.prefixes[self.kb] + str(a_tuple["Column"].replace(" ","_").replace(",","").replace("(","").replace(")","").replace("/","-").replace("\\","-")) + "-" + identifierString)
@@ -654,7 +659,7 @@ class Interpreter(autonomic.UpdateChangeService):
                                                                     nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(self.convertVirtualToKGEntry(self.codeMapper(resourceTerm)))))
                                                             else :
                                                                 nanopub.assertion.add((term,rdflib.OWL.sameAs,self.rdflibConverter(self.convertVirtualToKGEntry(self.codeMapper(tuple_row['Resource'])))))
-                                                        if ("Label" in tuple_row) and (tuple_row['Label'] is not "") :
+                                                        if ("Label" in tuple_row) and (tuple_row['Label'] != "") :
                                                             nanopub.assertion.add((term,rdflib.RDFS.label,self.rdflibConverter(tuple_row["Label"])))
                                         try :
                                             if str(row[col_headers.index(a_tuple["Column"])+1]) == "nan" :
@@ -666,13 +671,13 @@ class Interpreter(autonomic.UpdateChangeService):
                                             else :
                                                 nanopub.assertion.add((term,sio.hasValue,rdflib.Literal(str(row[col_headers.index(a_tuple["Column"])+1]), datatype=rdflib.XSD.string)))
                                         except Exception as e : 
-                                            logging.warning("Warning: Unable to add assertion:", row[col_headers.index(a_tuple["Column"])+1] + ":")
+                                            logging.warning("Warning: Unable to add assertion: %s", row[col_headers.index(a_tuple["Column"])+1] + ":")
                                             if hasattr(e, 'message'):
                                                 logging.warning(e.message)
                                             else:
                                                 logging.warning(e)
                                 except Exception as e :
-                                    logging.exception("Error: Something went wrong when asserting data value:", row[col_headers.index(a_tuple["Column"])+1] + ":")
+                                    logging.exception("Error: Something went wrong when asserting data value: %s", row[col_headers.index(a_tuple["Column"])+1] + ":")
                                     if hasattr(e, 'message'):
                                         logging.exception(e.message)
                                     else:
@@ -712,7 +717,7 @@ class Interpreter(autonomic.UpdateChangeService):
                                     else:
                                         print(e)
                             except Exception as e :
-                                logging.warning("Warning: Unable to process tuple" + a_tuple.__str__() + ":")
+                                logging.warning("Warning: Unable to process tuple %s", a_tuple.__str__() + ":")
                                 if hasattr(e, 'message'):
                                     print(e.message)
                                 else:
@@ -739,4 +744,3 @@ class Interpreter(autonomic.UpdateChangeService):
                 print(e.message)
             else:
                 print(e)
-
