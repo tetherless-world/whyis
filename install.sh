@@ -1,6 +1,8 @@
 #!/bin/bash
 
-curl -O https://apt.puppetlabs.com/puppet-release-xenial.deb
+WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
+
+curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
 sudo dpkg -i puppet-release-xenial.deb
 sudo apt-get update
 
@@ -20,10 +22,13 @@ sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
 sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
 
-curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/release/manifests/install.pp' > /tmp/install_whyis.pp
-
+echo "Whyis branch: $WHYIS_BRANCH"
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
+elif [ "$WHYIS_BRANCH" == "current" ]; then
+     cp manifests/install.pp /tmp/install_whyis.pp
+else
+     curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$WHYIS_BRANCH/manifests/install.pp" > /tmp/install_whyis.pp
 fi
 
 sudo /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
