@@ -22,16 +22,17 @@ sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
 sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
 
-echo "Whyis branch: $WHYIS_BRANCH"
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
 elif [ "$WHYIS_BRANCH" == "current" ]; then
      cp manifests/install.pp /tmp/install_whyis.pp
+     WHYIS_BRANCH=`git branch | grep \* | cut -d ' ' -f2`
 else
      curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$WHYIS_BRANCH/manifests/install.pp" > /tmp/install_whyis.pp
 fi
+echo "Whyis branch: $WHYIS_BRANCH"
 
-sudo /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
+sudo FACTER_WHYIS_BRANCH=$WHYIS_BRANCH /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
 
 echo ""
 echo "Please configure Whyis at /apps/whyis/config.py to ensure correct customization."
