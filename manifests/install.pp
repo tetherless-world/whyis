@@ -225,6 +225,10 @@ exec { "compile_java":
   cwd     => "/apps/whyis/whyis-java",
 }
 
+class { "nodejs":
+  repo_url_suffix => "12.x",
+}
+
 exec { "install_js_dependencies":
   command => "npm install",
   creates => "/apps/whyis/js_install.log",
