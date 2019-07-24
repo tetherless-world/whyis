@@ -133,5 +133,8 @@ file { "/var/log/whyis":
   group => "whyis",
 }
 
+class { "nodejs":
+  repo_url_suffix => "12.x",
+}
 
 include java

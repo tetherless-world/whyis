@@ -18,7 +18,7 @@ sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
-sudo /opt/puppetlabs/bin/puppet module install puppetlabs-nodejs
+sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
 
 curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/release/manifests/install.pp' > /tmp/install_whyis.pp
 

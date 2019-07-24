@@ -14,8 +14,8 @@ RUN apt-get install -y sudo curl
 RUN apt-get install -y lsb-release
 
 # Add nodejs
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get install -y nodejs
+# RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+# RUN apt-get install -y nodejs
 
 # RUN apt-get install -y default-jdk build-essential automake subversion libapache2-mod-wsgi libblas3 libblas-dev celeryd redis-server apache2 libffi-dev libssl-dev maven python3-dev libdb5.3-dev
 
@@ -35,7 +35,7 @@ RUN puppet module install maestrodev-wget
 RUN puppet module install puppetlabs-apt
 RUN puppet module install richardc-datacat
 RUN puppet module install puppetlabs-java
-RUN puppet module install puppetlabs-nodejs
+RUN puppet module install puppet-nodejs --version 7.0.1
 
 # RUN curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$BUILD_MODE/manifests/install.pp" > /tmp/install_whyis.pp
 # RUN puppet apply /tmp/install_whyis.pp
