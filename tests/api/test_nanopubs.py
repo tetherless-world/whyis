@@ -70,6 +70,19 @@ class NanopubTest(ApiTestCase):
         response = self.client.delete("/pub/"+nanopub_id, follow_redirects=True)
         self.assertEquals(response.status,'204 NO CONTENT')
 
+    def test_delete_invalid(self):
+        self.login(*self.create_user("user1@example.com","password",roles=None))
+
+        response = self.client.post("/pub", data=self.turtle, content_type="text/turtle",follow_redirects=True)
+        self.assertEquals(response.status,'201 CREATED')
+        self.assertTrue('Location' in response.headers)
+        
+        nanopub_id = response.headers['Location'].split('/')[-1]
+
+        self.login(*self.create_user("user2@example.com","password",roles=None))
+        response = self.client.delete("/pub/"+nanopub_id, follow_redirects=True)
+        self.assertEquals(response.status,'401 UNAUTHORIZED')
+
     def test_linked_data(self):
         self.login(*self.create_user("user@example.com","password"))
 

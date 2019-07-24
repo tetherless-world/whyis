@@ -135,7 +135,7 @@ def engine_from_config(config, prefix):
         store.open(config[prefix+'elasticsearch'], create=True)
         def publish(data, *graphs):
             for graph in graphs:
-                store.addN([(s,p,o,g) for s,p,o,g in graph.quads()], graph.identifier.split('/')[-1])
+                store.addN(graph.quads(), graph.identifier.split('/')[-1])
         publish.serialize = True
         store.sparql = sparql_local
 
