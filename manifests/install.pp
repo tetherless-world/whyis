@@ -208,11 +208,6 @@ service { jetty9:
     ensure => running,
     subscribe => [File["/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
-exec { "wait_for_blazegrah":
-  command => "for i in 1 2 3 4 5; do curl -s http://localhost:8080 &>/dev/null && break || sleep 1; done",
-  user => "whyis",
-  cwd => "/apps/whyis",
-} ->
 exec { "create_admin_namespace":
   command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/admin_namespace.log",
   creates => "/apps/whyis/admin_namespace.log",
