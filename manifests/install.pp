@@ -1,5 +1,8 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
+$whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
+notice("Whyis branch: ${whyis_branch_}")
+
 class { 'python' :
   version    => 'system',
   pip        => 'present',
@@ -128,7 +131,7 @@ vcsrepo { '/apps/whyis':
   ensure   => present,
   provider => git,
   source   => 'https://github.com/tetherless-world/whyis.git',
-  revision => 'release',
+  revision => $whyis_branch_,
   user     => 'whyis'
 } ->
 python::virtualenv { '/apps/whyis/venv' :
@@ -223,6 +226,10 @@ exec { "compile_java":
   creates => "/apps/whyis/java_compile.log",
   user    => "whyis",
   cwd     => "/apps/whyis/whyis-java",
+}
+
+class { "nodejs":
+  repo_url_suffix => "12.x",
 }
 
 exec { "install_js_dependencies":
