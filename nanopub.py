@@ -1,6 +1,8 @@
+from __future__ import print_function
+from builtins import range
+from builtins import object
 import rdflib
 import os
-import flask_ld as ld
 import collections
 import requests
 from dataurl import DataURLStorage
@@ -14,11 +16,10 @@ from depot.manager import DepotManager
 from datetime import datetime
 import pytz
 
-np = rdflib.Namespace("http://www.nanopub.org/nschema#")
-prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
-dc = rdflib.Namespace("http://purl.org/dc/terms/")
-frbr = rdflib.Namespace("http://purl.org/vocab/frbr/core#")
+from namespace import np, prov, dc, frbr
 from uuid import uuid4
+
+from datastore import create_id
 
 class Nanopublication(rdflib.ConjunctiveGraph):
 
@@ -54,7 +55,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 assertion = self.resource(self.identifier+"_assertion")
                 assertion.add(rdflib.RDF.type, np.Assertion)
                 self.nanopub_resource.add(np.hasAssertion, assertion)
-            self._assertion = rdflib.Graph(store=self.store, identifier=assertion)
+            self._assertion = rdflib.Graph(store=self.store, identifier=assertion.identifier)
         return self._assertion
 
     _pubinfo = None
@@ -67,7 +68,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 pubinfo = self.resource(self.identifier+"_pubinfo")
                 pubinfo.add(rdflib.RDF.type, np.PublicationInfo)
                 self.nanopub_resource.add(np.hasPublicationInfo, pubinfo)
-            self._pubinfo = rdflib.Graph(store=self.store, identifier=pubinfo)
+            self._pubinfo = rdflib.Graph(store=self.store, identifier=pubinfo.identifier)
         return self._pubinfo
 
     _provenance = None
@@ -80,7 +81,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
                 provenance = self.resource(self.identifier+"_provenance")
                 provenance.add(rdflib.RDF.type, np.Provenance)
                 self.nanopub_resource.add(np.hasProvenance, provenance)
-            self._provenance = rdflib.Graph(store=self.store, identifier=provenance)
+            self._provenance = rdflib.Graph(store=self.store, identifier=provenance.identifier)
         return self._provenance
     
     @property
@@ -90,7 +91,7 @@ class Nanopublication(rdflib.ConjunctiveGraph):
             return modified.value
 
 
-class NanopublicationManager:
+class NanopublicationManager(object):
     def __init__(self, store, prefix, app, update_listener=None):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store
@@ -113,7 +114,7 @@ class NanopublicationManager:
         # This needs to be a two-step write, since we need to store
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
-        fileid = self.depot.create(FileIntent('', ld.create_id(), 'application/trig'))
+        fileid = self.depot.create(FileIntent(b'', create_id(), 'application/trig'))
         return fileid
                     
     def prepare(self, graph, mappings = None, store=None):
@@ -178,7 +179,7 @@ class NanopublicationManager:
                 p += output_graph.get_context(identifier=provenance)
                 #print "Provenance", len(p), len(output_graph.get_context(identifier=provenance))
             if nanopub.pubinfo.value(nanopub.identifier, frbr.realizationOf) is None:
-                work = self.prefix[ld.create_id()]
+                work = self.prefix[create_id()]
                 nanopub.pubinfo.add((nanopub.identifier, frbr.realizationOf, work))
                 nanopub.pubinfo.add((work, rdflib.RDF.type, frbr.Work))
                 nanopub.pubinfo.add((nanopub.identifier, rdflib.RDF.type, frbr.Expression))
@@ -191,13 +192,13 @@ class NanopublicationManager:
         graphs = []
         for nanopub_uri in nanopub_uris:
             for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
-    hint:Query hint:optimizer "Runtime" .
+#    hint:Query hint:optimizer "Runtime" .
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
     ?np np:hasAssertion ?assertion;
         np:hasPublicationInfo ?pubinfo;
         np:hasProvenance ?provenance.
 }''', initNs={"prov":prov, "np":np}, initBindings={"retiree":nanopub_uri}):
-                print "Retiring", np_uri, "derived from", nanopub_uri
+                print("Retiring", np_uri, "derived from", nanopub_uri)
                 graphs.extend([np_uri, assertion, provenance, pubinfo])
                 nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
                 self.db.remove((None,None,None,nanopub.assertion.identifier))
@@ -209,7 +210,7 @@ class NanopublicationManager:
         #session = requests.session()
         #session.keep_alive = False
         #session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
-        print "Retired %s nanopubs." % len(nanopub_uris)
+        print("Retired %s nanopubs." % len(nanopub_uris))
 
     def is_current(self, nanopub_uri):
         work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
@@ -252,7 +253,7 @@ class NanopublicationManager:
                     localpart = self.db.qname(entity).split(":")[1]
                     filename = secure_filename(localpart)
                     f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
-                    print 'adding file', filename
+                    print('adding file', filename)
                     self.app.add_file(f, entity, np_graph)
                     np_graph.remove((entity, self.app.NS.whyis.hasContent, None))
                 
@@ -271,13 +272,13 @@ class NanopublicationManager:
                             nanopub.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
                             to_retire.append(nanopub_uri)
                             r = True
-                            print "Retiring", nanopub_uri
+                            print("Retiring", nanopub_uri)
                     if r:
                         nanopub.pubinfo.set((nanopub.assertion.identifier, dc.modified, now))
                     else:
                         nanopub.pubinfo.set((nanopub.assertion.identifier, dc.created, now))
                     g = rdflib.ConjunctiveGraph()
-                    for graph_part in [rdflib.Graph(identifier=x.identifier, store=x.store) for x in nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo]:
+                    for graph_part in [rdflib.Graph(identifier=x.identifier, store=x.store) for x in (nanopub, nanopub.assertion, nanopub.provenance, nanopub.pubinfo)]:
                         g_part = rdflib.Graph(identifier=graph_part.identifier, store=g.store)
                         for s,p,o in graph_part:
                             g_part.add((s,p,o))
@@ -286,7 +287,7 @@ class NanopublicationManager:
                     serialized = g.serialize(format="trig")
                     self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     data.write(serialized)
-                    data.write('\n')
+                    data.write(b'\n')
                     data.flush()
                     full_list.append(nanopub.identifier)
                 #np_graph.serialize(data, format="trig")
@@ -299,7 +300,7 @@ class NanopublicationManager:
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data, *nanopubs)
-            print "Published %s nanopubs" % len(full_list)
+            print("Published %s nanopubs" % len(full_list))
             
         for n in full_list:
             self.update_listener(n)

@@ -22,6 +22,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
         
     <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-semantic-faceted-search/dist/semantic-faceted-search.css')}}">
+
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v3.20.1/css/ol.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/markers.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/openlayers.css')}}">
         
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
@@ -153,15 +157,15 @@
       {% else %}
       BASE_RATE = 0.5;
       {% endif %}
-      {% if current_user and current_user.resUri %}
-      USER = { uri: '{{current_user.resUri}}', admin: '{{current_user.has_role('admin')}}' };
+      {% if current_user and current_user.identifier %}
+      USER = { uri: '{{current_user.identifier}}', admin: '{{current_user.has_role('Admin')}}' };
       {% else %}
       USER = { }
       {% endif %}
       {% if this is defined %}
       NODE_URI = "{{this.identifier | safe}}";
       ATTRIBUTES = {{ this | include('attributes') | safe }};
-      DESCRIPTION = {{this.description().graph.serialize(format="json-ld") | safe}};
+      DESCRIPTION = {{this.description().graph | serialize(format="json-ld") | safe}};
       NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
       if (NODE.length > 0)  NODE = NODE[0];
       else NODE = {"@id" : NODE_URI};
@@ -178,11 +182,11 @@
       <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc13"></script>
       <script src="https://cdn.jsdelivr.net/npm/vega-embed@3.29.1"></script>-->
 
-<script src="https://cdn.jsdelivr.net/npm/vega@3"></script>
-<script src="https://cdn.jsdelivr.net/npm/vega-lite@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/vega-embed@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@4"></script>
 
-    <script src="{{ url_for('static', filename='bower_components/d3/d3.js')}}"></script>
+      <script src="{{ url_for('static', filename='bower_components/d3/d3.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
     
     <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
@@ -211,6 +215,18 @@
 <script src="{{ url_for('static', filename='js/lib/chart.js')}}"></script>
 
 <script src="{{ url_for('static', filename='bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.js')}}"></script>
+
+<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v3.20.1/build/ol.js"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/openlayers.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/center.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/control.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/layer.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/marker.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/path.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/directives/view.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olData.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olHelpers.js')}}"></script>
+<script src="{{ url_for('static', filename='js/angular-openlayers-directive/src/services/olMapDefaults.js')}}"></script>
 
     <script src="{{ url_for('static', filename='js/lib/moment-with-locales.min.js')}}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>

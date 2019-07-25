@@ -2,40 +2,36 @@ import requests
 import rdflib
 import nanopub
 import datetime
-import email.utils as eut
 import pytz
 import dateutil.parser
 from dateutil.tz import tzlocal
+from werkzeug.datastructures import FileStorage
 from werkzeug.http import http_date
 from setlr import FileLikeFromIter
-from werkzeug.datastructures import FileStorage
 import re
 import os
 from requests_testadapter import Resp
 import magic
 import mimetypes
-import traceback, sys
+import traceback
+import sys
 
-np = rdflib.Namespace('http://www.nanopub.org/nschema#')
-prov = rdflib.Namespace('http://www.w3.org/ns/prov#')
-dc = rdflib.Namespace('http://purl.org/dc/terms/')
-sio = rdflib.Namespace('http://semanticscience.org/resource/')
+from namespace import np, prov, dc, sio
 
-import re
 invalid_escape = re.compile(r'\\[0-7]{1,3}')  # up to 3 digits for byte values up to FF
 
 def replace_with_byte(match):
     return chr(int(match.group(0)[1:], 8))
 
 def repair(brokenjson):
-    return invalid_escape.sub(replace_with_byte, brokenjson.replace('\u000',''))
+    return invalid_escape.sub(replace_with_byte, brokenjson.encode('utf8').replace(b'\u000','').decode('utf8'))
 
 class Importer:
 
     min_modified = 0
 
     import_once=False
-    
+
     def last_modified(self, entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
@@ -46,17 +42,17 @@ class Importer:
             m = old_np.modified
             if m is not None:
                 m = m
-                m = pytz.utc.localize(m)
+                #m = pytz.utc.localize(m)
             if m is None:
                 continue
             if modified is None or m > modified:
-                print m, modified, old_np.modified
+                print(m, modified, old_np.modified)
                 modified = m
         return modified
         
     def load(self, entity_name, db, nanopubs):
         entity_name = rdflib.URIRef(entity_name)
-        print "Fetching", entity_name
+        print("Fetching", entity_name)
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
@@ -67,21 +63,21 @@ class Importer:
         try:
             g = self.fetch(entity_name)
         except Exception as e:
-            print "Error loading %s: %s" %(entity_name,e)
+            print("Error loading %s: %s" %(entity_name,e))
             traceback.print_exc(file=sys.stdout)
             return
         for new_np in nanopubs.prepare(g):
-            print "Adding new nanopub:", new_np.identifier
+            print("Adding new nanopub:", new_np.identifier)
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
-            if updated != None:
+            if updated is not None:
                 new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             nanopubs.publish(new_np)
 
         for old_np in old_nps:
-            print "retiring", old_np.identifier
+            print("retiring", old_np.identifier)
             nanopubs.retire(old_np.identifier)
 
     def explain(self, new_np, entity_name):
@@ -133,7 +129,7 @@ class LinkedData (Importer):
 
     def modified(self, entity_name):
         u = self._get_access_url(entity_name)
-        print "accessing at", u
+        print("accessing at", u)
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
@@ -143,23 +139,23 @@ class LinkedData (Importer):
             result = dateutil.parser.parse(r.headers['Last-Modified'])
             #print result, r.headers['Last-Modified']
             return result
-        else:
-            return None
+
+        return None
 
 
     def fetch(self, entity_name):
         u = self._get_access_url(entity_name)
-        print u
+        print(u)
         r = requests.get(u, headers = self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.URIRef("urn:default_assertion"))
-        local.parse(data=repair(r.text), format=self.format)
+        local.parse(data=r.text, format=self.format)
         #print self.postprocess_update
         if self.postprocess_update is not None:
             #print "update postprocess query."
             g.update(self.postprocess_update)
         if self.postprocess is not None:
-            print "postprocessing", entity_name
+            print("postprocessing", entity_name)
             p = self.postprocess
             p(g)
         #print g.serialize(format="trig")
@@ -199,7 +195,7 @@ class FileImporter (LinkedData):
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
         r = requests_session.get(u, headers = self.headers, allow_redirects=True, stream=True)
-        np = nanopub.Nanopublication()
+        npub = nanopub.Nanopublication()
         if 'content-disposition' in r.headers:
             d = r.headers['content-disposition']
             fname = re.findall("filename=(.+)", d)
@@ -208,14 +204,14 @@ class FileImporter (LinkedData):
         content_type = r.headers.get('content-type')
 
         if self.file_types is not None:
-            for file_type in file_types:
-                np.assertion.add((entity_name, rdflib.RDF.type, file_type))
+            for file_type in self.file_types:
+                npub.assertion.add((entity_name, rdflib.RDF.type, file_type))
         f = FileStorage(FileLikeFromIter(r.iter_content()), fname, content_type=content_type)
-        old_nanopubs = self.app.add_file(f, entity_name, np)
-        np.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
-        for old_np, old_np_assertion in old_nanopubs:
-            np.pubinfo.add((np.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
+        old_nanopubs = self.app.add_file(f, entity_name, npub)
+        npub.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
+        
+        # old_np variable unused
+        for _, old_np_assertion in old_nanopubs:
+            npub.pubinfo.add((npub.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
 
-        return np
-        
-        
+        return npub

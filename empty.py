@@ -1,6 +1,7 @@
 # coding:utf-8
 
-__all__ = ['Empty']
+# from past.builtins import basestring
+# __all__ = ['Empty']
 
 from flask import Flask, render_template
 import logging
@@ -40,8 +41,8 @@ class Empty(Flask):
                 name = blueprint_config[0]
                 kw.update(blueprint_config[1])
             else:
-                print "Error in BLUEPRINTS setup in config.py"
-                print "Please, verify if each blueprint setup is either a string or a tuple."
+                print("Error in BLUEPRINTS setup in config.py")
+                print("Please, verify if each blueprint setup is either a string or a tuple.")
                 exit(1)
 
             self.add_blueprint(name, kw)
@@ -68,11 +69,15 @@ class Empty(Flask):
             log_file.setLevel(self.config['LOG_LEVEL'])
             self.logger.addHandler(log_file)
             self.logger.info("Logger started")
-        except:
-            print "Could not configure logger, using defaults."
+        except Exception:
+            pass
+            # print("Could not configure logger, using defaults.")
             
-    def configure_error_handlers(app):
-        @app.errorhandler(403)
+    def configure_error_handlers(self):
+
+        errorhandler = self.errorhandler
+        
+        @errorhandler(403)
         def forbidden_page(error):
             """
             The server understood the request, but is refusing to fulfill it.
@@ -85,7 +90,7 @@ class Empty(Flask):
             """
             return render_template("http/access_forbidden.html"), 403
 
-        @app.errorhandler(404)
+        @errorhandler(404)
         def page_not_found(error):
             """
             The server has not found anything matching the Request-URI. No indication
@@ -98,7 +103,7 @@ class Empty(Flask):
             """
             return render_template("http/page_not_found.html"), 404
 
-        @app.errorhandler(405)
+        @errorhandler(405)
         def method_not_allowed_page(error):
             """
             The method specified in the Request-Line is not allowed for the resource
@@ -107,7 +112,7 @@ class Empty(Flask):
             """
             return render_template("http/method_not_allowed.html"), 405
 
-        @app.errorhandler(500)
+        @errorhandler(500)
         def server_error_page(error):
             return render_template("http/server_error.html"), 500
 
@@ -144,8 +149,8 @@ class Empty(Flask):
             # only works in debug mode
             from flask_debugtoolbar import DebugToolbarExtension
             DebugToolbarExtension(self)
-        except ImportError, e:
-            print 'debugtoolbar extension not available.'
+        except ImportError:
+            print('debugtoolbar extension not available.')
 
     def configure_before_request(self):
         pass

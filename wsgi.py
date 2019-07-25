@@ -6,7 +6,11 @@ if not app_dir in sys.path:
     sys.path.insert(0, app_dir)
 
 from main import app_factory
-import config
+try:
+    import config
+except ImportError as e:
+    print("WARNING: %s, using defaults file" % str(e))
+    import config_defaults as config
 
 application = app_factory(config.Config, config.project_name)
 celery = application.celery

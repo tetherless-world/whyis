@@ -16,7 +16,7 @@
     <md-select ng-model="variables.x">
       <md-option ng-value="null"><em>None</em></md-option>
       <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
-        {{variable.name}}
+        {{variable.name}} {{variable.unit_label}}
       </md-option>
     </md-select>
   </md-input-container>
@@ -37,7 +37,7 @@
     <md-select ng-model="variables.y">
       <md-option ng-value="null"><em>None</em></md-option>
       <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
-        {{variable.name}}
+        {{variable.name}} {{variable.unit_label}}
       </md-option>
     </md-select>
   </md-input-container>
@@ -57,7 +57,7 @@
     <md-select ng-model="variables.size">
       <md-option ng-value="null"><em>None</em></md-option>
       <md-option ng-repeat="variable in facetValues  track by variable.field" ng-value="variable">
-        {{variable.name}}
+        {{variable.name}} {{variable.unit_label}}
       </md-option>
     </md-select>
   </md-input-container>
@@ -77,7 +77,7 @@
     <md-select ng-model="variables.color">
       <md-option ng-value="null"><em>None</em></md-option>
       <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
-        {{variable.name}}
+        {{variable.name}} {{variable.unit_label}}
       </md-option>
     </md-select>
   </md-input-container>

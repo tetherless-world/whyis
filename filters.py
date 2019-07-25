@@ -1,24 +1,23 @@
-from flask_ld.utils import lru
+#from __future__ import print_function
+#from __future__ import division
+#from future import standard_library
+#standard_library.install_aliases()
+#from builtins import map
+#from past.utils import old_div
 
-import urllib
-from markupsafe import Markup
+import collections
+import json
+import rdflib
 
 from flask import g, request
-import rdflib
-from rdflib import *
-
-import math
-import collections
+from functools import reduce
+from jinja2 import Environment
+from markupsafe import Markup
+from slugify import slugify
+from urllib import parse
 
 from scipy.stats import norm
-
 from scipy.stats import combine_pvalues
-
-import json
-
-from jinja2 import Environment, PackageLoader, select_autoescape
-
-from slugify import slugify
 
 def geomean(nums):
     return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
@@ -30,21 +29,21 @@ def configure(app):
 
     @app.template_filter('urlencode')
     def urlencode_filter(s):
-        if type(s) == 'Markup':
+        if isinstance(s, Markup):
             s = s.unescape()
         s = s.encode('utf8')
-        s = urllib.quote_plus(s)
+        s = parse.quote_plus(s)
         return Markup(s)
 
     @app.template_filter('labelize')
     def labelize(entry, key='about', label_key='label', fetch=False):
         if key not in entry:
-            return
+            return None
         resource = None
         if fetch:
-            resource = app.get_resource(URIRef(entry[key]))
+            resource = app.get_resource(rdflib.URIRef(entry[key]))
         else:
-            resource = app.Entity(app.db, URIRef(entry[key]))
+            resource = app.Entity(app.db, rdflib.URIRef(entry[key]))
         entry[label_key] = g.get_label(resource.description())
         return entry
 
@@ -55,28 +54,37 @@ def configure(app):
         return entries
 
     app.labelize = labelize
+    
+    @app.template_filter('map_list')
+    def map_list(entries, source, destination, fn):
+        for entry in entries:
+            entry[destination] = fn(entry[source])
+        return entries
         
     @app.template_filter('lang')
     def lang_filter(terms):
         terms = list(terms)
-        if terms is None or len(terms) == 0:
+        if terms is None or not terms:
             return []
         resources = [x for x in terms if not isinstance(x, rdflib.Literal)]
         literals = [x for x in terms if isinstance(x, rdflib.Literal)]
-        languages = set([x.language for x in literals if x.language is not None])
+        languages = { x.language for x in literals if x.language is not None }
         best_lang = request.accept_languages.best_match(list(languages))
         best_terms = [x for x in literals if x.language == best_lang]
-        if len(best_terms) == 0:
+        if not best_terms:
             best_terms = [x for x in literals if x.language == app.config['default_language']]
-        if len(best_terms) > 0:
+        if best_terms:
             return resources + best_terms
         return resources
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes={}, values=None):
+    def query_filter(query, graph=app.db, prefixes=None, values=None):
+        if prefixes is None: # default arguments are evaluated once, ever
+            prefixes = {}
+        
         namespaces = dict(app.NS.prefixes)
-        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+        namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
@@ -88,27 +96,28 @@ def configure(app):
         return json.loads(json_text)
         
     @app.template_filter('construct')
-    def construct_filter(query, graph=app.db, prefixes={}, values=None):
-
+    def construct_filter(query, graph=app.db, prefixes=None, values=None):
+        if not prefixes:
+            prefixes = {}
+        
         def remap_bnode(x):
-            if isinstance(x, URIRef) and x.startswith('bnode:'):
-                return BNode(x.replace('bnode:',''))
-            else:
-                return x
+            if isinstance(x, rdflib.URIRef) and x.startswith('bnode:'):
+                return rdflib.BNode(x.replace('bnode:',''))
+            return x
         namespaces = dict(app.NS.prefixes)
-        namespaces.update(dict([(key, rdflib.URIRef(value)) for key, value in prefixes.items()]))
+        namespaces.update({ key: rdflib.URIRef(value) for key, value in prefixes.items() })
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        g = ConjunctiveGraph()
+        graph = rdflib.graph.ConjunctiveGraph()
         for stmt in graph.query(query, **params):
-            g.add(tuple([remap_bnode(x) for x in stmt]))
-        print len(g)
-        return g
+            graph.add(tuple([remap_bnode(x) for x in stmt]))
+        print(len(graph))
+        return graph
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        return graph.serialize(**kwargs)
+        return graph.serialize(**kwargs).decode()
 
     @app.template_filter('attributes')
     def attributes(query, this):
@@ -127,28 +136,28 @@ def configure(app):
         for attr in attrs:
             result['attributes'][attr['property']]['@id'] = attr['property']
             result['attributes'][attr['property']]['values'].append(attr)
-        for attr in result['attributes'].values():
+        for attr in list(result['attributes'].values()):
             values = set(lang_filter([x['value'] for x in attr['values'] if x['value'] != result['label']]))
             attr['values'] = [x for x in attr['values'] if x['value'] in values]
             labelize(attr, key='@id')
             for value in attr['values']:
-                if isinstance(value['value'], URIRef):
+                if isinstance(value['value'], rdflib.URIRef):
                     value['@id'] = value['value']
                     labelize(value, key='@id', label_key='value')
                 if 'unit' in value:
                     labelize(value, key='unit', label_key='unit_label')
                 del value['property']
-        result['attributes'] = [x for x in result['attributes'].values() if len(x['values']) > 0]
+        result['attributes'] = [x for x in list(result['attributes'].values()) if len(x['values']) > 0]
         return result
 
     @app.template_filter('include')
     def include(entity, view='view', **kwargs):
         if not isinstance(entity, app.Entity):
             entity = app.get_resource(entity)
-        if len(kwargs) == 0:
+        if not kwargs:
             kwargs = None
-        result, status, headers = app.render_view(entity, view=view, args=kwargs)
-        return result
+
+        return app.render_view(entity, view=view, args=kwargs)[0]
         
     @app.template_filter('probquery')
     def probquery(select):
@@ -202,6 +211,7 @@ where {
     @app.template_filter('mergeLinks')
     def mergeLink(edges):
         base_rate = app.config['base_rate_probability']
+        
         def merge(links):
             result = dict(links[0])
             result['from'] = []
@@ -211,13 +221,15 @@ where {
                     
                     # Do a very rudimentary meta-analysis based on the number of supporting papers
                     rates = [base_rate for x in i['articles']]
-                    if len(rates) == 0:
+                    if not rates:
                         rates = [base_rate]
                     p = combine_pvalues(rates, method="stouffer")[1]
                     i['probability'] = p
                     if 'frequency' in i:
-                        idf = 10 ** i.get('idf',Literal(100)).value
+                        idf = 10 ** i.get('idf', rdflib.Literal(100)).value
                         tfidf = (0.5+i['frequency'].value) * idf
+
+                        # old_div is no longer defined!
                         i['probability'] = combine_pvalues([tfidf/(1+tfidf)],method='stouffer')[1]
                 else:
                     i['probability'] = i['probability'].value
@@ -234,7 +246,7 @@ where {
             edge['link_types'] = [x for x in edge.get('link_types','').split(' ') if len(x) > 0]
             edge['articles'] = [x for x in edge.get('articles','').split(' ') if len(x) > 0]
             byLink[(edge['source'],edge['link'],edge['target'])].append(edge)
-        result = map(merge, byLink.values())
+        result = list(map(merge, list(byLink.values())))
         return result
 
     @app.template_filter('mergeLinkTypes')
@@ -257,7 +269,7 @@ where {
         #print edge
             #for link_type in edge['link_types']:
             result[(edge['source'],tuple(sorted(edge['link_types'])),edge['target'])].append(edge)
-        result = map(merge, result.values())
+        result = list(map(merge, list(result.values())))
         return result
 
     def types(x):
@@ -271,19 +283,20 @@ where {
         results = sorted(mergeLinkTypes(results), key=lambda x: x['probability'], reverse=True)
         for r in results:
             r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
-            resource = app.get_resource(URIRef(r['link']))
+            # resource = # return value of the next line is never used
+            app.get_resource(rdflib.URIRef(r['link']))
             labelize(r, 'link','label')
             #r['descriptions'] = [v for k,v in app.get_summary(resource)]
         if 'target' not in values:
             results = iter_labelize(results,'target','target_label')
             for r in results:
-                r['target_types'] = [x for x,
-                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['target']))]
+                r['target_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
+                                                             initBindings=dict(x=r['target']))]
         if 'source' not in values:
             results = iter_labelize(results,'source','source_label')
             for r in results:
-                r['source_types'] = [x for x,
-                                     in app.db.query('select ?t where {?x a ?t}',initBindings=dict(x=r['source']))]
+                r['source_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
+                                                             initBindings=dict(x=r['source']))]
         return results
 
     env = Environment()
@@ -326,18 +339,18 @@ WHERE {
     
     @app.template_filter('facet_values')
     def facet_values(facets, variables, constraints):
-        if len(constraints) > 0:
+        if constraints:
             constraints = json.loads(constraints)
-        if len(variables) > 0:
+        if variables:
             variables = json.loads(variables)
-            var_map = dict([(v['field'],v) for v in variables])
+            var_map = { v['field']: v for v in variables}
             variables = list(var_map.values())
         results = []
         for facet in facets:
             facet['type'] = 'nominal'
             if 'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
-                print query
+                print(query)
                 values = query_filter(query)
                 for value in values:
                     value.update(facet)
@@ -355,6 +368,9 @@ WHERE {
                 results.append(facet)
         iter_labelize(results, key='value', label_key='name')
         iter_labelize(results, key='unit', label_key='unit_label')
+        for result in results:
+            if 'value' in result:
+                result['value'] = result['value'].n3()
         return results
 
     instance_data_template = env.from_string('''
@@ -363,29 +379,32 @@ WHERE {
     {% for constraint in constraints %}{{constraint}}{% endfor %}
 
     {% for variable in variables %}
+    {% if variable.selectionType == 'Show' %}optional { {% endif %}
     {% if 'valuePredicate' in variable %}
       ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} <{{variable['value']}}>;
+        {{variable['typeProperty']}} {{variable['value']}};
         {{variable['valuePredicate']}} ?{{variable['field']}};
         {% if 'unit' in variable %}
           {{variable['unitPredicate']}} <{{variable['unit']}}>;
         {% endif %}
       ].
     {% else %}
-      ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} [ rdfs:label ?{{variable['field']}}];
-      ].
+      {{variable['specifier'].replace('?value', '?uri_'+variable['field'])}}
+      ?uri_{{variable['field']}} rdfs:label ?{{variable['field']}}.
     {% endif %}
+    {% if variable.selectionType == 'Show' %}} {% endif %}
   {% endfor %}
   
 }''')
     @app.template_filter('instance_data')
     def instance_data(this, variables, constraints):
-        if len(constraints) > 0:
+        if constraints:
             constraints = json.loads(constraints)
-        if len(variables) > 0:
+        else:
+            constraints = []
+        if variables:
             variables = json.loads(variables)
+        else:
+            variables = []
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
-        
         return query
-        

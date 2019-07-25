@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import str
+from builtins import range
 from six import b
 from six.moves.urllib.request import pathname2url
 from six import iteritems
@@ -19,42 +22,6 @@ __all__ = ['ElasticSearchStore']
 import pkg_resources
 
 elastic_index_settings = pkg_resources.resource_string(__name__, "elastic_index_settings.json")
-
-def lru(original_function, maxsize=1000):
-    mapping = {}
-
-    PREV, NEXT, KEY, VALUE = 0, 1, 2, 3         # link fields
-    head = [None, None, None, None]        # oldest
-    tail = [head, None, None, None]   # newest
-    head[NEXT] = tail
-
-    def fn(*args, **kw):
-        key = (args,tuple(kw.items()))
-        PREV, NEXT = 0, 1
-        #print "Cache lookup for "+str(key)
-        link = mapping.get(key, head)
-        if link is head:
-            #print "Cache miss for "+str(key)
-            value = original_function(*args,**kw)
-            if len(mapping) >= maxsize:
-                old_prev, old_next, old_key, old_value = head[NEXT]
-                head[NEXT] = old_next
-                old_next[PREV] = head
-                del mapping[old_key]
-            last = tail[PREV]
-            link = [last, tail, key, value]
-            mapping[key] = last[NEXT] = tail[PREV] = link
-        else:
-            #print "Cache hit for "+str(key)
-            link_prev, link_next, key, value = link
-            link_prev[NEXT] = link_next
-            link_next[PREV] = link_prev
-            last = tail[PREV]
-            last[NEXT] = tail[PREV] = link
-            link[PREV] = last
-            link[NEXT] = tail
-        return value
-    return fn
 
 class ElasticSearchStore(Store):
     context_aware = True
@@ -83,8 +50,8 @@ class ElasticSearchStore(Store):
         if create and status.status_code == 404:
             r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
             if r.status_code != 201:
-                print r.status_code
-                print r.content
+                print(r.status_code)
+                print(r.content)
         self.__open = True
 
         return VALID_STORE
@@ -159,8 +126,8 @@ class ElasticSearchStore(Store):
                              headers={"Content-Type":"application/json"},
                              data=json_ld)
         if r.status_code != 201:
-            print r.status_code
-            print r.content
+            print(r.status_code)
+            print(r.content)
     
     def remove(self, spo, context, txn=None):
         subject, predicate, object = spo
@@ -256,7 +223,7 @@ class ElasticSearchStore(Store):
                     if predicate is not None:
                         predicates = [str(predicate)]
                     else:
-                        predicates = resource.keys()
+                        predicates = list(resource.keys())
                     for pred in predicates:
                         if pred == '@object' or pred == '@id':
                             continue
