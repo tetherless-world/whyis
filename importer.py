@@ -1,27 +1,23 @@
-from __future__ import print_function
-from builtins import chr
-from builtins import object
 import requests
 import rdflib
 import nanopub
 import datetime
-import email.utils as eut
 import pytz
 import dateutil.parser
 from dateutil.tz import tzlocal
+from werkzeug.datastructures import FileStorage
 from werkzeug.http import http_date
 from setlr import FileLikeFromIter
-from werkzeug.datastructures import FileStorage
 import re
 import os
 from requests_testadapter import Resp
 import magic
 import mimetypes
-import traceback, sys
+import traceback
+import sys
 
 from namespace import np, prov, dc, sio
 
-import re
 invalid_escape = re.compile(r'\\[0-7]{1,3}')  # up to 3 digits for byte values up to FF
 
 def replace_with_byte(match):
@@ -30,12 +26,12 @@ def replace_with_byte(match):
 def repair(brokenjson):
     return invalid_escape.sub(replace_with_byte, brokenjson.encode('utf8').replace(b'\u000','').decode('utf8'))
 
-class Importer(object):
+class Importer:
 
     min_modified = 0
 
     import_once=False
-    
+
     def last_modified(self, entity_name, db, nanopubs):
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
@@ -74,7 +70,7 @@ class Importer(object):
             print("Adding new nanopub:", new_np.identifier)
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
-            if updated != None:
+            if updated is not None:
                 new_np.pubinfo.add((new_np.assertion.identifier, dc.modified, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime, rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
@@ -143,8 +139,8 @@ class LinkedData (Importer):
             result = dateutil.parser.parse(r.headers['Last-Modified'])
             #print result, r.headers['Last-Modified']
             return result
-        else:
-            return None
+
+        return None
 
 
     def fetch(self, entity_name):
@@ -199,7 +195,7 @@ class FileImporter (LinkedData):
         requests_session.mount('file://', LocalFileAdapter())
         requests_session.mount('file:///', LocalFileAdapter())
         r = requests_session.get(u, headers = self.headers, allow_redirects=True, stream=True)
-        np = nanopub.Nanopublication()
+        npub = nanopub.Nanopublication()
         if 'content-disposition' in r.headers:
             d = r.headers['content-disposition']
             fname = re.findall("filename=(.+)", d)
@@ -208,14 +204,14 @@ class FileImporter (LinkedData):
         content_type = r.headers.get('content-type')
 
         if self.file_types is not None:
-            for file_type in file_types:
-                np.assertion.add((entity_name, rdflib.RDF.type, file_type))
+            for file_type in self.file_types:
+                npub.assertion.add((entity_name, rdflib.RDF.type, file_type))
         f = FileStorage(FileLikeFromIter(r.iter_content()), fname, content_type=content_type)
-        old_nanopubs = self.app.add_file(f, entity_name, np)
-        np.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
-        for old_np, old_np_assertion in old_nanopubs:
-            np.pubinfo.add((np.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
+        old_nanopubs = self.app.add_file(f, entity_name, npub)
+        npub.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
+        
+        # old_np variable unused
+        for _, old_np_assertion in old_nanopubs:
+            npub.pubinfo.add((npub.assertion.identifier, self.app.NS.prov.wasRevisionOf, old_np_assertion))
 
-        return np
-        
-        
+        return npub

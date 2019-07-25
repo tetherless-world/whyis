@@ -20,6 +20,8 @@ jobs:
       - run:
           name: Run tests
           command: .circleci/test.sh tetherlessworld/whyis:latest
+      - store_artifacts:
+          path: test-results/py/htmlcov
       - store_test_results:
           path: test-results
       - run:
@@ -62,7 +64,7 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: pip3 install flake8 pycodestyle pylint
+          command: pip3 install flake8 pycodestyle pylint vulture
       - run:
           name: Lint the code
           command: .circleci/lint-py.sh

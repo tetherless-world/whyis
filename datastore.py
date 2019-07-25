@@ -1,15 +1,17 @@
+from copy import copy
+from flask import abort
+from flask_security import UserMixin, RoleMixin
+from flask_security.utils import verify_and_update_password
 from flask_security.datastore import Datastore, UserDatastore
-from rdflib import *
+from namespace import dc, auth, foaf, prov
+from rdflib import BNode, Literal, URIRef, Namespace, Graph, RDF, RDFS
+from rdflib.graph import ConjunctiveGraph
 from rdflib.resource import Resource
 from rdflib.term import Identifier
-from copy import copy
-from flask_security import Security, \
-    UserMixin, RoleMixin, login_required
-from flask_security.utils import  hash_password, verify_and_update_password
+
 import base64
 import random
 from datetime import datetime
-
 
 def create_id():
     return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
@@ -21,10 +23,11 @@ def value2object(value):
     suitable for a triple"""
     if isinstance(value, Resource):
         return value.identifier
-    elif isinstance(value, Identifier) or isinstance(value, BNode) or isinstance(value, URIRef):
+
+    if isinstance(value, (Identifier, BNode, URIRef)):
         return value
-    else:
-        return Literal(value)
+    
+    return Literal(value)
 
 def tag_datastore(fn):
     def f(self,*args,**kw):
@@ -64,17 +67,18 @@ def getList(sub, pred=None, db=None):
         return members
     # OK let's work at returning a Collection (Seq,Bag or Alt)
     # if was no RDF.first
-    else:
-        i = 1
-        first = db.value(base, RDF._1)
-        if not first:
-            raise AttributeError(
-                "Not a list, or collection but another type of BNode")
-        while first:
-            members.append(first)
-            i += 1
-            first = db.value(base, RDF['_%d' % i])
-        return members
+    
+    i = 1
+    # first = db.value(base, RDF._1) # _1 ???
+    first = db.value(base, RDF.first)
+    if not first:
+        raise AttributeError(
+            "Not a list, or collection but another type of BNode")
+    while first:
+        members.append(first)
+        i += 1
+        first = db.value(base, RDF['_%d' % i])
+    return members
 
         
 class single:
@@ -114,14 +118,10 @@ class multiple:
         val = list(obj.graph.objects(obj.identifier, self._predicate))
         # check to see if this is a Container or Collection
         # if so, return collection as a list
-        if (len(val) == 1
-            ) and (
-                not isinstance(val[0], Literal)
-            ) and (
-                obj.graph.value(val[0], RDF.first
-                             ) ):
+        if len(val) == 1 and not isinstance(val[0], Literal) and obj.graph.value(val[0], RDF.first):
             val = getList(obj, self._predicate)
-        #print(val)
+            
+        # print(val)
         val = [(obj.datastore.get(v) if isinstance(v, (BNode, URIRef))
                 else v.toPython())
                for v in val]
@@ -131,9 +131,8 @@ class multiple:
 
     def __set__(self, obj, newvals):
         if not isinstance(newvals, (list, tuple)):
-            raise AttributeError(
-                "to set a rdfMultiple you must pass in " +
-                "a list (it can be a list of one)")
+            raise AttributeError("to set a rdfMultiple you must pass in "
+                                 + "a list (it can be a list of one)" )
         try:
             oldvals = obj.__dict__[self._predicate]
         except KeyError:
@@ -141,7 +140,7 @@ class multiple:
             obj.__dict__[self._predicate] = oldvals
         db = obj.graph
         for value in oldvals:
-            if value and not value in newvals:
+            if value and value not in newvals:
                 db.remove((obj.identifier, self._predicate, value2object(value)))
         for value in newvals:
             if value not in oldvals:
@@ -193,10 +192,6 @@ class MappedResource(Resource):
 
 #    def __str__(self):
 #        return type(self).__name__ + ' ' + super().__str__() + ' a ' + self.rdf_type
-
-
-from namespace import dc, auth, foaf, prov
-
 
 class User(MappedResource, UserMixin):
     rdf_type = prov.Agent
@@ -250,7 +245,7 @@ class WhyisDatastore(Datastore):
     def put(self, model):
         #self.db.add(model)
         idb = Graph(self.db.store,model.identifier)
-        if len(idb) > 0:
+        if idb:
             idb.remove((None,None,None))
         idb += model.graph
         self.db.store.commit()
@@ -260,7 +255,7 @@ class WhyisDatastore(Datastore):
     def delete(self, model):
         uri = model.identifier
         idb = ConjunctiveGraph(self.db.store,uri)
-        if len(idb) == 0:
+        if not idb:
             abort(404, "Resource does not exist or is not deletable.")
         idb.remove((None,None,None))
         g = ConjunctiveGraph(self.db.store)
@@ -274,7 +269,7 @@ class WhyisDatastore(Datastore):
         result += idb
         if c is None:
             c = Resource
-            for t in result.objects(resUri,RDF.type):
+            for t in result.objects(resUri, RDF.type):
                 #print (resUri, t, t in self.classes)
                 if t in self.classes:
                     c = self.classes[t]
@@ -287,15 +282,16 @@ class WhyisDatastore(Datastore):
     def find(self, model, **kwargs):
         rdf_type = model.rdf_type
         predicates = [(model.__dict__[key]._predicate, key) for key, value in kwargs.items()]
-        bindings = dict([(key, value2object(value)) for key, value in kwargs.items()])
+        bindings = { key: value2object(value) for key, value in kwargs.items() }
         query = ''' select ?identifier where {
         ?identifier a %s;
         ''' % rdf_type.n3() + '\n'.join(['    %s ?%s;' % (p.n3(), v) for p, v in predicates]) + '''
         .
         }'''
         result = list(self.db.query(query, initBindings=bindings))
-        if len(result) > 0:
+        if result:
             return self.get(result[0][0], model)
+        return None
 
 
 class WhyisUserDatastore(WhyisDatastore, UserDatastore):
@@ -317,6 +313,7 @@ class WhyisUserDatastore(WhyisDatastore, UserDatastore):
             uri = self.db.value(predicate=attr, object=Literal(identifier))
             if uri is not None:
                 return self.get(uri, self.User)
+        return None
 
     @tag_datastore
     def find_user(self, **kwargs):

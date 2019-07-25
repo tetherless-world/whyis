@@ -1,24 +1,18 @@
 # -*- config:utf-8 -*-
 
-from builtins import str
-import os
+import importer
+import autonomic
 import logging
-from datetime import timedelta
+
+from datetime import datetime, timedelta
 
 project_name = "whyis"
-import importer
-
-import autonomic
-import agents.nlp as nlp
-import agents.hermit as hermit
-import rdflib
-from datetime import datetime
 
 # Set to be custom for your project
 LOD_PREFIX = 'http://localhost:5000'
 #os.getenv('lod_prefix') if os.getenv('lod_prefix') else 'http://hbgd.tw.rpi.edu'
 
-from namespace import skos
+# from namespace import skos
 
 # base config class; extend it to your needs.
 Config = dict(
@@ -157,8 +151,7 @@ Config = dict(
 #        )
     ],
     reasoning_profiles = {
-        "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"
-        ],
+        "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"],
         "OWL2 EL" : [ 
             "Class Inclusion", 
             "Class Equivalence", 
@@ -427,4 +420,3 @@ Test.update(dict(
     TESTING = True,
     WTF_CSRF_ENABLED = False
 ))
-

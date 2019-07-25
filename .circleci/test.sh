@@ -1,7 +1,9 @@
 #!/bin/bash
 mkdir -p test-results/py
 
-docker run $1 bash -c "python3 manage.py test --ci &>/dev/null && cat test-results/py/results.xml" >test-results/py/results.xml
+docker run $1 bash -c "python3 manage.py test --ci &>/dev/null && tar cf test-results-py.tar test-results/py && cat test-results-py.tar" >test-results-py.tar
+
+tar xf test-results-py.tar
 
 cat test-results/py/results.xml
 
