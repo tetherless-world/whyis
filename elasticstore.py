@@ -149,11 +149,10 @@ class ElasticSearchStore(Store):
         else:
             docid = quote_plus(docid)
 
-         
-
         r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),
                              headers={"Content-Type":"application/json"},
                              data=json_ld)
+
         if r.status_code != 201:
             print(r.status_code)
             print(r.content)
@@ -185,7 +184,7 @@ class ElasticSearchStore(Store):
         json_response = self.elastic_query(query)
         g = rdflib.ConjunctiveGraph()
 
-        g.addN(self.json_ld_triples(json_response))
+        g.addN(json_ld_triples(json_response))
         return g
 
     def triples(self, spo=(None,None,None), context=None, txn=None):
@@ -244,55 +243,10 @@ class ElasticSearchStore(Store):
 
         if isinstance(context, Graph):
             context = context.identifier
-        for s, p, o, g in self.json_ld_triples(json_response,
+        for s, p, o, g in json_ld_triples(json_response,
                                                subject, predicate, object, context):
             yield (s, p, o), Graph(store=self, identifier=g)
 
-    def json_ld_triples(self, json_response, subject=None, predicate=None, object=None, context=None):
-        #print json_response
-        if 'hits' not in json_response:
-            return
-        for hit in json_response['hits']['hits']:
-            for graph in hit['_source']['graphs']:
-                graphid = rdflib.URIRef(graph['@id'])
-                if context is not None and context != graphid:
-                    continue
-                for resource in graph['@graph']:
-                    resourceid = rdflib.URIRef(resource['@id'])
-                    if resourceid.startswith('_:'):
-                      resourceid = rdflib.BNode(resourceid[2:])
-                    else:
-                      resourceid = rdflib.URIRef(resourceid)
-                    if subject is not None and subject != resourceid:
-                        continue
-                    predicates = []
-                    if predicate is not None:
-                        predicates = [str(predicate)]
-                    else:
-                        predicates = list(resource.keys())
-                    for pred in predicates:
-                        if pred == '@object' or pred == '@id':
-                            continue
-                        if pred not in resource:
-                            continue
-                        for obj in resource[pred]:
-                            o = None
-                            if '@id' in obj:
-                                id = obj['@id']
-                                if id.startswith('_:'):
-                                    o = rdflib.BNode(id[2:])
-                                else:
-                                    o = rdflib.URIRef(id)
-                            else:
-                                args = {}
-                                if '@type' in obj:
-                                    args['datatype'] = rdflib.URIRef(obj['@type'])
-                                if '@lang' in obj:
-                                    args['lang'] = obj['@lang']
-                                o = rdflib.Literal(obj['@value'],**args)
-                            if object is not None and o != object:
-                                continue
-                            yield resourceid, rdflib.URIRef(pred), o, graphid
                             
     def __len__(self, context=None):
         assert self.__open, "The Store must be open."
@@ -325,6 +279,52 @@ class ElasticSearchStore(Store):
         if isinstance(graph, Graph):
             graph = graph.identifier
         response = self.session.delete(self.url+"/nanopublication/"+graph.split('/')[-1])
+
+def json_ld_triples(json_response, subject=None, predicate=None, object=None, context=None):
+    #print json_response
+    if 'hits' not in json_response:
+        return
+    for hit in json_response['hits']['hits']:
+        for graph in hit['_source']['graphs']:
+            graphid = rdflib.URIRef(graph['@id'])
+            if context is not None and context != graphid:
+                continue
+            for resource in graph['@graph']:
+                resourceid = rdflib.URIRef(resource['@id'])
+                if resourceid.startswith('_:'):
+                    resourceid = rdflib.BNode(resourceid[2:])
+                else:
+              	    resourceid = rdflib.URIRef(resourceid)
+                if subject is not None and subject != resourceid:
+                    continue
+                predicates = []
+                if predicate is not None:
+                    predicates = [str(predicate)]
+                else:
+                    predicates = list(resource.keys())
+                for pred in predicates:
+                    if pred == '@object' or pred == '@id':
+                        continue
+                    if pred not in resource:
+                        continue
+                    for obj in resource[pred]:
+                        o = None
+                        if '@id' in obj:
+                            id = obj['@id']
+                            if id.startswith('_:'):
+                                o = rdflib.BNode(id[2:])
+                            else:
+                                o = rdflib.URIRef(id)
+                        else:
+                            args = {}
+                            if '@type' in obj:
+                                args['datatype'] = rdflib.URIRef(obj['@type'])
+                            if '@lang' in obj:
+                                args['lang'] = obj['@lang']
+                            o = rdflib.Literal(obj['@value'],**args)
+                        if object is not None and o != object:
+                            continue
+                        yield resourceid, rdflib.URIRef(pred), o, graphid
 
 def evalBGP(ctx, part=None, bgp=None):
 
