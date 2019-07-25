@@ -365,11 +365,12 @@ class App(Empty):
 
         def description(self):
             if self._description is None:
-#                result = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } })
-#                try:
-                result = Graph()
-#                try:
-                for quad in self._graph.query('''
+                result = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } })
+##                try:
+#                result = Graph()
+##                try:
+                new_graph = Graph();
+                for quad in result.query('''
 construct {
     ?e ?p ?o.
     ?o rdfs:label ?label.
@@ -403,15 +404,16 @@ construct {
       ?o foaf:name ?name.
     }
 }''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
-                    if len(quad) == 3:
-                        s,p,o = quad
-                    else:
-                        # Last term is never used
-                        s,p,o,_ = quad
-                    result.add((s,p,o))
+                    new_graph.add(quad[:3])
+#                        s,p,o = quad
+#                    else:
+#                        # Last term is never used
+#                        s,p,o,_ = quad
+#                    result.add((s,p,o))
 #                except:
 #                    pass
-                self._description = result.resource(self.identifier)
+                self._description = new_graph.resource(self.identifier)
+
 #                except Exception as e:
 #                    print str(e), self.identifier
 #                    raise e
