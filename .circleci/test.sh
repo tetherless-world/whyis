@@ -17,7 +17,7 @@ fi
 
 cat test-results/py/results.xml
 
-if [ "$(grep -c "failure "test-results/py/results.xml)" -ge 1 ]; then
+if [ "$(grep -c 'failure ' test-results/py/results.xml)" -ge 1 ]; then
     exit 1
 else
     exit 0
