@@ -12,7 +12,7 @@ from io import StringIO
 import nanopub
 
 import autonomic
-from .agent_unit_test_case import AgentUnitTestCase
+from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
 
 class OntologyImportAgentTestCase(AgentUnitTestCase):

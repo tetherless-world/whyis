@@ -9,7 +9,7 @@ import collections
 import os
 import javabridge
 
-from namespace import sioc_types, sioc, sio, dc, prov, whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class ConsistencyCheck(autonomic.UpdateChangeService):
     activity_class = whyis.ConsistencyCheck

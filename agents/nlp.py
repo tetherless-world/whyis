@@ -9,7 +9,7 @@ import nanopub
 from math import log10
 import collections
 
-from namespace import sioc_types, sioc, sio, dc, prov, whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class HTML2Text(autonomic.UpdateChangeService):
     activity_class = whyis.TextFromHTML

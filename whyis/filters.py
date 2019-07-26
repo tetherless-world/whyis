@@ -19,8 +19,9 @@ from urllib import parse
 from scipy.stats import norm
 from scipy.stats import combine_pvalues
 
-def geomean(nums):
-    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
+
+# def geomean(nums):
+#    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
 #def composite_z_score(nums):
 #    return norm.cdf(sum([norm.ppf(x) for x in nums]))

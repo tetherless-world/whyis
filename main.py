@@ -50,9 +50,9 @@ from datastore import WhyisUserDatastore
 
 import markdown
 import search
-import filters
+from whyis import filters
 
-from namespace import NS
+from whyis.namespace import NS
 
 #from flask_login.config import EXEMPT_METHODS
 
@@ -1125,7 +1125,7 @@ def config_str_to_obj(cfg):
 
 def app_factory(config, app_name, blueprints=None):
     # you can use Empty directly if you wish
-    app = App(app_name)
+    app = App(app_name, root_path=PROJECT_PATH)
     config = config_str_to_obj(config)
     #print dir(config)
     app.configure(config)

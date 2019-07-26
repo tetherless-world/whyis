@@ -52,6 +52,7 @@ coverage.xml
 .hypothesis/
 /lint-results/
 /test-results/
+/test-results-py.tar
 
 # Translations
 *.mo

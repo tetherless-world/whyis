@@ -5,7 +5,7 @@ import rdflib
 import setlr
 from datetime import datetime
 
-from autonomic.global_change_service import GlobalChangeService
+from .global_change_service import GlobalChangeService
 from nanopub import Nanopublication
 from datastore import create_id
 import flask
@@ -21,7 +21,7 @@ import tempfile
 
 from depot.io.interfaces import StoredFile
 
-from namespace import *
+from whyis.namespace import *
 
 
 class SETLMaker(GlobalChangeService):

@@ -1,8 +1,7 @@
-from flask_testing import TestCase
+import flask_testing
 
 
-class WhyisTestCase(TestCase):
-
+class TestCase(flask_testing.TestCase):
     def create_app(self):
         from main import app_factory
         from depot.manager import DepotManager
