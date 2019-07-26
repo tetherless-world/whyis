@@ -50,7 +50,7 @@ from datastore import WhyisUserDatastore
 
 import markdown
 import search
-import filters
+from whyis import filters
 
 from whyis.namespace import NS
 
