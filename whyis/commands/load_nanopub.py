@@ -8,7 +8,7 @@ import rdflib
 from nanopub import Nanopublication
 import tempfile
 
-from namespace import np
+from whyis.namespace import np
 
 
 class LoadNanopub(Command):

@@ -21,7 +21,7 @@ import tempfile
 
 from depot.io.interfaces import StoredFile
 
-from namespace import whyis
+from whyis.namespace import whyis
 
 
 class GlobalChangeService(Service):

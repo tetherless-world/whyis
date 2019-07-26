@@ -16,7 +16,7 @@ import mimetypes
 import traceback
 import sys
 
-from namespace import np, prov, dc, sio
+from whyis.namespace import np, prov, dc, sio
 
 invalid_escape = re.compile(r'\\[0-7]{1,3}')  # up to 3 digits for byte values up to FF
 

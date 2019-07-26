@@ -16,7 +16,7 @@ from depot.manager import DepotManager
 from datetime import datetime
 import pytz
 
-from namespace import np, prov, dc, frbr
+from whyis.namespace import np, prov, dc, frbr
 from uuid import uuid4
 
 from datastore import create_id

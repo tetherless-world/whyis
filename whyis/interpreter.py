@@ -14,7 +14,7 @@ import hashlib
 
 from .autonomic.update_change_service import UpdateChangeService
 
-from namespace import whyis, prov, sio
+from whyis.namespace import whyis, prov, sio
 
 
 class Interpreter(UpdateChangeService):

@@ -52,7 +52,7 @@ import markdown
 import search
 import filters
 
-from namespace import NS
+from whyis.namespace import NS
 
 #from flask_login.config import EXEMPT_METHODS
 

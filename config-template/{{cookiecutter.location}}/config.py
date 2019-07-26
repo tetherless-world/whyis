@@ -12,7 +12,7 @@ import agents.nlp as nlp
 import agents.hermit as hermit
 import rdflib
 from datetime import datetime
-from namespace import skos
+from whyis.namespace import skos
 
 # Set to be custom for your project
 LOD_PREFIX = '{{cookiecutter.linked_data_prefix}}'
