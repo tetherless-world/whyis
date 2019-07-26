@@ -5,7 +5,7 @@ import rdflib
 import setlr
 from datetime import datetime
 
-from autonomic.update_change_service import UpdateChangeService
+from .update_change_service import UpdateChangeService
 from nanopub import Nanopublication
 from datastore import create_id
 import flask
@@ -24,14 +24,14 @@ from depot.io.interfaces import StoredFile
 from namespace import *
 
 
-class ImporterCrawler(UpdateChangeService):
-    activity_class = whyis.ImporterGraphCrawl
+class DatasetImporter(UpdateChangeService):
+    activity_class = whyis.ImportDatasetEntities
 
     def getInputClass(self):
-        return whyis.ImporterResource
+        return whyis.DatasetEntity
 
     def getOutputClass(self):
-        return whyis.ImportedResource
+        return whyis.ImportedDatasetEntity
 
     _query = None
 
@@ -39,12 +39,10 @@ class ImporterCrawler(UpdateChangeService):
         if self._query is None:
             prefixes = [x.detect_url for x in self.app.config['namespaces']]
             self._query = '''select distinct ?resource where {
-  graph ?assertion {
-    {?s ?p ?resource . } union {?resource ?p ?o}
-  }
+  ?resource void:inDataset ?dataset.
   FILTER (regex(str(?resource), "^(%s)")) .
   filter not exists {
-    ?assertion prov:wasGeneratedBy [ a whyis:KnowledgeImport].
+    ?assertion prov:wasQuotedFrom ?resource.
   }
 } ''' % '|'.join(prefixes)
             print(self._query)
