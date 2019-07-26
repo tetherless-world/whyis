@@ -2043,10 +2043,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.service("getView", [ '$http', '$q', function($http, $q) {
         var promises = {};
         function getView(uri, view, responseType) {
+	    responseType = responseType == null ? 'json' : responseType;
             if (!promises[uri]) promises[uri] = {};
             if (!promises[uri][view]) {
                 promises[uri][view] = $q.defer();
-                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType:'json'})
+                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType})
                     .then(function(response) {
                         promises[uri][view].resolve(response.data);
                     });
