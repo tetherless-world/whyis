@@ -2,7 +2,7 @@ from rdflib import *
 
 import json
 
-from .api_test_case import ApiTestCase
+from whyis.test.api_test_case import ApiTestCase
 
 
 class NanopubTest(ApiTestCase):
