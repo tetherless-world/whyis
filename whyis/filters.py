@@ -113,7 +113,6 @@ def configure(app):
         conjunctive_graph = rdflib.graph.ConjunctiveGraph()
         for stmt in graph.query(query, **params):
             conjunctive_graph.add(tuple([remap_bnode(x) for x in stmt]))
-        print(len(conjunctive_graph))
         return conjunctive_graph
 
     @app.template_filter('serialize')
