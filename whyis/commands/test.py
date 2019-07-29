@@ -104,5 +104,8 @@ class Test(Command):
                     cov.erase()
                     print("wrote coverage report HTML to", coverage_html_report_dir_path)
         else:
-            unittest.TextTestRunner(
-                verbosity=verbosity, failfast=failfast).run(test_suite)
+            result = \
+                unittest.TextTestRunner(
+                    verbosity=verbosity, failfast=failfast).run(test_suite)
+
+        sys.exit(0 if result.wasSuccessful() else 1)
