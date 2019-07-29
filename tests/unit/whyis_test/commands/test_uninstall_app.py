@@ -22,6 +22,6 @@ class TestUninstallApp(UnitTestCase):
                 self.assertTrue(temp_venv.is_whyis_app_installed())
 
                 # Uninstall
-                self.assertEqual(0, subprocess.call("source %s/bin/activate && python manage.py uninstall_app -y" % (temp_venv.venv_dir_path,), cwd=temp_venv.whyis_dir_path, shell=True))
+                self.assertEqual(0, subprocess.call("bash -c 'source %s/bin/activate && python manage.py uninstall_app -y'" % (temp_venv.venv_dir_path,), cwd=temp_venv.whyis_dir_path, shell=True))
 
                 self.assertFalse(temp_venv.is_whyis_app_installed())
