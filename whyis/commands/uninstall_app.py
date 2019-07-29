@@ -14,7 +14,7 @@ class UninstallApp(Command):
     def get_options(self):
         return [
             Option('--yes', '-y', dest='yes', action='store_true',
-                   type=bool, default=False)
+                   default=False)
         ]
 
 
