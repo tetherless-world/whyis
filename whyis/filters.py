@@ -98,7 +98,7 @@ def configure(app):
         
     @app.template_filter('construct')
     def construct_filter(query, graph=app.db, prefixes=None, values=None):
-        if not prefixes:
+        if prefixes is None:
             prefixes = {}
         
         def remap_bnode(x):
@@ -110,11 +110,10 @@ def configure(app):
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        graph = rdflib.graph.ConjunctiveGraph()
+        conjunctive_graph = rdflib.graph.ConjunctiveGraph()
         for stmt in graph.query(query, **params):
-            graph.add(tuple([remap_bnode(x) for x in stmt]))
-        print(len(graph))
-        return graph
+            conjunctive_graph.add(tuple([remap_bnode(x) for x in stmt]))
+        return conjunctive_graph
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
