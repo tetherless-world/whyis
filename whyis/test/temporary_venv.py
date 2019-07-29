@@ -5,7 +5,8 @@ import tempfile
 import venv
 
 class TemporaryVenv:
-    def __init__(self, install_whyis_requirements=True, whyis_dir_path=None):
+    def __init__(self, delete=True, install_whyis_requirements=True, whyis_dir_path=None):
+        self.__delete = delete
         self.__install_whyis_requirements = install_whyis_requirements
 
         self.venv_dir_path = None
@@ -29,8 +30,8 @@ class TemporaryVenv:
         return self
 
     def __exit__(self, *args, **kwds):
-        pass
-        # shutil.rmtree(self.venv_dir_path)
+        if self.__delete:
+            shutil.rmtree(self.venv_dir_path)
 
     def install_whyis_requirements(self) -> None:
         # Install every requirement separately so that failed installations are skipped
@@ -43,7 +44,6 @@ class TemporaryVenv:
                     temp_requirements_txt.write(line)
             temp_requirements_txt.flush()
             subprocess.call("%s/bin/pip install -r %s" % (self.venv_dir_path, temp_requirements_txt.name), cwd=self.whyis_dir_path, shell=True)
-
 
     def is_whyis_app_installed(self) -> bool:
         return subprocess.call("%s/bin/python -c 'import config'" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True) == 0

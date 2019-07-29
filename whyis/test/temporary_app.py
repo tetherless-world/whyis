@@ -1,10 +1,12 @@
 import os.path
+import shutil
 import subprocess
 import tempfile
 
 
 class TemporaryApp:
-    def __init__(self):
+    def __init__(self, delete=True):
+        self.__delete = delete
         self.app_dir_path = None
 
     def __enter__(self):
@@ -34,8 +36,8 @@ from config_defaults import *
         return self
 
     def __exit__(self, *args, **kwds):
-        pass
-        # shutil.rmtree(self.app_dir_path)
+        if self.__delete:
+            shutil.rmtree(self.app_dir_path)
 
     def install(self, venv_dir_path: str):
         subprocess.call("%s/bin/pip install -e ." % venv_dir_path, cwd=self.app_dir_path, shell=True)
