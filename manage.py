@@ -2,7 +2,7 @@
 
 import flask_script as script
 
-import commands
+from whyis import commands
 
 from main import app_factory
 try:
@@ -27,5 +27,6 @@ if __name__ == "__main__":
     manager.add_command("test", commands.Test())
     manager.add_command("test_agent", commands.TestAgent())
     manager.add_command("updateuser", commands.UpdateUser())
+    manager.add_command("uninstall_app", commands.UninstallApp())
 
     manager.run()
