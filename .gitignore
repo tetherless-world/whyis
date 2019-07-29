@@ -71,6 +71,7 @@ target/
 .ipynb_checkpoints
 
 venv/
+tmpvenv/
 blazegraph.jar
 blazegraph.jnl
 
