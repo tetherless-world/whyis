@@ -1,8 +1,6 @@
 import io
 import email
 
-from werkzeug.datastructures import FileStorage
-
 from .parse_data_url import parse_data_url
 
 # DataResponse exposes the mediatype and emulates some methods/properties of
