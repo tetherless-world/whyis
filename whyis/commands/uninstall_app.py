@@ -3,7 +3,7 @@ import ast
 import logging
 import os.path
 
-from flask_script import Command
+from flask_script import Command, Option
 
 
 class UninstallApp(Command):
@@ -11,7 +11,14 @@ class UninstallApp(Command):
     Uninstall the current whyis application.
     """
 
-    def run(self):
+    def get_options(self):
+        return [
+            Option('--yes', '-y', dest='yes', action='store_true',
+                   type=bool, default=False)
+        ]
+
+
+    def run(self, yes: bool):
         try:
             import config
         except ImportError:
@@ -52,4 +59,9 @@ class UninstallApp(Command):
         project_id = project_name.replace(" ", "-")
         logging.info("App project: %s (%s)", project_name, project_id)
 
-        subprocess.call(["pip", "uninstall", project_id])
+        pip_args = ["pip", "uninstall"]
+        if yes:
+            pip_args.append("-y")
+        pip_args.append(project_id)
+        logging.info(" ".join(pip_args))
+        subprocess.call(pip_args)
