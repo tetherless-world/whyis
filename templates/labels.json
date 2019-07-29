@@ -1,0 +1,6 @@
+{
+    {% for uri in args['uris'].split(',') %}
+    "{{uri}}" : "{{g.get_label(get_entity(g.rdflib.URIRef(uri)))}}",
+    {% endfor %}
+      "{{this.identifier}}" : "{{g.get_label(this)}}"
+}
