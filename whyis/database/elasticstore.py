@@ -162,6 +162,23 @@ class ElasticSearchStore(Store):
         subject, predicate, object = spo
         assert False, "remove() is not implemented."
 
+    def retire_nanopub(self, uri):
+
+        query = {
+          "query": {
+            "nested": {
+              "query:": {
+                "term": {
+                  "graphs.@graph.id": uri
+                }
+              },
+              "path": "graphs.@graph"
+            }
+          }
+        }
+
+        self.session.post(self.url+"/_delete_by_query", data=json.dumps(query))
+
     def elastic_query(self, query):
         query = {
             "query": {
