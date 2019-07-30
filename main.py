@@ -539,11 +539,14 @@ construct {
             return False
         if current_user.has_role('Publisher') or current_user.has_role('Editor')  or current_user.has_role('Admin'):
             return True
+
+        print("!!!",{"nanopub":uri,"user":current_user.identifier})
+        print(self.db.serialize(format='n3'))
+
         if self.db.query('''ask {
-    ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
-    graph ?info { ?assertion dc:contributor ?user. }
+    ?nanopub np:hasAssertion ?assertion.
+    ?assertion dc:contributor ?user.
 }''', initBindings=dict(nanopub=uri, user=current_user.identifier), initNs=dict(np=self.NS.np, dc=self.NS.dc)):
-            #print "Is owner."
             return True
         return False
 
