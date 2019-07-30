@@ -1,11 +1,4 @@
-from copy import copy
-from flask import abort
-from flask_security import UserMixin, RoleMixin
-from flask_security.utils import verify_and_update_password
-from flask_security.datastore import Datastore, UserDatastore
-from whyis.namespace import dc, auth, foaf, prov
-from rdflib import BNode, Literal, URIRef, Namespace, Graph, RDF, RDFS
-from rdflib.graph import ConjunctiveGraph
+from rdflib import BNode, Literal, URIRef, RDF
 from rdflib.resource import Resource
 from rdflib.term import Identifier
 
