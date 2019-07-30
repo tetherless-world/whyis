@@ -43,7 +43,7 @@ class TemporaryVenv:
                         continue
                     temp_requirements_txt.write(line)
             temp_requirements_txt.flush()
-            subprocess.call("%s/bin/pip install -r %s" % (self.venv_dir_path, temp_requirements_txt.name), cwd=self.whyis_dir_path, shell=True)
+            subprocess.call("%s/bin/pip install --progress-bar off -r %s" % (self.venv_dir_path, temp_requirements_txt.name), cwd=self.whyis_dir_path, shell=True)
 
     def is_whyis_app_installed(self) -> bool:
         return subprocess.call("%s/bin/python -c 'import config'" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True) == 0
