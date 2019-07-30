@@ -8,7 +8,6 @@ then
     curl -s -X POST --data-binary "@/apps/whyis/knowledge.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/knowledge_namespace.log
 
     echo "`date +%Y-%m-%dT%H:%M:%S%:z`" > /data/.whyis_data_loaded
-    echo "Loaded whyis data"
 fi
 
 APPNAME=`find /apps -maxdepth 1 -type d -and -not -path /apps/whyis -and -not -path /apps -and -not -path '*/\.*' -exec basename \{} \;`
