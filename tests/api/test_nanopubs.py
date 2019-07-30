@@ -16,8 +16,10 @@ class NanopubTest(ApiTestCase):
 '''
 
     def test_create(self):
-        response = self.publish_nanopub(self.turtle, "text/turtle")
-        self.assertTrue('Location' in response.headers)
+        self.login_new_user()
+        response = self.publish_nanopub(data=self.turtle,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
 
         nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
         self.assertEquals(len(nanopub), 17)
@@ -26,52 +28,81 @@ class NanopubTest(ApiTestCase):
         self.assertEquals(len(nanopub.provenance), 0)
 
     def test_read(self):
-        response = self.publish_nanopub(self.turtle, "text/turtle")
-        self.assertTrue('Location' in response.headers)
+        self.login_new_user()
+        response = self.publish_nanopub(data=self.turtle,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
 
         nanopub_id = response.headers['Location'].split('/')[-1]
-        content = self.client.get("/pub/"+nanopub_id, headers={'Accept':'application/json'}, follow_redirects=True)
+        content = self.client.get("/pub/"+nanopub_id,
+                                  headers={'Accept':'application/json'},
+                                  follow_redirects=True)
         g = ConjunctiveGraph()
         self.assertEquals(content.mimetype, "application/json")
         g.parse(data=str(content.data, 'utf8'), format="json-ld")
 
         self.assertEquals(len(g), 17)
-        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type), URIRef('http://schema.org/Person'))
+        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
+                          URIRef('http://schema.org/Person'))
 
     def test_delete_admin(self):
-        response = self.publish_nanopub(self.turtle, "text/turtle")
-        self.assertTrue('Location' in response.headers)
+        self.login_new_user()
+        response = self.publish_nanopub(data=self.turtle,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
 
         nanopub_id = response.headers['Location'].split('/')[-1]
         response = self.client.delete("/pub/"+nanopub_id, follow_redirects=True)
-        self.assertEquals(response.status,'204 NO CONTENT')
+        self.assertEquals(response.status, '204 NO CONTENT')
 
     def test_delete_nonadmin(self):
-        response = self.publish_nanopub(self.turtle, "text/turtle")
-        self.assertTrue('Location' in response.headers)
+        self.login_new_user(role=None)
+        response = self.publish_nanopub(data=self.turtle,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
 
         nanopub_id = response.headers['Location'].split('/')[-1]
-
         response = self.client.delete("/pub/"+nanopub_id, follow_redirects=True)
         self.assertEquals(response.status, '204 NO CONTENT')
 
     def test_linked_data(self):
-        self.publish_nanopub(self.turtle, "text/turtle")
+        self.login_new_user()
+        self.publish_nanopub(data=self.turtle,
+                             content_type="text/turtle")
 
         # Because of (lack of) content negotiation
-        content = self.get_view("http://example.com/janedoe", expected_mime="text/turtle")
+        content = self.get_view(uri="http://example.com/janedoe",
+                                mime_type="text/turtle")
 
         g = Graph()
         g.parse(data=str(content.data, 'utf8'), format="turtle")
 
         self.assertEquals(len(g), 5)
-        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type), URIRef('http://schema.org/Person'))
+        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
+                          URIRef('http://schema.org/Person'))
+
+    def test_mime_behavior(self):
+        self.login_new_user()
+        self.publish_nanopub(data=self.turtle,
+                             content_type="text/turtle")
+
+        self.get_view(uri="http://example.com/janedoe",
+                      mime_type="text/turtle",
+                      expected_template="describe.json")
+
+        self.get_view(uri="http://example.com/janedoe",
+                      headers={'Accept': 'text/html'},
+                      mime_type="text/html",
+                      expected_template="resource_view.html")
 
     def test_attribute_view(self):
-        self.publish_nanopub(self.turtle, "text/turtle")
+        self.login_new_user()
+        self.publish_nanopub(data=self.turtle,
+                             content_type="text/turtle")
 
-        content = self.get_view("http://example.com/janedoe", view="attributes",
-                                expected_mime="application/json")
+        content = self.get_view(uri="http://example.com/janedoe",
+                                view="attributes",
+                                mime_type="application/json")
 
         json_content = json.loads(str(content.data, 'utf8'))
         self.assertEquals(json_content['label'], "Jane Doe")
@@ -79,6 +110,7 @@ class NanopubTest(ApiTestCase):
         self.assertEquals(json_content['type'][0]['label'], 'Person')
 
     def test_ontology_describe_view(self):
+        self.login_new_user()
         ontology = """
         <http://example.com/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Ontology> .
         <http://example.com/janedoe> <http://schema.org/jobTitle> "Professor";
@@ -87,9 +119,12 @@ class NanopubTest(ApiTestCase):
         <http://schema.org/url> <http://www.janedoe.com> ;
         <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> . """
 
-        self.publish_nanopub(ontology, "text/turtle")
-        content = self.get_view("http://example.com/", view="describe",
-                                expected_mime="application/json",
+        self.publish_nanopub(data=ontology,
+                             content_type="text/turtle")
+
+        content = self.get_view(uri="http://example.com/",
+                                view="describe",
+                                mime_type="application/json",
                                 expected_template="describe_ontology.json")
 
         data = json.loads(str(content.data, 'utf8'))
@@ -100,8 +135,6 @@ class NanopubTest(ApiTestCase):
 
         graph = data[0]["@graph"]
         self.assertEqual(len(graph), 2, "'describe' view returned the wrong number of subjects")
-
-        print(graph)
 
         for subject in graph:
             if subject["@id"] == "http://example.com/":
