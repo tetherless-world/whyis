@@ -1115,9 +1115,5 @@ construct {
 
 
 from whyis.app_factory import app_factory
+from whyis.heroku import heroku
 
-
-def heroku():
-    from config import Config, project_name
-    # setup app through APP_CONFIG envvar
-    return app_factory(Config, project_name)
