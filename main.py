@@ -80,10 +80,6 @@ class ExtendedRegisterForm(RegisterForm):
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
 
-# Form for full-text search
-class SearchForm(Form):
-    search_query = StringField('search_query', [validators.DataRequired()])
-
 def to_json(result):
     return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
 
@@ -606,7 +602,6 @@ construct {
                     #    login_user(user)
                         break
                 
-            #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
             g.get_label = get_label
