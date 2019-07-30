@@ -11,6 +11,6 @@ def import_config_module() -> Dict[str, object]:
         import config
     except ImportError as e:
         logging.warning("%s, using config_defaults", str(e))
-        import config_defaults as config
+        import whyis.config_defaults as config
 
     return config
