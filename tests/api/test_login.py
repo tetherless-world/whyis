@@ -14,7 +14,7 @@ from flask_login import login_user
 import json
 from io import StringIO
 
-from .api_test_case import ApiTestCase
+from whyis.test.api_test_case import ApiTestCase
 
 
 class LoginTest(ApiTestCase):

@@ -4,7 +4,7 @@ from rdflib import *
 
 from io import BytesIO
 
-from .api_test_case import ApiTestCase
+from whyis.test.api_test_case import ApiTestCase
 
 
 class UploadTest(ApiTestCase):

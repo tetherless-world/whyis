@@ -1,14 +1,9 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
-class { 'python' :
-  version    => 'system',
-  pip        => 'present',
-  dev        => 'present',
-  virtualenv => 'present',
-  gunicorn   => 'absent',
-}
-
-package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
+# jdk is required to install javabridge
+package { ["unzip", "zip", "default-jdk", "build-essential", "automake", "jetty9", "subversion", "git",
+  "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"
+  , "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
@@ -132,6 +127,3 @@ file { "/var/log/whyis":
   owner => "whyis",
   group => "whyis",
 }
-
-
-include java

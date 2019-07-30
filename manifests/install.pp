@@ -1,5 +1,8 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
+$whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
+notice("Whyis branch: ${whyis_branch_}")
+
 class { 'python' :
   version    => 'system',
   pip        => 'present',
@@ -128,7 +131,7 @@ vcsrepo { '/apps/whyis':
   ensure   => present,
   provider => git,
   source   => 'https://github.com/tetherless-world/whyis.git',
-  revision => 'release',
+  revision => $whyis_branch_,
   user     => 'whyis'
 } ->
 python::virtualenv { '/apps/whyis/venv' :
@@ -205,6 +208,11 @@ service { jetty9:
     ensure => running,
     subscribe => [File["/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
 } ->
+exec { "wait_for_blazegraph":
+  command => "bash -c 'for i in 1 2 3 4 5; do curl -s http://localhost:8080 &>/dev/null && break || sleep 1; done'",
+  user => "whyis",
+  cwd => "/apps/whyis",
+} ->
 exec { "create_admin_namespace":
   command => "curl -X POST --data-binary @admin.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/admin_namespace.log",
   creates => "/apps/whyis/admin_namespace.log",
@@ -225,6 +233,9 @@ exec { "compile_java":
   cwd     => "/apps/whyis/whyis-java",
 }
 
+class { "nodejs":
+  repo_url_suffix => "12.x",
+} ->
 exec { "install_js_dependencies":
   command => "npm install",
   creates => "/apps/whyis/js_install.log",
