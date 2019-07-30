@@ -11,6 +11,6 @@ socat TCP4-LISTEN:8080,fork,reuseaddr TCP4:blazegraph:8080 &
 service apache2 start 1>&2
 service celeryd start 1>&2
 
-/load-whyis-data.sh
+/load-whyis-data.sh 1>&2
 
 exec "$@"
