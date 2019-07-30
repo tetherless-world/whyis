@@ -67,8 +67,6 @@ rdflib.plugin.register('sparql', UpdateProcessor,
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
-basestring = getattr(__builtins__, 'basestring', str)
-
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
 top_compare_key = False, -100, [(-2, 0)]
@@ -1116,24 +1114,7 @@ construct {
             return Empty.get_send_file_max_age(self, filename)
 
 
-def config_str_to_obj(cfg):
-    if isinstance(cfg, basestring):
-        module = __import__('config', fromlist=[cfg])
-        return getattr(module, cfg)
-    return cfg
-
-
-def app_factory(config, app_name, blueprints=None):
-    # you can use Empty directly if you wish
-    app = App(app_name, root_path=PROJECT_PATH)
-    config = config_str_to_obj(config)
-    #print dir(config)
-    app.configure(config)
-    if blueprints:
-        app.add_blueprint_list(blueprints)
-    app.setup()
-
-    return app
+from whyis.app_factory import app_factory
 
 
 def heroku():
