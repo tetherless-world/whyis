@@ -67,8 +67,6 @@ rdflib.plugin.register('sparql', UpdateProcessor,
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
-basestring = getattr(__builtins__, 'basestring', str)
-
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
 top_compare_key = False, -100, [(-2, 0)]
@@ -81,10 +79,6 @@ class ExtendedRegisterForm(RegisterForm):
     id = TextField('Identifier', [validators.Required()])
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
-
-# Form for full-text search
-class SearchForm(Form):
-    search_query = StringField('search_query', [validators.DataRequired()])
 
 def to_json(result):
     return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
@@ -608,7 +602,6 @@ construct {
                     #    login_user(user)
                         break
                 
-            #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
             g.get_label = get_label
@@ -1116,27 +1109,6 @@ construct {
             return Empty.get_send_file_max_age(self, filename)
 
 
-def config_str_to_obj(cfg):
-    if isinstance(cfg, basestring):
-        module = __import__('config', fromlist=[cfg])
-        return getattr(module, cfg)
-    return cfg
+from whyis.app_factory import app_factory
+from whyis.heroku import heroku
 
-
-def app_factory(config, app_name, blueprints=None):
-    # you can use Empty directly if you wish
-    app = App(app_name, root_path=PROJECT_PATH)
-    config = config_str_to_obj(config)
-    #print dir(config)
-    app.configure(config)
-    if blueprints:
-        app.add_blueprint_list(blueprints)
-    app.setup()
-
-    return app
-
-
-def heroku():
-    from config import Config, project_name
-    # setup app through APP_CONFIG envvar
-    return app_factory(Config, project_name)
