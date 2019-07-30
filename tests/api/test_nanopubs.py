@@ -29,7 +29,7 @@ class NanopubTest(ApiTestCase):
         response = self.publish_nanopub(self.turtle, "text/turtle")
         self.assertTrue('Location' in response.headers)
 
-        nanopub_id = response.headers['Location'].split('/')[-1]        
+        nanopub_id = response.headers['Location'].split('/')[-1]
         content = self.client.get("/pub/"+nanopub_id, headers={'Accept':'application/json'}, follow_redirects=True)
         g = ConjunctiveGraph()
         self.assertEquals(content.mimetype, "application/json")
@@ -58,7 +58,8 @@ class NanopubTest(ApiTestCase):
     def test_linked_data(self):
         self.publish_nanopub(self.turtle, "text/turtle")
 
-        content = self.get_view("http://exmaple.com/janedoe", expected_mime="text/turtle")
+        # Because of (lack of) content negotiation
+        content = self.get_view("http://example.com/janedoe", expected_mime="text/turtle")
 
         g = Graph()
         g.parse(data=str(content.data, 'utf8'), format="turtle")
@@ -86,24 +87,28 @@ class NanopubTest(ApiTestCase):
         <http://schema.org/url> <http://www.janedoe.com> ;
         <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> . """
 
-        self.publish_nanopub(ontology, "application/json")
+        self.publish_nanopub(ontology, "text/turtle")
         content = self.get_view("http://example.com/", view="describe",
                                 expected_mime="application/json",
                                 expected_template="describe_ontology.json")
 
         data = json.loads(str(content.data, 'utf8'))
-        self.assertIsInstance(data, list, "'Describe' view returned unexpected structure")
-        self.assertTrue(data, "'Describe' view returned empty list")
-        self.assertIn("@graph", data[0], "'Describe' view missing @graph key")
-        self.assertIn("@id", data[0], "'Describe' view missing @id key")
+        self.assertIsInstance(data, list, "'describe' view returned unexpected structure")
+        self.assertTrue(data, "'describe' view returned empty list")
+        self.assertIn("@graph", data[0], "'describe' view missing @graph key")
+        self.assertIn("@id", data[0], "'describe' view missing @id key for graph")
 
         graph = data[0]["@graph"]
-        self.assertTrue(graph, "'Describe' view returned no subjects")
+        self.assertEqual(len(graph), 2, "'describe' view returned the wrong number of subjects")
+
+        print(graph)
 
         for subject in graph:
             if subject["@id"] == "http://example.com/":
-                self.assertEquals(len(subject.keys()), 2,
-                                  "Subject in 'describe' view has unexpected number of predicates")
+                self.assertEqual(len(subject.keys()), 2,
+                                 "Subject in 'describe' view has unexpected number of predicates")
+                self.assertIn("http://www.w3.org/2002/07/owl#Ontology", subject["@type"],
+                              "Expected an ontology type object in the 'describe' view")
             elif subject["@id"] == "http://example.com/janedoe":
-                self.assertEquals(len(subject.keys()), 6,
-                                  "Subject in 'describe' view has unexpected number of predicates")
+                self.assertEqual(len(subject.keys()), 6,
+                                 "Subject in 'describe' view has unexpected number of predicates")

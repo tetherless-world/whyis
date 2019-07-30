@@ -15,10 +15,10 @@ class ApiTestCase(TestCase):
 
         return response
         
-    def get_view(self, uri, view="view", expected_mime=None, expected_template=None):
+    def get_view(self, uri, view=None, expected_mime=None, expected_template=None):
         content = self.client.get("/about",
-                                query_string={"uri": uri, "view": view},
-                                follow_redirects=True)
+                                  query_string={ a: b for a, b in zip(["uri", "view"], [uri, view]) if b is not None },
+                                  follow_redirects=True)
         
         if expected_template is not None:
             self.assertTemplateUsed(expected_template)
