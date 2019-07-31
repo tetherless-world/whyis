@@ -66,7 +66,7 @@ class NanopubTest(ApiTestCase):
         self.assertEquals(response.status, '204 NO CONTENT')
 
     def test_delete_invalid(self):
-        self.login(*self.create_user("user1@example.com","password",roles=None))
+        self.login(*self.create_user("user1@example.com","password", username="identifier1", roles=None))
 
         response = self.client.post("/pub", data=self.turtle, content_type="text/turtle",follow_redirects=True)
         self.assertEquals(response.status,'201 CREATED')
@@ -74,7 +74,9 @@ class NanopubTest(ApiTestCase):
         
         nanopub_id = response.headers['Location'].split('/')[-1]
 
-        self.login(*self.create_user("user2@example.com","password",roles=None))
+        print(self.client.post("/logout", follow_redirects=True))
+        self.login(*self.create_user("user2@example.com","password", username="identifier2", roles=None))
+
         response = self.client.delete("/pub/"+nanopub_id, follow_redirects=True)
         self.assertEquals(response.status,'401 UNAUTHORIZED')
 
