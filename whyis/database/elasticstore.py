@@ -63,9 +63,10 @@ class ElasticSearchStore(Store):
     def open(self, url, create=True):
         self.url = url
         self.session = requests.Session()
+        self.session.headers.update({"Content-Type":"application/json"})
         status = self.session.get(url)
         if create and status.status_code == 404:
-            r = self.session.put(self.url,data=elastic_index_settings,headers={"Content-Type":"application/json"})
+            r = self.session.put(self.url,data=elastic_index_settings)
             if r.status_code != 201:
                 print(r.status_code)
                 print(r.content)
@@ -149,9 +150,7 @@ class ElasticSearchStore(Store):
         else:
             docid = quote_plus(docid)
 
-        r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),
-                             headers={"Content-Type":"application/json"},
-                             data=json_ld)
+        r = self.session.put(self.url+'/nanopublication/'+docid+'?refresh='+('wait_for' if refresh else 'false'),data=json_ld)
 
         if r.status_code != 201:
             print(r.status_code)
@@ -167,17 +166,22 @@ class ElasticSearchStore(Store):
         query = {
           "query": {
             "nested": {
-              "query:": {
+              "query": {
                 "term": {
-                  "graphs.@graph.id": uri
+                  "graphs.@graph.@id": str(uri)
                 }
               },
-              "path": "graphs.@graph"
+              "path": "graphs.@graph",
+              "score_mode": "avg"
             }
           }
         }
 
-        self.session.post(self.url+"/_delete_by_query", data=json.dumps(query))
+        print("query is", query)
+        self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
+
+        r = self.session.post(self.url+"/_delete_by_query", data=json.dumps(query))
+        print("Response:",r.status_code, r.content)
 
     def elastic_query(self, query):
         query = {
@@ -192,8 +196,7 @@ class ElasticSearchStore(Store):
 
         self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
 
-        response = self.session.post(self.url+"/_search",data=json.dumps(query),
-                                     headers={"Content-Type":"application/json"})
+        response = self.session.post(self.url+"/_search",data=json.dumps(query))
 
         return response.json()
 
