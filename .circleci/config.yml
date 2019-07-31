@@ -87,7 +87,7 @@ workflows:
   build_lint:
     jobs:
       - build_test_deploy_docker_monolithic
-      - build_deploy_docker_split
+      - build_deploy_docker_split:
           requires:
             - build_test_deploy_docker_monolithic
       - lint-js
