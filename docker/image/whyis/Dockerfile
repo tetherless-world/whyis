@@ -24,6 +24,7 @@ COPY /docker/image/whyis/celeryd /etc/default/celeryd
 
 # Entrypoint
 COPY /docker/image/whyis/docker-entrypoint.sh /
+COPY /docker/image/load-whyis-data.sh /
 
 # Copy the remainder as the whyis user
 COPY --chown=whyis:whyis / /apps/whyis
