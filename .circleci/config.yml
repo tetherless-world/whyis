@@ -58,10 +58,13 @@ jobs:
     docker:
       - image: ubuntu:xenial
     steps:
+      - run:
+          name: Install dependencies
+          command: apt-get update && apt-get install -y curl lsb-release sudo
       - checkout
       - run:
           name: Install whyis into /apps/whyis
-          command: WHYIS_BRANCH=$CIRCLE_BRANCH ./install.sh
+          command: WHYIS_BRANCH="$CIRCLE_BRANCH" ./install.sh
       - store_artifacts:
           path: /apps/whyis/test-results/py/htmlcov
       - store_test_results:
