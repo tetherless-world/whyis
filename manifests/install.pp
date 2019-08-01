@@ -196,7 +196,7 @@ file { "/etc/apache2/sites-available/000-default.conf":
 # The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
 # This was easier than figuring out how to replace multiple lines.
 file { "/etc/init.d/jetty9":
-  ensure => present,
+  ensure => file,
   source => "/apps/whyis/jetty9.init",
   owner => "root",
 }
