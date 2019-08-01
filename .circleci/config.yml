@@ -62,12 +62,14 @@ jobs:
           name: Install dependencies
           command: apt-get update && apt-get install -y curl lsb-release sudo
       - run:
-          name: Install whyis into /apps/whyis
+          name: Make cwd world-accessible, so the whyis user can get back into it later
+          command: chmod a+rwx ~/projects/whyis
+      - run:
+          name: Install whyis per the documentation
           command: WHYIS_BRANCH="$CIRCLE_BRANCH" bash < <(curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/${CIRCLE_BRANCH}/install.sh")
       - run:
           name: Start services
           command: |
-            service jetty9 start
             service redis-server start
       - run:
           name: Run tests
