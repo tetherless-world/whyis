@@ -1,4 +1,6 @@
 #!/bin/sh -e
+# MG: The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
+# The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
 #
 # /etc/init.d/jetty9 -- startup script for Jetty 9
 #
