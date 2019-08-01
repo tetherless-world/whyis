@@ -28,7 +28,7 @@ package { "jetty8":
 # Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
     ensure => 'present',
-}
+} ->
 user { 'whyis':
   ensure => present,
   password => '*',
