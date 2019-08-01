@@ -38,19 +38,12 @@ file_line { "configure_jetty_host_options":
   line  => 'JETTY_HOST=0.0.0.0',
   match => 'JETTY_HOST=',
 } ->
-# The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
-# The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
-# This was easier than figuring out how to replace multiple lines.
-file { "/etc/init.d/jetty9":
-  ensure => present,
-  source => "/apps/whyis/jetty9.init",
-  owner => "root",
-} ->
 file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/release/resources/blazegraph.war":
+} ->
+wget::fetch { "https://github.com/tetherless-world/whyis/raw/release/resources/blazegraph.war":
   destination => "/tmp/blazegraph.war",
   timeout => 0
 } ->
@@ -198,6 +191,14 @@ file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
   source => "/apps/whyis/apache.conf",
   owner => "root"
+} ->
+# The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
+# The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
+# This was easier than figuring out how to replace multiple lines.
+file { "/etc/init.d/jetty9":
+  ensure => present,
+  source => "/apps/whyis/jetty9.init",
+  owner => "root",
 }
 
 
