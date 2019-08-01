@@ -61,13 +61,9 @@ jobs:
       - run:
           name: Install dependencies
           command: apt-get update && apt-get install -y curl lsb-release sudo
-      - checkout
-      - run:
-          name: Make the ~/projects/whyis directory globally accessible
-          command: chown -R a+x .
       - run:
           name: Install whyis into /apps/whyis
-          command: WHYIS_BRANCH="$CIRCLE_BRANCH" ./install.sh
+          command: WHYIS_BRANCH="$CIRCLE_BRANCH" bash < <(curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/${CIRCLE_BRANCH}/install.sh")
       - run:
           name: Start services
           command: |
