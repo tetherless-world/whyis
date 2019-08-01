@@ -151,7 +151,7 @@ file { "/data/nanopublications":
 } ->
 file { "/data/files":
   ensure => directory,
-  owner => "whyis"
+  owner => "whyis",
   group      => 'whyis'
 } ->
 
@@ -195,7 +195,7 @@ file { "/var/log/celery":
     owner => "whyis",
     ensure => directory,
     recurse => true,
-    group => "whyis",
+    group => "whyis"
 } ->
 file { "/etc/default/celeryd":
   source => "/apps/whyis/resources/celeryd",
@@ -208,7 +208,7 @@ file { "/etc/default/celeryd":
 file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
-  group => "whyis",
+  group => "whyis"
 } ->
 
 # Configure Apache
