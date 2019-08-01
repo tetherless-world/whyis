@@ -115,6 +115,6 @@ workflows:
       - build_and_deploy_split_docker_image:
           requires:
             - build_test_and_deploy_monolithic_docker_image
-      - install_and_test_outside_docker
+      - install_and_test_outside_docker:
           requires:
             - build_test_and_deploy_monolithic_docker_image
