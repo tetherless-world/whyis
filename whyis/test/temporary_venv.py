@@ -24,7 +24,7 @@ class TemporaryVenv:
         # print(self.venv_dir_path)
         venv.create(self.venv_dir_path)
         # with_pip doesn't work at present, so have to install pip into it manually
-        subprocess.call("curl https://bootstrap.pypa.io/get-pip.py | %s/bin/python" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True)
+        subprocess.call("source %s/bin/activate && curl https://bootstrap.pypa.io/get-pip.py | python" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True)
         if self.__install_whyis_requirements:
             self.install_whyis_requirements()
         return self
