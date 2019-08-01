@@ -80,9 +80,9 @@ file { "/etc/init.d/jetty9":
 } ->
 
 # Set up the Blazegraph web application
-wget::fetch { "https://github.com/tetherless-world/whyis/raw/release/resources/blazegraph.war":
-  destination => "/tmp/blazegraph.war",
-  timeout => 0
+file { "/tmp/blazegraph.war":
+  ensure => file,
+  source => "/apps/whyis/resources/blazegraph.war",
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",
