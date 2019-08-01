@@ -54,16 +54,13 @@ jobs:
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
             fi
   install_and_test_outside_docker:
-    working_directory: ~/projects/whyis
+    working_directory: /
     docker:
       - image: ubuntu:xenial
     steps:
       - run:
           name: Install dependencies
           command: apt-get update && apt-get install -y curl lsb-release sudo
-      - run:
-          name: Make cwd world-accessible, so the whyis user can get back into it later
-          command: chmod a+rwx ~/projects/whyis
       - run:
           name: Install whyis per the documentation
           command: WHYIS_BRANCH="$CIRCLE_BRANCH" bash < <(curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/${CIRCLE_BRANCH}/install.sh")
@@ -74,7 +71,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            cd apps/whyis && source venv/bin/activate && python manage.py test
+            cd /apps/whyis && source venv/bin/activate && python manage.py test
       - store_artifacts:
           path: /apps/whyis/test-results/py/htmlcov
       - store_test_results:
