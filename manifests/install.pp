@@ -17,12 +17,39 @@ service { jetty8:
 
 }
 
+# Install and uninstall packages
 package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "libdb5.3-dev"]:
   ensure => "installed"
 } ->
 package { "jetty8":
   ensure => "absent",
 } ->
+
+# Check out whyis first, so we can pull Jetty configuration out of it
+group { 'whyis':
+    ensure => 'present',
+} ->
+user { 'whyis':
+  ensure => present,
+  password => '*',
+  home => '/apps',
+  shell => '/bin/bash',
+  gid => 'whyis'
+} ->
+file { "/apps":
+  ensure => "directory",
+  owner => "whyis",
+  group => "whyis"
+} ->
+vcsrepo { '/apps/whyis':
+  ensure   => present,
+  provider => git,
+  source   => 'https://github.com/tetherless-world/whyis.git',
+  revision => $whyis_branch_,
+  user     => 'whyis'
+} ->
+
+# Configure Jetty
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
   line  => 'NO_START=0',
@@ -42,9 +69,20 @@ file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/release/resources/blazegraph.war":
-  destination => "/tmp/blazegraph.war",
-  timeout => 0
+} ->
+# The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
+# The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
+# This was easier than figuring out how to replace multiple lines.
+file { "/etc/init.d/jetty9":
+  ensure => file,
+  source => "/apps/whyis/jetty9.init",
+  owner => "root",
+} ->
+
+# Set up the Blazegraph web application
+file { "/tmp/blazegraph.war":
+  ensure => file,
+  source => "/apps/whyis/resources/blazegraph.war",
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",
@@ -54,10 +92,6 @@ exec { "unzip_blazegraph":
   cwd => "/usr/share/jetty9/webapps/blazegraph",
   creates => "/usr/share/jetty9/webapps/blazegraph/WEB-INF/web.xml",
 } -> 
-file { "/data":
-  ensure => directory,
-  owner => "jetty"
-} ->
 file_line { "configure_blazegraph_rule_logging":
   path  => '/usr/share/jetty9/webapps/blazegraph/WEB-INF/classes/log4j.properties',
   line  => 'log4j.appender.ruleLog.File=/data/rules.log',
@@ -104,36 +138,24 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
 } ->
-group { 'whyis':
-    ensure => 'present',
-}
-user { 'whyis':
-  ensure => present,
-  password => '*',
-  home => '/apps',
-  shell => '/bin/bash',
-  gid => 'whyis'
-} ->
-file { "/apps":
-  ensure => "directory",
-  owner => "whyis",
-  group => "whyis"
+
+# Flesh out the /data directory
+file { "/data":
+  ensure => directory,
+  owner => "jetty"
 } ->
 file { "/data/nanopublications":
   ensure => directory,
-  owner => "whyis"
+  owner => "whyis",
+  group      => 'whyis'
 } ->
 file { "/data/files":
   ensure => directory,
-  owner => "whyis"
+  owner => "whyis",
+  group      => 'whyis'
 } ->
-vcsrepo { '/apps/whyis':
-  ensure   => present,
-  provider => git,
-  source   => 'https://github.com/tetherless-world/whyis.git',
-  revision => $whyis_branch_,
-  user     => 'whyis'
-} ->
+
+# Set up the whyis Python virtual environment
 python::virtualenv { '/apps/whyis/venv' :
   ensure       => present,
   version      => '3',
@@ -141,6 +163,7 @@ python::virtualenv { '/apps/whyis/venv' :
   distribute   => false,
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
+  group        => 'whyis',
   cwd          => '/apps/whyis',
   timeout      => 18000,
 } ->
@@ -149,25 +172,30 @@ python::pip { 'pip-upgrade' :
   ensure        => 'latest',
   virtualenv    => '/apps/whyis/venv',
   owner         => 'whyis',
+  group         => 'whyis',
   timeout       => 18000,
 } ->
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
+  group      => 'whyis',
   forceupdate => true,
   timeout       => 18000,
 } ->
 file { "/apps/.bash_profile" :
   owner => 'whyis',
+  group => 'whyis',
   content => '
   source /apps/whyis/venv/bin/activate
   ',
 } ->
+
+# Set up celery
 file { "/var/log/celery":
     owner => "whyis",
     ensure => directory,
     recurse => true,
-    group => "whyis",
+    group => "whyis"
 } ->
 file { "/etc/default/celeryd":
   source => "/apps/whyis/resources/celeryd",
@@ -175,16 +203,20 @@ file { "/etc/default/celeryd":
   group => "root",
   ensure => present
 } ->
-exec { "a2enmod wsgi":
-  command => "a2enmod wsgi",
-} -> 
-exec { "a2enmod headers":
-  command => "a2enmod headers",
-} -> 
+
+# Whyis log directory
 file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
-  group => "whyis",
+  group => "whyis"
+} ->
+
+# Configure Apache
+exec { "a2enmod wsgi":
+  command => "a2enmod wsgi",
+} ->
+exec { "a2enmod headers":
+  command => "a2enmod headers",
 } ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
