@@ -13,7 +13,7 @@ from whyis.test.unit_test_case import UnitTestCase
 
 class TestUninstallApp(UnitTestCase):
     def test_run(self):
-        if sys.platform.startswith("win"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("win"):
             return
 
         with TemporaryVenv() as temp_venv:
