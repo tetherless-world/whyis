@@ -146,11 +146,13 @@ file { "/data":
 } ->
 file { "/data/nanopublications":
   ensure => directory,
-  owner => "whyis"
+  owner => "whyis",
+  group      => 'whyis'
 } ->
 file { "/data/files":
   ensure => directory,
   owner => "whyis"
+  group      => 'whyis'
 } ->
 
 # Set up the whyis Python virtual environment
@@ -161,6 +163,7 @@ python::virtualenv { '/apps/whyis/venv' :
   distribute   => false,
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
+  group        => 'whyis',
   cwd          => '/apps/whyis',
   timeout      => 18000,
 } ->
@@ -169,16 +172,19 @@ python::pip { 'pip-upgrade' :
   ensure        => 'latest',
   virtualenv    => '/apps/whyis/venv',
   owner         => 'whyis',
+  group         => 'whyis',
   timeout       => 18000,
 } ->
 python::requirements { '/apps/whyis/requirements/dev.txt' :
   virtualenv => '/apps/whyis/venv',
   owner      => 'whyis',
+  group      => 'whyis',
   forceupdate => true,
   timeout       => 18000,
 } ->
 file { "/apps/.bash_profile" :
   owner => 'whyis',
+  group => 'whyis',
   content => '
   source /apps/whyis/venv/bin/activate
   ',
