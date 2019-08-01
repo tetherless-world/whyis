@@ -14,6 +14,7 @@ class { 'python' :
 service { jetty8:
     ensure => stopped,
     subscribe => [Package["jetty8"]],
+
 }
 
 # Install and uninstall packages
@@ -23,6 +24,8 @@ package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9"
 package { "jetty8":
   ensure => "absent",
 } ->
+
+# Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
     ensure => 'present',
 } ->
@@ -45,6 +48,8 @@ vcsrepo { '/apps/whyis':
   revision => $whyis_branch_,
   user     => 'whyis'
 } ->
+
+# Configure Jetty
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
   line  => 'NO_START=0',
@@ -65,11 +70,16 @@ file_line { "configure_java_home":
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
 } ->
+# The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
+# The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
+# This was easier than figuring out how to replace multiple lines.
 file { "/etc/init.d/jetty9":
   ensure => file,
   source => "/apps/whyis/jetty9.init",
   owner => "root",
 } ->
+
+# Set up the Blazegraph web application
 file { "/tmp/blazegraph.war":
   ensure => file,
   source => "/apps/whyis/resources/blazegraph.war",
@@ -128,6 +138,8 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
 } ->
+
+# Flesh out the /data directory
 file { "/data":
   ensure => directory,
   owner => "jetty"
@@ -140,6 +152,8 @@ file { "/data/files":
   ensure => directory,
   owner => "whyis"
 } ->
+
+# Set up the whyis Python virtual environment
 python::virtualenv { '/apps/whyis/venv' :
   ensure       => present,
   version      => '3',
@@ -169,6 +183,8 @@ file { "/apps/.bash_profile" :
   source /apps/whyis/venv/bin/activate
   ',
 } ->
+
+# Set up celery
 file { "/var/log/celery":
     owner => "whyis",
     ensure => directory,
@@ -181,11 +197,15 @@ file { "/etc/default/celeryd":
   group => "root",
   ensure => present
 } ->
+
+# Whyis log directory
 file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
   group => "whyis",
 } ->
+
+# Configure Apache
 exec { "a2enmod wsgi":
   command => "a2enmod wsgi",
 } ->
