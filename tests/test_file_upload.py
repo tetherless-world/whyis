@@ -22,14 +22,6 @@ class UploadTest(WhyisTestCase):
         self.assertEquals(content.data, "Hello, World!")
 
     def test_PDF_upload(self):
-        # self.login(*self.create_user("user@example.com","password"))
-        # nanopub = '''{ "@id": "http://example.com/testdataPDF","http://vocab.rpi.edu/whyis/hasContent":"data:application/pdf;charset=UTF-8,Hello, World!"}'''
-        # response = self.client.post("/pub", data=nanopub, content_type="application/ld+json",follow_redirects=True)
-            
-        # self.assertEquals(response.status,'201 CREATED')
-        # content = self.client.get("/about",query_string={"uri":"http://example.com/testdata"},follow_redirects=True)
-        # self.assertEquals(content.mimetype, "application/pdf")
-        # self.assertEquals(content.data, "Hello, World!")
         self.login(*self.create_user("user@example.com","password"))
         pdf_filename = "tests/test_pdf.pdf"
         pdf_content = u'\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis is a test PDF, this is the header. \n\nHello World! This is the body. \nHow are you doing? \n \n  \n\n\n\nThis is a test PDF, this is the header. \n\nThis is page 2. \n\n\n'
