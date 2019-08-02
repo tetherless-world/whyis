@@ -16,7 +16,6 @@ export PATH=/opt/puppetlabs/bin/:$PATH
 
 sudo /opt/puppetlabs/bin/puppet module install puppet-python
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
-sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
