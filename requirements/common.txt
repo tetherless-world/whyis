@@ -87,3 +87,5 @@ Werkzeug==0.14.1
 whichcraft==0.5.2
 WTForms==2.2.1
 xlrd==1.2.0
+# Tika is used for the PDF Import agent that imports PDF files to text in the ontology
+tika==1.19
