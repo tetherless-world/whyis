@@ -23,20 +23,20 @@ on {{this.graph.value(this.nanopub.assertion.identifier, ns.dc.created).value.st
 <script>
 $( function() {
 
-    assertion = {{this.nanopub.assertion.serialize(format="json-ld") | safe}};
+    assertion = {{this.nanopub.assertion | serialize(format="json-ld") | safe}};
     assertion_graph = new Graph();
     assertion_graph.load(assertion).await(function(error) {
         d3.select("#assertion_graph").datum(assertion_graph).each(rdfview());
     });
 
 
-    provenance = {{this.nanopub.provenance.serialize(format="json-ld") | safe}};
+    provenance = {{this.nanopub.provenance | serialize(format="json-ld") | safe}};
     provenance_graph = new Graph();
     provenance_graph.load(provenance).await(function(error) {
       d3.select("#provenance_graph").datum(provenance_graph).each(rdfview());
     });
 
-    pubinfo = {{this.nanopub.pubinfo.serialize(format="json-ld") | safe}};
+    pubinfo = {{this.nanopub.pubinfo | serialize(format="json-ld") | safe}};
     pubinfo_graph = new Graph();
     pubinfo_graph.load(pubinfo).await(function(error) {
       d3.select("#pubinfo_graph").datum(pubinfo_graph).each(rdfview());

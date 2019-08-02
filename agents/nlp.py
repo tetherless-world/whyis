@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import nltk, re, pprint
 import autonomic
 from bs4 import BeautifulSoup
@@ -8,12 +10,7 @@ from math import log10
 import collections
 from tika import parser as tika_parser
 
-sioc_types = Namespace("http://rdfs.org/sioc/types#")
-sioc = Namespace("http://rdfs.org/sioc/ns#")
-sio = Namespace("http://semanticscience.org/resource/")
-dc = Namespace("http://purl.org/dc/terms/")
-prov = autonomic.prov
-whyis = autonomic.whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class HTML2Text(autonomic.UpdateChangeService):
     activity_class = whyis.TextFromHTML
@@ -83,7 +80,7 @@ class IDFCalculator(autonomic.UpdateChangeService):
   }
 } group by ?concept ?assertion"""
         for concept, count, assertion in self.app.db.query(query, initBindings=dict(node=i.identifier)):
-            idf = log10(document_count/count.value)
+            idf = log10(old_div(document_count,count.value))
             npub = nanopub.Nanopublication(store=o.graph.store)
             if assertion is not None:
                 npub.pubinfo.add((npub.assertion.identifier, prov.wasRevisionOf, assertion))
@@ -180,7 +177,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
         documents = self.app.db.query('''select ?text where { %s %s ?text.}''' % (i.identifier.n3(), self.property_path))
         tf = self.tf(documents)
         #print tf
-        for t, f in tf.items():
+        for t, f in list(tf.items()):
             term = o.graph.resource(URIRef(i.identifier+"-term-"+slugify(t)))
             term.add(RDF.type, sio.Term)
             term.add(sio.hasValue, Literal(t))
@@ -204,5 +201,5 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
             all_mentions.extend(mentions)
             for mention in mentions:
                 term_vector[mention] += 1
-        tf_vector = dict([(mention, count/len(all_mentions)) for mention, count in term_vector.items()])
+        tf_vector = dict([(mention, old_div(count,len(all_mentions))) for mention, count in list(term_vector.items())])
         return tf_vector
