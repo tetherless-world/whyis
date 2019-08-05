@@ -2,7 +2,7 @@ from flask import current_app, request, Response, make_response
 from rdflib import ConjunctiveGraph
 from werkzeug.exceptions import abort
 
-from whyis.blueprint.nanopub import nanopub_blueprint
+from .nanopub_blueprint import nanopub_blueprint
 from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
