@@ -1,0 +1,1 @@
+from .nanopub_blueprint import nanopub_blueprint

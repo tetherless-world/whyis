@@ -10,6 +10,7 @@ from functools import lru_cache, wraps
 
 import jinja2
 
+from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph
 from whyis.nanopub import NanopublicationManager
 import requests
 from re import finditer
@@ -896,21 +897,7 @@ construct {
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
 
-        def _get_graph():
-            inputGraph = ConjunctiveGraph()
-            contentType = request.headers['Content-Type']
-            encoding = 'utf8' if not request.content_encoding else request.content_encoding
-            content = str(request.data, encoding)
-            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],contentType)
-            if fmt in dataFormats:
-                inputGraph.parse(data=content, format=dataFormats[fmt])
-            return inputGraph
-
-        
         #decorators = [conditional_login_required]
-
-        def _get_uri(ident):
-            return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
 
         @self.route('/pub/<ident>',methods=['GET'])
         @self.route('/pub/<ident>.<format>', methods=['GET'])
@@ -918,7 +905,7 @@ construct {
         def get_nanopub(ident, format=None):
             #print(request.method, 'get_nanopub()', ident)
             ident = ident.split("_")[0]
-            uri = _get_uri(ident)
+            uri = get_nanopub_uri(ident)
             result = app.nanopub_manager.get(uri)
             if result is None:
                 #print("cannot find", uri)
@@ -938,24 +925,12 @@ construct {
                 response.headers = {'Content-type': fmt}
                 return response, 200
 
-        @self.route('/pub/<ident>', methods=['DELETE'])
-        @login_required
-        def delete_nanopub(ident):
-            #print(request.method, 'delete_nanopub()', ident)
-            ident = ident.split("_")[0]
-            uri = _get_uri(ident)
-            if not app._can_edit(uri):
-                return '<h1>Not Authorized</h1>', 401
-            app.nanopub_manager.retire(uri)
-            return '', 204
-
-
         @self.route('/pub/<ident>', methods=['PUT'])
         @login_required
         def put_nanopub(ident):
             #print(request.method, 'put_nanopub()', ident)
-            nanopub_uri = _get_uri(ident)
-            inputGraph = _get_graph()
+            nanopub_uri = get_nanopub_uri(ident)
+            inputGraph = get_nanopub_graph()
             old_nanopub = _prep_nanopub(nanopub_uri, inputGraph)
             for nanopub in app.nanopub_manager.prepare(inputGraph):
                 nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
@@ -980,7 +955,7 @@ construct {
             #print(request.method, 'post_nanopub()', ident)
             if ident is not None:
                 return self.put(ident)
-            inputGraph = _get_graph()
+            inputGraph = get_nanopub_graph()
             #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
                 #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
             headers = {}
