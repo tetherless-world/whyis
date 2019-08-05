@@ -82,7 +82,7 @@ file { "/etc/init.d/jetty9":
 # Set up the Blazegraph web application
 file { "/tmp/blazegraph.war":
   ensure => file,
-  source => "/apps/whyis/resources/blazegraph.war",
+  source => "/apps/whyis/puppet/files/usr/share/jetty9/webapps/blazegraph.war",
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",

@@ -25,9 +25,10 @@ file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
-} -> wget::fetch { "https://github.com/tetherless-world/whyis/raw/master/resources/blazegraph.war":
-  destination => "/tmp/blazegraph.war",
-  timeout => 0
+} ->
+file { "/tmp/blazegraph.war":
+  ensure => file,
+  source => "/apps/whyis/puppet/files/usr/share/jetty9/webapps/blazegraph.war",
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",
