@@ -75,7 +75,7 @@ file_line { "configure_java_home":
 # This was easier than figuring out how to replace multiple lines.
 file { "/etc/init.d/jetty9":
   ensure => file,
-  source => "/apps/whyis/jetty9.init",
+  source => "/apps/whyis/puppet/files/etc/init.d/jetty9",
   owner => "root",
 } ->
 
