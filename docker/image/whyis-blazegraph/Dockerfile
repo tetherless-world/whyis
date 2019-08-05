@@ -4,7 +4,7 @@ USER root
 RUN apt-get update && apt-get install -y unzip
 
 # With the blazegraph/ context
-COPY ./resources/blazegraph.war /tmp/.
+COPY ./puppet/files/usr/share/jetty9/webapps/blazegraph.war /tmp/.
 
 # Creates the directory
 WORKDIR /var/lib/jetty/webapps/blazegraph

@@ -75,14 +75,14 @@ file_line { "configure_java_home":
 # This was easier than figuring out how to replace multiple lines.
 file { "/etc/init.d/jetty9":
   ensure => file,
-  source => "/apps/whyis/jetty9.init",
+  source => "/apps/whyis/puppet/files/etc/init.d/jetty9",
   owner => "root",
 } ->
 
 # Set up the Blazegraph web application
 file { "/tmp/blazegraph.war":
   ensure => file,
-  source => "/apps/whyis/resources/blazegraph.war",
+  source => "/apps/whyis/puppet/files/usr/share/jetty9/webapps/blazegraph.war",
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",
@@ -198,7 +198,7 @@ file { "/var/log/celery":
     group => "whyis"
 } ->
 file { "/etc/default/celeryd":
-  source => "/apps/whyis/resources/celeryd",
+  source => "/apps/whyis/puppet/files/etc/default/celeryd",
   owner => "root",
   group => "root",
   ensure => present
@@ -220,7 +220,7 @@ exec { "a2enmod headers":
 } ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
-  source => "/apps/whyis/apache.conf",
+  source => "/apps/whyis/puppet/files/etc/apache2/sites-available/000-default.conf",
   owner => "root"
 }
 

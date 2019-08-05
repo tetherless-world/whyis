@@ -5,7 +5,7 @@ The Whyis installer is layered, which allows for maximum flexibility. Each layer
 If you do not have Ubuntu 16.04, please use VirtualBox, VMWare, or another virtualization tool to create a VM with Ubuntu 16.04 installed. Whyis requires at least 4 GB of memory and 30GB of disk space.
 
 - **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Whyis onto an Ubuntu 16.04 server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
-- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
+- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `puppet/manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
 
 ** Whyis installations are currently supported on Ubuntu 16.04. **
 
