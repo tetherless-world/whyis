@@ -198,7 +198,7 @@ file { "/var/log/celery":
     group => "whyis"
 } ->
 file { "/etc/default/celeryd":
-  source => "/apps/whyis/resources/celeryd",
+  source => "/apps/whyis/puppet/files/etc/default/celeryd",
   owner => "root",
   group => "root",
   ensure => present
