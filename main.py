@@ -10,7 +10,9 @@ from functools import lru_cache, wraps
 
 import jinja2
 
+from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph
+from whyis.data_formats import DATA_FORMATS
 from whyis.nanopub import NanopublicationManager
 import requests
 from re import finditer
@@ -578,20 +580,6 @@ construct {
             "html": "text/html"
         }
 
-        dataFormats = {
-            "application/rdf+xml" : "xml",
-            "application/ld+json" : 'json-ld',
-            "application/json" : 'json-ld',
-            "text/turtle" : "turtle",
-            "application/trig" : "trig",
-            "application/n-quads" : "nquads",
-            "application/n-triples" : "nt",
-            "application/rdf+json" : "json",
-            "text/html" : None,
-            "application/xhtml+xml" : None,
-            "application/xhtml" : None,
-            None: "json-ld"
-        }
 
         htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
 
@@ -806,14 +794,14 @@ construct {
                     content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
-                fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
+                fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
                 if 'view' in request.args or fmt in htmls:
                     return render_view(resource)
-                elif fmt in dataFormats:
+                elif fmt in DATA_FORMATS:
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
-                    return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
+                    return output_graph.serialize(format=DATA_FORMATS[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
                     return render_view(resource)
@@ -917,11 +905,11 @@ construct {
                 content_type = extensions[format]
             if content_type is None:
                 content_type = request.headers['Accept'] if 'Accept' in request.headers else 'application/ld+json'
-            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
+            fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
             if 'view' in request.args or fmt in htmls:
                 return render_nanopub(result, 200)
-            elif fmt in dataFormats:
-                response = Response(result.serialize(format=dataFormats[fmt]))
+            elif fmt in DATA_FORMATS:
+                response = Response(result.serialize(format=DATA_FORMATS[fmt]))
                 response.headers = {'Content-type': fmt}
                 return response, 200
 
@@ -1005,8 +993,8 @@ construct {
                 else:
                     #print "Deserializing", g.identifier, 'as', content_type
                     #print dataFormats
-                    if content_type in dataFormats:
-                        g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
+                    if content_type in DATA_FORMATS:
+                        g.parse(data=text, format=DATA_FORMATS[content_type], publicID=app.NS.local)
                         #print len(g)
                     #else:
                         #print("not attempting to deserialize.")
@@ -1015,6 +1003,8 @@ construct {
 #                        except:
 #                            pass
             #print Graph(store=resource.graph.store).serialize(format="trig")
+
+        self.register_blueprint(nanopub_blueprint)
 
     def get_send_file_max_age(self, filename):
         if self.debug:
