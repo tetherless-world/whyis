@@ -12,7 +12,9 @@ import jinja2
 
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph
+from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
+from whyis.html_mime_types import HTML_MIME_TYPES
 from whyis.nanopub import NanopublicationManager
 import requests
 from re import finditer
@@ -567,22 +569,6 @@ construct {
             else:
                 return None
 
-        extensions = {
-            "rdf": "application/rdf+xml",
-            "jsonld": "application/ld+json",
-            "json": "application/json",
-            "ttl": "text/turtle",
-            "trig": "application/trig",
-            "turtle": "text/turtle",
-            "owl": "application/rdf+xml",
-            "nq": "application/n-quads",
-            "nt": "application/n-triples",
-            "html": "text/html"
-        }
-
-
-        htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
-
 
         def get_graphs(graphs):
             query = '''select ?s ?p ?o ?g where {
@@ -750,8 +736,8 @@ construct {
             self.db.store.nsBindings = {}
             content_type = None
             if format is not None:
-                if format in extensions:
-                    content_type = extensions[format]
+                if format in DATA_EXTENSIONS:
+                    content_type = DATA_EXTENSIONS[format]
                 else:
                     name = '.'.join([name, format])
             #argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
@@ -795,7 +781,7 @@ construct {
                 #print entity
 
                 fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
-                if 'view' in request.args or fmt in htmls:
+                if 'view' in request.args or fmt in HTML_MIME_TYPES:
                     return render_view(resource)
                 elif fmt in DATA_FORMATS:
                     output_graph = ConjunctiveGraph()
@@ -857,8 +843,8 @@ construct {
 
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
-            if extension in extensions:
-                headers['Content-Type'] = extensions[extension]
+            if extension in DATA_EXTENSIONS:
+                headers['Content-Type'] = DATA_EXTENSIONS[extension]
                 
 
             # default view (list of nanopubs)
@@ -866,17 +852,6 @@ construct {
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
-
-        def render_nanopub(data, code, headers=None):
-            if data is None:
-                return make_response("<h1>Not Found</h1>", 404)
-
-            entity = app.Entity(ConjunctiveGraph(data.store), data.identifier)
-            entity.nanopub = data
-            data, code, headers = render_view(entity)
-            resp = make_response(data, code)
-            resp.headers.extend(headers or {})
-            return resp
 
         app = self
 
@@ -887,31 +862,6 @@ construct {
 
         #decorators = [conditional_login_required]
 
-        @self.route('/pub/<ident>',methods=['GET'])
-        @self.route('/pub/<ident>.<format>', methods=['GET'])
-        @conditional_login_required
-        def get_nanopub(ident, format=None):
-            #print(request.method, 'get_nanopub()', ident)
-            ident = ident.split("_")[0]
-            uri = get_nanopub_uri(ident)
-            result = app.nanopub_manager.get(uri)
-            if result is None:
-                #print("cannot find", uri)
-                abort(404)
-
-            content_type = None
-                        
-            if format is not None and format in extensions:
-                content_type = extensions[format]
-            if content_type is None:
-                content_type = request.headers['Accept'] if 'Accept' in request.headers else 'application/ld+json'
-            fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
-            if 'view' in request.args or fmt in htmls:
-                return render_nanopub(result, 200)
-            elif fmt in DATA_FORMATS:
-                response = Response(result.serialize(format=DATA_FORMATS[fmt]))
-                response.headers = {'Content-type': fmt}
-                return response, 200
 
         @self.route('/pub/<ident>', methods=['PUT'])
         @login_required
