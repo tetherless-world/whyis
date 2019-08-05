@@ -81,8 +81,8 @@ class ExtendedRegisterForm(RegisterForm):
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
 
-def to_json(result):
-    return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
+# def to_json(result):
+#     return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
 
 
 class App(Empty):
