@@ -11,7 +11,7 @@ from functools import lru_cache, wraps
 import jinja2
 
 from whyis.blueprint.nanopub import nanopub_blueprint
-from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph
+from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph, prep_nanopub
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
 from whyis.html_mime_types import HTML_MIME_TYPES
@@ -869,90 +869,12 @@ construct {
             #print(request.method, 'put_nanopub()', ident)
             nanopub_uri = get_nanopub_uri(ident)
             inputGraph = get_nanopub_graph()
-            old_nanopub = _prep_nanopub(nanopub_uri, inputGraph)
+            old_nanopub = prep_nanopub(nanopub_uri, inputGraph)
             for nanopub in app.nanopub_manager.prepare(inputGraph):
                 nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
                 app.nanopub_manager.retire(nanopub_uri)
                 app.nanopub_manager.publish(nanopub)
 
-        def _prep_nanopub(nanopub):
-            #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-            about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
-            #print nanopub.assertion_resource.identifier, about
-            _prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
-            #_prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
-            _prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
-            nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.identifier))
-
-            return nanopub
-
-        @self.route('/pub/<ident>',  methods=['POST'])
-        @self.route('/pub',  methods=['POST'])
-        @login_required
-        def post_nanopub(ident=None):
-            #print(request.method, 'post_nanopub()', ident)
-            if ident is not None:
-                return self.put(ident)
-            inputGraph = get_nanopub_graph()
-            #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
-                #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
-            headers = {}
-            for nanopub in app.nanopub_manager.prepare(inputGraph):
-                _prep_nanopub(nanopub)
-                headers['Location'] = nanopub.identifier
-                app.nanopub_manager.publish(nanopub)
-
-            return '', 201, headers
-
-
-        def _prep_graph(resource, about = None):
-            #print '_prep_graph', resource.identifier, about
-            content_type = resource.value(app.NS.ov.hasContentType)
-            if content_type is not None:
-                content_type = content_type.value
-            #print 'graph content type', resource.identifier, content_type
-            #print resource.graph.serialize(format="nquads")
-            g = Graph(store=resource.graph.store,identifier=resource.identifier)
-            text = resource.value(app.NS.prov.value)
-            if content_type is not None and text is not None:
-                #print 'Content type:', content_type, resource.identifier
-                html = None
-                if content_type in ["text/html", "application/xhtml+xml"]:
-                    html = Literal(text.value, datatype=NS.RDF.HTML)
-                if content_type == 'text/markdown':
-                    #print "Aha, markdown!"
-                    #print text.value
-                    html = markdown.markdown(text.value)
-                    attributes = ['vocab="%s"' % app.NS.local,
-                                  'base="%s"'% app.NS.local,
-                                  'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]
-                    if about is not None:
-                        attributes.append('resource="%s"' % about)
-                    html = '<div %s>%s</div>' % (' '.join(attributes), html)
-                    html = Literal(html, datatype=NS.RDF.HTML)
-                    text = html
-                    content_type = "text/html"
-                #print resource.identifier, content_type
-                if html is not None:
-                    resource.set(app.NS.sioc.content, html)
-                    try:
-                        g.remove((None,None,None))
-                        g.parse(data=text, format='rdfa', publicID=app.NS.local)
-                    except:
-                        pass
-                else:
-                    #print "Deserializing", g.identifier, 'as', content_type
-                    #print dataFormats
-                    if content_type in DATA_FORMATS:
-                        g.parse(data=text, format=DATA_FORMATS[content_type], publicID=app.NS.local)
-                        #print len(g)
-                    #else:
-                        #print("not attempting to deserialize.")
-#                        try:
-#                            sadi.deserialize(g, text, content_type)
-#                        except:
-#                            pass
-            #print Graph(store=resource.graph.store).serialize(format="trig")
 
         self.register_blueprint(nanopub_blueprint)
 
