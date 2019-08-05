@@ -220,7 +220,7 @@ exec { "a2enmod headers":
 } ->
 file { "/etc/apache2/sites-available/000-default.conf":
   ensure => present,
-  source => "/apps/whyis/apache.conf",
+  source => "/apps/whyis/puppet/files/etc/apache2/sites-available/000-default.conf",
   owner => "root"
 }
 
