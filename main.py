@@ -55,7 +55,7 @@ from whyis.decorator import conditional_login_required
 from whyis.namespace import NS
 
 #from flask_login.config import EXEMPT_METHODS
-from whyis.task.task_utils import is_waiting, is_running_waiting
+from whyis.task_utils import is_waiting, is_running_waiting
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
