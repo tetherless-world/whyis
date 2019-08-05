@@ -10,7 +10,7 @@ from functools import lru_cache, wraps
 
 import jinja2
 
-from nanopub import NanopublicationManager
+from whyis.nanopub import NanopublicationManager
 import requests
 from re import finditer
 import pytz
@@ -41,14 +41,14 @@ from urllib.parse import urlencode
 from celery import Celery
 from celery.schedules import crontab
 
-import database
+from whyis import database
 
 from datetime import datetime
 
-from datastore import WhyisUserDatastore
+from whyis.datastore import WhyisUserDatastore
 
 import markdown
-import search
+from whyis import search
 from whyis import filters
 from whyis.decorator import conditional_login_required
 
@@ -417,7 +417,7 @@ construct {
                 raise Unauthorized()
             self.nanopub_manager.retire(np_uri)
         
-                
+
     def add_files(self, uri, files, upload_type=NS.pv.File):
         nanopub = self.nanopub_manager.new()
 
@@ -455,7 +455,7 @@ construct {
             for old_np, old_np_assertion in old_nanopubs:
                 nanopub.pubinfo.add((nanopub.assertion.identifier, NS.prov.wasRevisionOf, old_np_assertion))
                 self.nanopub_manager.retire(old_np)
-            
+
             for n in self.nanopub_manager.prepare(nanopub):
                 self.nanopub_manager.publish(n)
 
