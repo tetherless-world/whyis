@@ -40,7 +40,6 @@ from urllib.parse import urlencode
 
 from celery import Celery
 from celery.schedules import crontab
-from celery.task.control import inspect
 
 import database
 
@@ -56,6 +55,7 @@ from whyis.decorator import conditional_login_required
 from whyis.namespace import NS
 
 #from flask_login.config import EXEMPT_METHODS
+from whyis.task.task_utils import is_waiting, is_running_waiting
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
@@ -108,17 +108,6 @@ class App(Empty):
                 + [app.jinja_loader]
             )
             app.jinja_loader = my_loader
-        
-        def setup_task(service):
-            service.app = app
-            print(service)
-            result = None
-            if service.query_predicate == self.NS.whyis.globalChangeQuery:
-                result = process_resource
-            else:
-                result = process_nanopub
-            result.service = lambda : service
-            return result
 
         @self.celery.task
         def process_resource(service_name, taskid=None):
@@ -178,32 +167,6 @@ class App(Empty):
             else:
                 task['find_instances'].delay()
 
-        def is_waiting(service_name):
-            """
-            Check if a task is waiting.
-            """
-            scheduled_tasks = list(inspect().scheduled().values())[0]
-            for task in scheduled_tasks:
-                if 'kwargs' in task:
-                    args = eval(task['kwargs'])
-                    if service_name == args.get('service_name',None):
-                        return True
-            return False
-                
-        def is_running_waiting(service_name):
-            """
-            Check if a task is running or waiting.
-            """
-            if is_waiting(service_name):
-                return True
-            running_tasks = list(inspect().active().values())[0]
-            for task in running_tasks:
-                if 'kwargs' in task:
-                    args = eval(task['kwargs'])
-                    if service_name == args.get('service_name',None):
-                        return True
-            return False
-                        
         @self.celery.task()
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
@@ -231,17 +194,6 @@ class App(Empty):
         def run_update(nanopub_uri):
             update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
-
-        def is_waiting_importer(entity_name, exclude=None):
-            """
-            Check if a task is running or waiting.
-            """
-            if inspect().scheduled():
-                tasks = list(inspect().scheduled().values())
-                for task in tasks:
-                    if 'args' in task and entity_name in task['args']:
-                        return True
-            return False
 
         app = self
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
