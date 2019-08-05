@@ -570,38 +570,38 @@ construct {
                 return None
 
 
-        def get_graphs(graphs):
-            query = '''select ?s ?p ?o ?g where {
-                hint:Query hint:optimizer "Runtime" .
+        # def get_graphs(graphs):
+        #     query = '''select ?s ?p ?o ?g where {
+        #         hint:Query hint:optimizer "Runtime" .
+        #
+        #         graph ?g {?s ?p ?o}
+        #         } values ?g { %s }'''
+        #     query = query % ' '.join([graph.n3() for graph in graphs])
+        #     #print query
+        #     quads = self.db.store.query(query, initNs=self.NS.prefixes)
+        #     result = rdflib.Dataset()
+        #     result.addN(quads)
+        #     return result
 
-                graph ?g {?s ?p ?o}
-                } values ?g { %s }'''
-            query = query % ' '.join([graph.n3() for graph in graphs])
-            #print query
-            quads = self.db.store.query(query, initNs=self.NS.prefixes)
-            result = rdflib.Dataset()
-            result.addN(quads)
-            return result
-
-        def explain(graph):
-            values = ')\n  ('.join([' '.join([x.n3() for x in triple]) for triple in graph.triples((None,None,None))])
-            values = 'VALUES (?s ?p ?o)\n{\n('+ values + ')\n}'
-            
-            try:
-                nanopubs = self.db.query('''select distinct ?np where {
-    hint:Query hint:optimizer "Runtime" .
-    ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
-        np:hasPublicationInfo ?pubinfo;
-        np:hasAssertion ?assertion;
-    graph ?assertion { ?s ?p ?o.}
-}''' + values, initNs=self.NS.prefixes)
-                result = ConjunctiveGraph()
-                for nanopub_uri, in nanopubs:
-                    self.nanopub_manager.get(nanopub_uri, result)
-            except Exception as e:
-                print(str(e), entity)
-                raise e
-            return result.resource(entity)
+#         def explain(graph):
+#             values = ')\n  ('.join([' '.join([x.n3() for x in triple]) for triple in graph.triples((None,None,None))])
+#             values = 'VALUES (?s ?p ?o)\n{\n('+ values + ')\n}'
+#
+#             try:
+#                 nanopubs = self.db.query('''select distinct ?np where {
+#     hint:Query hint:optimizer "Runtime" .
+#     ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+#         np:hasPublicationInfo ?pubinfo;
+#         np:hasAssertion ?assertion;
+#     graph ?assertion { ?s ?p ?o.}
+# }''' + values, initNs=self.NS.prefixes)
+#                 result = ConjunctiveGraph()
+#                 for nanopub_uri, in nanopubs:
+#                     self.nanopub_manager.get(nanopub_uri, result)
+#             except Exception as e:
+#                 print(str(e), entity)
+#                 raise e
+#             return result.resource(entity)
         
         def get_entity_sparql(entity):
             try:
@@ -625,27 +625,27 @@ construct {
             return result.resource(entity)
             
         
-        def get_entity_disk(entity):
-            try:
-                nanopubs = self.db.query('''select distinct ?np where {
-    hint:Query hint:optimizer "Runtime" .
-            ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
-                np:hasPublicationInfo ?pubinfo;
-                np:hasAssertion ?assertion;
-
-            {graph ?np { ?np sio:isAbout ?e.}}
-            UNION
-            {graph ?assertion { ?e ?p ?o.}}
-        }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
-                result = ConjunctiveGraph()
-                for nanopub_uri, in nanopubs:
-                    self.nanopub_manager.get(nanopub_uri, result)
-#                result.addN(nanopubs)
-            except Exception as e:
-                print(str(e), entity)
-                raise e
-            #print result.serialize(format="trig")
-            return result.resource(entity)
+#         def get_entity_disk(entity):
+#             try:
+#                 nanopubs = self.db.query('''select distinct ?np where {
+#     hint:Query hint:optimizer "Runtime" .
+#             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+#                 np:hasPublicationInfo ?pubinfo;
+#                 np:hasAssertion ?assertion;
+#
+#             {graph ?np { ?np sio:isAbout ?e.}}
+#             UNION
+#             {graph ?assertion { ?e ?p ?o.}}
+#         }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
+#                 result = ConjunctiveGraph()
+#                 for nanopub_uri, in nanopubs:
+#                     self.nanopub_manager.get(nanopub_uri, result)
+# #                result.addN(nanopubs)
+#             except Exception as e:
+#                 print(str(e), entity)
+#                 raise e
+#             #print result.serialize(format="trig")
+#             return result.resource(entity)
 
         get_entity = get_entity_sparql
         
