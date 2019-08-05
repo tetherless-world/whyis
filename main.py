@@ -70,7 +70,7 @@ sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
-top_compare_key = False, -100, [(-2, 0)]
+# top_compare_key = False, -100, [(-2, 0)]
 # increase probability that the rule will be near or at the bottom 
 bottom_compare_key = True, 100, [(2, 0)]
 
