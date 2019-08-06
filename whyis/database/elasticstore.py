@@ -61,6 +61,12 @@ class ElasticSearchStore(Store):
         return self.__open
 
     def open(self, url, create=True):
+        """\
+        Opens the store.
+
+        The given url should include the elasticsearch index that will be used (for example, "http://example.com:9200/some_index").
+        If create is True, the index will be created if it does not already exist.
+        """
         self.url = url
         self.session = requests.Session()
         self.session.headers.update({"Content-Type":"application/json"})
@@ -92,7 +98,10 @@ class ElasticSearchStore(Store):
         assert context != self, "Can not add triple directly to store"
         self.addN([(subject,predicate,object,context)], refresh=refresh)
 
-    def prep_graph(self, quads):
+    def quads_to_jsonld(self, quads):
+        """\
+        Formats a list of RDF quads as JSON-LD.
+        """
         graphs = {}
         resources = {}
         json_ld = []
@@ -136,14 +145,14 @@ class ElasticSearchStore(Store):
         return json_ld
         
     def addN(self, quads, docid=None, refresh=False):
-        """
+        """\
         Adds each item in the list of statements to a specific context. The
         quoted argument is interpreted by formula-aware stores to indicate this
         statement is quoted/hypothetical.
         """
         assert self.__open, "The Store must be open."
 
-        json_ld = self.prep_graph(quads)
+        json_ld = self.quads_to_jsonld(quads)
 
         if docid is None:
             docid = uuid4().hex
@@ -162,6 +171,9 @@ class ElasticSearchStore(Store):
         assert False, "remove() is not implemented."
 
     def retire_nanopub(self, uri):
+        """\
+        Removes from the store a nanopublication that the given Resource object refers to.
+        """
 
         query = {
           "query": {
@@ -201,6 +213,10 @@ class ElasticSearchStore(Store):
         return response.json()
 
     def subgraph(self, query):
+        """\
+        Returns a graph containing all triples matching a given Elasticsearch query.
+        """
+
         json_response = self.elastic_query(query)
         g = rdflib.ConjunctiveGraph()
 
@@ -208,7 +224,7 @@ class ElasticSearchStore(Store):
         return g
 
     def triples(self, spo=(None,None,None), context=None, txn=None):
-        """A generator over all the triples matching """
+        """Returns a generator over all the triples matching the specified pattern."""
         assert self.__open, "The Store must be open."
 
         subject, predicate, object = spo
