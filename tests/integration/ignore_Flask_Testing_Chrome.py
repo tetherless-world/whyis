@@ -10,7 +10,7 @@ import chromedriver_binary  # Adds chromedriver binary to path
 class MyTest(LiveServerTestCase):
 
     def create_app(self):
-        from main import app_factory
+        from whyis.app_factory import app_factory
         from depot.manager import DepotManager
         import config_defaults
         

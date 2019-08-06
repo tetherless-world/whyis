@@ -15,7 +15,7 @@ RUN npm run build
 FROM tetherlessworld/whyis-deps:$WHYIS_IMAGE_TAG
 
 # Apache configuration
-COPY /apache.conf /apache.conf
+COPY /puppet/files/etc/apache2/sites-available/000-default.conf /apache.conf
 RUN sed '1d' /apache.conf > /etc/apache2/sites-available/000-default.conf
 RUN rm /apache.conf
 
