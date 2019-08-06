@@ -731,7 +731,6 @@ construct {
                 else:
                     return render_view(resource)
                 
-        views = {}
         def render_view(resource, view=None, args=None):
             template_args = dict()
             template_args.update(self.template_imports)
