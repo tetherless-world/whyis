@@ -4,16 +4,11 @@ from rdflib import ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import RDF
 from whyis.test.api_test_case import ApiTestCase
 
+from .api_test_data import PERSON_INSTANCE_TURTLE
+
 
 class TestNanopubCrud(ApiTestCase):
-
-    turtle = '''
-<http://example.com/janedoe> <http://schema.org/jobTitle> "Professor";
-    <http://schema.org/name> "Jane Doe" ;
-    <http://schema.org/telephone> "(425) 123-4567" ;
-    <http://schema.org/url> <http://www.janedoe.com> ;
-    <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .
-'''
+    turtle = PERSON_INSTANCE_TURTLE
 
     def test_create(self):
         self.login_new_user()
