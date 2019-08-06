@@ -17,7 +17,7 @@ class NanopubTest(ApiTestCase):
 
     def test_create(self):
         self.login_new_user()
-        response = self.publish_nanopub(data=self.turtle,
+        response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
 
@@ -29,7 +29,7 @@ class NanopubTest(ApiTestCase):
 
     def test_read(self):
         self.login_new_user()
-        response = self.publish_nanopub(data=self.turtle,
+        response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
 
@@ -47,7 +47,7 @@ class NanopubTest(ApiTestCase):
 
     def test_delete_admin(self):
         self.login_new_user()
-        response = self.publish_nanopub(data=self.turtle,
+        response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
 
@@ -57,7 +57,7 @@ class NanopubTest(ApiTestCase):
 
     def test_delete_nonadmin(self):
         self.login_new_user(role=None)
-        response = self.publish_nanopub(data=self.turtle,
+        response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
 
@@ -67,7 +67,7 @@ class NanopubTest(ApiTestCase):
 
     def test_linked_data(self):
         self.login_new_user()
-        self.publish_nanopub(data=self.turtle,
+        self.post_nanopub(data=self.turtle,
                              content_type="text/turtle")
 
         # Because of (lack of) content negotiation
@@ -83,7 +83,7 @@ class NanopubTest(ApiTestCase):
 
     def test_mime_behavior(self):
         self.login_new_user()
-        self.publish_nanopub(data=self.turtle,
+        self.post_nanopub(data=self.turtle,
                              content_type="text/turtle")
 
         self.get_view(uri="http://example.com/janedoe",
@@ -97,7 +97,7 @@ class NanopubTest(ApiTestCase):
 
     def test_attribute_view(self):
         self.login_new_user()
-        self.publish_nanopub(data=self.turtle,
+        self.post_nanopub(data=self.turtle,
                              content_type="text/turtle")
 
         content = self.get_view(uri="http://example.com/janedoe",
@@ -119,7 +119,7 @@ class NanopubTest(ApiTestCase):
         <http://schema.org/url> <http://www.janedoe.com> ;
         <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> . """
 
-        self.publish_nanopub(data=ontology,
+        self.post_nanopub(data=ontology,
                              content_type="text/turtle")
 
         content = self.get_view(uri="http://example.com/",
