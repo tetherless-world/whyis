@@ -213,7 +213,11 @@ class App(Empty):
                 except Exception:
                     print("Error importing module %s into template variable %s." % (imp, name))
                     raise
-        
+
+        self.nanopub_manager = NanopublicationManager(self.db.store,
+                                                      Namespace('%s/pub/'%(self.config['lod_prefix'])),
+                                                      self,
+                                                      update_listener=self.nanopub_update_listener)
 
     def configure_database(self):
         """
@@ -787,11 +791,6 @@ construct {
             # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
-
-        self.nanopub_manager = NanopublicationManager(self.db.store,
-                                                      Namespace('%s/pub/'%(self.config['lod_prefix'])),
-                                                      self,
-                                                      update_listener=self.nanopub_update_listener)
 
         # Register blueprints
         self.register_blueprint(nanopub_blueprint)
