@@ -1,64 +1,47 @@
 # -*- coding:utf-8 -*-
 import importlib
-
 import os
 import sys
-from whyis.empty import Empty
-from flask import render_template, g, redirect, url_for, request, flash, Response, \
-    send_from_directory, make_response, abort
-from functools import lru_cache, wraps
+from datetime import datetime
+from functools import lru_cache
+from re import finditer
+from urllib.parse import urlencode
 
 import jinja2
+import pytz
+import rdflib
+import sadi
+import sadi.mimeparse
+from celery import Celery
+from celery.schedules import crontab
+from depot.manager import DepotManager
+from depot.middleware import FileServeApp
+from flask import render_template, g, redirect, url_for, request, flash, send_from_directory, abort
+from flask_security import Security
+from flask_security.core import current_user
+from flask_security.forms import RegisterForm
+from rdflib import Literal, Graph, Namespace, URIRef
+from rdflib.graph import ConjunctiveGraph
+from rdflib.query import Processor, Result, UpdateProcessor
+from slugify import slugify
+from werkzeug.exceptions import Unauthorized
+from werkzeug.utils import secure_filename
+from wtforms import TextField, validators
 
+from whyis import database
+from whyis import filters
+from whyis import search
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.sparql import sparql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
-from whyis.html_mime_types import HTML_MIME_TYPES
-from whyis.nanopub import NanopublicationManager
-from re import finditer
-import pytz
-
-from werkzeug.exceptions import Unauthorized
-from werkzeug.utils import secure_filename
-
-from depot.manager import DepotManager
-from depot.middleware import FileServeApp
-
-import rdflib
-from rdflib import Literal, Graph, Namespace, URIRef
-from rdflib.graph import ConjunctiveGraph
-from rdflib.query import Processor, Result, UpdateProcessor
-
-from flask_security import Security, login_required
-from flask_security.core import current_user
-from flask_security.forms import RegisterForm
-from flask_wtf import Form
-from wtforms import TextField, StringField, validators
-import sadi
-import json
-import sadi.mimeparse
-from slugify import slugify
-
-from urllib.parse import urlencode
-
-from celery import Celery
-from celery.schedules import crontab
-
-from whyis import database
-
-from datetime import datetime
-
 from whyis.datastore import WhyisUserDatastore
-
-import markdown
-from whyis import search
-from whyis import filters
 from whyis.decorator import conditional_login_required
-
+from whyis.empty import Empty
+from whyis.html_mime_types import HTML_MIME_TYPES
 from whyis.namespace import NS
-
-#from flask_login.config import EXEMPT_METHODS
+from whyis.nanopub import NanopublicationManager
+# from flask_login.config import EXEMPT_METHODS
 from whyis.task_utils import is_waiting, is_running_waiting
 
 rdflib.plugin.register('sparql', Result,
@@ -820,7 +803,4 @@ construct {
         else:
             return Empty.get_send_file_max_age(self, filename)
 
-
-from whyis.app_factory import app_factory
-from whyis.heroku import heroku
 
