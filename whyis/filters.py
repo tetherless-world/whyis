@@ -9,9 +9,6 @@ from markupsafe import Markup
 from slugify import slugify
 from urllib import parse
 
-from scipy.stats import norm
-from scipy.stats import combine_pvalues
-
 
 # def geomean(nums):
 #    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
@@ -203,6 +200,8 @@ where {
 
     @app.template_filter('mergeLinks')
     def mergeLink(edges):
+        from scipy.stats import combine_pvalues
+
         base_rate = app.config['base_rate_probability']
         
         def merge(links):
@@ -244,6 +243,8 @@ where {
 
     @app.template_filter('mergeLinkTypes')
     def mergeLinkTypes(edges):
+        from scipy.stats import combine_pvalues
+
         def merge(links):
             result = dict(links[0])
             result['from'] = []
@@ -254,6 +255,7 @@ where {
                 result['articles'].extend(i['articles'])
             result['probability'] = combine_pvalues([e['probability'] for e in links], method="stouffer")[1]
             if result['probability'] < 1 and result['probability'] > 0:
+                from scipy.stats import norm
                 result['zscore'] = norm.ppf(result['probability'])
             return result
         
