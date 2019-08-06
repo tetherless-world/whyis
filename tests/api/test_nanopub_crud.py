@@ -5,7 +5,7 @@ from rdflib.namespace import RDF
 from whyis.test.api_test_case import ApiTestCase
 
 
-class NanopubTest(ApiTestCase):
+class TestNanopubCrud(ApiTestCase):
 
     turtle = '''
 <http://example.com/janedoe> <http://schema.org/jobTitle> "Professor";
@@ -109,39 +109,3 @@ class NanopubTest(ApiTestCase):
         self.assertEquals(len(json_content['type']), 1)
         self.assertEquals(json_content['type'][0]['label'], 'Person')
 
-    def test_ontology_describe_view(self):
-        self.login_new_user()
-        ontology = """
-        <http://example.com/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Ontology> .
-        <http://example.com/janedoe> <http://schema.org/jobTitle> "Professor";
-        <http://schema.org/name> "Jane Doe" ;
-        <http://schema.org/telephone> "(425) 123-4567" ;
-        <http://schema.org/url> <http://www.janedoe.com> ;
-        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> . """
-
-        self.post_nanopub(data=ontology,
-                             content_type="text/turtle")
-
-        content = self.get_view(uri="http://example.com/",
-                                view="describe",
-                                mime_type="application/json",
-                                expected_template="describe_ontology.json")
-
-        data = json.loads(str(content.data, 'utf8'))
-        self.assertIsInstance(data, list, "'describe' view returned unexpected structure")
-        self.assertTrue(data, "'describe' view returned empty list")
-        self.assertIn("@graph", data[0], "'describe' view missing @graph key")
-        self.assertIn("@id", data[0], "'describe' view missing @id key for graph")
-
-        graph = data[0]["@graph"]
-        self.assertEqual(len(graph), 2, "'describe' view returned the wrong number of subjects")
-
-        for subject in graph:
-            if subject["@id"] == "http://example.com/":
-                self.assertEqual(len(subject.keys()), 2,
-                                 "Subject in 'describe' view has unexpected number of predicates")
-                self.assertIn("http://www.w3.org/2002/07/owl#Ontology", subject["@type"],
-                              "Expected an ontology type object in the 'describe' view")
-            elif subject["@id"] == "http://example.com/janedoe":
-                self.assertEqual(len(subject.keys()), 6,
-                                 "Subject in 'describe' view has unexpected number of predicates")

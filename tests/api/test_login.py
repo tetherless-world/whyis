@@ -14,8 +14,7 @@ from io import StringIO
 from whyis.test.api_test_case import ApiTestCase
 
 
-class LoginTest(ApiTestCase):
-    
+class TestLogin(ApiTestCase):
     def test_direct_login(self):
         user_details = self.create_user("user@example.com","password")
         self.assertEquals(user_details[0], 'user@example.com')
