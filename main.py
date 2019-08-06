@@ -853,29 +853,10 @@ construct {
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
 
-        app = self
-
-        self.nanopub_manager = NanopublicationManager(app.db.store,
-                                                      Namespace('%s/pub/'%(app.config['lod_prefix'])),
+        self.nanopub_manager = NanopublicationManager(self.db.store,
+                                                      Namespace('%s/pub/'%(self.config['lod_prefix'])),
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
-
-        #decorators = [conditional_login_required]
-
-
-        @self.route('/pub/<ident>', methods=['PUT'])
-        @login_required
-        def put_nanopub(ident):
-            #print(request.method, 'put_nanopub()', ident)
-            nanopub_uri = get_nanopub_uri(ident)
-            inputGraph = get_nanopub_graph()
-            old_nanopub = prep_nanopub(nanopub_uri, inputGraph)
-            for nanopub in app.nanopub_manager.prepare(inputGraph):
-                nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
-                app.nanopub_manager.retire(nanopub_uri)
-                app.nanopub_manager.publish(nanopub)
-
-
         self.register_blueprint(nanopub_blueprint)
 
     def get_send_file_max_age(self, filename):
