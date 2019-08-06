@@ -36,3 +36,5 @@ class ApiTestCase(TestCase):
                 self.assertIn(header, response.headers)
 
         return response
+
+    publish_nanopub = post_nanopub
