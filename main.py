@@ -249,16 +249,16 @@ class App(Empty):
         if DepotManager.get('nanopublications') is None:
             DepotManager.configure('nanopublications', self.config['nanopub_archive'])
 
-    def weighted_route(self, *args, **kwargs):
+    def __weighted_route(self, *args, **kwargs):
         def decorator(view_func):
             compare_key = kwargs.pop('compare_key', None)
             # register view_func with route
             self.route(*args, **kwargs)(view_func)
-    
+
             if compare_key is not None:
                 rule = self.url_map._rules[-1]
                 rule.match_compare_key = lambda: compare_key
-    
+
             return view_func
         return decorator
 
@@ -665,8 +665,8 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.__weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.__weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
         @self.route('/home', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
