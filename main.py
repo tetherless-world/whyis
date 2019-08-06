@@ -704,20 +704,6 @@ construct {
             #response.headers[con(req.headers)
             return response, req.status_code
         
-        @self.route('/sparql.html')
-        @conditional_login_required
-        def sparql_form():
-            
-            template_args = dict(ns=self.NS,
-                                 g=g,
-                                 config=self.config,
-                                 current_user=current_user,
-                                 isinstance=isinstance,
-                                 rdflib=rdflib,
-                                 hasattr=hasattr,
-                                 set=set)
-
-            return render_template('sparql.html',endpoint="/sparql", **template_args)
 
         
         if 'WHYIS_CDN_DIR' in self.config and self.config['WHYIS_CDN_DIR'] is not None:
