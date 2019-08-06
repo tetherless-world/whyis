@@ -90,17 +90,4 @@ class TestNanopubCrud(ApiTestCase):
                       mime_type="text/html",
                       expected_template="resource_view.html")
 
-    def test_attribute_view(self):
-        self.login_new_user()
-        self.post_nanopub(data=self.turtle,
-                             content_type="text/turtle")
-
-        content = self.get_view(uri="http://example.com/janedoe",
-                                view="attributes",
-                                mime_type="application/json")
-
-        json_content = json.loads(str(content.data, 'utf8'))
-        self.assertEquals(json_content['label'], "Jane Doe")
-        self.assertEquals(len(json_content['type']), 1)
-        self.assertEquals(json_content['type'][0]['label'], 'Person')
 

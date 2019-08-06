@@ -2,7 +2,7 @@ import json
 
 from whyis.test.api_test_case import ApiTestCase
 
-from ..api_test_data import ONTOLOGY_INSTANCE_TURTLE
+from ..api_test_data import ONTOLOGY_INSTANCE_TURTLE, ONTOLOGY_INSTANCE_URI
 
 
 class TestDescribeOntology(ApiTestCase):
@@ -13,7 +13,7 @@ class TestDescribeOntology(ApiTestCase):
         self.post_nanopub(data=ontology,
                           content_type="text/turtle")
 
-        content = self.get_view(uri="http://example.com/",
+        content = self.get_view(uri=ONTOLOGY_INSTANCE_URI,
                                 view="describe",
                                 mime_type="application/json",
                                 expected_template="describe_ontology.json")
