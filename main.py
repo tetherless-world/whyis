@@ -3,7 +3,7 @@ import importlib
 
 import os
 import sys
-from empty import Empty
+from whyis.empty import Empty
 from flask import render_template, g, redirect, url_for, request, flash, Response, \
     send_from_directory, make_response, abort
 from functools import lru_cache, wraps
@@ -11,12 +11,11 @@ from functools import lru_cache, wraps
 import jinja2
 
 from whyis.blueprint.nanopub import nanopub_blueprint
-from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri, get_nanopub_graph, prep_nanopub
+from whyis.blueprint.sparql import sparql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
 from whyis.html_mime_types import HTML_MIME_TYPES
 from whyis.nanopub import NanopublicationManager
-import requests
 from re import finditer
 import pytz
 
@@ -673,39 +672,6 @@ construct {
 
         self.get_summary = get_summary
 
-        @self.route('/sparql', methods=['GET', 'POST'])
-        @conditional_login_required
-        def sparql_view():
-            has_query = False
-            for arg in list(request.args.keys()):
-                if arg.lower() == "update":
-                    return "Update not allowed.", 403
-                if arg.lower() == 'query':
-                    has_query = True
-            if request.method == 'GET' and not has_query:
-                return redirect(url_for('sparql_form'))
-            #print self.db.store.query_endpoint
-            if request.method == 'GET':
-                headers = {}
-                headers.update(request.headers)
-                if 'Content-Length' in headers:
-                    del headers['Content-Length']
-                req = requests.get(self.db.store.query_endpoint,
-                                   headers = headers, params=request.args)
-            elif request.method == 'POST':
-                if 'application/sparql-update' in request.headers['content-type']:
-                    return "Update not allowed.", 403
-                #print(request.get_data())
-                req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
-                                    headers = request.headers, params=request.args)
-            #print self.db.store.query_endpoint
-            #print req.status_code
-            response = Response(req.content, content_type = req.headers['content-type'])
-            #response.headers[con(req.headers)
-            return response, req.status_code
-        
-
-        
         if 'WHYIS_CDN_DIR' in self.config and self.config['WHYIS_CDN_DIR'] is not None:
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
@@ -843,7 +809,10 @@ construct {
                                                       Namespace('%s/pub/'%(self.config['lod_prefix'])),
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
+
+        # Register blueprints
         self.register_blueprint(nanopub_blueprint)
+        self.register_blueprint(sparql_blueprint)
 
     def get_send_file_max_age(self, filename):
         if self.debug:
