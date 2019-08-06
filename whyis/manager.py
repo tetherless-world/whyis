@@ -4,7 +4,7 @@ import flask_script as script
 
 from whyis import commands
 
-from main import app_factory
+from whyis.app_factory import app_factory
 
 from whyis.config_utils import import_config_module
 
