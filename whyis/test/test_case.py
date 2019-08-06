@@ -3,8 +3,6 @@ import flask_testing
 
 class TestCase(flask_testing.TestCase):
     def create_app(self):
-        from main import app_factory
-        from depot.manager import DepotManager
         import config_defaults
 
         if 'admin_queryEndpoint' in config_defaults.Test:
@@ -18,6 +16,7 @@ class TestCase(flask_testing.TestCase):
         # Default timeout is 5 seconds
         config_defaults.Test['LIVESERVER_TIMEOUT'] = 10
 
+        from whyis.app_factory import app_factory
         application = app_factory(config_defaults.Test, config_defaults.project_name)
         application.config['TESTING'] = True
         application.config['WTF_CSRF_ENABLED'] = False

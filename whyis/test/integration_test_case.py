@@ -1,6 +1,3 @@
-# from __future__ import print_function
-# from future import standard_library
-# standard_library.install_aliases()
 import urllib.request, urllib.error, urllib.parse
 from flask import Flask, g
 from flask_testing import TestCase
@@ -11,7 +8,7 @@ import requests
 class IntegrationTestCase(TestCase):
 
     def create_app(self):
-        from main import app_factory
+        from whyis.app_factory import app_factory
         from depot.manager import DepotManager
         import config_defaults
 
