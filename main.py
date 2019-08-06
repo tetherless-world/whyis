@@ -250,6 +250,11 @@ class App(Empty):
             DepotManager.configure('nanopublications', self.config['nanopub_archive'])
 
     def __weighted_route(self, *args, **kwargs):
+        """
+        Override the match_compare_key function of the Rule created by invoking Flask.route.
+        This can only be done on the app, not in a blueprint, because blueprints lazily add Rule's when they are registered on an app.
+        """
+
         def decorator(view_func):
             compare_key = kwargs.pop('compare_key', None)
             # register view_func with route
