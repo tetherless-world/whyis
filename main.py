@@ -233,7 +233,7 @@ class App(Empty):
         self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
         default_vocab = Graph(store=self.vocab.store)
-        default_vocab.parse("default_vocab.ttl", format="turtle", publicID=str(self.NS.local))
+        default_vocab.parse(source=os.path.abspath(os.path.join(os.path.dirname(__file__), "default_vocab.ttl")), format="turtle", publicID=str(self.NS.local))
         custom_vocab = Graph(store=self.vocab.store)
         custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
 
