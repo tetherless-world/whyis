@@ -17,8 +17,8 @@ class TestNanopubCrud(ApiTestCase):
                                         expected_headers=["Location"])
 
         nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
-        self.assertEquals(len(nanopub), 17)
-        self.assertEquals(len(nanopub.assertion), 5)
+        self.assertEquals(len(nanopub), 18)
+        self.assertEquals(len(nanopub.assertion), 6)
         self.assertEquals(len(nanopub.pubinfo), 5)
         self.assertEquals(len(nanopub.provenance), 0)
 
@@ -36,7 +36,7 @@ class TestNanopubCrud(ApiTestCase):
         self.assertEquals(content.mimetype, "application/json")
         g.parse(data=str(content.data, 'utf8'), format="json-ld")
 
-        self.assertEquals(len(g), 17)
+        self.assertEquals(len(g), 18)
         self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
                           URIRef('http://schema.org/Person'))
 
