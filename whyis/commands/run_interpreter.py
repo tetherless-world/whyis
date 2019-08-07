@@ -3,7 +3,7 @@
 from flask_script import Command, Option
 
 import flask
-import interpreter
+from whyis import interpreter
 
 
 class RunInterpreter(Command):
