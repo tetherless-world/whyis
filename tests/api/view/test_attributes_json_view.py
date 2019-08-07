@@ -4,7 +4,7 @@ import json
 
 
 class TestAttributesJsonView(ApiTestCase):
-    def test_attribute_view(self):
+    def test(self):
         self.login_new_user()
         self.post_nanopub(data=PERSON_INSTANCE_TURTLE,
                           content_type="text/turtle")
