@@ -65,7 +65,7 @@ class OntologyImportAgentTestCase(AgentUnitTestCase):
             return
         SIO_URL = "http://semanticscience.org/ontology/sio.owl"
         # Use the final URL instead
-        SIO_URL = "https://raw.githubusercontent.com/micheldumontier/semanticscience/master/ontology/sio/release/sio-release.owl"
+        # SIO_URL = "https://raw.githubusercontent.com/micheldumontier/semanticscience/master/ontology/sio/release/sio-release.owl"
         np = nanopub.Nanopublication()
         np.assertion.parse(data='''{
          "@id": "http://example.com/testonto",
