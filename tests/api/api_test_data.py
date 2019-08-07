@@ -12,5 +12,6 @@ PERSON_INSTANCE_TURTLE = """\
     <http://schema.org/name> "Jane Doe" ;
     <http://schema.org/telephone> "(425) 123-4567" ;
     <http://schema.org/url> <http://www.janedoe.com> ;
+    <http://purl.org/dc/terms/description> "Jane Doe is a person" ;
     <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .""" % globals()
 
