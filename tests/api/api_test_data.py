@@ -2,6 +2,8 @@ HOME_INSTANCE_URI = "http://localhost:5000/Home"
 
 HOME_PAGE_CLASS_URI = "http://vocab.rpi.edu/whyis/HomePage"
 
+LOD_PREFIX = "http://localhost:5000"
+
 ONTOLOGY_INSTANCE_URI = "http://example.com/janetology"
 
 ONTOLOGY_INSTANCE_TURTLE = """\

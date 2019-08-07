@@ -1,4 +1,4 @@
-from ..api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_URI
+from ..api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_URI, LOD_PREFIX
 from whyis.test.api_test_case import ApiTestCase
 import json
 
@@ -19,4 +19,4 @@ class TestNanopublicationsJsonView(ApiTestCase):
         self.assertEqual(1, len(json_content))
         nanopublication = json_content[0]
         self.assertIsInstance(nanopublication, dict)
-        self.assertEqual(nanopublication["contributor"], 'http://localhost:5000/user/Admin')
+        self.assertEqual(nanopublication["contributor"], LOD_PREFIX + '/user/Admin')
