@@ -1,11 +1,11 @@
 from __future__ import division
 from past.utils import old_div
 import nltk, re, pprint
-import autonomic
+from whyis import autonomic
 from bs4 import BeautifulSoup
 from rdflib import *
 from slugify import slugify
-import nanopub
+from whyis import nanopub
 from math import log10
 import collections
 

@@ -3,7 +3,7 @@ import flask_testing
 
 class TestCase(flask_testing.TestCase):
     def create_app(self):
-        import config_defaults
+        from whyis import config_defaults
 
         if 'admin_queryEndpoint' in config_defaults.Test:
             del config_defaults.Test['admin_queryEndpoint']

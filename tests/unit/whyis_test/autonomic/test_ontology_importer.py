@@ -6,9 +6,9 @@ from rdflib import *
 import json
 from io import StringIO
 
-import nanopub
+from whyis import nanopub
 
-import autonomic
+from whyis import autonomic
 from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
 
