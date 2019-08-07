@@ -8,7 +8,7 @@ docker run $WHYIS_IMAGE bash -c "python3 manage.py test"
 
 # docker run $WHYIS_IMAGE bash -c "python3 manage.py test --ci && cat test-results/py/results.xml"
 
-docker run $WHYIS_IMAGE bash -c "python3 manage.py test --ci &>/dev/null && tar cf test-results-py.tar test-results/py && cat test-results-py.tar" >test-results-py.tar
+# docker run $WHYIS_IMAGE bash -c "python3 manage.py test --ci &>/dev/null && tar cf test-results-py.tar test-results/py && cat test-results-py.tar" >test-results-py.tar
 
 tar xf test-results-py.tar
 
