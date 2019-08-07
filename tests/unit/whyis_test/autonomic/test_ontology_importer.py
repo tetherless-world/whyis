@@ -42,14 +42,14 @@ class OntologyImportAgentTestCase(AgentUnitTestCase):
 
     def test_prov_import(self):
         # 20190807 CircleCI is having some difficulty fetching https URLs
-        if os.environ.get("CI"):
+        if os.environ.get("CI") == "true":
             return
 
         np = nanopub.Nanopublication()
         np.assertion.parse(data='''{
          "@id": "http://example.com/testonto",
          "@type" : "http://www.w3.org/2002/07/owl#Ontology",
-         "http://www.w3.org/2002/07/owl#imports":{"@id":"https://www.w3.org/ns/prov#"}
+         "http://www.w3.org/2002/07/owl#imports":{"@id":"http://www.w3.org/ns/prov#"}
         }''', format="json-ld")
         #print(np.serialize(format="trig"))
         agent = autonomic.OntologyImporter()
@@ -57,11 +57,11 @@ class OntologyImportAgentTestCase(AgentUnitTestCase):
         results = self.run_agent(agent, nanopublication=np)
         self.assertEquals(len(results), 1)
         self.assertTrue(len(results[0]) > 0)
-        self.assertTrue(results[0].resource(URIRef('https://www.w3.org/ns/prov#'))[RDF.type:OWL.Ontology])
+        self.assertTrue(results[0].resource(URIRef('http://www.w3.org/ns/prov#'))[RDF.type:OWL.Ontology])
 
     def test_sio_import(self):
         # 20190807 CircleCI is having some difficulty fetching https URLs
-        if os.environ.get("CI"):
+        if os.environ.get("CI") == "true":
             return
         SIO_URL = "http://semanticscience.org/ontology/sio.owl"
         # Use the final URL instead
