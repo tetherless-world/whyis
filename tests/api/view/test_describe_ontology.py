@@ -25,14 +25,11 @@ class TestDescribeOntology(ApiTestCase):
         self.assertIn("@id", data[0], "'describe' view missing @id key for graph")
 
         graph = data[0]["@graph"]
-        self.assertEqual(len(graph), 2, "'describe' view returned the wrong number of subjects")
+        self.assertEqual(len(graph), 1, "'describe' view returned the wrong number of subjects")
 
         for subject in graph:
-            if subject["@id"] == "http://example.com/":
+            if subject["@id"] == ONTOLOGY_INSTANCE_URI:
                 self.assertEqual(len(subject.keys()), 2,
                                  "Subject in 'describe' view has unexpected number of predicates")
                 self.assertIn("http://www.w3.org/2002/07/owl#Ontology", subject["@type"],
                               "Expected an ontology type object in the 'describe' view")
-            elif subject["@id"] == "http://example.com/janedoe":
-                self.assertEqual(len(subject.keys()), 6,
-                                 "Subject in 'describe' view has unexpected number of predicates")
