@@ -1,6 +1,4 @@
-from whyis.namespace import whyis
-
-HOME_INSTANCE_URI = str(whyis.Home)
+HOME_INSTANCE_URI = "http://localhost:5000/Home"
 
 ONTOLOGY_INSTANCE_URI = "http://example.com/janetology"
 
