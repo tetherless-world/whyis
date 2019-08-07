@@ -5,7 +5,7 @@ from whyis.test.api_test_case import ApiTestCase
 from ..api_test_data import ONTOLOGY_INSTANCE_TURTLE, ONTOLOGY_INSTANCE_URI
 
 
-class TestDescribeOntology(ApiTestCase):
+class TestDescribeOntologyJsonView(ApiTestCase):
     def test_describe_ontology(self):
         self.login_new_user()
         ontology = ONTOLOGY_INSTANCE_TURTLE

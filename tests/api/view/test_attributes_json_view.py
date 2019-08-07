@@ -3,7 +3,7 @@ from whyis.test.api_test_case import ApiTestCase
 import json
 
 
-class TestAttributes(ApiTestCase):
+class TestAttributesJsonView(ApiTestCase):
     def test_attribute_view(self):
         self.login_new_user()
         self.post_nanopub(data=PERSON_INSTANCE_TURTLE,

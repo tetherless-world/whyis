@@ -3,7 +3,7 @@ from whyis.test.api_test_case import ApiTestCase
 import json
 
 
-class TestLabels(ApiTestCase):
+class TestLabelsJsonView(ApiTestCase):
     def test(self):
         self.login_new_user()
 
