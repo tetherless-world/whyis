@@ -10,7 +10,8 @@
   },
   "scripts": {
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run --reporter junit --reporter-options 'toConsole=true' --spec 'cypress/integration/whyis/**/*'",
+    "cypress:run": "cypress run --spec 'cypress/integration/whyis/**/*'",
+    "cypress:run-ci": "cypress run --reporter junit --reporter-options 'mochaFile=/apps/whyis/test-results/js/results.xml' --spec 'cypress/integration/whyis/**/*'",
     "wait-on-server": "wait-on -t 10000"
   },
   "author": "",
