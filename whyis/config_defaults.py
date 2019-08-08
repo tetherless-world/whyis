@@ -1,7 +1,7 @@
 # -*- config:utf-8 -*-
 
 import importer
-import autonomic
+from whyis import autonomic
 import logging
 
 from datetime import datetime, timedelta
