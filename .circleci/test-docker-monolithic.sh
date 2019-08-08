@@ -23,3 +23,7 @@ if [ "$(grep -c 'failure ' test-results/py/results.xml)" -ge 1 ]; then
 else
     exit 0
 fi
+
+mkdir -p test-results/js
+
+docker run $WHYIS_IMAGE bash -c "cd tests/integration && npm install && npm cypress:run" >test-results/js/results.xml
