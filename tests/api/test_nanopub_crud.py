@@ -72,7 +72,7 @@ class TestNanopubCrud(ApiTestCase):
         g = Graph()
         g.parse(data=str(content.data, 'utf8'), format="turtle")
 
-        self.assertEquals(len(g), 5)
+        self.assertEquals(len(g), 6)
         self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
                           URIRef('http://schema.org/Person'))
 
