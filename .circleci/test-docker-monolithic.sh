@@ -24,7 +24,7 @@ fi
 
 mkdir -p test-results/js
 
-docker run $WHYIS_IMAGE bash -c "mkdir -p test-results/js && cd tests/integration && npm install && npm run cypress:run-ci &>/dev/null && cat /apps/whyis/test-results/js/results.xml" >test-results/js/results.xml
+docker run $WHYIS_IMAGE bash -c "curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs && mkdir -p test-results/js && cd tests/integration && npm install && npm run cypress:run-ci &>/dev/null && cat /apps/whyis/test-results/js/results.xml" >test-results/js/results.xml
 
 if [ "$(grep -c 'failure ' test-results/js/results.xml)" -ge 1 ]; then
     exit 1
