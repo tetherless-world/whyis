@@ -21,6 +21,11 @@ file_line { "configure_jetty_host_options":
   line  => 'JETTY_HOST=0.0.0.0',
   match => 'JETTY_HOST=',
 } ->
+file { "/etc/init.d/jetty9":
+  ensure => file,
+  source => "/apps/whyis/puppet/files/etc/init.d/jetty9",
+  owner => "root",
+} ->
 file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
@@ -37,7 +42,7 @@ exec { "unzip_blazegraph":
   command => "unzip -u /tmp/blazegraph.war",
   cwd => "/usr/share/jetty9/webapps/blazegraph",
   creates => "/usr/share/jetty9/webapps/blazegraph/WEB-INF/web.xml",
-} -> 
+} ->
 file { "/data":
   ensure => directory,
   owner => "jetty"
@@ -69,7 +74,7 @@ com.bigdata.rdf.store.AbstractTripleStore.textIndex=true
 com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoAxioms
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
-} -> 
+} ->
 file { "/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties":
   content => '
 com.bigdata.journal.AbstractJournal.file=/data/blazegraph.jnl
