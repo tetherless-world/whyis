@@ -20,10 +20,14 @@ cat test-results/py/results.xml
 
 if [ "$(grep -c 'failure ' test-results/py/results.xml)" -ge 1 ]; then
     exit 1
-else
-    exit 0
 fi
 
 mkdir -p test-results/js
 
 docker run $WHYIS_IMAGE bash -c "mkdir -p test-results/js && cd tests/integration && npm install && npm run cypress:run-ci &>/dev/null && cat /apps/whyis/test-results/js/results.xml" >test-results/js/results.xml
+
+if [ "$(grep -c 'failure ' test-results/js/results.xml)" -ge 1 ]; then
+    exit 1
+fi
+
+exit 0
