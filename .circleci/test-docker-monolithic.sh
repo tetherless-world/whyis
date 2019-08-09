@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WHYIS_IMAGE="${1:-tetherlessworld/whyis:latest}"
-WHYIS_DEMO_IMAGE="${1:-tetherlessworld/whyis-demo:latest}"
+WHYIS_DEMO_IMAGE="tetherlessworld/whyis-demo:latest"
 
 mkdir -p test-results/py
 
