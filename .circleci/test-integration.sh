@@ -13,7 +13,7 @@ echo "`date` Integration test stdout:"
 cat test-results/js/test.out
 echo "`date` Integration test stderr:"
 cat test-results/js/test.err
-if [ ! -f "test-results/js/results.xml" ]; then
+if [ "$(ls test-results/js/results*.xml | wc -l)" -lt "1" ]; then
     echo "Integration test results.xml does not exist, exiting abnormally"
     exit 1
 fi
