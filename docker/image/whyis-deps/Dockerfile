@@ -18,14 +18,16 @@ ENV PATH="/opt/puppetlabs/bin:${PATH}"
 
 # Puppet modules
 RUN echo '[Docker]: Installing puppet modules'
-RUN puppet module install maestrodev-wget
-RUN puppet module install puppetlabs-vcsrepo
 RUN puppet module install puppetlabs-apt
 RUN puppet module install richardc-datacat
 
 COPY /docker/image/whyis-deps/install.pp /
+# Need puppet/files in the right place for install.pp to run correctly
+COPY /puppet/files /apps/whyis/puppet/files
 RUN puppet apply /install.pp
 RUN rm /install.pp
+# Downstream whyis image will copy in its own /apps/whyis, so remove the files we copied in
+RUN rm -fr /apps/whyis
 
 # Install the Python requirements into the (container-)global interpreter rather than creating a virtual environment.
 # Don't copy in the code yet, will do that in the whyis Dockerfile.
@@ -33,6 +35,7 @@ RUN rm /install.pp
 COPY /requirements/ /requirements
 RUN pip3 install -r /requirements/dev.txt
 RUN rm -fr /requirements
+# Remove the pip package cache
 RUN rm -fr /root/.cache
 
 # Install the Java requirements similarly
