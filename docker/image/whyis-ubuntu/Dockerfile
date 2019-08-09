@@ -8,8 +8,8 @@ RUN apt-get update &&\
 	curl
 
 # Puppet
-RUN curl -O https://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb &&\
-	dpkg -i puppetlabs-release-pc1-xenial.deb &&\
+RUN curl -O https://apt.puppetlabs.com/puppet-release-bionic.deb &&\
+	dpkg -i puppet-release-bionic.deb &&\
 	apt-get update
 
 RUN apt-get install -y\
