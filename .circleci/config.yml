@@ -21,7 +21,7 @@ jobs:
           name: Run tests
           command: .circleci/test-docker-monolithic.sh tetherlessworld/whyis:latest
       - store_artifacts:
-          path: test-results/py/htmlcov
+          path: test-results
       - store_test_results:
           path: test-results
       - run:
@@ -74,7 +74,7 @@ jobs:
           command: |
             cd /apps/whyis && source venv/bin/activate && python manage.py test
       - store_artifacts:
-          path: /apps/whyis/test-results/py/htmlcov
+          path: /apps/whyis/test-results
       - store_test_results:
           path: /apps/whyis/test-results
   lint-js:
