@@ -8,12 +8,12 @@ mkdir -p test-results/py
 # docker run -e "CI=$CI" $WHYIS_IMAGE bash -c "python3 manage.py test"
 # docker run -e "CI=$CI" $WHYIS_IMAGE bash -c "python3 manage.py test --ci && cat test-results/py/results.xml"
 
-echo "Running Python tests in $WHYIS_IMAGE"
+echo "`date` Running Python tests in $WHYIS_IMAGE"
 docker run -e "CI=$CI" $WHYIS_IMAGE bash -c "mkdir -p test-results/py && python3 manage.py test --ci >test-results/py/test.out 2>test-results/py/test.err; tar cf test-results-py.tar test-results/py && cat test-results-py.tar" >test-results-py.tar
 tar xf test-results-py.tar
-echo "Python test stdout:"
+echo "`date` Python test stdout:"
 cat test-results/py/test.out
-echo "Python test stderr:"
+echo "`date` Python test stderr:"
 cat test-results/py/test.err
 if [ ! -f "test-results/py/results.xml" ]; then
     echo "Python test results.xml does not exist, exiting abnormally"
@@ -25,15 +25,15 @@ if [ "$(grep -c 'failure ' test-results/py/results.xml)" -ge 1 ]; then
 fi
 
 mkdir -p test-results/js
-echo "Running integration tests in $WHYIS_DEMO_IMAGE"
+echo "`date` Running integration tests in $WHYIS_DEMO_IMAGE"
 #JS_REDIRECT=""
 #docker run $WHYIS_DEMO_IMAGE bash -c "mkdir -p test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - $JS_REDIRECT && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 $JS_REDIRECT && cd tests/integration && npm install $JS_REDIRECT && CYPRESS_baseUrl=http://localhost npm run cypress:run $JS_REDIRECT"
 JS_REDIRECT=">/apps/whyis/test-results/js/test.out 2>/apps/whyis/test-results/js/test.err"
 docker run $WHYIS_DEMO_IMAGE bash -c "mkdir -p test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - $JS_REDIRECT && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 $JS_REDIRECT && cd tests/integration && npm install $JS_REDIRECT && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci $JS_REDIRECT; cp -p -R cypress/screenshots /apps/whyis/test-results/js; cp -p -R cypress/videos /apps/whyis/test-results/js; cd /apps/whyis && tar cf test-results-js.tar test-results/js && cat test-results-js.tar" >test-results-js.tar
 tar xf test-results-js.tar
-echo "Integration test stdout:"
+echo "`date` Integration test stdout:"
 cat test-results/js/test.out
-echo "Integration test stderr:"
+echo "`date` Integration test stderr:"
 cat test-results/js/test.err
 if [ ! -f "test-results/js/results.xml" ]; then
     echo "Integration test results.xml does not exist, exiting abnormally"
@@ -44,5 +44,5 @@ if [ "$(grep -c 'failure ' test-results/js/results.xml)" -ge 1 ]; then
     exit 1
 fi
 
-echo "Exiting normally"
+echo "`date` Exiting normally"
 exit 0
