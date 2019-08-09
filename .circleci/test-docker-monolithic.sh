@@ -30,8 +30,8 @@ fi
 mkdir -p test-results/js
 
 echo "Running integration tests in $WHYIS_IMAGE, will write junit.xml"
-docker run $WHYIS_IMAGE bash -c "curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 && mkdir -p test-results/js && cd tests/integration && npm install && npm run cypress:run"
-# docker run $WHYIS_IMAGE bash -c "curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 && mkdir -p test-results/js && cd tests/integration && npm install && npm run cypress:run-ci &>/dev/null && cat /apps/whyis/test-results/js/results.xml" >test-results/js/results.xml
+docker run $WHYIS_IMAGE bash -c "curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 && mkdir -p test-results/js && cd tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run"
+# docker run $WHYIS_IMAGE bash -c "curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 && mkdir -p test-results/js && cd tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci &>/dev/null && cat /apps/whyis/test-results/js/results.xml" >test-results/js/results.xml
 
 if [ "$(grep -c 'failure ' test-results/js/results.xml)" -ge 1 ]; then
     echo "Integration test results.xml has failures, exiting abnormally"
