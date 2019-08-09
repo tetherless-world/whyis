@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Install system dependencies with apk
           command: |
-            apk update && apk add bash
+            apk update && apk add bash git
       - checkout
       - setup_remote_docker
       - run:
@@ -18,8 +18,18 @@ jobs:
           command: |
             cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
       - run:
-          name: Run tests
-          command: .circleci/test-docker-monolithic.sh tetherlessworld/whyis:latest
+          name: Run unit tests
+          command: .circleci/test-unit.sh tetherlessworld/whyis:latest
+      - run:
+          name: Build downstream whyis-demo monolithic Docker image for integration testing
+          command: |
+            cd /apps
+            git clone https://github.com/tetherless-world/whyis-demo.git
+            cd whyis-demo/docker/compose/monolithic
+            WHYIS_IMAGE_TAG=latest WHYIS_DEMO_IMAGE_TAG=latest docker-compose build whyis-demo
+      - run:
+          name: Run integration tests
+          command: .circleci/test-integration.sh tetherlessworld/whyis-demo:latest
       - store_artifacts:
           path: test-results
       - store_test_results:
