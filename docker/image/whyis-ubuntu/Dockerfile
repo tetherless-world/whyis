@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # See https://tickets.puppetlabs.com/browse/FACT-1808
 RUN apt-get update &&\

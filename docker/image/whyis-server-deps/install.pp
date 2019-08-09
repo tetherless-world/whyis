@@ -15,7 +15,7 @@ package { ["default-jdk",
            "libblas3",
            "libblas-dev",
            "git",
-           "celeryd",
+           "python3-celery",
            "apache2",
            "libffi-dev",
            "libssl-dev",
@@ -73,4 +73,12 @@ file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
   group => "whyis",
+}
+
+file { "/etc/init.d/celeryd":
+  ensure => present,
+  source => "/tmp/celeryd",
+  mode => "0744",
+  owner => "root",
+  group => "root"
 }
