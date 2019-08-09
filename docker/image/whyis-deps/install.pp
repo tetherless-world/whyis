@@ -75,24 +75,6 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
 } ->
-file { "/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties":
-  content => '
-com.bigdata.journal.AbstractJournal.file=/data/blazegraph.jnl
-com.bigdata.journal.AbstractJournal.bufferMode=DiskRW
-com.bigdata.service.AbstractTransactionService.minReleaseAge=1
-com.bigdata.journal.Journal.groupCommit=true
-com.bigdata.btree.writeRetentionQueue.capacity=4000
-com.bigdata.btree.BTree.branchingFactor=128
-com.bigdata.journal.AbstractJournal.initialExtent=209715200
-com.bigdata.journal.AbstractJournal.maximumExtent=209715200
-com.bigdata.rdf.sail.truthMaintenance=false
-com.bigdata.rdf.store.AbstractTripleStore.quads=true
-com.bigdata.rdf.store.AbstractTripleStore.statementIdentifiers=false
-com.bigdata.rdf.store.AbstractTripleStore.textIndex=true
-com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoAxioms
-com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
-com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
-} ->
 group { 'whyis':
     ensure => 'present',
 }
