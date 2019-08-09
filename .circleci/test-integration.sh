@@ -17,7 +17,7 @@ if [ ! -f "test-results/js/results.xml" ]; then
     echo "Integration test results.xml does not exist, exiting abnormally"
     exit 1
 fi
-if [ "$(grep -c 'failure ' test-results/js/results.xml)" -ge 1 ]; then
+if [ "$(grep -c 'failure ' test-results/js/results*.xml)" -ge 1 ]; then
     echo "Integration test results.xml has failures, exiting abnormally"
     exit 1
 fi
