@@ -22,6 +22,8 @@ fi
 
 mkdir -p test-results/js
 echo "Running integration tests in $WHYIS_IMAGE"
+JS_REDIRECT=""
+docker run $WHYIS_IMAGE bash -c "mkdir -p test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - $JS_REDIRECT && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 $JS_REDIRECT && cd tests/integration && npm install $JS_REDIRECT && CYPRESS_baseUrl=http://localhost npm run cypress:run $JS_REDIRECT"
 JS_REDIRECT=">/apps/whyis/test-results/js/test.out 2>/apps/whyis/test-results/js/test.err"
 docker run $WHYIS_IMAGE bash -c "mkdir -p test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - $JS_REDIRECT && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 $JS_REDIRECT && cd tests/integration && npm install $JS_REDIRECT && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci $JS_REDIRECT; tar cf test-results-js.tar test-results/js && cat test-results-js.tar" >test-results-js.tar
 tar xf test-results-js.tar
