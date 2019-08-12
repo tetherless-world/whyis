@@ -20,7 +20,7 @@ RUN sed '1d' /apache.conf > /etc/apache2/sites-available/000-default.conf
 RUN rm /apache.conf
 
 # Celery configuration
-COPY /docker/image/whyis/celeryd /etc/default/celeryd
+COPY /docker/image/whyis-server/celeryd /etc/default/celeryd
 
 # Entrypoint
 COPY /docker/image/whyis/docker-entrypoint.sh /

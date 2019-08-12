@@ -3,13 +3,15 @@
 # whyis-deps sets up the environment (apache, celery, redis) and installs our Python and Java dependencies. We assume it will change infrequently, because dependencies should change infrequently.
 # When requirements do change, we should build and push a new whyis-deps to Dockerhub for the CI to incorporate into the whyis build.
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # Installation of required packages
 RUN apt-get update && apt-get install -y sudo curl lsb-release
 
 # Puppet
-RUN curl -O https://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb && sudo dpkg -i puppetlabs-release-pc1-xenial.deb && sudo apt-get update
+RUN curl -O https://apt.puppetlabs.com/puppet-release-bionic.deb &&\
+	dpkg -i puppet-release-bionic.deb &&\
+	apt-get update
 
 RUN apt-get install -y puppet-agent libaugeas0
 
@@ -18,8 +20,8 @@ ENV PATH="/opt/puppetlabs/bin:${PATH}"
 
 # Puppet modules
 RUN echo '[Docker]: Installing puppet modules'
-RUN puppet module install puppetlabs-apt
-RUN puppet module install richardc-datacat
+#RUN puppet module install puppetlabs-apt
+#RUN puppet module install richardc-datacat
 
 COPY /docker/image/whyis-deps/install.pp /
 # Need puppet/files in the right place for install.pp to run correctly
