@@ -117,7 +117,17 @@ file { "/var/log/whyis":
 }
 
 # Register the generic celery daemon service
-file { "/etc/init.d/celeryd"
+file { "/etc/init.d/celeryd":
   ensure => file,
-  source => "/apps/whyis/puppet/files/etc/init.d/celeryd"
+  source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
+  mode => "0744",
+  owner => "root"
+}
+
+# Docker does not like ::1
+file_line { "reconfigure_redis_bind":
+  path  => '/etc/redis/redis.conf',
+  line => "bind 127.0.0.1",
+  match => "^bind 127.0.0.1 ::1",
+  subscribe => [Package["redis-server"]]
 }

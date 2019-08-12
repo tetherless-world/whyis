@@ -20,8 +20,10 @@ ENV PATH="/opt/puppetlabs/bin:${PATH}"
 
 # Puppet modules
 RUN echo '[Docker]: Installing puppet modules'
-#RUN puppet module install puppetlabs-apt
-#RUN puppet module install richardc-datacat
+RUN puppet module install puppetlabs-stdlib --version 6.0.0
+
+# default-jdk home is not exported for some reason
+ENV JAVA_HOME="/usr/lib/jvm/default-java/"
 
 COPY /docker/image/whyis-deps/install.pp /
 # Need puppet/files in the right place for install.pp to run correctly
