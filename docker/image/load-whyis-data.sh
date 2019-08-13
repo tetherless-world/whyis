@@ -11,8 +11,8 @@ fi
 
 APPNAME=$(find /apps -maxdepth 1 -type d -and -not -path /apps/whyis -and -not -path /apps -and -not -path '*/\.*' -exec basename \{} \;)
 
-if [ -f "/apps/${APPNAME}/load-data.sh" ] || [ ! -z "${LOAD_WHYIS_DATA_FORCE}" ]; then
-  if [ ! -f "/data/.${APPNAME}_data_loaded" ]; then
+if [ -f "/apps/${APPNAME}/load-data.sh" ]; then
+  if [ ! -f "/data/.${APPNAME}_data_loaded" ] || [ ! -z "${LOAD_WHYIS_DATA_FORCE}" ]; then
     sudo -i -u whyis /apps/${APPNAME}/load-data.sh >"/data/.${APPNAME}_load_data.out" 2>"/data/.${APPNAME}_load_data.err"
     echo "$(date +%Y-%m-%dT%H:%M:%S%:z)" >"/data/.${APPNAME}_data_loaded"
   fi
