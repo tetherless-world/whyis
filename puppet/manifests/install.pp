@@ -70,13 +70,14 @@ file_line { "configure_java_home":
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
   match => 'JAVA_HOME=',
 } ->
-# The jetty9 init.d script has a bug as it's distributed (including in Ubuntu 18.04).
+# The jetty9 init.d script has a quirk as it's distributed (including in Ubuntu 18.04).
 # The final start-stop-daemon --test call has the log_msg_end returns switched. The (successfully) if branch should return 0, not 1.
 # This was easier than figuring out how to replace multiple lines.
-file { "/etc/init.d/jetty9":
-  ensure => file,
-  source => "/apps/whyis/puppet/files/etc/init.d/jetty9",
-  owner => "root",
+# This only impacts Docker ubuntu images, not Vagrant VMs or machine installs. I believe the latter use systemd and the former do not.
+exec { 'fix_jetty9_initd_in_docker':
+  command => "cp /apps/whyis/puppet/files/etc/init.d/jetty9 /etc/init.d/jetty9",
+  onlyif  => 'test -f /.dockerenv',
+  user    => "root",
 } ->
 
 # Set up the Blazegraph web application
