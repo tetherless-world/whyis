@@ -79,8 +79,6 @@ def configure(app):
         params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        print(query)
-        print(params)
         return [x.asdict() for x in graph.query(query, **params)]
 
 
@@ -163,9 +161,9 @@ def configure(app):
 #(max(?tfidf) as ?tfidf)
 (max(?frequency) as ?frequency)
 (max(?idf) as ?idf)
-(group_concat(?article; separator=" ") as ?articles)
+(group_concat(distinct ?article; separator=" ") as ?articles) 
 where {
-    #hint:Query hint:optimizer "Runtime" .
+    hint:Query hint:optimizer "Runtime" .
 
     %s
     
@@ -235,8 +233,6 @@ where {
     
         byLink = collections.defaultdict(list)
         for edge in edges:
-            if 'link' not in edge:
-                edge['link'] = None
 #            edge['source_types'] = [x for x in edge.get('source_types','').split(' ') if len(x) > 0]
 #            edge['target_types'] = [x for x in edge.get('target_types','').split(' ') if len(x) > 0]
             edge['link_types'] = [x for x in edge.get('link_types','').split(' ') if len(x) > 0]

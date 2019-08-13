@@ -125,7 +125,6 @@ class NanopublicationManager(object):
           self.db.store.retire_nanopub(uri)
         print("Retired %s nanopubs." % len(nanopub_uris))
 
-
     def _retire(self, *nanopub_uris):
         self.db.store.nsBindings = {}
         graphs = []

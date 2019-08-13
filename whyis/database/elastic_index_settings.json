@@ -1,6 +1,5 @@
 {
     "settings": {
-        "index.mapping.ignore_malformed": true
     },
     "mappings" : {
         "nanopublication" : {
