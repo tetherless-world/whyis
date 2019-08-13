@@ -2,7 +2,7 @@ Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"
 
 # jdk is required to install javabridge
 package { ["unzip", "zip", "default-jdk", "build-essential", "automake", "jetty9", "subversion", "git",
-  "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"
+  "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "redis-server", "apache2", "libffi-dev", "libssl-dev"
   , "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
   ensure => "installed"
 } ->
@@ -114,4 +114,20 @@ file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
   group => "whyis",
+}
+
+# Register the generic celery daemon service
+file { "/etc/init.d/celeryd":
+  ensure => file,
+  source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
+  mode => "0744",
+  owner => "root"
+}
+
+# Docker does not like ::1
+file_line { "reconfigure_redis_bind":
+  path  => '/etc/redis/redis.conf',
+  line => "bind 127.0.0.1",
+  match => "^bind 127.0.0.1 ::1",
+  subscribe => [Package["redis-server"]]
 }
