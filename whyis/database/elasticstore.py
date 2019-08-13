@@ -34,8 +34,8 @@ from rdflib.plugins.sparql.algebra import translateQuery, translateUpdate
 from rdflib.plugins.sparql.evalutils import (
     _filter, _eval, _join, _diff, _minus, _fillTemplate, _ebv, _val)
 
-#from rdflib.plugins.sparql.evaluate import evalPart
-from elastic_eval import evalPart
+from rdflib.plugins.sparql.evaluate import evalPart
+#from elastic_eval import evalPart
 from rdflib.plugins.sparql.evaluate import evalBGP as evalBGP_orig
 from rdflib.plugins.sparql.evaluate import evalGraph as evalGraph_orig
 
