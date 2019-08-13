@@ -1,4 +1,4 @@
-FROM jetty:9.2-jre8
+FROM jetty:9.4-jre8
 
 USER root
 RUN apt-get update && apt-get install -y unzip
