@@ -11,7 +11,7 @@ file { "/etc/apache2/sites-available/000-default.conf":
 }
 
 file { "/etc/default/celeryd":
-  source => "/apps/whyis/docker/image/whyis/celeryd",
+  source => "/apps/whyis/docker/image/whyis-server/celeryd",
   owner => "root",
   group => "root",
   ensure => present,

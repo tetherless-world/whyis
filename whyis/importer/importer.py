@@ -1,6 +1,6 @@
 import requests
 import rdflib
-import nanopub
+from whyis import nanopub
 import datetime
 import pytz
 import dateutil.parser

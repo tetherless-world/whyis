@@ -1,0 +1,22 @@
+from ..api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_URI, LOD_PREFIX
+from whyis.test.api_test_case import ApiTestCase
+import json
+
+
+class TestNanopublicationsJsonView(ApiTestCase):
+    def test(self):
+        self.login_new_user()
+        self.post_nanopub(data=PERSON_INSTANCE_TURTLE,
+                          content_type="text/turtle")
+
+        content = self.get_view(uri=PERSON_INSTANCE_URI,
+                                view="nanopublications",
+                                expected_template="nanopublications.json",
+                                mime_type="application/json")
+
+        json_content = json.loads(str(content.data, 'utf8'))
+        self.assertIsInstance(json_content, list)
+        self.assertEqual(1, len(json_content))
+        nanopublication = json_content[0]
+        self.assertIsInstance(nanopublication, dict)
+        self.assertEqual(nanopublication["contributor"], LOD_PREFIX + '/user/Admin')

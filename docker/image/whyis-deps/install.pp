@@ -2,7 +2,7 @@ Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"
 
 # jdk is required to install javabridge
 package { ["unzip", "zip", "default-jdk", "build-essential", "automake", "jetty9", "subversion", "git",
-  "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev"
+  "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "redis-server", "apache2", "libffi-dev", "libssl-dev"
   , "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
   ensure => "installed"
 } ->
@@ -21,6 +21,11 @@ file_line { "configure_jetty_host_options":
   line  => 'JETTY_HOST=0.0.0.0',
   match => 'JETTY_HOST=',
 } ->
+file { "/etc/init.d/jetty9":
+  ensure => file,
+  source => "/apps/whyis/puppet/files/etc/init.d/jetty9",
+  owner => "root",
+} ->
 file_line { "configure_java_home":
   path  => '/etc/default/jetty9',
   line  => 'JAVA_HOME=/usr/lib/jvm/default-java',
@@ -37,7 +42,7 @@ exec { "unzip_blazegraph":
   command => "unzip -u /tmp/blazegraph.war",
   cwd => "/usr/share/jetty9/webapps/blazegraph",
   creates => "/usr/share/jetty9/webapps/blazegraph/WEB-INF/web.xml",
-} -> 
+} ->
 file { "/data":
   ensure => directory,
   owner => "jetty"
@@ -60,25 +65,7 @@ com.bigdata.service.AbstractTransactionService.minReleaseAge=1
 com.bigdata.journal.Journal.groupCommit=true
 com.bigdata.btree.writeRetentionQueue.capacity=4000
 com.bigdata.btree.BTree.branchingFactor=128
-com.bigdata.journal.AbstractJournal.initialExtent=209715200
-com.bigdata.journal.AbstractJournal.maximumExtent=209715200
-com.bigdata.rdf.sail.truthMaintenance=false
-com.bigdata.rdf.store.AbstractTripleStore.quads=true
-com.bigdata.rdf.store.AbstractTripleStore.statementIdentifiers=false
-com.bigdata.rdf.store.AbstractTripleStore.textIndex=true
-com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoAxioms
-com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
-com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
-} -> 
-file { "/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties":
-  content => '
-com.bigdata.journal.AbstractJournal.file=/data/blazegraph.jnl
-com.bigdata.journal.AbstractJournal.bufferMode=DiskRW
-com.bigdata.service.AbstractTransactionService.minReleaseAge=1
-com.bigdata.journal.Journal.groupCommit=true
-com.bigdata.btree.writeRetentionQueue.capacity=4000
-com.bigdata.btree.BTree.branchingFactor=128
-com.bigdata.journal.AbstractJournal.initialExtent=209715200
+#com.bigdata.journal.AbstractJournal.initialExtent=209715200
 com.bigdata.journal.AbstractJournal.maximumExtent=209715200
 com.bigdata.rdf.sail.truthMaintenance=false
 com.bigdata.rdf.store.AbstractTripleStore.quads=true
@@ -127,4 +114,20 @@ file { "/var/log/whyis":
   ensure => directory,
   owner => "whyis",
   group => "whyis",
+}
+
+# Register the generic celery daemon service
+file { "/etc/init.d/celeryd":
+  ensure => file,
+  source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
+  mode => "0744",
+  owner => "root"
+}
+
+# Docker does not like ::1
+file_line { "reconfigure_redis_bind":
+  path  => '/etc/redis/redis.conf',
+  line => "bind 127.0.0.1",
+  match => "^bind 127.0.0.1 ::1",
+  subscribe => [Package["redis-server"]]
 }

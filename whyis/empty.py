@@ -68,7 +68,7 @@ class Empty(Flask):
             log_file.setFormatter(formatter)
             log_file.setLevel(self.config['LOG_LEVEL'])
             self.logger.addHandler(log_file)
-            self.logger.info("Logger started")
+            # self.logger.info("Logger started")
         except Exception:
             pass
             # print("Could not configure logger, using defaults.")
