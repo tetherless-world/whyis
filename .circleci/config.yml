@@ -40,7 +40,6 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
-              WHYIS_IMAGE_TAG=master docker-compose -f docker/compose/monolithic/docker-compose.yml build whyis && WHYIS_IMAGE_TAG=master docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
             fi
   build_and_deploy_split_docker_image:
     working_directory: /apps/whyis
