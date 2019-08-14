@@ -16,6 +16,7 @@ from datetime import datetime
 import pytz
 
 from whyis.namespace import np, prov, dc, frbr
+from whyis.database.elasticstore import ElasticSearchStore
 from uuid import uuid4
 
 from datastore import create_id
@@ -121,14 +122,13 @@ class NanopublicationManager(object):
             yield nanopub
 
     def retire(self, *nanopub_uris):
-        for uri in nanopub_uris:
-          self.db.store.retire_nanopub(uri)
-        print("Retired %s nanopubs." % len(nanopub_uris))
-
-    def _retire(self, *nanopub_uris):
-        self.db.store.nsBindings = {}
-        graphs = []
-        for nanopub_uri in nanopub_uris:
+        if type(self.db.store) is ElasticSearchStore:
+          for uri in nanopub_uris:
+            self.db.store.retire_nanopub(uri)
+        else:
+          self.db.store.nsBindings = {}
+          graphs = []
+          for nanopub_uri in nanopub_uris:
             for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
 #    hint:Query hint:optimizer "Runtime" .
     ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
@@ -136,18 +136,19 @@ class NanopublicationManager(object):
         np:hasPublicationInfo ?pubinfo;
         np:hasProvenance ?provenance.
 }''', initNs={"prov": prov, "np": np}, initBindings={"retiree": nanopub_uri}):
-                print("Retiring", np_uri, "derived from", nanopub_uri)
-                graphs.extend([np_uri, assertion, provenance, pubinfo])
-                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-                self.db.remove((None, None, None, nanopub.assertion.identifier))
-                self.db.remove((None, None, None, nanopub.provenance.identifier))
-                self.db.remove((None, None, None, nanopub.pubinfo.identifier))
-                self.db.remove((None, None, None, nanopub.identifier))
-        self.db.commit()
-        # data = [('c', c.n3()) for c in graphs]
-        # session = requests.session()
-        # session.keep_alive = False
-        # session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
+              print("Retiring", np_uri, "derived from", nanopub_uri)
+              graphs.extend([np_uri, assertion, provenance, pubinfo])
+              nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
+              self.db.remove((None, None, None, nanopub.assertion.identifier))
+              self.db.remove((None, None, None, nanopub.provenance.identifier))
+              self.db.remove((None, None, None, nanopub.pubinfo.identifier))
+              self.db.remove((None, None, None, nanopub.identifier))
+          self.db.commit()
+          # data = [('c', c.n3()) for c in graphs]
+          # session = requests.session()
+          # session.keep_alive = False
+          # session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
+
         print("Retired %s nanopubs." % len(nanopub_uris))
 
     def is_current(self, nanopub_uri):

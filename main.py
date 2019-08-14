@@ -35,6 +35,7 @@ from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.sparql import sparql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
+from whyis.database.elasticstore import ElasticSearchStore
 from whyis.datastore import WhyisUserDatastore
 from whyis.decorator import conditional_login_required
 from whyis.empty import Empty
@@ -294,13 +295,7 @@ class App(Empty):
 
         def description(self):
             if self._description is None:
-                result = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } })
-##                try:
-#                result = Graph()
-##                try:
-                new_graph = Graph();
-                for quad in result.query('''
-construct {
+                query_string = '''construct {
     ?e ?p ?o.
     ?o rdfs:label ?label.
     ?o skos:prefLabel ?prefLabel.
@@ -332,16 +327,13 @@ construct {
     optional {
       ?o foaf:name ?name.
     }
-}''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
-                    new_graph.add(quad[:3])
-#                        s,p,o = quad
-#                    else:
-#                        # Last term is never used
-#                        s,p,o,_ = quad
-#                    result.add((s,p,o))
-#                except:
-#                    pass
-                self._description = new_graph.resource(self.identifier)
+}'''
+                graph_to_query = self._graph.store.subgraph({ "term" : { "graphs.@graph.@id" : str(self.identifier) } }) if type(self._graph.store) is ElasticSearchStore else self._graph
+                result = Graph();
+                for quad in graph_to_query.query(query_string, initNs=NS.prefixes, initBindings={'e':self.identifier}):
+                    result.add(quad[:3])
+
+                self._description = result.resource(self.identifier)
 
 #                except Exception as e:
 #                    print str(e), self.identifier
