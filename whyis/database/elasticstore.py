@@ -36,8 +36,8 @@ from rdflib.plugins.sparql.evalutils import (
 
 from rdflib.plugins.sparql.evaluate import evalPart
 #from elastic_eval import evalPart
-from rdflib.plugins.sparql.evaluate import evalBGP as evalBGP_orig
-from rdflib.plugins.sparql.evaluate import evalGraph as evalGraph_orig
+#from rdflib.plugins.sparql.evaluate import evalBGP as evalBGP_orig
+#from rdflib.plugins.sparql.evaluate import evalGraph as evalGraph_orig
 
 class ElasticSearchStore(Store):
     context_aware = True
@@ -299,8 +299,7 @@ class ElasticSearchStore(Store):
         return self.__prefix.get(namespace, None)
 
     def namespaces(self):
-        for prefix, namespace in iteritems(self.__namespace):
-            yield prefix, namespace
+       yield from iteritems(self.__namespace)
 
     def contexts(self, triple=None):
         assert False, "Not implemented."
@@ -351,119 +350,15 @@ def json_ld_triples(json_response, subject=None, predicate=None, object=None, co
                             else:
                                 o = rdflib.URIRef(id)
                         else:
-                            args = {}
+                            kwargs = {}
                             if '@type' in obj:
-                                args['datatype'] = rdflib.URIRef(obj['@type'])
+                                kwargs['datatype'] = rdflib.URIRef(obj['@type'])
                             if '@lang' in obj:
-                                args['lang'] = obj['@lang']
-                            o = rdflib.Literal(obj['@value'],**args)
+                                kwargs['lang'] = obj['@lang']
+                            o = rdflib.Literal(obj['@value'],**kwargs)
                         if object is not None and o != object:
                             continue
                         yield resourceid, rdflib.URIRef(pred), o, graphid
-
-def evalBGP(ctx, part=None, bgp=None):
-
-    """
-    A basic graph pattern
-    """
-
-    # Top-level BGP calls pass in a part, but recursive calls into BGP pass in the triples list (bgp).
-    if bgp is None:
-        bgp = part.triples
-        #bgp = sorted(part.triples, key=lambda t: len([n for n in t if ctx[n] is None]))
-
-    # If we're not working with ElasticSearch, then just do the original function.
-    if not isinstance(ctx.dataset.store, ElasticSearchStore):
-        for x in evalBGP_orig(ctx, bgp):
-            yield x
-        return
-
-    # If there are no graph patterns left, then we've bottomed out and the solution is filled as much as possible.
-    if not bgp or len(bgp) == 0:
-        yield ctx.solution()
-        return
-
-    s, p, o = bgp[0]
-
-    _s = ctx[s]
-    _p = ctx[p]
-    _o = ctx[o]
-    _g = ctx.graph
-
-    # 
-    #if hasattr(ctx, 'graph_term'):
-    #    print ctx.graph_term
-    #    if ctx[ctx.graph_term] is not None:
-    #        _g = None
-            
-    
-    #print _s, _p, _o, _g, ctx.dataset.store
-    for (ss, sp, so), sg in ctx.dataset.store.triples((_s, _p, _o), _g):
-        if None in (_s, _p, _o):
-            c = ctx.pushGraph(sg)
-            if hasattr(ctx, 'graph_term'):
-                c.graph_term = ctx.graph_term
-                c[c.graph_term] = sg.identifier
-                #print c.graph_term, sg.identifier
-        else:
-            c = ctx
-                    
-        if _s is None:
-            c[s] = ss
-
-        try:
-            if _p is None:
-                c[p] = sp
-        except AlreadyBound:
-            continue
-
-        try:
-            if _o is None:
-                c[o] = so
-        except AlreadyBound:
-            continue
-
-        # if hasattr(c, 'graph_term'):
-        #     try:
-        #         c[c.graph_term] = sg
-        #         cx.graph_term = c.graph_term
-        #         c = cx
-        #     except AlreadyBound:
-        #         continue
-            
-            #graphSolution = [{part.graph_term: sg}]
-        #    for x in evalBGP(c, bgp=bgp[1:]):
-        #        #result =  x #_join(x, graphSolution)
-        #        #print graphSolution
-        #        print x
-        #        yield x
-        #else:
-        for x in evalBGP(c, bgp = bgp[1:]):
-            yield x
-
-def evalGraph(ctx, part):
-
-    if not isinstance(ctx.dataset.store, ElasticSearchStore):
-        for x in evalGraph_orig(ctx, part):
-            yield x
-        return
-    
-    if ctx.dataset is None:
-        raise Exception(
-            "Non-conjunctive-graph doesn't know about " +
-            "graphs. Try a query without GRAPH.")
-
-    ctx = ctx.clone()
-    graph = ctx[part.term]
-    ctx.graph_term = part.term
-    if graph is None:
-        for x in evalPart(ctx, part.p):
-            yield x
-
-    else:
-        c = ctx.pushGraph(ctx.dataset.get_context(graph))
-        for x in evalPart(c, part.p):
-            yield x
 
 #CUSTOM_EVALS['BGP'] = evalBGP
 #CUSTOM_EVALS['Graph'] = evalGraph
