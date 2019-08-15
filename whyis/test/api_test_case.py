@@ -6,8 +6,8 @@ from flask import Response
 
 class ApiTestCase(TestCase):
 
-    def login_new_user(self, *, email: str = "user@example.com", password: str = "password", role: str = 'Admin') -> Response:
-        return self.login(*self.create_user(email, password, role))
+    def login_new_user(self, *, email: str = "user@example.com", password: str = "password", username: str = "identifier", role: str = 'Admin') -> Response:
+        return self.login(*self.create_user(email=email, password=password, username=username, roles=role))
 
     def get_view(self, *, uri: URIRef, mime_type: str, view: Optional[str] = None, headers = None, expected_template: Optional[str] = None, query_string: Optional[Dict[str, str]]=None) -> Response:
         query_string = query_string.copy() if query_string is not None else {}

@@ -19,4 +19,4 @@ class TestNanopublicationsJsonView(ApiTestCase):
         self.assertEqual(1, len(json_content))
         nanopublication = json_content[0]
         self.assertIsInstance(nanopublication, dict)
-        self.assertEqual(nanopublication["contributor"], LOD_PREFIX + '/user/Admin')
+        self.assertEqual(nanopublication["contributor"], LOD_PREFIX + '/user/identifier')
