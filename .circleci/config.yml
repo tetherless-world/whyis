@@ -81,7 +81,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            cd /apps/whyis && source venv/bin/activate && python manage.py test
+            cd /apps/whyis && source venv/bin/activate && python manage.py test --ci
       - store_artifacts:
           path: /apps/whyis/test-results
       - store_test_results:
