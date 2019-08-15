@@ -27,7 +27,7 @@ class NanopublicationManager(object):
         self.db = rdflib.ConjunctiveGraph(store)
         self.store = store
         self.app = app
-        self.depot = DepotManager.get('nanopublications')
+        #self.depot = DepotManager.get('nanopublications')
         self.prefix = rdflib.Namespace(prefix)
         self.update_listener = update_listener
 
@@ -45,8 +45,9 @@ class NanopublicationManager(object):
         # This needs to be a two-step write, since we need to store
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
-        fileid = self.depot.create(FileIntent(b'', create_id(), 'application/trig'))
-        return fileid
+        #fileid = self.depot.create(FileIntent(b'', create_id(), 'application/trig'))
+        
+        return str(uuid4())
 
     def prepare(self, graph, mappings=None, store=None):
         if mappings is None:
@@ -217,7 +218,7 @@ class NanopublicationManager(object):
                             g_part.add((s, p, o))
 
                     serialized = g.serialize(format="trig")
-                    self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
+                    #self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
                     data.write(serialized)
                     data.write(b'\n')
                     data.flush()
@@ -241,27 +242,14 @@ class NanopublicationManager(object):
 
     def get(self, nanopub_uri, graph=None):
         nanopub_uri = rdflib.URIRef(nanopub_uri)
-        f = None
-        if nanopub_uri in self._idmap:
-            f = self.depot.get(self._idmap[nanopub_uri])
-        else:
-            # try:
-            fileid = nanopub_uri.replace(self.prefix, "", 1)
-            f = self.depot.get(fileid)
-        # except:
-        #    try:
-        #        fileid = self.db.value(nanopub_uri, dc.identifier)
-        #        if fileid is not None:
-        #            self._idmap[nanopub_uri] = fileid
-        #        f = self.depot.get(fileid)
-        #    except Exception as e:
-        #        return None
+        
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
+
+        quads = self.db.query('''select ?s ?p ?o ?g where {
+        ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g.
+        graph ?g { ?s ?p ?o}
+        }''', initNs={'np':np}, initBindings={'np':nanopub_uri})
+        graph.addN(quads)
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-        nanopub.parse(f, format="trig")
-        try:
-            f.close()
-        except:
-            pass
         return nanopub
