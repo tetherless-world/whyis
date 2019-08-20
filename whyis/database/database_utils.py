@@ -38,7 +38,7 @@ def engine_from_config(config, prefix):
     if prefix+"defaultGraph" in config:
         defaultgraph = URIRef(config[prefix+"defaultGraph"])
     if prefix+'elasticsearch' in config:
-        store = elasticstore.ElasticSearchStore()
+        store = ElasticSearchStore()
         store.open(config[prefix+'elasticsearch'], config[prefix+'elasticIndex'], create=True)
 
         def publish(data, *graphs):

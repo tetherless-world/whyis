@@ -182,10 +182,12 @@ class ElasticSearchStore(Store):
         }
 
         print("query is", query)
-        self.session.post(self.url+"/_refresh") # Ensure store is up-to-date before reading
+        self.es.indices.refresh(index=self.index)
 
-        r = self.session.post(self.url+"/_delete_by_query", data=json.dumps(query))
-        print("Response:",r.status_code, r.content)
+        self.es.delete_by_query(index=self.index, body=query)
+
+        #r = self.session.post(self.url+"/_delete_by_query", data=json.dumps(query))
+        #print("Response:",r.status_code, r.content)
 
     def elastic_query(self, query):
         query = {
@@ -202,7 +204,7 @@ class ElasticSearchStore(Store):
 
         #response = self.session.post(self.url+"/_search",data=json.dumps(query))
 
-        return self.es.search(index=[self.index], body=json.dumps(query)) =======
+        return self.es.search(index=[self.index], body=json.dumps(query)) 
 
 
     def subgraph(self, query):
