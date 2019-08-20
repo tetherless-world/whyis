@@ -916,10 +916,10 @@ function whyis() {
                 localPart = localPart[localPart.length-1];
                 getLabel.labels[uri] = { label: localPart };
 
-		getLabel.labels[uri].promise = $http.get(ROOT_URL+"about?uri"+encodeURI(uri)+"&view=label")
-						    .then(function(data, status, headers, config) {
-							if(status === 200)
-							    getLabel.labels[uri].label = data.data
+		getLabel.labels[uri].promise = $http.get(ROOT_URL+"about", {params: {uri, view: "label"}, responseType: "text"})
+						    .then(function(response) {
+							if(response.status === 200)
+							    getLabel.labels[uri].label = response.data;
 							return getLabel.labels[uri].label;
 						    });
 	    }
@@ -936,6 +936,8 @@ function whyis() {
 	    }
 	    return getLabel.labels[uri].label;
 	}
+
+	// On $scope.$apply, also check the state of getLabel.
 	label.$stateful = true;
 	return label;
     }]);
