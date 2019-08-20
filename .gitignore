@@ -50,6 +50,9 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+/lint-results/
+/test-results/
+/test-results-py.tar
 
 # Translations
 *.mo
@@ -68,6 +71,7 @@ target/
 .ipynb_checkpoints
 
 venv/
+tmpvenv/
 blazegraph.jar
 blazegraph.jnl
 

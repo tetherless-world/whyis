@@ -1,0 +1,10 @@
+/.git/
+/.idea/
+node_modules/
+package-lock.json
+*.pyc
+__pycache__/
+/tests/integration/cypress/screenshots/
+/tests/integration/cypress/videos/
+/test-results/
+/venv/

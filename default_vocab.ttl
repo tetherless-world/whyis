@@ -356,6 +356,9 @@ whyis:hasRelated dc:identifier "related";
 whyis:hasLabel dc:identifier "label";
   rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasLabels dc:identifier "labels";
+  rdfs:subPropertyOf whyis:hasView.
+
 whyis:hasSummary dc:identifier "summary";
   rdfs:subPropertyOf whyis:hasView.
 
@@ -434,6 +437,7 @@ rdfs:label flaskld:fieldName "name" .
 
 whyis:HomePage a owl:Class;
   whyis:hasView "home_view.html";
+  whyis:hasLabels "labels.json";
   whyis:latestView "latest.json";
   whyis:resolveView "resolve.json".
 

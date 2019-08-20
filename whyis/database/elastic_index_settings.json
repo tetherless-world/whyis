@@ -1,0 +1,39 @@
+{
+    "settings": {
+    },
+    "mappings" : {
+        "nanopublication" : {
+            "dynamic_templates": [
+                {
+                    "jsonld_id": {
+                        "match": "@id",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "jsonld_graph": {
+                        "match": "@graph",
+                        "mapping": {
+                            "type": "nested"
+                        }
+                    }
+                },
+                {
+                    "jsonld_graph": {
+                        "match": "@value",
+                        "mapping": {
+                            "type": "text"
+                        }
+                    }
+                }
+            ],
+            "properties" : {
+                "graphs" : {
+                    "type" : "nested"
+                }
+            }
+        }
+    }
+}

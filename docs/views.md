@@ -86,3 +86,36 @@ The view selector will choose the template for the view that is most specific to
 Subclasses with custom views will override their transitive superclasses.
 Instances do not need to have a type directly asserted, but can use the knowledge graph and vocab files to find relevant superclasses to the asserted types.
 
+## Adding Jinja Filters to Views
+
+To add some more complex logic to the Jinja2 templating system, we can make use of custom Jinja filters.
+Start by adding a `filters.py` to your project source directory (usually located at `/apps/my_knowledge_graph/my_knowledge_graph/`) with the following lines:
+
+```python
+def foo(s):
+    return s[::-1].upper()
+```
+
+This is a simple filter that will reverse and capitalize the string passed to it. Filters need to return the result so that next filter can utilize the result.
+
+Next, add the following line to your `__init__.py`, located in the same folder:
+
+```python
+from . import filters
+```
+
+Now, modify your `config.py` (usually located at `/apps/my_knowledge_graph/`) to add the following import statement:
+
+```python
+from my_knowledge_graph import filters
+```
+
+To actually make use of the filter that we've written, we'll need to register it with our configuration file. In your `config.py`, we will need to add an dictionary entry to your configuration object (`Config`), as seen below:
+
+```python
+filters = { "foo": filters.foo },
+```
+
+This registers the function that we've just written as a filter with the name `foo`. You should now be able to use this filter in your application templates. 
+
+For more information on how to use filters in your templates, take a look at the [Jinja2 Filter Docs](http://jinja.pocoo.org/docs/latest/templates/#filters).

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-curl -O https://apt.puppetlabs.com/puppet-release-xenial.deb
+WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
+
+curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
 sudo dpkg -i puppet-release-xenial.deb
 sudo apt-get update
 
@@ -14,18 +16,19 @@ export PATH=/opt/puppetlabs/bin/:$PATH
 
 sudo /opt/puppetlabs/bin/puppet module install puppet-python
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
-sudo /opt/puppetlabs/bin/puppet module install maestrodev-wget
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
-
-curl -skL 'https://raw.githubusercontent.com/tetherless-world/whyis/master/manifests/install.pp' > /tmp/install_whyis.pp
+sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
 
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
+else
+     curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$WHYIS_BRANCH/puppet/manifests/install.pp" > /tmp/install_whyis.pp
 fi
+echo "Whyis branch: $WHYIS_BRANCH"
 
-sudo /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
+sudo FACTER_WHYIS_BRANCH=$WHYIS_BRANCH /opt/puppetlabs/bin/puppet apply /tmp/install_whyis.pp
 
 echo ""
 echo "Please configure Whyis at /apps/whyis/config.py to ensure correct customization."

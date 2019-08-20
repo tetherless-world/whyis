@@ -1,5 +1,7 @@
 -r common.txt
-flask-debugtoolbar
+coverage==4.5.3
+Flask-DebugToolbar==0.10.1
 flask-testing
-selenium
-chromedriver_binary
+#selenium==3.141.0
+#chromedriver_binary
+unittest-xml-reporting==2.5.1

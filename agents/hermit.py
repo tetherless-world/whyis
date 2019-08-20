@@ -1,20 +1,15 @@
 import nltk, re, pprint
-import autonomic
+from whyis import autonomic
 from bs4 import BeautifulSoup
 from rdflib import *
 from slugify import slugify
-import nanopub
+from whyis import nanopub
 from math import log10
 import collections
 import os
 import javabridge
 
-sioc_types = Namespace("http://rdfs.org/sioc/types#")
-sioc = Namespace("http://rdfs.org/sioc/ns#")
-sio = Namespace("http://semanticscience.org/resource/")
-dc = Namespace("http://purl.org/dc/terms/")
-prov = autonomic.prov
-whyis = autonomic.whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class ConsistencyCheck(autonomic.UpdateChangeService):
     activity_class = whyis.ConsistencyCheck
