@@ -1,15 +1,10 @@
-from builtins import str
-from builtins import range
-from six import b
-from six.moves.urllib.request import pathname2url
 from six import iteritems
 
-from rdflib.store import Store, VALID_STORE, NO_STORE
+from rdflib.store import Store, VALID_STORE
 from rdflib.term import URIRef, BNode
 
 from rdflib.graph import Graph
 
-import requests
 from uuid import uuid4
 from urllib.parse import quote_plus
 
@@ -204,7 +199,7 @@ class ElasticSearchStore(Store):
 
         #response = self.session.post(self.url+"/_search",data=json.dumps(query))
 
-        return self.es.search(index=[self.index], body=json.dumps(query)) 
+        return self.es.search(index=[self.index], body=json.dumps(query), size=10000) 
 
 
     def subgraph(self, query):
