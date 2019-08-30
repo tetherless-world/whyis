@@ -62,13 +62,13 @@
     <md-toolbar >
       <div class="md-toolbar-tools">
 
-        <a href="{{url_for('view',name='')}}">Home</a>
+        <a href="{{url_for('.view',name='')}}">Home</a>
 	<!-- Form for Search -->
 	<form 
 	      class="navbar-form"
               style="color:black"
 	      role="search"
-	      action="{{url_for('view',name='search')}}"
+	      action="{{url_for('.view',name='search')}}"
 	      method="get"
 	       name="search" layout="row" flex>
           <search-autocomplete flex></search-autocomplete>
@@ -105,12 +105,12 @@
           {% block actions %}
           {{ upload_button_modal(this) }}
           {% if g.current_user and g.current_user.is_authenticated %}
-          <md-button md-secondary ng-href="{{url_for('view',view='edit', uri=this.identifier)}}" class="md-icon-button" aria-label="Edit" title="Edit">
+          <md-button md-secondary ng-href="{{url_for('.view',view='edit', uri=this.identifier)}}" class="md-icon-button" aria-label="Edit" title="Edit">
             <md-icon>create</md-icon>
           </md-button>
           {% endif %}
           {% if this.description().value(ns.whyis.hasFileID) %}
-          <md-button md-secondary ng-href="{{url_for('view',uri=this.identifier)}}" class="md-icon-button" aria-label="Download File" title="Download File">
+          <md-button md-secondary ng-href="{{url_for('.view',uri=this.identifier)}}" class="md-icon-button" aria-label="Download File" title="Download File">
             <md-icon>file_download</md-icon>
           </md-button>
           {% endif %}
@@ -164,7 +164,7 @@
       if (NODE.length > 0)  NODE = NODE[0];
       else NODE = {"@id" : NODE_URI};
       {% endif %}
-      ROOT_URL = "{{url_for('view',name='')}}";
+      ROOT_URL = "{{url_for('.view',name='')}}";
       
     </script>
     

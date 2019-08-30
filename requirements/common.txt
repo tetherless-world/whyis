@@ -5,7 +5,7 @@ Babel==2.7.0
 bcrypt==3.1.6
 beautifulsoup4==4.7.1
 bibtexparser==1.1.0
-billiard==3.5.0.5
+billiard==3.6.1.0
 binaryornot==0.4.4
 blinker==1.4
 bsddb3==6.2.6
@@ -39,7 +39,7 @@ javabridge==1.0.18
 Jinja2==2.10.1
 jinja2-time==0.2.0
 keepalive==0.5
-kombu==4.4.0
+kombu==4.6.4
 lxml==4.3.4
 Markdown==3.1.1
 MarkupSafe==1.1.1
@@ -66,7 +66,7 @@ pytz==2019.1
 git+git://github.com/gordom6/rdflib.git#egg=rdflib
 git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
-redis==3.2.0
+redis==3.3.8
 requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
