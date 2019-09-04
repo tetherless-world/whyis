@@ -17,17 +17,52 @@ service { jetty8:
 
 }
 
-# Install and uninstall packages
-package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "libdb5.3-dev"]:
-  ensure => "installed"
-} ->
 package { "jetty8":
   ensure => "absent",
-} ->
+}
+
+# Install and uninstall packages
+package { ["unzip",
+           "zip",
+           "build-essential",
+           "default-jdk",
+           "automake",
+           "jetty9",
+           "subversion",
+           "git",
+           "libapache2-mod-wsgi-py3",
+           "libblas3",
+           "libblas-dev",
+           "redis-server",
+           "apache2",
+           "libffi-dev",
+           "libssl-dev",
+           "maven",
+           "python3-dev",
+           "libdb5.3-dev"]:
+    ensure => "installed"
+}
+
+if $facts["os"]["distro"]["codename"] == "xenial" {
+  package{ "celeryd":
+    ensure => "installed"
+  }
+
+} elseif $facts["os"]["distro"]["codename"] == "bionic" {
+  
+  # Register the generic celery daemon service
+  file{ "etc/init.d/celeryd":
+    ensure => file,
+    source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
+    mode => "0744",
+    owner => "root"
+  }
+}
 
 # Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
-    ensure => 'present',
+  ensure => 'present',
+  subscribe => [Package["jetty9", "python3-dev", "default-jdk"]],
 } ->
 user { 'whyis':
   ensure => present,
@@ -121,24 +156,6 @@ com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoA
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
 } -> 
-file { "/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties":
-  content => '
-com.bigdata.journal.AbstractJournal.file=/data/blazegraph.jnl
-com.bigdata.journal.AbstractJournal.bufferMode=DiskRW
-com.bigdata.service.AbstractTransactionService.minReleaseAge=1
-com.bigdata.journal.Journal.groupCommit=true
-com.bigdata.btree.writeRetentionQueue.capacity=4000
-com.bigdata.btree.BTree.branchingFactor=128
-com.bigdata.journal.AbstractJournal.initialExtent=209715200
-com.bigdata.journal.AbstractJournal.maximumExtent=209715200
-com.bigdata.rdf.sail.truthMaintenance=false
-com.bigdata.rdf.store.AbstractTripleStore.quads=true
-com.bigdata.rdf.store.AbstractTripleStore.statementIdentifiers=false
-com.bigdata.rdf.store.AbstractTripleStore.textIndex=true
-com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoAxioms
-com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
-com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
-} ->
 
 # Flesh out the /data directory
 file { "/data":
