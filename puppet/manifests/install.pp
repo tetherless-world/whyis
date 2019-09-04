@@ -44,14 +44,14 @@ package { ["unzip",
 }
 
 if $facts["os"]["distro"]["codename"] == "xenial" {
-  package{ "celeryd":
+  package { "celeryd":
     ensure => "installed"
   }
 
-} elseif $facts["os"]["distro"]["codename"] == "bionic" {
+} elsif $facts["os"]["distro"]["codename"] == "bionic" {
   
   # Register the generic celery daemon service
-  file{ "etc/init.d/celeryd":
+  file { "etc/init.d/celeryd":
     ensure => file,
     source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
     mode => "0744",
