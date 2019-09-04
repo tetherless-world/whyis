@@ -63,10 +63,33 @@ jobs:
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
             fi
-  install_and_test_outside_docker:
+  install_and_test_outside_docker_xenial:
     working_directory: /
     docker:
       - image: ubuntu:xenial
+    steps:
+      - run:
+          name: Install dependencies
+          command: apt-get update && apt-get install -y curl lsb-release sudo
+      - run:
+          name: Install whyis per the documentation
+          command: WHYIS_BRANCH="$CIRCLE_BRANCH" bash < <(curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/${CIRCLE_BRANCH}/install.sh")
+      - run:
+          name: Start services
+          command: |
+            service redis-server start
+      - run:
+          name: Run tests
+          command: |
+            cd /apps/whyis && source venv/bin/activate && python manage.py test --ci
+      - store_artifacts:
+          path: /apps/whyis/test-results
+      - store_test_results:
+          path: /apps/whyis/test-results
+  install_and_test_outside_docker_bionic:
+    working_directory: /
+    docker:
+      - image: ubuntu:bionic
     steps:
       - run:
           name: Install dependencies
