@@ -256,7 +256,7 @@ service { redis-server:
 
 service { jetty9:
     ensure => running,
-    subscribe => [File["/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties"]],
+    subscribe => [File["/usr/share/jetty9/webapps/blazegraph/WEB-INF/RWStore.properties"]],
 } ->
 exec { "wait_for_blazegraph":
   command => "bash -c 'for i in 1 2 3 4 5; do curl -s http://localhost:8080 &>/dev/null && break || sleep 1; done'",
