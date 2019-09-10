@@ -5,8 +5,8 @@ from whyis.blueprint.nanopub.nanopub_utils import get_nanopub_uri
 from .nanopub_blueprint import nanopub_blueprint
 
 
-@nanopub_blueprint.route('/pub/<ident>', methods=['DELETE'])
-@login_required
+#@nanopub_blueprint.route('/pub/<ident>', methods=['DELETE'])
+#@login_required
 def delete_nanopub(ident):
     #print(request.method, 'delete_nanopub()', ident)
     ident = ident.split("_")[0]
