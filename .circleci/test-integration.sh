@@ -12,7 +12,7 @@ echo "`date` Running integration tests in $WHYIS_DEMO_IMAGE"
 #ERR_REDIRECT="2>/apps/whyis/test-results/js/test.err"
 docker run --name whyis-demo $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 && cd /apps/whyis/tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci && tar cf test-results-js.tar results"
 
-docker cp whyis-demo:/apps/whyis/tests/integration/tests-results-js.tar test-results/js/
+docker cp whyis-demo:/apps/whyis/tests/integration/test-results-js.tar test-results/js/
 cd test-results/js
 tar xf test-results-js.tar
 
