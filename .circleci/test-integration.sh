@@ -17,6 +17,8 @@ docker run --network whyis-network --name whyis-integration tetherlessworld/whyi
 
 # docker run --name whyis-demo $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs && cd /apps/whyis/tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci && tar cf test-results-js.tar results"
 
+echo "Whyis Logs:\n"
+docker logs whyis
 docker kill whyis
 
 docker cp whyis-integration:/integration/test-results-js.tar test-results/js/
