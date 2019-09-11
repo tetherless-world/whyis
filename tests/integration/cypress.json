@@ -2,7 +2,7 @@
     "baseUrl": "http://localhost:5000",
     "reporter": "junit",
     "reporterOptions": {
-	"mochaFile": "results/results.xml",
+	"mochaFile": "results/results-[hash].xml",
 	"toConsole": false
     },
     "screenshotsFolder": "results/screenshots",

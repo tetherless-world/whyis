@@ -10,9 +10,16 @@ echo "`date` Running integration tests in $WHYIS_DEMO_IMAGE"
 #docker run $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - $JS_REDIRECT && apt-get install -y nodejs xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 $JS_REDIRECT && cd /apps/whyis/tests/integration && npm install $JS_REDIRECT && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci $JS_REDIRECT; cp -p -R cypress/screenshots /apps/whyis/test-results/js; cp -p -R cypress/videos /apps/whyis/test-results/js; cd /apps/whyis && tar cf test-results-js.tar test-results/js && cat test-results-js.tar" >test-results-js.tar
 
 #ERR_REDIRECT="2>/apps/whyis/test-results/js/test.err"
-docker run --name whyis-demo $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs && cd /apps/whyis/tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci && tar cf test-results-js.tar results"
 
-docker cp whyis-demo:/apps/whyis/tests/integration/test-results-js.tar test-results/js/
+docker network create whyis-network
+docker run --detach --network whyis-network --name whyis $WHYIS_DEMO_IMAGE tail -f /dev/null
+docker run --network whyis-network --name whyis-integration --entrypoint "npx wait-on -t 100000 http://whyis && CYPRESS_baseUrl=http://whyis cypress run --spec cypress/integration/whyis/**/*; tar cf test-results-js.tar results" tetherlessworld/whyis-integration:latest
+
+# docker run --name whyis-demo $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs && cd /apps/whyis/tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci && tar cf test-results-js.tar results"
+
+docker kill whyis
+
+docker cp whyis-integration:/integration/test-results-js.tar test-results/js/
 cd test-results/js
 tar xf test-results-js.tar
 
