@@ -11,13 +11,13 @@ echo "`date` Running integration tests in $WHYIS_DEMO_IMAGE"
 
 #ERR_REDIRECT="2>/apps/whyis/test-results/js/test.err"
 
-docker network create whyis-network
-docker run --detach --network whyis-network --name whyis $WHYIS_DEMO_IMAGE tail -f /dev/null
-docker run --network whyis-network --name whyis-integration tetherlessworld/whyis-integration:latest
+# docker network create whyis-network
+docker run --detach --name whyis $WHYIS_DEMO_IMAGE tail -f /dev/null
+docker run --network container:whyis --name whyis-integration tetherlessworld/whyis-integration:latest
 
 # docker run --name whyis-demo $WHYIS_DEMO_IMAGE bash -c "mkdir -p /apps/whyis/test-results/js && curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs && cd /apps/whyis/tests/integration && npm install && CYPRESS_baseUrl=http://localhost npm run cypress:run-ci && tar cf test-results-js.tar results"
 
-echo "Whyis Logs:\n"
+echo "Whyis Logs:"
 docker logs whyis
 docker kill whyis
 
