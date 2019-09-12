@@ -23,11 +23,11 @@ docker cp whyis-integration:/integration/test-results-js.tar test-results/js/
 cd test-results/js
 tar xf test-results-js.tar
 
-if [ "$(ls test-results/js/results*.xml | wc -l)" -lt "1" ]; then
+if [ "$(ls results/results*.xml | wc -l)" -lt "1" ]; then
     echo "Integration test results.xml does not exist, exiting abnormally"
     exit 1
 fi
-if [ "$(grep -c 'failure ' test-results/js/results*.xml)" -ge 1 ]; then
+if [ "$(grep -c 'failure ' results/results*.xml)" -ge 1 ]; then
     echo "Integration test results.xml has failures, exiting abnormally"
     exit 1
 fi
