@@ -1,0 +1,12 @@
+version: '3'
+services:
+  whyis:
+    container_name: "whyis"
+    image: ${WHYIS_DEMO_IMAGE:-tetherlessworld/whyis-demo:latest}
+  whyis-integration:
+    container_name: "whyis-integration"
+    depends_on:
+      - whyis
+    external_links:
+      - whyis
+    image: tetherlessworld/whyis-integration:latest
