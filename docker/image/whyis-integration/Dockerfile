@@ -6,4 +6,4 @@ COPY docker/image/whyis-integration/cypress.json /integration/
 COPY tests/integration/cypress /integration/cypress
 WORKDIR /integration
 
-ENTRYPOINT bash
+ENTRYPOINT ["bash"]

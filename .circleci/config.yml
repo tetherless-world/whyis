@@ -30,7 +30,8 @@ jobs:
       - run:
           name: Build Cypress image
           command: |
-            docker build . -f docker/image/whyis-integration/Dockerfile --tag tetherlessworld/whyis-integration
+            cd docker/compose/testing
+            docker-compose build
       - run:
           name: Run integration tests
           command: .circleci/test-integration.sh tetherlessworld/whyis-demo:latest

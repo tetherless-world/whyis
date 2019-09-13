@@ -5,6 +5,9 @@ services:
     image: ${WHYIS_DEMO_IMAGE:-tetherlessworld/whyis-demo:latest}
   whyis-integration:
     container_name: "whyis-integration"
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-integration/Dockerfile
     depends_on:
       - whyis-demo
     links:
