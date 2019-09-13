@@ -1,12 +1,13 @@
 version: '3'
 services:
-  whyis:
-    container_name: "whyis"
+  whyis-demo:
+    container_name: "whyis-demo"
     image: ${WHYIS_DEMO_IMAGE:-tetherlessworld/whyis-demo:latest}
   whyis-integration:
     container_name: "whyis-integration"
     depends_on:
-      - whyis
-    external_links:
-      - whyis
+      - whyis-demo
+    links:
+      - whyis-demo:whyis
     image: tetherlessworld/whyis-integration:latest
+    command: /docker-entrypoint.sh
