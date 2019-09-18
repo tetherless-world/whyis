@@ -15,7 +15,7 @@ def sparql_view():
         if arg.lower() == 'query':
             has_query = True
     if request.method == 'GET' and not has_query:
-        return redirect(url_for('sparql_form'))
+        return redirect(url_for('.sparql_form'))
     #print self.db.store.query_endpoint
     if request.method == 'GET':
         headers = {}
