@@ -3,7 +3,7 @@ Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"
 # jdk is required to install javabridge
 package { ["unzip", "zip", "default-jdk", "build-essential", "automake", "jetty9", "subversion", "git",
   "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "redis-server", "apache2", "libffi-dev", "libssl-dev"
-  , "maven", "python3-dev", "python3-pip", "libdb5.3-dev"]:
+  , "maven", "python3-dev", "python3-pip", "libdb5.3-dev", "sudo"]:
   ensure => "installed"
 } ->
 file_line { "configure_jetty_start":
