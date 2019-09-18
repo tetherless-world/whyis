@@ -77,7 +77,7 @@ The monolithic image was split into images for the databases Whyis relies on (_r
 #### Prerequisites 
 * Docker
 * `docker-compose`
-* A data folder in the same directory as your app and Whyis with permissions 777
+* A data folder alongside your `/apps` folder is in with permissions 777
   * See other notes
 
 ### Use
@@ -106,9 +106,9 @@ Further, `docker/compose/split/app-dev` references a version of `whyis-server` t
 
 ### Data directory
 
-By default, the split `docker-compose.yml` will mount a directory named `data` in the same directory as your Whyis folder on the host machine. Due to how Docker allocates volumes, this folder will have the wrong permissions and cause Blazegraph to fail on the first setup. To avoid this, run the following instructions before running `docker-compose`:
+By default, the split `docker-compose.yml` will mount a directory named `data` in the same directory as your `/apps` folder on the host machine. Due to how Docker allocates volumes, this folder will have the wrong permissions and cause Blazegraph to fail on the first setup. To avoid this, run the following instructions before running `docker-compose`:
 
-	cd FOLDER_CONTAINING_WHYIS_FOLDER
+	cd /
 	mkdir data
 	chmod ugo+rwx data
 	
