@@ -2,8 +2,8 @@
 
 WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
 
-sudo apt-get install -y lsb_release
-local version=$(lsb_release -cs)
+sudo apt-get install -y lsb-release
+version=$(lsb_release -cs)
 if [ "$version" == "bionic" ]; then
     curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
     sudo dpkg -i puppet-release-xenial.deb
