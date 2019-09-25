@@ -8,6 +8,6 @@ service jetty9 start 1>&2
 service redis-server start 1>&2
 service celeryd start 1>&2
 
-/load-whyis-data.sh 1&>2
+/load-whyis-data.sh 1>&2
 
 exec "$@"
