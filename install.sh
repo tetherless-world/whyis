@@ -5,11 +5,11 @@ WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
 sudo apt-get install -y lsb-release
 version=$(lsb_release -cs)
 if [ "$version" == "bionic" ]; then
-    curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
-    sudo dpkg -i puppet-release-xenial.deb
-elif [ "$version" == "xenial" ]; then
     curl -s -O https://apt.puppetlabs.com/puppet-release-bionic.deb
     sudo dpkg -i puppet-release-bionic.deb
+elif [ "$version" == "xenial" ]; then
+    curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
+    sudo dpkg -i puppet-release-xenial.deb
 fi
 sudo apt-get update
 
