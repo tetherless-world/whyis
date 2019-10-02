@@ -21,7 +21,7 @@ class Test(Command):
         return [
             Option('--verbosity', '-v', dest='verbosity',
                    type=int, default=self.verbosity),
-            Option('--failfast', dest='failfast', help='Stop the test after the first failure',
+            Option('--failfast', dest='failfast',
                    default=self.failfast, action='store_false'),
             Option('--test', dest='tests',
                    default=self.tests, type=str),

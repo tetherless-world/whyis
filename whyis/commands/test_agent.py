@@ -10,7 +10,7 @@ class TestAgent(Command):
 
     def get_options(self):
         return [
-            Option('--agent', '-a', dest='agent_path', required=True,
+            Option('--agent', '-a', dest='agent_path',
                    type=str),
             Option('--dry-run', '-d', action="store_true", dest='dry_run'),
         ]

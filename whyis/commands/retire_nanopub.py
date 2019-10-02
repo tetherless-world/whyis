@@ -10,7 +10,8 @@ class RetireNanopub(Command):
 
     def get_options(self):
         return [
-            Option('-n', '--nanopub_uri', dest='nanopub_uri', required=True, help='URI of the nanopub to retire', type=str),
+            Option('--nanopub_uri', '-n', dest='nanopub_uri',
+                   type=str),
         ]
 
     def run(self, nanopub_uri):
