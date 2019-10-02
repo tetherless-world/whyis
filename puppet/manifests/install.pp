@@ -14,7 +14,6 @@ class { 'python' :
 service { jetty8:
     ensure => stopped,
     subscribe => [Package["jetty8"]],
-
 }
 
 package { "jetty8":
@@ -80,6 +79,12 @@ if $facts["os"]["distro"]["codename"] == "xenial" {
     subscribe => [Vcsrepo["/apps/whyis"]],
     command => "cp /apps/whyis/puppet/files/etc/init.d/celeryd /etc/init.d/celeryd",
     creates => "/etc/init.d/celeryd",
+  }
+
+  file_line {"configure_java_home_global":
+    path => '/etc/profile',
+    line => 'JAVA_HOME=/usr/lib/jvm/default-java',
+    ensure => present
   }
 }
 
