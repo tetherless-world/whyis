@@ -51,11 +51,9 @@ if $facts["os"]["distro"]["codename"] == "xenial" {
 } elsif $facts["os"]["distro"]["codename"] == "bionic" {
   
   # Register the generic celery daemon service
-  file { "/etc/init.d/celeryd":
-    ensure => file,
-    source => "/apps/whyis/puppet/files/etc/init.d/celeryd",
-    mode => "0744",
-    owner => "root"
+  exec { 'register_celeryd_daemon':
+    command => "cp /apps/whyis/puppet/files/etc/init.d/celeryd /etc/init.d/celeryd",
+    creates => "/etc/init.d/celeryd",
   }
 }
 
