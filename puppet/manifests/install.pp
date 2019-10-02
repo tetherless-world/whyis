@@ -43,30 +43,6 @@ package { ["unzip",
     ensure => "installed"
 }
 
-vcsrepo { '/apps/whyis':
-  ensure   => present,
-  provider => git,
-  source   => 'https://github.com/tetherless-world/whyis.git',
-  revision => $whyis_branch_,
-  user     => 'whyis'
-}
-
-
-if $facts["os"]["distro"]["codename"] == "xenial" {
-  package { "celeryd":
-    ensure => "installed"
-  }
-
-} elsif $facts["os"]["distro"]["codename"] == "bionic" {
-  
-  # Register the generic celery daemon service
-  exec { 'register_celeryd_daemon':
-    subscribe => [Vcsrepo["/apps/whyis"]],
-    command => "cp /apps/whyis/puppet/files/etc/init.d/celeryd /etc/init.d/celeryd",
-    creates => "/etc/init.d/celeryd",
-  }
-}
-
 # Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
   ensure => 'present',
@@ -84,6 +60,29 @@ file { "/apps":
   owner => "whyis",
   group => "whyis"
 } ->
+vcsrepo { '/apps/whyis':
+  ensure   => present,
+  provider => git,
+  source   => 'https://github.com/tetherless-world/whyis.git',
+  revision => $whyis_branch_,
+  user     => 'whyis'
+}
+
+if $facts["os"]["distro"]["codename"] == "xenial" {
+  package { "celeryd":
+    ensure => "installed"
+  }
+
+} elsif $facts["os"]["distro"]["codename"] == "bionic" {
+  
+  # Register the generic celery daemon service
+  exec { 'register_celeryd_daemon':
+    subscribe => [Vcsrepo["/apps/whyis"]],
+    command => "cp /apps/whyis/puppet/files/etc/init.d/celeryd /etc/init.d/celeryd",
+    creates => "/etc/init.d/celeryd",
+  }
+}
+
 # Configure Jetty
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
@@ -113,12 +112,12 @@ exec { 'fix_jetty9_initd_in_docker':
   command => "cp /apps/whyis/puppet/files/etc/init.d/jetty9 /etc/init.d/jetty9",
   onlyif  => 'test -f /.dockerenv',
   user    => "root",
+  subscribe => [Vcsrepo["/apps/whyis"]]
 } ->
 # Set up the Blazegraph web application
 file { "/tmp/blazegraph.war":
   ensure => file,
-  source => "/apps/whyis/puppet/files/usr/share/jetty9/webapps/blazegraph.war",
-  subscribe => [Vcsrepo["/apps/whyis"]],
+  source => "/apps/whyis/puppet/files/usr/share/jetty9/webapps/blazegraph.war"
 } ->
 file { "/usr/share/jetty9/webapps/blazegraph":
   ensure => "directory",
