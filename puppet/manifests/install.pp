@@ -83,7 +83,7 @@ if $facts["os"]["distro"]["codename"] == "xenial" {
 
   file_line {"configure_java_home_global":
     path => '/etc/profile',
-    line => 'JAVA_HOME=/usr/lib/jvm/default-java',
+    line => 'export JAVA_HOME=/usr/lib/jvm/default-java',
     ensure => present
   }
 }

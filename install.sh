@@ -7,6 +7,8 @@ version=$(lsb_release -cs)
 if [ "$version" == "bionic" ]; then
     curl -s -O https://apt.puppetlabs.com/puppet-release-bionic.deb
     sudo dpkg -i puppet-release-bionic.deb
+
+    export JAVA_HOME=/usr/lib/jvm/default-java
 elif [ "$version" == "xenial" ]; then
     curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
     sudo dpkg -i puppet-release-xenial.deb
