@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import * as VueMaterial from "vue-material";
-import "components/kg-card";
+import "./components";
 
 Vue.use(VueMaterial.default);
 
