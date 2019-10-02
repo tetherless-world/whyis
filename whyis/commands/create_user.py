@@ -18,7 +18,7 @@ class CreateUser(Command):
             Option('-p', '--password', dest='password', help='Password for this user', type=str),
             Option('-f', '--fn', dest='fn', help='First name of this user', type=str),
             Option('-l', '--ln', dest='ln', help='Last name of this user', type=str),
-            Option('-u', '--username', dest='identifier', help='Username for this user', type=str),
+            Option('-u', '--username', dest='identifier', help='Username for this user', type=str, required=True),
             Option('--roles', dest="roles", type=str)
         ]
 
