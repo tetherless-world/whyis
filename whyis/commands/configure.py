@@ -8,7 +8,7 @@ from cookiecutter.main import cookiecutter
 
 
 class Configure(Command):
-    '''Create a Whyis configuration and customization directory.'''
+    '''Create a Whyis configuration and customization directory, using input parameters from stdin'''
 
     def get_options(self):
         return [

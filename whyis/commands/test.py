@@ -19,7 +19,7 @@ class Test(Command):
 
     def get_options(self):
         return [
-            Option('--verbosity', '-v', dest='verbosity',
+            Option('--verbosity', '-v', dest='verbosity', help='verbosity level of output, between 0 and 2 (default 2)',
                    type=int, default=self.verbosity),
             Option('--failfast', dest='failfast', help='Stop the test after the first failure',
                    default=self.failfast, action='store_false'),
