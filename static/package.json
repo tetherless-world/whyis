@@ -19,7 +19,8 @@
     "raw-loader": "1.0.0",
     "style-loader": "0.23.1",
     "vue-loader": "^15.7.1",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "webpack-dev-server": "^3.8.2"
   },
   "scripts": {
     "lint": "eslint",
