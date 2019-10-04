@@ -1,60 +1,48 @@
 # -*- coding:utf-8 -*-
 import importlib
-
 import os
 import sys
-from empty import Empty
-from flask import render_template, g, redirect, url_for, request, flash, Response, \
-    send_from_directory, make_response, abort
-from functools import lru_cache, wraps
+from datetime import datetime
+from functools import lru_cache
+from re import finditer
+from urllib.parse import urlencode
 
 import jinja2
-
-from nanopub import NanopublicationManager
-import requests
-from re import finditer
 import pytz
-
-from werkzeug.exceptions import Unauthorized
-from werkzeug.utils import secure_filename
-
+import rdflib
+import sadi
+import sadi.mimeparse
+from celery import Celery
+from celery.schedules import crontab
 from depot.manager import DepotManager
 from depot.middleware import FileServeApp
-
-import rdflib
+from flask import render_template, g, redirect, url_for, request, flash, send_from_directory, abort
+from flask_security import Security
+from flask_security.core import current_user
+from flask_security.forms import RegisterForm
 from rdflib import Literal, Graph, Namespace, URIRef
 from rdflib.graph import ConjunctiveGraph
 from rdflib.query import Processor, Result, UpdateProcessor
-
-from flask_security import Security, login_required
-from flask_security.core import current_user
-from flask_security.forms import RegisterForm
-from flask_wtf import Form
-from wtforms import TextField, StringField, validators
-import sadi
-import json
-import sadi.mimeparse
 from slugify import slugify
+from werkzeug.exceptions import Unauthorized
+from werkzeug.utils import secure_filename
+from wtforms import TextField, validators
 
-from urllib.parse import urlencode
-
-from celery import Celery
-from celery.schedules import crontab
-from celery.task.control import inspect
-
-import database
-
-from datetime import datetime
-
-from datastore import WhyisUserDatastore
-
-import markdown
-import search
-import filters
-
-from namespace import NS
-
-#from flask_login.config import EXEMPT_METHODS
+from whyis import database
+from whyis import filters
+from whyis import search
+from whyis.blueprint.nanopub import nanopub_blueprint
+from whyis.blueprint.sparql import sparql_blueprint
+from whyis.data_extensions import DATA_EXTENSIONS
+from whyis.data_formats import DATA_FORMATS
+from whyis.datastore import WhyisUserDatastore
+from whyis.decorator import conditional_login_required
+from whyis.empty import Empty
+from whyis.html_mime_types import HTML_MIME_TYPES
+from whyis.namespace import NS
+from whyis.nanopub import NanopublicationManager
+# from flask_login.config import EXEMPT_METHODS
+from whyis.task_utils import is_waiting, is_running_waiting
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
@@ -67,11 +55,9 @@ rdflib.plugin.register('sparql', UpdateProcessor,
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 
-basestring = getattr(__builtins__, 'basestring', str)
-
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
-top_compare_key = False, -100, [(-2, 0)]
+# top_compare_key = False, -100, [(-2, 0)]
 # increase probability that the rule will be near or at the bottom 
 bottom_compare_key = True, 100, [(2, 0)]
 
@@ -82,27 +68,9 @@ class ExtendedRegisterForm(RegisterForm):
     givenName = TextField('Given Name', [validators.Required()])
     familyName = TextField('Family Name', [validators.Required()])
 
-# Form for full-text search
-class SearchForm(Form):
-    search_query = StringField('search_query', [validators.DataRequired()])
+# def to_json(result):
+#     return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
 
-def to_json(result):
-    return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
-
-def conditional_login_required(func):
-    from flask import current_app
-    @wraps(func)
-    def decorated_view(*args, **kwargs):
-        if request.method in ['OPTIONS']:# EXEMPT_METHODS:
-            return func(*args, **kwargs)
-        if current_app.login_manager._login_disabled:
-            return func(*args, **kwargs)
-        if 'DEFAULT_ANONYMOUS_READ' in current_app.config and current_app.config['DEFAULT_ANONYMOUS_READ']:
-            return func(*args, **kwargs)
-        if not current_user.is_authenticated:
-            return current_app.login_manager.unauthorized()
-        return func(*args, **kwargs)
-    return decorated_view
 
 class App(Empty):
 
@@ -127,17 +95,6 @@ class App(Empty):
                 + [app.jinja_loader]
             )
             app.jinja_loader = my_loader
-        
-        def setup_task(service):
-            service.app = app
-            print(service)
-            result = None
-            if service.query_predicate == self.NS.whyis.globalChangeQuery:
-                result = process_resource
-            else:
-                result = process_nanopub
-            result.service = lambda : service
-            return result
 
         @self.celery.task
         def process_resource(service_name, taskid=None):
@@ -197,32 +154,6 @@ class App(Empty):
             else:
                 task['find_instances'].delay()
 
-        def is_waiting(service_name):
-            """
-            Check if a task is waiting.
-            """
-            scheduled_tasks = list(inspect().scheduled().values())[0]
-            for task in scheduled_tasks:
-                if 'kwargs' in task:
-                    args = eval(task['kwargs'])
-                    if service_name == args.get('service_name',None):
-                        return True
-            return False
-                
-        def is_running_waiting(service_name):
-            """
-            Check if a task is running or waiting.
-            """
-            if is_waiting(service_name):
-                return True
-            running_tasks = list(inspect().active().values())[0]
-            for task in running_tasks:
-                if 'kwargs' in task:
-                    args = eval(task['kwargs'])
-                    if service_name == args.get('service_name',None):
-                        return True
-            return False
-                        
         @self.celery.task()
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
@@ -250,17 +181,6 @@ class App(Empty):
         def run_update(nanopub_uri):
             update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
-
-        def is_waiting_importer(entity_name, exclude=None):
-            """
-            Check if a task is running or waiting.
-            """
-            if inspect().scheduled():
-                tasks = list(inspect().scheduled().values())
-                for task in tasks:
-                    if 'args' in task and entity_name in task['args']:
-                        return True
-            return False
 
         app = self
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
@@ -293,7 +213,11 @@ class App(Empty):
                 except Exception:
                     print("Error importing module %s into template variable %s." % (imp, name))
                     raise
-        
+
+        self.nanopub_manager = NanopublicationManager(self.db.store,
+                                                      Namespace('%s/pub/'%(self.config['lod_prefix'])),
+                                                      self,
+                                                      update_listener=self.nanopub_update_listener)
 
     def configure_database(self):
         """
@@ -309,7 +233,7 @@ class App(Empty):
         self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
         default_vocab = Graph(store=self.vocab.store)
-        default_vocab.parse("default_vocab.ttl", format="turtle", publicID=str(self.NS.local))
+        default_vocab.parse(source=os.path.abspath(os.path.join(os.path.dirname(__file__), "default_vocab.ttl")), format="turtle", publicID=str(self.NS.local))
         custom_vocab = Graph(store=self.vocab.store)
         custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
 
@@ -325,16 +249,21 @@ class App(Empty):
         if DepotManager.get('nanopublications') is None:
             DepotManager.configure('nanopublications', self.config['nanopub_archive'])
 
-    def weighted_route(self, *args, **kwargs):
+    def __weighted_route(self, *args, **kwargs):
+        """
+        Override the match_compare_key function of the Rule created by invoking Flask.route.
+        This can only be done on the app, not in a blueprint, because blueprints lazily add Rule's when they are registered on an app.
+        """
+
         def decorator(view_func):
             compare_key = kwargs.pop('compare_key', None)
             # register view_func with route
             self.route(*args, **kwargs)(view_func)
-    
+
             if compare_key is not None:
                 rule = self.url_map._rules[-1]
                 rule.match_compare_key = lambda: compare_key
-    
+
             return view_func
         return decorator
 
@@ -484,7 +413,7 @@ construct {
                 raise Unauthorized()
             self.nanopub_manager.retire(np_uri)
         
-                
+
     def add_files(self, uri, files, upload_type=NS.pv.File):
         nanopub = self.nanopub_manager.new()
 
@@ -522,7 +451,7 @@ construct {
             for old_np, old_np_assertion in old_nanopubs:
                 nanopub.pubinfo.add((nanopub.assertion.identifier, NS.prov.wasRevisionOf, old_np_assertion))
                 self.nanopub_manager.retire(old_np)
-            
+
             for n in self.nanopub_manager.prepare(nanopub):
                 self.nanopub_manager.publish(n)
 
@@ -608,7 +537,6 @@ construct {
                     #    login_user(user)
                         break
                 
-            #g.search_form = SearchForm()
             g.ns = self.NS
             g.get_summary = get_summary
             g.get_label = get_label
@@ -632,69 +560,39 @@ construct {
             else:
                 return None
 
-        extensions = {
-            "rdf": "application/rdf+xml",
-            "jsonld": "application/ld+json",
-            "json": "application/json",
-            "ttl": "text/turtle",
-            "trig": "application/trig",
-            "turtle": "text/turtle",
-            "owl": "application/rdf+xml",
-            "nq": "application/n-quads",
-            "nt": "application/n-triples",
-            "html": "text/html"
-        }
 
-        dataFormats = {
-            "application/rdf+xml" : "xml",
-            "application/ld+json" : 'json-ld',
-            "application/json" : 'json-ld',
-            "text/turtle" : "turtle",
-            "application/trig" : "trig",
-            "application/n-quads" : "nquads",
-            "application/n-triples" : "nt",
-            "application/rdf+json" : "json",
-            "text/html" : None,
-            "application/xhtml+xml" : None,
-            "application/xhtml" : None,
-            None: "json-ld"
-        }
+        # def get_graphs(graphs):
+        #     query = '''select ?s ?p ?o ?g where {
+        #         hint:Query hint:optimizer "Runtime" .
+        #
+        #         graph ?g {?s ?p ?o}
+        #         } values ?g { %s }'''
+        #     query = query % ' '.join([graph.n3() for graph in graphs])
+        #     #print query
+        #     quads = self.db.store.query(query, initNs=self.NS.prefixes)
+        #     result = rdflib.Dataset()
+        #     result.addN(quads)
+        #     return result
 
-        htmls = set(['application/xhtml','text/html', 'application/xhtml+xml'])
-
-
-        def get_graphs(graphs):
-            query = '''select ?s ?p ?o ?g where {
-                hint:Query hint:optimizer "Runtime" .
-
-                graph ?g {?s ?p ?o}
-                } values ?g { %s }'''
-            query = query % ' '.join([graph.n3() for graph in graphs])
-            #print query
-            quads = self.db.store.query(query, initNs=self.NS.prefixes)
-            result = rdflib.Dataset()
-            result.addN(quads)
-            return result
-
-        def explain(graph):
-            values = ')\n  ('.join([' '.join([x.n3() for x in triple]) for triple in graph.triples((None,None,None))])
-            values = 'VALUES (?s ?p ?o)\n{\n('+ values + ')\n}'
-            
-            try:
-                nanopubs = self.db.query('''select distinct ?np where {
-    hint:Query hint:optimizer "Runtime" .
-    ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
-        np:hasPublicationInfo ?pubinfo;
-        np:hasAssertion ?assertion;
-    graph ?assertion { ?s ?p ?o.}
-}''' + values, initNs=self.NS.prefixes)
-                result = ConjunctiveGraph()
-                for nanopub_uri, in nanopubs:
-                    self.nanopub_manager.get(nanopub_uri, result)
-            except Exception as e:
-                print(str(e), entity)
-                raise e
-            return result.resource(entity)
+#         def explain(graph):
+#             values = ')\n  ('.join([' '.join([x.n3() for x in triple]) for triple in graph.triples((None,None,None))])
+#             values = 'VALUES (?s ?p ?o)\n{\n('+ values + ')\n}'
+#
+#             try:
+#                 nanopubs = self.db.query('''select distinct ?np where {
+#     hint:Query hint:optimizer "Runtime" .
+#     ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+#         np:hasPublicationInfo ?pubinfo;
+#         np:hasAssertion ?assertion;
+#     graph ?assertion { ?s ?p ?o.}
+# }''' + values, initNs=self.NS.prefixes)
+#                 result = ConjunctiveGraph()
+#                 for nanopub_uri, in nanopubs:
+#                     self.nanopub_manager.get(nanopub_uri, result)
+#             except Exception as e:
+#                 print(str(e), entity)
+#                 raise e
+#             return result.resource(entity)
         
         def get_entity_sparql(entity):
             try:
@@ -718,27 +616,27 @@ construct {
             return result.resource(entity)
             
         
-        def get_entity_disk(entity):
-            try:
-                nanopubs = self.db.query('''select distinct ?np where {
-    hint:Query hint:optimizer "Runtime" .
-            ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
-                np:hasPublicationInfo ?pubinfo;
-                np:hasAssertion ?assertion;
-
-            {graph ?np { ?np sio:isAbout ?e.}}
-            UNION
-            {graph ?assertion { ?e ?p ?o.}}
-        }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
-                result = ConjunctiveGraph()
-                for nanopub_uri, in nanopubs:
-                    self.nanopub_manager.get(nanopub_uri, result)
-#                result.addN(nanopubs)
-            except Exception as e:
-                print(str(e), entity)
-                raise e
-            #print result.serialize(format="trig")
-            return result.resource(entity)
+#         def get_entity_disk(entity):
+#             try:
+#                 nanopubs = self.db.query('''select distinct ?np where {
+#     hint:Query hint:optimizer "Runtime" .
+#             ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g;
+#                 np:hasPublicationInfo ?pubinfo;
+#                 np:hasAssertion ?assertion;
+#
+#             {graph ?np { ?np sio:isAbout ?e.}}
+#             UNION
+#             {graph ?assertion { ?e ?p ?o.}}
+#         }''',initBindings={'e':entity}, initNs=self.NS.prefixes)
+#                 result = ConjunctiveGraph()
+#                 for nanopub_uri, in nanopubs:
+#                     self.nanopub_manager.get(nanopub_uri, result)
+# #                result.addN(nanopubs)
+#             except Exception as e:
+#                 print(str(e), entity)
+#                 raise e
+#             #print result.serialize(format="trig")
+#             return result.resource(entity)
 
         get_entity = get_entity_sparql
         
@@ -766,61 +664,14 @@ construct {
 
         self.get_summary = get_summary
 
-        @self.route('/sparql', methods=['GET', 'POST'])
-        @conditional_login_required
-        def sparql_view():
-            has_query = False
-            for arg in list(request.args.keys()):
-                if arg.lower() == "update":
-                    return "Update not allowed.", 403
-                if arg.lower() == 'query':
-                    has_query = True
-            if request.method == 'GET' and not has_query:
-                return redirect(url_for('sparql_form'))
-            #print self.db.store.query_endpoint
-            if request.method == 'GET':
-                headers = {}
-                headers.update(request.headers)
-                if 'Content-Length' in headers:
-                    del headers['Content-Length']
-                req = requests.get(self.db.store.query_endpoint,
-                                   headers = headers, params=request.args)
-            elif request.method == 'POST':
-                if 'application/sparql-update' in request.headers['content-type']:
-                    return "Update not allowed.", 403
-                #print(request.get_data())
-                req = requests.post(self.db.store.query_endpoint, data=request.get_data(),
-                                    headers = request.headers, params=request.args)
-            #print self.db.store.query_endpoint
-            #print req.status_code
-            response = Response(req.content, content_type = req.headers['content-type'])
-            #response.headers[con(req.headers)
-            return response, req.status_code
-        
-        @self.route('/sparql.html')
-        @conditional_login_required
-        def sparql_form():
-            
-            template_args = dict(ns=self.NS,
-                                 g=g,
-                                 config=self.config,
-                                 current_user=current_user,
-                                 isinstance=isinstance,
-                                 rdflib=rdflib,
-                                 hasattr=hasattr,
-                                 set=set)
-
-            return render_template('sparql.html',endpoint="/sparql", **template_args)
-
-        
         if 'WHYIS_CDN_DIR' in self.config and self.config['WHYIS_CDN_DIR'] is not None:
             @self.route('/cdn/<path:filename>')
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-        @self.weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.__weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
+        @self.__weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
         @self.route('/', methods=['GET','POST','DELETE'])
         @self.route('/home', methods=['GET','POST','DELETE'])
         @self.route('/about', methods=['GET','POST','DELETE'])
@@ -829,8 +680,8 @@ construct {
             self.db.store.nsBindings = {}
             content_type = None
             if format is not None:
-                if format in extensions:
-                    content_type = extensions[format]
+                if format in DATA_EXTENSIONS:
+                    content_type = DATA_EXTENSIONS[format]
                 else:
                     name = '.'.join([name, format])
             #argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
@@ -873,19 +724,18 @@ construct {
                     content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
                 #print entity
 
-                fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
-                if 'view' in request.args or fmt in htmls:
+                fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
+                if 'view' in request.args or fmt in HTML_MIME_TYPES:
                     return render_view(resource)
-                elif fmt in dataFormats:
+                elif fmt in DATA_FORMATS:
                     output_graph = ConjunctiveGraph()
                     result, status, headers = render_view(resource, view='describe')
                     output_graph.parse(data=result, format="json-ld")
-                    return output_graph.serialize(format=dataFormats[fmt]), 200, {'Content-Type':content_type}
+                    return output_graph.serialize(format=DATA_FORMATS[fmt]), 200, {'Content-Type':content_type}
                 #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
                 else:
                     return render_view(resource)
                 
-        views = {}
         def render_view(resource, view=None, args=None):
             template_args = dict()
             template_args.update(self.template_imports)
@@ -936,8 +786,8 @@ construct {
 
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
-            if extension in extensions:
-                headers['Content-Type'] = extensions[extension]
+            if extension in DATA_EXTENSIONS:
+                headers['Content-Type'] = DATA_EXTENSIONS[extension]
                 
 
             # default view (list of nanopubs)
@@ -946,168 +796,9 @@ construct {
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
 
-        def render_nanopub(data, code, headers=None):
-            if data is None:
-                return make_response("<h1>Not Found</h1>", 404)
-
-            entity = app.Entity(ConjunctiveGraph(data.store), data.identifier)
-            entity.nanopub = data
-            data, code, headers = render_view(entity)
-            resp = make_response(data, code)
-            resp.headers.extend(headers or {})
-            return resp
-
-        app = self
-
-        self.nanopub_manager = NanopublicationManager(app.db.store,
-                                                      Namespace('%s/pub/'%(app.config['lod_prefix'])),
-                                                      self,
-                                                      update_listener=self.nanopub_update_listener)
-
-        def _get_graph():
-            inputGraph = ConjunctiveGraph()
-            contentType = request.headers['Content-Type']
-            encoding = 'utf8' if not request.content_encoding else request.content_encoding
-            content = str(request.data, encoding)
-            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],contentType)
-            if fmt in dataFormats:
-                inputGraph.parse(data=content, format=dataFormats[fmt])
-            return inputGraph
-
-        
-        #decorators = [conditional_login_required]
-
-        def _get_uri(ident):
-            return URIRef('%s/pub/%s'%(app.config['lod_prefix'], ident))
-
-        @self.route('/pub/<ident>',methods=['GET'])
-        @self.route('/pub/<ident>.<format>', methods=['GET'])
-        @conditional_login_required
-        def get_nanopub(ident, format=None):
-            #print(request.method, 'get_nanopub()', ident)
-            ident = ident.split("_")[0]
-            uri = _get_uri(ident)
-            result = app.nanopub_manager.get(uri)
-            if result is None:
-                #print("cannot find", uri)
-                abort(404)
-
-            content_type = None
-                        
-            if format is not None and format in extensions:
-                content_type = extensions[format]
-            if content_type is None:
-                content_type = request.headers['Accept'] if 'Accept' in request.headers else 'application/ld+json'
-            fmt = sadi.mimeparse.best_match([mt for mt in list(dataFormats.keys()) if mt is not None],content_type)
-            if 'view' in request.args or fmt in htmls:
-                return render_nanopub(result, 200)
-            elif fmt in dataFormats:
-                response = Response(result.serialize(format=dataFormats[fmt]))
-                response.headers = {'Content-type': fmt}
-                return response, 200
-
-        @self.route('/pub/<ident>', methods=['DELETE'])
-        @login_required
-        def delete_nanopub(ident):
-            #print(request.method, 'delete_nanopub()', ident)
-            ident = ident.split("_")[0]
-            uri = _get_uri(ident)
-            if not app._can_edit(uri):
-                return '<h1>Not Authorized</h1>', 401
-            app.nanopub_manager.retire(uri)
-            return '', 204
-
-
-        @self.route('/pub/<ident>', methods=['PUT'])
-        @login_required
-        def put_nanopub(ident):
-            #print(request.method, 'put_nanopub()', ident)
-            nanopub_uri = _get_uri(ident)
-            inputGraph = _get_graph()
-            old_nanopub = _prep_nanopub(nanopub_uri, inputGraph)
-            for nanopub in app.nanopub_manager.prepare(inputGraph):
-                nanopub.pubinfo.set((nanopub.assertion.identifier, app.NS.prov.wasRevisionOf, old_nanopub.assertion.identifier))
-                app.nanopub_manager.retire(nanopub_uri)
-                app.nanopub_manager.publish(nanopub)
-
-        def _prep_nanopub(nanopub):
-            #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
-            about = nanopub.nanopub_resource.value(app.NS.sio.isAbout)
-            #print nanopub.assertion_resource.identifier, about
-            _prep_graph(nanopub.assertion_resource, about.identifier if about is not None else None)
-            #_prep_graph(nanopub.pubinfo_resource, nanopub.assertion_resource.identifier)
-            _prep_graph(nanopub.provenance_resource, nanopub.assertion_resource.identifier)
-            nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.contributor, current_user.identifier))
-
-            return nanopub
-
-        @self.route('/pub/<ident>',  methods=['POST'])
-        @self.route('/pub',  methods=['POST'])
-        @login_required
-        def post_nanopub(ident=None):
-            #print(request.method, 'post_nanopub()', ident)
-            if ident is not None:
-                return self.put(ident)
-            inputGraph = _get_graph()
-            #for nanopub_uri in inputGraph.subjects(rdflib.RDF.type, app.NS.np.Nanopublication):
-                #nanopub.pubinfo.add((nanopub.assertion.identifier, app.NS.dc.created, Literal(datetime.utcnow())))
-            headers = {}
-            for nanopub in app.nanopub_manager.prepare(inputGraph):
-                _prep_nanopub(nanopub)
-                headers['Location'] = nanopub.identifier
-                app.nanopub_manager.publish(nanopub)
-
-            return '', 201, headers
-
-
-        def _prep_graph(resource, about = None):
-            #print '_prep_graph', resource.identifier, about
-            content_type = resource.value(app.NS.ov.hasContentType)
-            if content_type is not None:
-                content_type = content_type.value
-            #print 'graph content type', resource.identifier, content_type
-            #print resource.graph.serialize(format="nquads")
-            g = Graph(store=resource.graph.store,identifier=resource.identifier)
-            text = resource.value(app.NS.prov.value)
-            if content_type is not None and text is not None:
-                #print 'Content type:', content_type, resource.identifier
-                html = None
-                if content_type in ["text/html", "application/xhtml+xml"]:
-                    html = Literal(text.value, datatype=NS.RDF.HTML)
-                if content_type == 'text/markdown':
-                    #print "Aha, markdown!"
-                    #print text.value
-                    html = markdown.markdown(text.value)
-                    attributes = ['vocab="%s"' % app.NS.local,
-                                  'base="%s"'% app.NS.local,
-                                  'prefix="%s"' % ' '.join(['%s: %s'% x for x in list(app.NS.prefixes.items())])]
-                    if about is not None:
-                        attributes.append('resource="%s"' % about)
-                    html = '<div %s>%s</div>' % (' '.join(attributes), html)
-                    html = Literal(html, datatype=NS.RDF.HTML)
-                    text = html
-                    content_type = "text/html"
-                #print resource.identifier, content_type
-                if html is not None:
-                    resource.set(app.NS.sioc.content, html)
-                    try:
-                        g.remove((None,None,None))
-                        g.parse(data=text, format='rdfa', publicID=app.NS.local)
-                    except:
-                        pass
-                else:
-                    #print "Deserializing", g.identifier, 'as', content_type
-                    #print dataFormats
-                    if content_type in dataFormats:
-                        g.parse(data=text, format=dataFormats[content_type], publicID=app.NS.local)
-                        #print len(g)
-                    #else:
-                        #print("not attempting to deserialize.")
-#                        try:
-#                            sadi.deserialize(g, text, content_type)
-#                        except:
-#                            pass
-            #print Graph(store=resource.graph.store).serialize(format="trig")
+        # Register blueprints
+        self.register_blueprint(nanopub_blueprint)
+        self.register_blueprint(sparql_blueprint)
 
     def get_send_file_max_age(self, filename):
         if self.debug:
@@ -1116,27 +807,3 @@ construct {
             return Empty.get_send_file_max_age(self, filename)
 
 
-def config_str_to_obj(cfg):
-    if isinstance(cfg, basestring):
-        module = __import__('config', fromlist=[cfg])
-        return getattr(module, cfg)
-    return cfg
-
-
-def app_factory(config, app_name, blueprints=None):
-    # you can use Empty directly if you wish
-    app = App(app_name)
-    config = config_str_to_obj(config)
-    #print dir(config)
-    app.configure(config)
-    if blueprints:
-        app.add_blueprint_list(blueprints)
-    app.setup()
-
-    return app
-
-
-def heroku():
-    from config import Config, project_name
-    # setup app through APP_CONFIG envvar
-    return app_factory(Config, project_name)

@@ -905,56 +905,43 @@ function whyis() {
             },
         };
     }]);
-    
-    app.factory("getLabel", ["$http", '$q', function($http, $q) {
-        var promises = {}
-        function getLabel(uri) {
-            if (getLabel.labels[uri] === undefined && promises[uri] === undefined) {
-                if (!promises[uri]) {
-                    var localPart = uri.split("#").filter(function(d) {return d.length > 0});
-                    localPart = localPart[localPart.length-1];
-                    localPart = localPart.split("/").filter(function(d) {return d.length > 0});
-                    localPart = localPart[localPart.length-1];
-                    getLabel.labels[uri] = localPart;
-                    promises[uri] = $q.defer();
-                    $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
-                        .then(function(data, status, headers, config) {
-                            if (status == 200) {
-                                var label = data.data;
-                                getLabel.labels[uri] = data.data;
-                                promises[uri].resolve(getLabel.labels[uri]);
-                            }
-                        });
-                }
-            }
-            return promises[uri].promise;
-        };
-        getLabel.labels = {};
-        return getLabel;
-    }]);
 
-    app.filter("label", ["$http", '$q','getLabel', function($http, $q, getLabel) {
-        function label(uri) {
-            if (getLabel.labels[uri] === undefined) {
-                var localPart = uri.split("#").filter(function(d) {return d.length > 0});
+    // Returns a promise that resolves to the label
+    app.factory("getLabel", ["$http", function($http) {
+	function getLabel(uri) {
+	    if(getLabel.labels[uri] === undefined) {
+		var localPart = uri.split("#").filter(function(d) {return d.length > 0});
                 localPart = localPart[localPart.length-1];
                 localPart = localPart.split("/").filter(function(d) {return d.length > 0});
                 localPart = localPart[localPart.length-1];
-                label.labels[uri] = {"label": localPart};
-                $http.get(ROOT_URL+'about?uri='+encodeURI(uri)+"&view=label")
-                    .then(function(data, status, headers, config) {
-                        if (status == 200) {
-                            var label = data.data;
-                            getLabel.labels[uri].label = data.data;
-                        }
-                    });
-            }
-            return getLabel.labels[uri];
-        };
-        label.labels = {};
-        return label;
+                getLabel.labels[uri] = { label: localPart };
+
+		getLabel.labels[uri].promise = $http.get(ROOT_URL+"about", {params: {uri, view: "label"}, responseType: "text"})
+						    .then(function(response) {
+							if(response.status === 200)
+							    getLabel.labels[uri].label = response.data;
+							return getLabel.labels[uri].label;
+						    });
+	    }
+	    return getLabel.labels[uri].promise;
+	}
+	getLabel.labels = {};
+	return getLabel;
     }]);
-    
+
+    app.filter("label", ["getLabel", function(getLabel) {
+	function label(uri) {
+	    if(getLabel.labels[uri] === undefined) {
+		getLabel(uri);
+	    }
+	    return getLabel.labels[uri].label;
+	}
+
+	// On $scope.$apply, also check the state of getLabel.
+	label.$stateful = true;
+	return label;
+    }]);
+        
     app.factory("Nanopub", ["$http", "Graph", "Resource", function($http, Graph, Resource) {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');
@@ -2043,10 +2030,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.service("getView", [ '$http', '$q', function($http, $q) {
         var promises = {};
         function getView(uri, view, responseType) {
+	    responseType = responseType == null ? 'json' : responseType;
             if (!promises[uri]) promises[uri] = {};
             if (!promises[uri][view]) {
                 promises[uri][view] = $q.defer();
-                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType:'json'})
+                $http.get(ROOT_URL+'about',{ params: {uri:uri,view:view}, responseType})
                     .then(function(response) {
                         promises[uri][view].resolve(response.data);
                     });

@@ -11,12 +11,6 @@ socat TCP4-LISTEN:8080,fork,reuseaddr TCP4:blazegraph:8080 &
 service apache2 start 1>&2
 service celeryd start 1>&2
 
-if [ ! -f "/data/.whyis_data_loaded" ] ;
-then
-    curl -s -X POST --data-binary "@admin.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/admin_namespace.log
-    curl -s -X POST --data-binary "@knowledge.properties" -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /data/knowledge_namespace.log
-
-    echo "`date +%Y-%m-%dT%H:%M:%S%:z`" > /data/.whyis_data_loaded
-fi
+/load-whyis-data.sh 1>&2
 
 exec "$@"

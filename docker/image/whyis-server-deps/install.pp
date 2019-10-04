@@ -15,11 +15,11 @@ package { ["default-jdk",
            "libblas3",
            "libblas-dev",
            "git",
-           "celeryd",
            "apache2",
            "libffi-dev",
            "libssl-dev",
-           "libdb5.3-dev"]:
+           "libdb5.3-dev",
+           "sudo"]:
   ensure => "installed",
 } ->
 group { 'whyis':

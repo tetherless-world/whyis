@@ -15,15 +15,16 @@ RUN npm run build
 FROM tetherlessworld/whyis-deps:$WHYIS_IMAGE_TAG
 
 # Apache configuration
-COPY /apache.conf /apache.conf
+COPY /puppet/files/etc/apache2/sites-available/000-default.conf /apache.conf
 RUN sed '1d' /apache.conf > /etc/apache2/sites-available/000-default.conf
 RUN rm /apache.conf
 
 # Celery configuration
-COPY /docker/image/whyis/celeryd /etc/default/celeryd
+COPY /docker/image/whyis-server/celeryd /etc/default/celeryd
 
 # Entrypoint
 COPY /docker/image/whyis/docker-entrypoint.sh /
+COPY /docker/image/load-whyis-data.sh /
 
 # Copy the remainder as the whyis user
 COPY --chown=whyis:whyis / /apps/whyis

@@ -1,15 +1,15 @@
 import nltk, re, pprint
-import autonomic
+from whyis import autonomic
 from bs4 import BeautifulSoup
 from rdflib import *
 from slugify import slugify
-import nanopub
+from whyis import nanopub
 from math import log10
 import collections
 import os
 import javabridge
 
-from namespace import sioc_types, sioc, sio, dc, prov, whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
 
 class ConsistencyCheck(autonomic.UpdateChangeService):
     activity_class = whyis.ConsistencyCheck

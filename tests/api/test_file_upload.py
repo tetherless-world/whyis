@@ -4,10 +4,10 @@ from rdflib import *
 
 from io import BytesIO
 
-from .api_test_case import ApiTestCase
+from whyis.test.api_test_case import ApiTestCase
 
 
-class UploadTest(ApiTestCase):
+class TestFileUpload(ApiTestCase):
     
     def test_plain_text_upload(self):
         self.login(*self.create_user("user@example.com","password"))
