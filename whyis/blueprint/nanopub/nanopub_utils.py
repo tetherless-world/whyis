@@ -6,22 +6,44 @@ import sadi.mimeparse
 
 from whyis.data_formats import DATA_FORMATS
 from whyis.namespace import NS
+from whyis.datastore import create_id
+from whyis.nanopub import Nanopublication
 
 
 def get_nanopub_uri(ident):
-    return URIRef('%s/pub/%s'%(current_app.config['lod_prefix'], ident))
+    return current_app.nanopub_manager.prefix[ident]
 
+graph_aware_formats = set([
+    "json-ld",
+    "trig",
+    "nquads"
+])
+
+def load_nanopub_graph(format, location=None, data=None, store=None):
+    if store is None:
+        store = ConjunctiveGraph().store
+    if format in graph_aware_formats:
+        inputGraph = ConjunctiveGraph(store=store)
+    else:
+        nanopub = Nanopublication(store = store, identifier=current_app.nanopub_manager.prefix[create_id()])
+        nanopub.nanopub_resource
+        nanopub.assertion
+        nanopub.provenance
+        nanopub.pubinfo
+        inputGraph = Graph(store=store, identifier=nanopub.assertion.identifier)
+    inputGraph.parse(data=data, location=location, format=format, publicID=current_app.NS.local)
+    return ConjunctiveGraph(store=store)
 
 def get_nanopub_graph():
-    inputGraph = ConjunctiveGraph()
     contentType = request.headers['Content-Type']
     encoding = 'utf8' if not request.content_encoding else request.content_encoding
     content = str(request.data, encoding)
     fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],contentType)
     if fmt in DATA_FORMATS:
-        inputGraph.parse(data=content, format=DATA_FORMATS[fmt])
-    return inputGraph
-
+        format = DATA_FORMATS[fmt]
+        return load_nanopub_graph(format, data=content)
+    else:
+        return None
 
 def prep_nanopub(nanopub):
     #nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)

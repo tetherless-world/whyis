@@ -43,7 +43,7 @@ def engine_from_config(config, prefix):
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
         
-        def publish(data, *graphs):
+        def publish(data):
             s = requests.session()
             s.keep_alive = False
             
@@ -63,9 +63,8 @@ def engine_from_config(config, prefix):
     else:
         graph = ConjunctiveGraph() # memory_graphs[prefix]
         
-        def publish(data, *graphs):
-            for nanopub in graphs:
-                graph.addN(nanopub.quads())
+        def publish(data):
+            graph.parse(data, format='trig')
                 
         graph.store.publish = publish
 

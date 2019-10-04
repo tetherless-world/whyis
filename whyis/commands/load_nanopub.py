@@ -10,7 +10,7 @@ from nanopub import Nanopublication
 import tempfile
 
 from whyis.namespace import np
-
+from whyis.blueprint.nanopub.nanopub_utils import load_nanopub_graph
 
 class LoadNanopub(Command):
     '''Add a nanopublication to the knowledge graph.'''
@@ -46,24 +46,11 @@ class LoadNanopub(Command):
         # g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
 
         try:
-            g1 = g.parse(location=input_file, format=file_format, publicID=flask.current_app.NS.local)
-            if len(list(g.subjects(rdflib.RDF.type, np.Nanopublication))) == 0:
-                print("Could not find existing nanopublications.", len(g1), len(g))
-                new_np = Nanopublication(store=g1.store)
-                new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
-                new_np.add((new_np.identifier, np.hasAssertion, g1.identifier))
-                new_np.add((g1.identifier, rdflib.RDF.type, np.Assertion))
-
-            nanopub_prepare_graph = rdflib.ConjunctiveGraph(store=temp_store)
-            if temp_store == "Sleepycat":
-                nanopub_prepare_graph_store_tempdir = tempfile.mkdtemp()
-                nanopub_prepare_graph.store.open(nanopub_prepare_graph_store_tempdir, True)
-            else:
-                nanopub_prepare_graph_store_tempdir = None
-
+            g1 = load_nanopub_graph(location=input_file, format=file_format, store=g.store)
+            
             try:
                 nanopubs = []
-                for npub in flask.current_app.nanopub_manager.prepare(g, store=nanopub_prepare_graph.store):
+                for npub in flask.current_app.nanopub_manager.prepare(g):
                     if was_revision_of is not None:
                         for r in was_revision_of:
                             print("Marking as revision of", r)
