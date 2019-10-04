@@ -60,8 +60,8 @@ class NanopublicationManager(object):
         all_np_graphs = all_np_graphs.union(assertion_graphs)
         all_np_graphs = all_np_graphs.union(provenance_graphs)
         all_np_graphs = all_np_graphs.union(pubinfo_graphs)
-        
-        loose_graphs = list([c for c in graph.contexts() if c.identifier not in all_np_graphs])
+
+        loose_graphs = list([c for c in graph.contexts() if c.identifier not in all_np_graphs and len(c) > 0])
         for context in loose_graphs:
             new_np = Nanopublication(store=context.store, identifier=self.prefix[create_id()])
             if isinstance(context.identifier, rdflib.BNode):
@@ -72,6 +72,9 @@ class NanopublicationManager(object):
                 new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
                 new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
                 new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+            new_np.assertion
+            new_np.provenance
+            new_np.pubinfo
             new_nps.append(new_np)
 
         i = 0
@@ -93,7 +96,7 @@ class NanopublicationManager(object):
             old_g = rdflib.Graph(store=graph.store, identifier=old)
             new_g = rdflib.Graph(store=graph.store, identifier=new)
             new_g += old_g
-            old_g.remove((None,None,None))
+            graph.remove_context(old_g)
 
             for s, p, o, g in graph.quads((old, None, None, None)):
                 graph.add((new,p,o,g))

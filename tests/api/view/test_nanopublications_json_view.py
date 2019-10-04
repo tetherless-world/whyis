@@ -6,9 +6,11 @@ import json
 class TestNanopublicationsJsonView(ApiTestCase):
     def test(self):
         self.login_new_user()
-        self.post_nanopub(data=PERSON_INSTANCE_TURTLE,
-                          content_type="text/turtle")
+        response = self.post_nanopub(data=PERSON_INSTANCE_TURTLE,
+                                     content_type="text/turtle")
 
+        print(response.headers['Location'])
+        
         content = self.get_view(uri=PERSON_INSTANCE_URI,
                                 view="nanopublications",
                                 expected_template="nanopublications.json",

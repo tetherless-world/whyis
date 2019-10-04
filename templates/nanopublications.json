@@ -1,5 +1,5 @@
 {{'''
-select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?modified, ?created) as ?updated) ?derived_from ?generation_type ?content ?reply_of ?work where {
+select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?modified, ?created) as ?updated) ?derived_from ?generation_type ?content ?reply_of where {
   { graph ?np { ?np sio:isAbout ?e.}}
   UNION
   {graph ?assertion { ?e ?p ?o.}}
@@ -7,9 +7,6 @@ select distinct ?np ?about ?quoted ?contributor ?created ?modified (coalesce(?mo
         np:hasProvenance ?provenance;
         np:hasPublicationInfo ?pubinfo;
         np:hasAssertion ?assertion.
-    graph ?pubinfo {
-      ?np frbr:realizationOf ?work.
-    }
   optional {
     ?np sio:isAbout ?about
   }
