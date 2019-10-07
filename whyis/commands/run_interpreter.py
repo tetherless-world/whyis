@@ -7,7 +7,7 @@ from whyis import interpreter
 
 
 class RunInterpreter(Command):
-    '''Add a nanopublication to the knowledge graph.'''
+#    '''Add a nanopublication to the knowledge graph.'''
 
     def get_options(self):
         return [

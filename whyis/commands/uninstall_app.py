@@ -13,7 +13,7 @@ class UninstallApp(Command):
 
     def get_options(self):
         return [
-            Option('--yes', '-y', dest='yes', action='store_true', help='Respond to all prompts with "yes"', default=False)
+            Option('-y', '--yes', dest='yes', action='store_true', help='Respond to all prompts with "yes"', default=False)
         ]
 
 

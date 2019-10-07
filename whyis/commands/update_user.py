@@ -14,8 +14,8 @@ class UpdateUser(Command):
         return [
             Option('-e', '--email', dest='email', help='Email address for this user', type=str),
             Option('-p', '--password', dest='password', help='Password for this user', type=str),
-            Option('-f', '--fn', dest='fn', help='First name of this user', type=str),
-            Option('-l', '--ln', dest='ln', help='Last name of this user', type=str),
+            Option('-f', '--fn', dest='fn', help='First name of this user', type=str, metavar='NAME'),
+            Option('-l', '--ln', dest='ln', help='Last name of this user', type=str, metavar='NAME'),
             Option('-u', '--username', dest='identifier', help='Username for this user', type=str, required=True),
             Option('--add-roles', dest="add_roles", help='Comma-delimited list of roles to add', type=str),
             Option('--remove-roles', dest="remove_roles", help='Comma-delimited list of roles to remove', type=str)
