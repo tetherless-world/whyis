@@ -39,7 +39,23 @@ To start the monolithic image from Dockerhub, run:
 
     docker run -p 80:80 -it tetherlessworld/whyis
 
-This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). To just pull the image or update the image to the latest version, run:
+This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). 
+
+Once the docker image is running, you will need to open a new terminal and SSH into the docker container.
+
+To find the container ID, run:
+
+```shell
+$docker ps
+```
+
+To SSH into the docker container
+
+```shell
+$docker exec -it <container_id> bash
+```
+
+To just pull the image or update the image to the latest version, run:
 
 ```shell
 $ docker pull tetherlessworld/whyis
