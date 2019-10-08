@@ -4,6 +4,7 @@ from .list_routes import ListRoutes
 from .load_nanopub import LoadNanopub
 from .retire_nanopub import RetireNanopub
 from .run_interpreter import RunInterpreter
+from .run_rl_reasoner import RLReasoner
 from .runserver import WhyisServer
 from .test import Test
 from .test_agent import TestAgent

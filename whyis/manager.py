@@ -21,6 +21,7 @@ class Manager(script.Manager):
         self.add_command("interpret", commands.ListRoutes())
         self.add_command("list_routes", commands.ListRoutes())
         self.add_command("load", commands.LoadNanopub())
+        self.add_command("reason", commands.RLReasoner())
         self.add_command("retire", commands.RetireNanopub())
         self.add_command("runserver", commands.WhyisServer())
         self.add_command("test", commands.Test())
