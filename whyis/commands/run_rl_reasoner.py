@@ -27,15 +27,15 @@ class RLReasoner(Command):
         new_graph.serialize("inferred_graph.ttl", format="turtle")
 
         # append inferred graph to knowledge base
-        npub = Nanopublication(store=app.db.store)
-        q = "SELECT DISTINCT ?s ?p ?o WHERE {?s ?p ?o .}"
-        triples = new_graph.query(q)
-        for triple in list(triples):#new_graph.triples((None,None,None)):
-            try:
-                npub.assertion.add((triple[0],triple[1],triple[2]))
-                print("Added:", triple)
-            except Exception as e:
-                continue
+#        npub = Nanopublication(store=app.db.store)
+#        q = "SELECT DISTINCT ?s ?p ?o WHERE {?s ?p ?o .}"
+#        triples = new_graph.query(q)
+#        for triple in list(triples):#new_graph.triples((None,None,None)):
+#            try:
+#                npub.assertion.add((triple[0],triple[1],triple[2]))
+#                print("Added:", triple)
+#            except Exception as e:
+#                continue
 #                if hasattr(e, 'message'):
 #                    print("Error: Unable to add: ", triple, "\n", e.message)
 #                else:
