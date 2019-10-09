@@ -303,5 +303,12 @@ exec { "compile_js":
   cwd => "/apps/whyis/static",
 }
 
+# Docker does not like ::1
+file_line { "reconfigure_redis_bind":
+  path  => '/etc/redis/redis.conf',
+  line => "bind 127.0.0.1",
+  match => "^bind 127.0.0.1 ::1",
+  subscribe => [Package["redis-server"]]
+}
 
 include java
