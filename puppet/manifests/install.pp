@@ -4,7 +4,7 @@ $whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
 notice("Whyis branch: ${whyis_branch_}")
 
 class { 'python' :
-  version    => 'system',
+  version    => '3',
   pip        => 'present',
   dev        => 'present',
   virtualenv => 'present',
@@ -203,6 +203,7 @@ python::requirements { '/apps/whyis/requirements/dev.txt' :
   group      => 'whyis',
   forceupdate => true,
   timeout       => 18000,
+  environment => ['JAVA_HOME=/usr/lib/jvm/default-java']
 } ->
 file { "/apps/.bash_profile" :
   owner => 'whyis',
