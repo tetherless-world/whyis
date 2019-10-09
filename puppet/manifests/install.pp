@@ -4,7 +4,7 @@ $whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
 notice("Whyis branch: ${whyis_branch_}")
 
 class { 'python' :
-  version    => '3',
+  version    => 'python3.7',
   pip        => 'present',
   dev        => 'present',
   virtualenv => 'present',
