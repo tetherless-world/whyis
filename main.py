@@ -31,6 +31,7 @@ from wtforms import TextField, validators
 from whyis import database
 from whyis import filters
 from whyis import search
+from whyis.blueprint.entity import entity_blueprint
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.sparql import sparql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
@@ -186,7 +187,7 @@ class App(Empty):
         @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
         def run_importer(self, entity_name):
             entity_name = URIRef(entity_name)
-            counter = app.redis.incr(("import",entity_name))
+            counter = app.redis.incr("import__"+entity_name)
             if counter > 1:
                 return
             print('importing', entity_name)
@@ -201,7 +202,7 @@ class App(Empty):
             print("Remote modified:", updated, type(updated), "Local modified:", modified, type(modified))
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
-            app.redis.set(("import",entity_name),0)
+            app.redis.set("import__"+entity_name,0)
         self.run_importer = run_importer
 
         self.template_imports = {}
@@ -669,73 +670,6 @@ construct {
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
-        @self.route('/about.<format>', methods=['GET','POST','DELETE'])
-        @self.__weighted_route('/<path:name>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-        @self.__weighted_route('/<path:name>.<format>', compare_key=bottom_compare_key, methods=['GET','POST','DELETE'])
-        @self.route('/', methods=['GET','POST','DELETE'])
-        @self.route('/home', methods=['GET','POST','DELETE'])
-        @self.route('/about', methods=['GET','POST','DELETE'])
-        @conditional_login_required
-        def view(name=None, format=None, view=None):
-            self.db.store.nsBindings = {}
-            content_type = None
-            if format is not None:
-                if format in DATA_EXTENSIONS:
-                    content_type = DATA_EXTENSIONS[format]
-                else:
-                    name = '.'.join([name, format])
-            #argstring = '&'.join(["%s=%s"%(k,v) for k,v in request.args.iteritems(multi=True) if k != 'value'])
-            if name is not None:
-                #if len(argstring) > 0:
-                #    name = name + "?" + argstring
-                entity = self.NS.local[name]
-            elif 'uri' in request.args:
-                entity = URIRef(request.args['uri'])
-            else:
-                entity = self.NS.local.Home
-
-            #print(request.method, 'view()', entity, view)
-            if request.method == 'POST':
-                print ("uploading file",entity)
-                if len(request.files) == 0:
-                    flash('No file uploaded')
-                    return redirect(request.url)
-                upload_type = rdflib.URIRef(request.form['upload_type'])
-                self.add_files(entity, [y for x, y in request.files.items(multi=True)],
-                               upload_type=upload_type)
-                url = "/about?%s" % urlencode(dict(uri=str(entity), view="view"))
-                print ("redirecting to",url)
-                return redirect(url)
-            elif request.method == 'DELETE':
-                self.delete_file(entity)
-                return '', 204
-            elif request.method == 'GET':
-                resource = self.get_resource(entity)
-
-                # 'view' is the default view
-                fileid = resource.value(self.NS.whyis.hasFileID)
-                if fileid is not None and 'view' not in request.args:
-                    print (resource.identifier, fileid)
-                    f = self.file_depot.get(fileid)
-                    fsa = FileServeApp(f, self.config["file_archive"].get("cache_max_age",3600*24*7))
-                    return fsa
-            
-                if content_type is None:
-                    content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
-                #print entity
-
-                fmt = sadi.mimeparse.best_match([mt for mt in list(DATA_FORMATS.keys()) if mt is not None],content_type)
-                if 'view' in request.args or fmt in HTML_MIME_TYPES:
-                    return render_view(resource)
-                elif fmt in DATA_FORMATS:
-                    output_graph = ConjunctiveGraph()
-                    result, status, headers = render_view(resource, view='describe')
-                    output_graph.parse(data=result, format="json-ld")
-                    return output_graph.serialize(format=DATA_FORMATS[fmt]), 200, {'Content-Type':content_type}
-                #elif 'view' in request.args or sadi.mimeparse.best_match(htmls, content_type) in htmls:
-                else:
-                    return render_view(resource)
-                
         def render_view(resource, view=None, args=None):
             template_args = dict()
             template_args.update(self.template_imports)
@@ -746,6 +680,7 @@ construct {
                 isinstance=isinstance,
                 args=request.args if args is None else args,
                 url_for=url_for,
+                app=self,
                 get_entity=get_entity,
                 get_summary=get_summary,
                 search = search,
@@ -799,7 +734,23 @@ construct {
         # Register blueprints
         self.register_blueprint(nanopub_blueprint)
         self.register_blueprint(sparql_blueprint)
+        self.register_blueprint(entity_blueprint)
 
+    def get_entity_uri(self, name, format):
+        content_type = None
+        if format is not None:
+            if format in DATA_EXTENSIONS:
+                content_type = DATA_EXTENSIONS[format]
+            else:
+                name = '.'.join([name, format])
+        if name is not None:
+            entity = self.NS.local[name]
+        elif 'uri' in request.args:
+            entity = URIRef(request.args['uri'])
+        else:
+            entity = self.NS.local.Home
+        return entity, content_type
+            
     def get_send_file_max_age(self, filename):
         if self.debug:
             return 0

@@ -4,7 +4,9 @@ from rdflib import ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import RDF
 from whyis.test.api_test_case import ApiTestCase
 
-from .api_test_data import PERSON_INSTANCE_TURTLE
+from whyis.nanopub import Nanopublication
+
+from .api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_TRIG
 
 
 class TestNanopubCrud(ApiTestCase):
@@ -17,10 +19,10 @@ class TestNanopubCrud(ApiTestCase):
                                         expected_headers=["Location"])
 
         nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
-        self.assertEquals(len(nanopub), 18)
         self.assertEquals(len(nanopub.assertion), 6)
-        self.assertEquals(len(nanopub.pubinfo), 5)
+        self.assertEquals(len(nanopub.pubinfo), 2)
         self.assertEquals(len(nanopub.provenance), 0)
+        self.assertEquals(len(nanopub), 15)
 
     def test_read(self):
         self.login_new_user()
@@ -35,11 +37,51 @@ class TestNanopubCrud(ApiTestCase):
         g = ConjunctiveGraph()
         self.assertEquals(content.mimetype, "application/json")
         g.parse(data=str(content.data, 'utf8'), format="json-ld")
-
-        self.assertEquals(len(g), 18)
+        
+        self.assertEquals(len(g), 15)
         self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
                           URIRef('http://schema.org/Person'))
 
+    def test_read_custom_graph(self):
+        self.login_new_user()
+        nanopub = Nanopublication(identifier=URIRef("http://example.com/janedoe/info"))
+        nanopub.assertion.parse(data=self.turtle, format="turtle")
+        trig = ConjunctiveGraph(store=nanopub.store).serialize(format='trig')
+        response = self.post_nanopub(data=trig,
+                                        content_type="application/trig",
+                                        expected_headers=["Location"])
+
+        nanopub_id = response.headers['Location']
+        self.assertEquals(nanopub_id, "http://example.com/janedoe/info")
+        content = self.client.get("/about?uri="+nanopub_id,
+                                  headers={'Accept':'application/json'},
+                                  follow_redirects=True)
+        g = ConjunctiveGraph()
+        self.assertEquals(content.mimetype, "application/json")
+        g.parse(data=str(content.data, 'utf8'), format="json-ld")
+
+        self.assertEquals(len(g), 15)
+        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
+                          URIRef('http://schema.org/Person'))
+
+    def test_read_bnode_graph(self):
+        self.login_new_user()
+        response = self.post_nanopub(data=PERSON_INSTANCE_TRIG,
+                                        content_type="application/trig",
+                                        expected_headers=["Location"])
+
+        nanopub_id = response.headers['Location']
+        content = self.client.get("/about?uri="+nanopub_id,
+                                  headers={'Accept':'application/json'},
+                                  follow_redirects=True)
+        g = ConjunctiveGraph()
+        self.assertEquals(content.mimetype, "application/json")
+        g.parse(data=str(content.data, 'utf8'), format="json-ld")
+
+        self.assertEquals(len(g), 15)
+        self.assertEquals(g.value(URIRef('http://example.com/janedoe'), RDF.type),
+                          URIRef('http://schema.org/Person'))
+        
     def test_delete_admin(self):
         self.login_new_user()
         response = self.post_nanopub(data=self.turtle,

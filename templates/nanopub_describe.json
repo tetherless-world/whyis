@@ -1,0 +1,1 @@
+{{app.nanopub_manager.get(this.identifier) | serialize(format="json-ld")}}

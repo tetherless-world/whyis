@@ -9,6 +9,7 @@ class AgentUnitTestCase(UnitTestCase):
         results = []
         if nanopublication is not None:
             results.extend(agent.process_graph(nanopublication))
+            print("Created",len(results),"nanopublications.")
         elif agent.query_predicate == app.NS.whyis.globalChangeQuery:
             results.extend(agent.process_graph(app.db))
         else:

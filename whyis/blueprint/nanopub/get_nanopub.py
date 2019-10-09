@@ -25,9 +25,9 @@ def render_nanopub(data, code, headers=None):
     return resp
 
 
-@nanopub_blueprint.route('/pub/<ident>',methods=['GET'])
-@nanopub_blueprint.route('/pub/<ident>.<format>', methods=['GET'])
-@conditional_login_required
+#@nanopub_blueprint.route('/pub/<ident>',methods=['GET'])
+#@nanopub_blueprint.route('/pub/<ident>.<format>', methods=['GET'])
+#@conditional_login_required
 def get_nanopub(ident, format=None):
     #print(request.method, 'get_nanopub()', ident)
     ident = ident.split("_")[0]

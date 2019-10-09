@@ -100,6 +100,11 @@ If you need to open another terminal on the container, you will need to open a n
 ```
 $ docker exec -it <container_name> bash
 ```
+This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), require instead using
+
+```shell
+$ winpty docker exec -it <container_name> bash
+```
 To get the container name, see [here](#whyis-container-name).
 
 ### Terminating Whyis

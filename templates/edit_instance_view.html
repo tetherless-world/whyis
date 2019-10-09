@@ -19,7 +19,7 @@
       <md-button ng-click="vm.submit()" class="md-icon-button" aria-label="Save" title="Save">
         <md-icon>check_circle</md-icon>
       </md-button>
-      <md-button md-secondary ng-href="{{url_for('view',view='view', uri=this.identifier)}}" class="md-icon-button" aria-label="Cancel" title="Cancel">
+      <md-button md-secondary ng-href="{{url_for('entity.view',view='view', uri=this.identifier)}}" class="md-icon-button" aria-label="Cancel" title="Cancel">
         <md-icon>cancel</md-icon>
       </md-button>
     </section>
