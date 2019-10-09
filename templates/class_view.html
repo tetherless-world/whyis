@@ -80,7 +80,7 @@
       <dt>Attributed To</dt>
       <dd>
         {% for attrib in def[ns.prov.wasAttributedTo] %}
-          <p><a href="{{url_for('view',uri=attrib.identifier)}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
+          <p><a href="{{url_for('entity.view',uri=attrib.identifier)}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
         {% endfor %}
       </dd>
     </dl>
@@ -137,7 +137,7 @@
                         <h2 class="panel-title">Details</h2>
                     </div>
                     <div class="panel-body">
-                      <p style="font-weight: bold"><a href="{{url_for('view', uri=this.identifier)}}">{{this.identifier}}</a></p>
+                      <p style="font-weight: bold"><a href="{{url_for('entity.view', uri=this.identifier)}}">{{this.identifier}}</a></p>
                         <dl class="dl-horizontal clearfix">
                             <dt>Term</dt>
                             <dd>{{this.description().value(ns.RDFS.label)}}</dd>
@@ -208,7 +208,7 @@
 </div>
 
 <instance-facets title="'Instances'" type="'{{this.identifier}}'">
-    <md-button ng-href="{{url_for('view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create Instance">
+    <md-button ng-href="{{url_for('entity.view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create Instance">
       <md-icon>add</md-icon>
     </md-button>
 </instance-facets>

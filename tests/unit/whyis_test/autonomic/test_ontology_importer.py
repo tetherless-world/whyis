@@ -25,6 +25,10 @@ class OntologyImportAgentTestCase(AgentUnitTestCase):
         agent = autonomic.OntologyImporter()
 
         results = self.run_agent(agent, nanopublication=np)
+        for r in results[0].contexts():
+            print(r.identifier, len(r))
+            if len(r) < 10:
+                print(r.serialize(format="turtle").decode('utf8'))
         self.assertEquals(len(results), 1)
         self.assertTrue(results[0].resource(URIRef('http://xmlns.com/foaf/0.1/'))[RDF.type:OWL.Ontology])
 
