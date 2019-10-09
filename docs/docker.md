@@ -1,135 +1,112 @@
-# Whyis and Docker
+# Using Whyis with Docker
 
-Whyis can be used with Docker and Docker Compose to instantiate a fully functional Whyis Docker instance that can be run as many times as required. For an introduction to Docker concepts and terminology, see:
+Whyis can be used with Docker to instantiate a fully functional Whyis container. For an introduction to Docker concepts and terminology, see:
 - [A Beginner-Friendly Introduction to Containers, VMs and Docker by freeCodeCamp](https://medium.freecodecamp.org/a-beginner-friendly-introduction-to-containers-vms-and-docker-79a9e3e119b)
 - [Docker overview by Docker](https://docs.docker.com/engine/docker-overview/)
 
 Whyis is packaged as two sets of Docker images:
 
-1. a *monolithic* image, which includes everything needed to run whyis is a single image
+1. a *monolithic* image, which runs Whyis as a single image
+2. *split* images, which must be run with docker-compose or another orchestration system
 
 New users should start with the monolithic image.
 
-2. *split* images, which separates services into different containers and must be run with docker-compose or another orchestration system
+## Table of Contents
+1. [Prerequisites](#prequisites)
+2. [Monolithic Image](#monolithic-image)
+3. [Split Images](#split-images)
+4. [Docker Data Persistence](#docker-data-persistence)
+5. [Whyis App Development](#whyis-app-development)
+6. [Whyis Development](#whyis-development)
+7. [Notes and Troubleshooting](#notes-and-troubleshooting)
 
-For an introduction to Docker Compose, see:
-- [Docker Compose overview](https://docs.docker.com/compose/)
+## Prerequisites
+### Docker
+It is recommended that Docker is installed using instructions directly from the Docker website, as using the default package repositiories may contain older versions of Docker that are no longer compatible with Whyis.
 
-## Common concerns
+You can find the instructions to install Docker [here](https://docs.docker.com/install/) for most common platforms.
 
-All of the whyis images mount directories from the host in the `docker-compose.yml` files:
+### Docker-Compose
+[Docker compose](https://docs.docker.com/compose/) is needed to run the *split* Whyis images, which separate the external services of Whyis (*redis*, *blazegraph*) and the Whyis server application (*whyis-server*) into different containers.
 
-* `/data` for persistent storage, mounted as `/data` in the container
+You can find the installation instructions [here](https://docs.docker.com/compose/install/).
 
-On Mac OS X you must allow Docker to mount these directories by going into Docker's Preferences -> File Sharing and adding their absolute paths. For example:
-
-* Add `/data` assuming you have a `/data` directory on your host
-
-## Monolithic image
-
-### Installation and Use
-
-#### Prerequisites
-* Docker
-
-#### Instructions
-Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, *most* changes done to the container will be erased after each run. 
-
-To start the monolithic image from Dockerhub, run:
-
-    docker run -p 80:80 -it tetherlessworld/whyis
-
-This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). 
-
-Once the docker image is running, you will need to open a new terminal and SSH into the docker container.
-
-To find the container ID, run:
-
+## Monolithic Image
+To spin up an instance of the monolithic Whyis image, run:
 ```shell
-$docker ps
+$ docker run -p 127.0.0.1:80:80 -it tetherlessworld/whyis bash
 ```
+This will automatically download the `latest` tagged version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/).
 
-To SSH into the docker container
+You should now have access to a prompt where you can input shell commands on the container and be able to access a log in page at `localhost:80` on your machine. You can stop the container by exiting the shell. 
 
+You can also run Whyis in the background will the following command:
 ```shell
-$docker exec -it <container_id> bash
+$ docker run -d -p 127.0.0.1:80:80 tetherlessworld/whyis
 ```
+To stop the container while Whyis is running in the background, see [here](#terminating-whyis).
 
+Note that leaving out `-d` will still allow Whyis to run, but you will be unable to stop the container from the terminal that you used. To terminate Whyis, you will need to run commands from a new terminal.
+
+### Updating the Image
 To just pull the image or update the image to the latest version, run:
 
 ```shell
 $ docker pull tetherlessworld/whyis
 ```
 
-### Development
+### Next Steps
+See [Whyis App Development](#whyis-app-development) to start developing applications with Whyis.
 
-#### Prerequisites
+The section [Notes and Troubleshooting](#notes-and-troubleshooting) may also be relevant for the following:
+* [Opening Another Shell](#opening-another-shell)
 
-* `docker-compose`
+## Split Images
 
-#### Building and pushing
+### Mac OS X
+In the provided `docker-compose.yml` files, Whyis will mount the following directories on the host in the `docker-compose.yml` files.
+* `/data` for persistent storage
 
-The _whyis_ monolithic image is built in two parts:
+On Mac OS X you must allow Docker to mount these directories by going into Docker's Preferences -> File Sharing and adding their absolute paths. For example:
+* Add `/data` assuming you have a `/data` directory on your host
 
-1. a _whyis-deps_ image, which contains the environment and dependencies for whyis
-2. the _whyis_ image, which is the user-facing image and contains the custom code for whyis; it depends (FROM) on whyis-deps
+## Docker Data Persistence
 
-We assume that _whyis-deps_ changes infrequently, whereas whyis changes frequently.
-The Continuous Integration server only builds and pushes whyis, retrieving whyis-deps from Dockerhub in the process.
-When whyis-deps changes, you will need to push it to Dockerhub manually.
+## Whyis App Development
 
-Assuming you have logged in with `docker login`, you can use docker/compose/dev to build whyis-deps and push it to Dockerhub:
+## Whyis Development
 
-    cd docker/compose/monolithic
-    ./build-deps.sh
-    ./push-deps.sh 
+## Notes and Troubleshooting
+### Whyis Container Name
+To get the name of the container that is currently running (which is needed for certain operations), run:
+```shell
+$ docker ps
+```
 
-Note: You will have to be be a member of the [Tetherless World](https://hub.docker.com/u/tetherlessworld/) organization to be able to run these steps.
+This will output a list of currently running containers. You should pay attention to the following headers:
+```
+CONTAINER ID
+<container_id>
 
-## Split images
+IMAGE
+tetherlessworld/whyis
 
-The monolithic image was split into images for the databases Whyis relies on (_redis_, _blazegraph_) and the Whyis server application (_whyis-server_).
+NAMES
+<container_name>
+```
 
-#### Prerequisites 
-* Docker
-* `docker-compose`
-* A data folder alongside your `/apps` folder is in with permissions 777
-  * See other notes
+### Opening Another Shell
+If you need to open another terminal on the container, you will need to open a new terminal and run:
+```
+$ docker exec -it <container_name> bash
+```
+To get the container name, see [here](#whyis-container-name).
 
-### Use
+### Terminating Whyis
+If you need to terminate Whyis while it is in the background, run:
+```
+$ docker kill <container_name>
+```
+To get the container name, see [here](#whyis-container-name).
 
-    cd docker/compose/split
-    docker-compose -f db/docker-compose.yml -f app/docker-compose.yml
 
-which starts both the database (`db/`) and server (`app/`) containers.
-
-### Development
-
-Similar to the monolithic image, the _whyis-server_ image is built from multiple parent images, which change less frequently than the code.
-
-    cd docker/compose/split
-    ./build-deps.sh
-    ./push-deps.sh
-
-The `db/docker-compose.yml` can be used to start the databases without the server, so that the server can e.g., be run locally:
-
-    cd docker-compose/split
-    docker-compose -f db/docker-compose.yml
-
-Further, `docker/compose/split/app-dev` references a version of `whyis-server` that mounts `/apps` from the parent directory of the current whyis checkout, for local development.
-
-## Other notes
-
-### Data directory
-
-By default, the split `docker-compose.yml` will mount a directory named `data` in the same directory as your `/apps` folder on the host machine. Due to how Docker allocates volumes, this folder will have the wrong permissions and cause Blazegraph to fail on the first setup. To avoid this, run the following instructions before running `docker-compose`:
-
-	cd /
-	mkdir data
-	chmod ugo+rwx data
-	
-You should then be able to start and stop the containers without further permission issues.
-
-### Whyis image tags
-
-By default the `docker-compose.yml` use `latest` tags for the whyis images. This can be overriden by specifying the environment variable `WHYIS_IMAGE_TAG`.
