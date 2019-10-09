@@ -4,7 +4,7 @@ $whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
 notice("Whyis branch: ${whyis_branch_}")
 
 class { 'python' :
-  version    => 'python3.7',
+  version    => '3.6',
   pip        => 'present',
   dev        => 'present',
   virtualenv => 'present',
@@ -37,7 +37,6 @@ package { ["unzip",
            "libffi-dev",
            "libssl-dev",
            "maven",
-           "python3-dev",
            "libdb5.3-dev"]:
     ensure => "installed"
 }
@@ -45,7 +44,7 @@ package { ["unzip",
 # Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
   ensure => 'present',
-  subscribe => [Package["jetty9", "python3-dev", "default-jdk"]],
+  subscribe => [Package["jetty9", "default-jdk"]],
 } ->
 user { 'whyis':
   ensure => present,
