@@ -6,7 +6,7 @@ import flask
 
 
 class TestAgent(Command):
-#    '''Add a nanopublication to the knowledge graph.'''
+    '''Runs a specified inference agent.'''
 
     def get_options(self):
         return [
