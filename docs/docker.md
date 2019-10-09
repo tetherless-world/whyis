@@ -49,10 +49,16 @@ To find the container ID, run:
 $docker ps
 ```
 
-To SSH into the docker container
+To open a shell inside the docker container
 
 ```shell
 $docker exec -it <container_id> bash
+```
+
+If your host machine is Windows, it may be necessary to instead use
+
+```shell
+$ winpty docker exec -it <container_id> bash
 ```
 
 To just pull the image or update the image to the latest version, run:
