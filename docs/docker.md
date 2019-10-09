@@ -55,11 +55,12 @@ To open a shell inside the docker container
 $docker exec -it <container_id> bash
 ```
 
-If your host machine is Windows, it may be necessary to instead use
+This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), require instead using
 
 ```shell
 $ winpty docker exec -it <container_id> bash
 ```
+
 
 To just pull the image or update the image to the latest version, run:
 
