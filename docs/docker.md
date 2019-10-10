@@ -41,7 +41,7 @@ To start the monolithic image from Dockerhub, run:
 
 This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). 
 
-Once the docker image is running, you will need to open a new terminal and SSH into the docker container.
+Once the docker image is running, you will need to open a new terminal and open a shell into the docker container.
 
 To find the container ID, run:
 
@@ -55,7 +55,7 @@ To open a shell inside the docker container
 docker exec -it <container_id> bash
 ```
 
-This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), require instead using
+This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), may require instead using
 
 ```shell
 winpty docker exec -it <container_id> bash
@@ -118,7 +118,7 @@ Similar to the monolithic image, the _whyis-server_ image is built from multiple
     ./build-deps.sh
     ./push-deps.sh
 
-The `db/docker-compose.yml` can be used to start the databases without the server, so that the server can e.g., be run locally:
+The `db/docker-compose.yml` can be used to start the databases without the server, so that (for example) the server can be run locally:
 
     cd docker-compose/split
     docker-compose -f db/docker-compose.yml
