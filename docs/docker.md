@@ -68,6 +68,8 @@ To just pull the image or update the image to the latest version, run:
 docker pull tetherlessworld/whyis
 ```
 
+To verify that the server is working correctly, open a browser to `localhost:80`. This should display a Whyis login screen.
+
 ### Development
 
 #### Prerequisites
