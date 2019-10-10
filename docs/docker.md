@@ -46,26 +46,26 @@ Once the docker image is running, you will need to open a new terminal and SSH i
 To find the container ID, run:
 
 ```shell
-$docker ps
+docker ps
 ```
 
 To open a shell inside the docker container
 
 ```shell
-$docker exec -it <container_id> bash
+docker exec -it <container_id> bash
 ```
 
 This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), require instead using
 
 ```shell
-$ winpty docker exec -it <container_id> bash
+winpty docker exec -it <container_id> bash
 ```
 
 
 To just pull the image or update the image to the latest version, run:
 
 ```shell
-$ docker pull tetherlessworld/whyis
+docker pull tetherlessworld/whyis
 ```
 
 ### Development
