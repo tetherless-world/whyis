@@ -31,15 +31,16 @@ On Mac OS X you must allow Docker to mount these directories by going into Docke
 
 #### Prerequisites
 * Docker
+* Create and share `/data` (see Common Concerns) 
 
 #### Instructions
 Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, *most* changes done to the container will be erased after each run. 
 
-To start the monolithic image from Dockerhub, run:
+To start the monolithic image from Dockerhub in detached mode, run:
 
-    docker run -p 80:80 -it tetherlessworld/whyis
+    docker run -p 80:80 -p 5000:5000 -d -it tetherlessworld/whyis
 
-This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). 
+This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). It will also print out your container ID and map ports 80 and 5000 to the host machine.
 
 Once the docker image is running, you will need to open a new terminal and open a shell into the docker container.
 
