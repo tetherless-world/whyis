@@ -14,6 +14,8 @@ RUN npm run build
 # Deploy image from here
 FROM tetherlessworld/whyis-deps:$WHYIS_IMAGE_TAG
 
+RUN chmod 777 /data
+
 # Apache configuration
 COPY /puppet/files/etc/apache2/sites-available/000-default.conf /apache.conf
 RUN sed '1d' /apache.conf > /etc/apache2/sites-available/000-default.conf
