@@ -25,7 +25,26 @@ export default Vue.component('Tableview', {
         },
         async testApiGet(){
             var response = await this.api.getFile();
-            console.log(response);
+            const columns = {};
+            response.map((value) => {
+                Object.entries(value).map((header) => {
+                    //Sorter is typeof header[1]
+                    columns[header[0]] = typeof(header[1]);
+                })
+            })
+            console.log(columns);
+            let formattedCol = [];
+            for (var el in columns) {
+                console.log(el);
+                let temp = {}
+                temp['title'] = el;
+                temp['field'] = el;
+                temp['sorter'] = columns[el];
+                temp['align'] = 'center';
+                formattedCol.push(temp);
+            }
+            console.log(formattedCol);
+            this.tabulator.setColumns(formattedCol);
             this.tabulator.setData(response);
         }
     },
