@@ -22,7 +22,7 @@ class LoadNanopub(Command):
             Option('-i', '--input', dest='input_file', required=True, help='Path to file containing nanopub', type=str),
             Option('-f', '--format', dest='file_format', default='trig', help='File format (default: trig; also turtle, json-ld, xml, nquads, nt, rdfa)', type=str),
             Option('-r', '--revises', dest='was_revision_of', help="URI of nanopublication that this is a revision of", type=str),
-            Option("--temp-store", dest="temp_store", type=str, default=self._TEMP_STORE_DEFAULT, help="backing store type to use for temporary graphs")
+            Option("--temp-store", dest="temp_store", type=str, default=self._TEMP_STORE_DEFAULT, help="backing store type to use for temporary graphs; deprecated")
         ]
 
     def run(self, input_file, file_format, temp_store=_TEMP_STORE_DEFAULT, was_revision_of=None):
