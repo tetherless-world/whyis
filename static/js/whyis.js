@@ -2615,7 +2615,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (!d.type) 
                         d.type = "basic";
                 },
-                'http://www.w3.org/2002/07/owl#DataProperty' : function(d) {
+                'http://www.w3.org/2002/07/owl#DatatypeProperty' : function(d) {
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);
