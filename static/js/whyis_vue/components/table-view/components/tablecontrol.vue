@@ -13,14 +13,10 @@ import { MdButton } from 'vue-material/dist/components';
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
 
-export default Vue.component('TableControl', {
+export default Vue.component('tableControl', {
   props: {
     method: { type: Function },
   },
 });
 
 </script>
-
-<style scoped>
-
-</style>

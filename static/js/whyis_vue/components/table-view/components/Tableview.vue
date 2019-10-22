@@ -2,14 +2,14 @@
     <div id="app" class="test">
         <h1>Tabular File I/O</h1>
         <div id="data-table"></div>
-        <TableControl 
+        <tableControl 
             @apiPost="testApiPost"
             @apiGet="testApiGet"
             @createCol="addColumn"
             @createRow="addRow"
         >
-        </TableControl>
-        <!--<ColumnAddition v-bind:style="[showInput ? 'inline' : 'none']"></ColumnAddition>-->
+        </tableControl>
+        <!--<columnAddition v-bind:style="[showInput ? 'inline' : 'none']"></columnAddition>-->
     </div>
 </template>
 
@@ -17,11 +17,11 @@
 import Vue from 'vue';
 import Tabulator from 'tabulator-tables';
 import MockApi from '../api/mockapi.js';
-import TableControl from './tablecontrol.vue';
-import ColumnAddition from './columnaddition.vue';
+import tableControl from './tableControl.vue';
+import columnAddition from './columnAddition.vue';
 
-export default Vue.component('Tableview', {
-    name: 'Tableview',
+export default Vue.component('tableview', {
+    name: 'tableview',
     data() {
         return {
             showInput: false,
@@ -73,12 +73,11 @@ export default Vue.component('Tableview', {
 
 <style lang="css">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-  background-color: blue;
-}
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 60px;
+    }
 </style>

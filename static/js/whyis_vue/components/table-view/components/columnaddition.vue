@@ -6,7 +6,7 @@
 
 <script>
 import Vue from 'vue';
-export default Vue.component('ColumnAddition', {
+export default Vue.component('columnAddition', {
     data(){
         return {
             //isActive: false,
@@ -17,6 +17,9 @@ export default Vue.component('ColumnAddition', {
 
 <style scoped>
 #input {
-    display: none;
+    display: inline;
+}
+#none {
+    display: none
 }
 </style>
