@@ -1,71 +1,77 @@
 <template>
     <div id="app" class="test">
+        <h1>Tabular File I/O</h1>
         <div id="data-table"></div>
         <TableControl 
             @apiPost="testApiPost"
             @apiGet="testApiGet"
+            @createCol="addColumn"
+            @createRow="addRow"
         >
         </TableControl>
+        <!--<ColumnAddition v-bind:style="[showInput ? 'inline' : 'none']"></ColumnAddition>-->
     </div>
 </template>
 
 <script>
 import Vue from 'vue';
 import Tabulator from 'tabulator-tables';
-import MockApi from '../api/api.js';
+import MockApi from '../api/mockapi.js';
 import TableControl from './tablecontrol.vue';
+import ColumnAddition from './columnaddition.vue';
 
 export default Vue.component('Tableview', {
     name: 'Tableview',
+    data() {
+        return {
+            showInput: false,
+        }
+    },
     methods: {
         testApiPost() {
-            console.log(this.tabulator.data);
-            let compiledData = new File([this.tabulator.data], "file.txt");
-            console.log(this.api.postFile(compiledData));
+            console.log(this.tabulator.getData());
+            console.log(this.api.postFile(this.tabulator.getData()));
         },
         async testApiGet(){
             var response = await this.api.getFile();
             const columns = {};
             response.map((value) => {
                 Object.entries(value).map((header) => {
-                    //Sorter is typeof header[1]
                     columns[header[0]] = typeof(header[1]);
                 })
             })
-            console.log(columns);
             let formattedCol = [];
             for (var el in columns) {
-                console.log(el);
                 let temp = {}
                 temp['title'] = el;
                 temp['field'] = el;
                 temp['sorter'] = columns[el];
                 temp['align'] = 'center';
+                temp['editor'] = true;
                 formattedCol.push(temp);
             }
-            console.log(formattedCol);
             this.tabulator.setColumns(formattedCol);
             this.tabulator.setData(response);
+        },
+        addColumn(){
+            this.showInput = true;
+        },
+        addRow(){
+            //TODO
         }
     },
     mounted(){
-    //instantiate Tabulator when element is mounted
-    this.tabulator = new Tabulator('#data-table', {
-        reactiveData:true, //enable data reactivity
-        columns:[ //Define Table Columns
-            {title:"Name", field:"name", width:150, editor:true},
-            {title:"Age", field:"age", align:"left", editor:true},
-            {title:"Favourite Color", field:"col", editor:true},
-            {title:"Date Of Birth", field:"dob", sorter:"date", align:"center", editor:true},
-        ],
-    });
-    // Create API instance
-    this.api = new MockApi();
+        //instantiate Tabulator when element is mounted
+        this.tabulator = new Tabulator('#data-table', {
+            reactiveData:true, //enable data reactivity
+        });
+        // Create API instance
+        this.api = new MockApi();
   },
 })
 </script>
 
-<style>
+<style lang="css">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -73,5 +79,6 @@ export default Vue.component('Tableview', {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  background-color: blue;
 }
 </style>

@@ -1,8 +1,9 @@
 <template>
   <div>
-      <p>{{ message }}</p>
       <md-button @click="$emit('apiPost')">Post File</md-button>
       <md-button @click="$emit('apiGet')">Get File</md-button>
+      <md-button @click="$emit('createCol')" disabled>Add Column</md-button>
+      <md-button @click="$emit('createRow')" disabled>Add Row</md-button>
   </div>
 </template>
 
@@ -13,11 +14,6 @@ import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
 
 export default Vue.component('TableControl', {
-  data() {
-    return {
-      message: 'Tabulator File I/O',
-    };
-  },
   props: {
     method: { type: Function },
   },
@@ -25,7 +21,6 @@ export default Vue.component('TableControl', {
 
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style >
+<style scoped>
 
 </style>
