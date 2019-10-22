@@ -40,3 +40,5 @@ USER jetty
 ENV JAVA_OPTIONS="-ea -Xmx4g -server -XX:+UseParallelOldGC -Djava.awt.headless=true -Dorg.eclipse.jetty.server.Request.maxFormContentSize=200000000"
 
 WORKDIR /var/lib/jetty
+
+EXPOSE 8080
