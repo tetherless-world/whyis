@@ -4,9 +4,9 @@ import "./components";
 
 Vue.use(VueMaterial.default);
 
-new Vue({
-    el: '#page',
-    data: {
+let data;
+if(typeof(ATTRIBUTES) !== "undefined"){
+    data = {
         attributes:  ATTRIBUTES,
         uri: NODE_URI,
         description: DESCRIPTION,
@@ -16,5 +16,11 @@ new Vue({
         base_rate: BASE_RATE,
         lod_prefix: LOD_PREFIX,
     }
+} else {
+    data = {};
+}
+new Vue({
+    el: '#page',
+    data,
 });
 
