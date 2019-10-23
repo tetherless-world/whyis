@@ -48,10 +48,11 @@ def engine_from_config(config, prefix):
             s.keep_alive = False
             
             # result unused
-            s.post(store.query_endpoint,
-                   data=data,
-                   # params={"context-uri":graph.identifier},
-                   headers={'Content-Type':'application/n-quads'})
+            r = s.post(store.query_endpoint,
+                       data=data,
+                       # params={"context-uri":graph.identifier},
+                       headers={'Content-Type':'text/x-nquads'})
+            #print(r.content)
 
         store.publish = publish
 

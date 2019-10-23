@@ -202,7 +202,8 @@ class NanopublicationManager(object):
                         s = skolemize(s)
                         o = skolemize(o)
                         # predicates can't be bnodes, and contexts have already been rewritten.
-                    data.write(nquads._nq_row((s,p,o), c.identifier).encode('utf8'))
+                    row = nquads._nq_row((s,p,o), c.identifier).encode('utf8')
+                    data.write(row)
                 data.write(b'\n')
                 data.flush()
                 # np_graph.serialize(data, format="trig")
