@@ -4,7 +4,7 @@
   {
     ?s ?property ?o.
     filter (isLiteral(?o))
-    bind(owl:DataProperty as ?propertyType)
+    bind(owl:DatatypeProperty as ?propertyType)
     bind(datatype(?o) as ?range)
   } union {
     ?s ?property ?o.
