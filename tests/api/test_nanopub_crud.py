@@ -1,12 +1,12 @@
 
 import json
-from rdflib import ConjunctiveGraph, Graph, URIRef
+from rdflib import ConjunctiveGraph, Graph, URIRef, BNode
 from rdflib.namespace import RDF
 from whyis.test.api_test_case import ApiTestCase
 
 from whyis.nanopub import Nanopublication
 
-from .api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_TRIG
+from .api_test_data import PERSON_INSTANCE_TURTLE, PERSON_INSTANCE_TRIG, PERSON_INSTANCE_BNODE_TURTLE
 
 
 class TestNanopubCrud(ApiTestCase):
@@ -24,6 +24,33 @@ class TestNanopubCrud(ApiTestCase):
         self.assertEquals(len(nanopub.provenance), 0)
         self.assertEquals(len(nanopub), 15)
 
+    def test_bnode_rewrite(self):
+        self.login_new_user()
+        response = self.post_nanopub(data=PERSON_INSTANCE_BNODE_TURTLE,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
+
+        nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
+        rewritten_bnode_subjects = [s for s,p,o,context in nanopub.quads()
+                                    if isinstance(s, URIRef) and s.startswith('bnode:')]
+        bnode_subjects = [s for s,p,o,context in nanopub.quads() if isinstance(s, BNode)]
+        self.assertEquals(len(rewritten_bnode_subjects),1)
+        self.assertEquals(len(bnode_subjects), 0)
+
+    def test_no_bnode_rewrite(self):
+        self.app.config['BNODE_REWRITE'] = False
+        self.login_new_user()
+        response = self.post_nanopub(data=PERSON_INSTANCE_BNODE_TURTLE,
+                                        content_type="text/turtle",
+                                        expected_headers=["Location"])
+
+        nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
+        rewritten_bnode_subjects = [s for s,p,o,context in nanopub.quads()
+                                    if isinstance(s, URIRef) and s.startswith('bnode:')]
+        bnode_subjects = [s for s,p,o,context in nanopub.quads() if isinstance(s, BNode)]
+        self.assertEquals(len(rewritten_bnode_subjects),0)
+        self.assertEquals(len(bnode_subjects), 1)
+        
     def test_read(self):
         self.login_new_user()
         response = self.post_nanopub(data=self.turtle,
