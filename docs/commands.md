@@ -173,16 +173,24 @@ where `agent` is specified as a dotted Python path. Currently-supported agents i
 
 
 
-### Remove the currently-installed Whyis applicatoin
+### Remove the currently-installed Whyis application
+
+This command will remove the Whyis application that is currently installed, if there is one. Currently, having multiple apps installed into the same Whyis instance simultaneously is undefined behavior, so it is important to run this command before creating a new app.
 
 ```
 python manage.py uninstallapp
 ```
 
+### View a list of valid routes in the API
+
+```
+python manage.py listroutes
+```
 
 ### Open a Python shell inside the application context
 
-### listroutes
-
+```
+python manage.py shell
+```
 
 ## [Next: Creating Whyis Views](views)
