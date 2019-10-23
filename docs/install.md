@@ -162,4 +162,4 @@ The PublicationInfo will contain some minimal provenance about the load, and eac
 $ python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
 ```
 
-## [Next: Creating Whyis Views](views)
+## [Next: Using the Whyis command-line interface](commands)

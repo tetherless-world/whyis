@@ -1,5 +1,5 @@
 
-# Administrative Tasks
+# Using the Whyis command-line interface
 
 To peform the following administrative tasks, you need to connect to the VM (if you're not running directly):
 
