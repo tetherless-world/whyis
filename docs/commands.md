@@ -1,10 +1,16 @@
 
 # Using the Whyis command-line interface
 
-To peform the following administrative tasks, you need to connect to the VM (if you're not running directly):
+To peform the following administrative tasks, if you're not running Whyis directly, you will need to connect to the device you are running it on.
 
+If you're using a virtual machine with Vagrant:
 ```
 vagrant ssh
+```
+
+If you're using a Docker container:
+```
+docker exec -it <container name> bash
 ```
 
 Once you are in the server, you need to change to the **whyis** user, go to the whyis app directory, and activate the python virtual environment:
@@ -28,14 +34,19 @@ python manage.py <subcommand> -?
 ```
 
 ### Configure Whyis
-**If you are using an existing whyis knowledge graph, this step is not needed.  Instead, go to the install instructions for the graph you wish to install.**
+**If you are using an existing Whyis knowledge graph, this step is not needed.  Instead, go to the install instructions for the graph you wish to install.**
 
 Whyis is built on the Flask web framework, and most of the Flask authentication options are available to configure in Whyis.
 A configuration script will walk you through the configuration process and make a project directory for you. 
 Change the default values as needed. The SECRET_KEY and SECURITY_PASSWORD_SALT are randomly generated at runtime, so you shouldn't need to change those.
 
+Run the following command:
 ```
-$ python manage.py configure
+python manage.py configure
+```
+
+This will run the configuration script, which will allow you to enter the desired configuration options from stdin, which will look like this:
+```
 project_name [My Knowledge Graph]: 
 project_short_description [An example knowledge graph configuration.]: 
 project_slug [my_knowledge_graph]: 
@@ -65,18 +76,18 @@ This will create a project skeleton for you at `location` (here, `/apps/my_knowl
     * **my_knowledge_graph.js** - Default empty project-specific javascript file.
 * **setup.py** - File for installation using pip.
 
-Change directories into the project dir and install it into your virtualenv. Be sure your virtualenv is activated first:
+Change directories into the project dir and install it into your virtualenv as follows. Be sure your virtualenv is activated first, by running `source venv/bin/activate` if you have not already done so.
 
 ```
-$ cd /apps/my_knowledge_graph
-$ pip install -e .
+cd /apps/my_knowledge_graph
+pip install -e .
 ```
 
 Restart apache and celeryd as a privileged user (not whyis) to have the configuration take effect:
 
 ```
-$ sudo service apache2 restart
-$ sudo service celeryd restart
+sudo service apache2 restart
+sudo service celeryd restart
 ```
 
 ### Add a User
@@ -86,7 +97,7 @@ Perform this task as the `whyis` user from the `/apps/whyis` directory.
 Use `--roles=admin` to make the user an administrator.
 
 ```
-$ python manage.py createuser -e <email> -p <password (can change later)> -f <First Name> -l <Last Name -u <user handle> --roles=admin
+python manage.py createuser -e <email> -p <password (can change later)> -f <first name> -l <last name> -u <user handle> --roles=admin
 ```
 
 ### Modify a User
@@ -95,19 +106,19 @@ You can change the roles a user has from the command line as well, but you'll ne
 For instance, you can add a user to a role like this:
 
 ```
-$ python manage.py updateuser -u <user handle> --add_roles=admin
+python manage.py updateuser -u <user handle> --add_roles=admin
 ```
 
 You can remove them from a role like this:
 
 ```
-$ python manage.py updateuser -u <user handle> --remove_roles=admin
+python manage.py updateuser -u <user handle> --remove_roles=admin
 ```
 
 Changing a password is also simple:
 
 ```
-$ python manage.py updateuser -u <user handle> -p <new password>
+python manage.py updateuser -u <user handle> -p <new password>
 ```
 
 ### Run in development mode
@@ -115,7 +126,7 @@ $ python manage.py updateuser -u <user handle> -p <new password>
 Whyis can be run on a different port to enable debugging. You will see output from the log in the console and will be able to examine stack traces inside the browser.
 
 ```
-$ python manage.py runserver -h 0.0.0.0
+python manage.py runserver -h 0.0.0.0
 ```
 
 ### Loading Knowledge
@@ -126,7 +137,7 @@ If there are no explicit nanopublications, or if the RDF format is triples-only,
 The PublicationInfo will contain some minimal provenance about the load, and each assertion will be the graphs contained in the file.
 
 ```
-$ python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
+python manage.py load -i <input file> -f <turtle|trig|json-ld|xml|nquads|nt|rdfa>
 ```
 
 ### Retire a nanopublication
