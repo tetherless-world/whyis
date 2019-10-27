@@ -5,6 +5,8 @@ from rdflib import BNode, URIRef
 from rdflib.graph import ConjunctiveGraph
 from rdflib.plugins.stores.sparqlstore import _node_to_sparql
 
+from uuid import uuid4
+
 # SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 
 
@@ -46,12 +48,36 @@ def engine_from_config(config, prefix):
         def publish(data):
             s = requests.session()
             s.keep_alive = False
-            
-            # result unused
-            r = s.post(store.query_endpoint,
-                       data=data,
-                       # params={"context-uri":graph.identifier},
-                       headers={'Content-Type':'text/x-nquads'})
+
+            if prefix+"useBlazeGraphBulkLoad" in config and config[prefix+"useBlazeGraphBulkLoad"]:
+                prop_file = '''
+quiet=false
+verbose=0
+closure=false
+durableQueues=true
+#Needed for quads
+defaultGraph=%s
+format=text/x-nquads
+com.bigdata.rdf.store.DataLoader.flush=false
+com.bigdata.rdf.store.DataLoader.bufferCapacity=100000
+com.bigdata.rdf.store.DataLoader.queueCapacity=10
+#Namespace to load
+namespace=%s
+#Files to load
+fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+uuid4()+"_assertion",
+                    config[prefix+"queryEndpoint"].split('/')[-1],
+                    data.name)
+                endpoint = store.query_endpoint.split('/')[:-1]
+                r = s.post(store.query_endpoint,
+                           data=prop_file,
+                           # params={"context-uri":graph.identifier},
+                           headers={'Content-Type':'text/plain'})
+            else:
+                # result unused
+                r = s.post(store.query_endpoint,
+                           data=data,
+                           # params={"context-uri":graph.identifier},
+                           headers={'Content-Type':'text/x-nquads'})
             #print(r.content)
 
         store.publish = publish
