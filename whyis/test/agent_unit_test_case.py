@@ -2,9 +2,12 @@ from .unit_test_case import UnitTestCase
 
 
 class AgentUnitTestCase(UnitTestCase):
+
+    dry_run = True
+    
     def run_agent(self, agent, nanopublication=None):
         app = self.app
-        agent.dry_run = True
+        agent.dry_run = self.dry_run
         agent.app = app
         results = []
         if nanopublication is not None:

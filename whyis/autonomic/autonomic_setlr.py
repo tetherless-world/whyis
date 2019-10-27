@@ -92,39 +92,24 @@ class SETLr(UpdateChangeService):
         self.app.nanopub_manager.retire(*to_retire)
         # print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
+            print(output_graph)
             if setl_graph.resource(output_graph)[rdflib.RDF.type:whyis.NanopublicationCollection]:
                 self.app.nanopub_manager.publish(resources[output_graph])
             else:
                 out = resources[output_graph]
                 out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
-                # print "Generated graph", out.identifier, len(out), len(out_conjunctive)
-                nanopub_prepare_graph = rdflib.ConjunctiveGraph(store="Sleepycat")
-                nanopub_prepare_graph_tempdir = tempfile.mkdtemp()
-                nanopub_prepare_graph.store.open(nanopub_prepare_graph_tempdir, True)
-
-                mappings = {}
+                print ("Generated graph", out.identifier, len(out), len(out_conjunctive))
 
                 to_publish = []
                 triples = 0
-                for new_np in self.app.nanopub_manager.prepare(out_conjunctive, mappings=mappings,
-                                                               store=nanopub_prepare_graph.store):
+                for new_np in self.app.nanopub_manager.prepare(out_conjunctive):
                     self.explain(new_np, i, o)
-                    orig = [orig for orig, new in list(mappings.items()) if new == new_np.assertion.identifier]
-                    if len(orig) == 0:
-                        continue
-                    orig = orig[0]
-                    print(orig)
-                    if isinstance(orig, rdflib.URIRef):
-                        new_np.pubinfo.add((new_np.assertion.identifier, prov.wasQuotedFrom, orig))
-                        if orig in old_np_map:
-                            new_np.pubinfo.add((new_np.assertion.identifier, prov.wasRevisionOf, old_np_map[orig]))
                     print("Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion)))
                     to_publish.append(new_np)
 
                 # triples += len(new_np)
                 # if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
-                nanopub_prepare_graph.store.close()
             print("Published")
         for resource, obj in list(resources.items()):
             if hasattr(i, 'close'):
