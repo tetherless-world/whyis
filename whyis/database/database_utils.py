@@ -48,10 +48,11 @@ def engine_from_config(config, prefix):
             s.keep_alive = False
             
             # result unused
-            s.post(store.query_endpoint,
-                   data=data,
-                   # params={"context-uri":graph.identifier},
-                   headers={'Content-Type':'application/x-trig'})
+            r = s.post(store.query_endpoint,
+                       data=data,
+                       # params={"context-uri":graph.identifier},
+                       headers={'Content-Type':'text/x-nquads'})
+            #print(r.content)
 
         store.publish = publish
 
@@ -64,7 +65,7 @@ def engine_from_config(config, prefix):
         graph = ConjunctiveGraph() # memory_graphs[prefix]
         
         def publish(data):
-            graph.parse(data, format='trig')
+            graph.parse(data, format='nquads')
                 
         graph.store.publish = publish
 

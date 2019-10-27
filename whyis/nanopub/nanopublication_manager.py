@@ -21,6 +21,7 @@ from uuid import uuid4
 from datastore import create_id
 from .nanopublication import Nanopublication
 
+from rdflib.plugins.serializers import nquads
 
 class NanopublicationManager(object):
     def __init__(self, store, prefix, app, update_listener=None):
@@ -188,10 +189,21 @@ class NanopublicationManager(object):
                     np_graph.pubinfo.set((np_graph.assertion.identifier, dc.created, now))
                 full_list.append(np_graph.identifier)
 
+            bnode_cache = {}
+            def skolemize(x):
+                if isinstance(x, rdflib.BNode):
+                    if x not in bnode_cache:
+                        bnode_cache[x] = rdflib.URIRef('bnode:' + uuid4().hex)
+                    return bnode_cache[x]
+                return x
             for store in stores:
-                serialized = rdflib.ConjunctiveGraph(store).serialize(format="trig")
-                #self.depot.replace(fileid, FileIntent(serialized, fileid, 'application/trig'))
-                data.write(serialized)
+                for s, p, o, c in rdflib.ConjunctiveGraph(store).quads():
+                    if 'BNODE_REWRITE' not in self.app.config or self.app.config['BNODE_REWRITE']:
+                        s = skolemize(s)
+                        o = skolemize(o)
+                        # predicates can't be bnodes, and contexts have already been rewritten.
+                    row = nquads._nq_row((s,p,o), c.identifier).encode('utf8')
+                    data.write(row)
                 data.write(b'\n')
                 data.flush()
                 # np_graph.serialize(data, format="trig")
