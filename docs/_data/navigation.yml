@@ -16,6 +16,9 @@
 
 - title: Customizing Whyis
   sublinks:
+    - title: Configuring Whyis
+      url: /config
+
     - title: Command Line Reference
       url: /commands
 
