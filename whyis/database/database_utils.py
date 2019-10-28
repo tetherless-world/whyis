@@ -6,6 +6,7 @@ from rdflib.graph import ConjunctiveGraph
 from rdflib.plugins.stores.sparqlstore import _node_to_sparql
 
 from uuid import uuid4
+from whyis.datastore import create_id
 
 # SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 
@@ -49,10 +50,10 @@ def engine_from_config(config, prefix):
             s = requests.session()
             s.keep_alive = False
 
-            if prefix+"useBlazeGraphBulkLoad" in config and config[prefix+"useBlazeGraphBulkLoad"]:
+            if config.get(prefix+"useBlazeGraphBulkLoad",False):
                 prop_file = '''
 quiet=false
-verbose=0
+verbose=1
 closure=false
 durableQueues=true
 #Needed for quads
@@ -63,15 +64,17 @@ com.bigdata.rdf.store.DataLoader.bufferCapacity=100000
 com.bigdata.rdf.store.DataLoader.queueCapacity=10
 #Namespace to load
 namespace=%s
+propertyFile=%s
 #Files to load
-fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+uuid4()+"_assertion",
-                    config[prefix+"queryEndpoint"].split('/')[-1],
+fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
+                    config[prefix+"bulkLoadNamespace"],
+                    config[prefix+"BlazeGraphProperties"],
                     data.name)
-                endpoint = store.query_endpoint.split('/')[:-1]
-                r = s.post(store.query_endpoint,
-                           data=prop_file,
-                           # params={"context-uri":graph.identifier},
+                r = s.post(config[prefix+"bulkLoadEndpoint"],
+                           data=prop_file.encode('utf8'),
                            headers={'Content-Type':'text/plain'})
+
+                
             else:
                 # result unused
                 r = s.post(store.query_endpoint,

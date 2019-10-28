@@ -142,8 +142,7 @@ class NanopublicationManager(object):
         # session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
 
     def is_current(self, nanopub_uri):
-        work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
-        return work is not None
+        return (rdflib.URIRef(nanopub_uri), rdflib.RDF.type, np.Nanopublication) in self.db
 
     def get_path(self, nanopub_uri):
         # print self.prefix, nanopub_uri
@@ -156,7 +155,7 @@ class NanopublicationManager(object):
         # self.db.store.nsBindings = {}
         stores = set()
         full_list = []
-        with tempfile.NamedTemporaryFile(delete=True) as data:
+        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'wb') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
             to_retire = set([x.identifier for x in nanopubs])
             for np_graph in nanopubs:
                 stores.add(np_graph.store)
