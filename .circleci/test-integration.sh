@@ -27,7 +27,7 @@ if [ "$(ls results/results*.xml | wc -l)" -lt "1" ]; then
     echo "Integration test results.xml does not exist, exiting abnormally"
     exit 1
 fi
-if [ "$(grep -c 'failure ' results/results*.xml)" -ge 1 ]; then
+if [ "$(grep -o 'failure ' results/results*.xml | wc -l)" -ge 1 ]; then
     echo "Integration test results.xml has failures, exiting abnormally"
     exit 1
 fi
