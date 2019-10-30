@@ -29,13 +29,10 @@ class TestNanopubCrud(ApiTestCase):
         response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
-        print("TESTREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
         nanopub_id = response.headers['Location'].split('/')[-1]
-        print(nanopub_id)
         content = self.client.get("/pub/"+nanopub_id,
                                   headers={'Accept':'application/json'},
                                   follow_redirects=True)
-        print(type(content.data), str(content.data, 'utf8'))
         g = ConjunctiveGraph()
         self.assertEquals(content.mimetype, "application/json")
         g.parse(data=str(content.data, 'utf8'), format="json-ld")
