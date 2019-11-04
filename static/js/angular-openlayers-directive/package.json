@@ -12,7 +12,7 @@
     "keywords": ["angularjs", "openlayers", "cli"],
     "license": "MIT",
     "dependencies": {
-        "angular": "~1.4.8",
+        "angular": "~1.7.8",
         "angular-sanitize": "~1.4.8",
         "openlayers": "4.3.4"
     },
