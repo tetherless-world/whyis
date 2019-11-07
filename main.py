@@ -305,7 +305,7 @@ construct {
     ?o skos:prefLabel ?prefLabel.
     ?o dc:title ?title.
     ?o foaf:name ?name.
-    ?o ?pattr ?oatter.
+    ?o ?pattr ?oattr.
     ?oattr rdfs:label ?oattrlabel
 } where {
     graph ?g {
