@@ -77,6 +77,8 @@ class Service(sadi.Service):
                 # print new_np.serialize(format="trig")
                 if not self.dry_run:
                     self.app.nanopub_manager.publish(new_np)
+                else:
+                    print("Not publishing",new_np.identifier,", dry run.")
                 results.append(new_np)
         return results
 
