@@ -16,33 +16,33 @@ testdata = [
 class TestTableview(ApiTestCase):
 
     def test_get(self):
-        print('\nTEST: Getting test_table')
+        #print('\nTEST: Getting test_table')
         tableid = "test_table"
         response = self.client.get("/table/" + tableid, follow_redirects=True)
-        print(response)
+        #print(response)
         self.assertEqual(response.json, testdata)
 
     def test_post(self):
-        print('\nSTART TEST POST')
+        #print('\nSTART TEST POST')
         data = json.dumps(testdata)
         tableid = "test_table"
         response = self.client.post("/table/" + tableid, data=data, follow_redirects=True)
-        print(response)
+        #print(response)
         self.assertEqual(response.status_code, 204)
 
     def test_delete(self):
-        print('\nTEST: Deleting delete_table')
+        #print('\nTEST: Deleting delete_table')
         tableid = "delete_table"
         response = self.client.delete("/table/" + tableid)
-        print("Response:", response)
+        #print("Response:", response)
         self.assertEqual(response.status_code, 204)
         get_response = self.client.get("/table/" + tableid, follow_redirects=True)
-        print(get_response)
+        #print(get_response)
         self.assertEqual(get_response.status_code, 404)
 
     def test_put(self):
-        print('\nSTART TEST PUT')
+        #print('\nSTART TEST PUT')
         tableid = "test_table"
         response = self.client.put("/table/" + tableid)
-        print(response)
+        #print(response)
         self.assertEqual(response.status_code, 201)

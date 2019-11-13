@@ -1,5 +1,5 @@
 import json
-from flask import current_app, make_response, request, Response
+from flask import current_app, request
 
 from whyis.blueprint.tableview.tableview_blueprint import tableview_blueprint
 
@@ -9,4 +9,4 @@ def post_tableview(table_ident=None):
     print("POSTING", table_ident)
     data = str(request.data, 'utf-8')
     # todo: save data to server
-    return make_response("TEST", 204)
+    return "TEST", 204
