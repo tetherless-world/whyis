@@ -1,5 +1,5 @@
 import json
-from flask import current_app, make_response, request
+from flask import current_app, make_response, request, Response
 
 from whyis.blueprint.tableview.tableview_blueprint import tableview_blueprint
 
