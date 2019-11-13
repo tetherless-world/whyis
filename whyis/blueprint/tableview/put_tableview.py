@@ -7,4 +7,6 @@ def put_tableview(table_ident):
     print("PUTING", table_ident)
     data = str(request.data, 'utf-8')
     # todo: handle request on server
+    # if table_ident in db:
+    #   return "", 204
     return "", 201

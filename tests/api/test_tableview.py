@@ -28,7 +28,7 @@ class TestTableview(ApiTestCase):
         tableid = "test_table"
         response = self.client.post("/table/" + tableid, data=data, follow_redirects=True)
         print(response)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
 
     def test_delete(self):
         print('\nTEST: Deleting delete_table')
