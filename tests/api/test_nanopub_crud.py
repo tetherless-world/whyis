@@ -56,7 +56,6 @@ class TestNanopubCrud(ApiTestCase):
         response = self.post_nanopub(data=self.turtle,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
-
         nanopub_id = response.headers['Location'].split('/')[-1]
         content = self.client.get("/pub/"+nanopub_id,
                                   headers={'Accept':'application/json'},
