@@ -16,7 +16,7 @@ import hashlib
 
 pmanif = Namespace('tag:tw.rpi.edu,2011:manifestation_sha256-')
 
-class SETLRAgentTestCase(AgentUnitTestCase):
+class FRIRAgentTestCase(AgentUnitTestCase):
 
     def test_basic_file_storage(self):
         self.login_new_user()
@@ -32,14 +32,29 @@ class SETLRAgentTestCase(AgentUnitTestCase):
 
         expression = results[0].value(np.identifier, frbr.realization)
         manifestation = results[0].value(expression, frbr.embodiment)
-        #fileid = results[0].value(manifestation, whyis.hasFileID)
-        #file_handle = self.app.nanopub_depot.get(fileid)
-        #data = file_handle.read()
-        #digest = hashlib.sha256(data).hexdigest()
-        #self.assertEquals(pmanif[digest], manifestation)
         
         content = self.client.get("/about",query_string={"uri":manifestation},
                                   follow_redirects=True)
         self.assertEquals(content.mimetype, "application/n-quads")
         digest = hashlib.sha256(content.data).hexdigest().lstrip('0')
         self.assertEquals(pmanif[digest], manifestation)
+
+    def test_archive_deletion(self):
+        self.login_new_user()
+        self.dry_run = False
+        
+        g = ConjunctiveGraph()
+        g.parse(data=PERSON_INSTANCE_TRIG, format="trig")
+        np = list(self.app.nanopub_manager.prepare(g))[0]
+        self.app.nanopub_manager.publish(np)
+
+        agent = autonomic.FRIRArchiver()
+        results = self.run_agent(agent, nanopublication=np)
+
+        expression = results[0].value(np.identifier, frbr.realization)
+        manifestation = results[0].value(expression, frbr.embodiment)
+        fileid = results[0].value(manifestation, whyis.hasFileID)
+        
+        self.app.nanopub_manager.retire(np.identifier)
+        self.assertFalse(self.app.nanopub_depot.exists(fileid))
+        
