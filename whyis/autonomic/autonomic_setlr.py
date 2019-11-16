@@ -98,18 +98,15 @@ class SETLr(UpdateChangeService):
             else:
                 out = resources[output_graph]
                 out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
-                print ("Generated graph", out.identifier, len(out), len(out_conjunctive))
                 to_publish = []
                 triples = 0
                 for new_np in self.app.nanopub_manager.prepare(out_conjunctive):
                     self.explain(new_np, i, o)
-                    print("Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion)))
                     to_publish.append(new_np)
 
                 # triples += len(new_np)
                 # if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
-            print("Published")
         for resource, obj in list(resources.items()):
             if hasattr(i, 'close'):
                 print("Closing", resource)

@@ -64,7 +64,6 @@ result = table.iterrows()
 }]'''].
 """
 
-<<<<<<< HEAD
 test_setl_nanopub_collection_script = """
 @prefix rdf:           <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:          <http://www.w3.org/2000/01/rdf-schema#> .
@@ -104,7 +103,8 @@ result = table.iterrows()
     prov:used :table;
     prov:qualifiedUsage [ a prov:Usage; prov:entity whyis:Nanopublication; prov:hadRole [ dcterms:identifier "Nanopublication"]];
     setl:hasContext '''{
-  "foaf" : "http://xmlns.com/foaf/0.1/"
+  "foaf" : "http://xmlns.com/foaf/0.1/",
+  "nanopub" : "http://www.nanopub.org/nschema#"
 }''';
     prov:value '''[
 {
@@ -118,18 +118,21 @@ result = table.iterrows()
           "@type" : "nanopub:Nanopublication",
           "sio:isAbout" : { "@id" : "https://example.com/social/{{row.ID}}" },
           "nanopub:hasAssertion" : {
-            "@id": "https://example.com/social/{{row.ID}}",
-            "@type": "foaf:Person",
-            "foaf:name": "{{row.Name}}",
-            "http://schema.org/spouse": [{
-              "@if" : "not isempty(row.MarriedTo)",
-              "@id" : "https://example.com/social/{{row.ID}}"
-            }],
-            "foaf:knows": [{
-              "@if" : "not isempty(row.Knows)",
-              "@for" : "friend in row.Knows.split('; ')",
-              "@do" : { "@id" : "https://example.com/social/{{friend}}" }
-            }]
+            "@id" : "{{np.assertion.identifier}}",
+            "@graph" : {
+              "@id": "https://example.com/social/{{row.ID}}",
+              "@type": "foaf:Person",
+              "foaf:name": "{{row.Name}}",
+              "http://schema.org/spouse": [{
+                "@if" : "not isempty(row.MarriedTo)",
+                "@id" : "https://example.com/social/{{row.ID}}"
+              }],
+              "foaf:knows": [{
+                "@if" : "not isempty(row.Knows)",
+                "@for" : "friend in row.Knows.split('; ')",
+                "@do" : { "@id" : "https://example.com/social/{{friend}}" }
+              }]
+            }
           }
         }
       ]
@@ -165,6 +168,6 @@ class SETLRAgentTestCase(AgentUnitTestCase):
         persons = list(self.app.db.subjects(RDF.type, URIRef('http://xmlns.com/foaf/0.1/Person')))
         self.assertEquals(len(persons), 4)
 
-        persons = list(self.app.db.subjects(RDF.type, self.app.NS.np.Nanopublication))
-        self.assertEquals(len(persons), 6)
+        nps = list(self.app.db.subjects(RDF.type, self.app.NS.np.Nanopublication))
+        self.assertEquals(len(nps), 4)
 

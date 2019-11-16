@@ -156,38 +156,45 @@ class NanopublicationManager(object):
         # self.db.store.nsBindings = {}
         stores = set()
         full_list = []
-        with tempfile.NamedTemporaryFile(delete=True) as data:
+        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'wb') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
             to_retire = set([x.identifier for x in nanopubs])
-            for np_graph in nanopubs:
-                stores.add(np_graph.store)
-                for entity in np_graph.assertion.subjects(self.app.NS.whyis.hasContent):
-                    localpart = self.db.qname(entity).split(":")[1]
-                    filename = secure_filename(localpart)
-                    f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
-                    print('adding file', filename)
-                    self.app.add_file(f, entity, np_graph)
-                    np_graph.assertion.remove((entity, self.app.NS.whyis.hasContent, None))
-
-                r = False
-                now = rdflib.Literal(datetime.utcnow())
-                for part in [np_graph.assertion.identifier,
-                             np_graph.pubinfo.identifier,
-                             np_graph.provenance.identifier]:
-                    np_query = '''select ?np where { ?np np:hasAssertion|np:hasProvenance|np:hasPublicationInfo ?x}'''
-                    replacing = [x for x, in self.db.query(np_query, initNs=dict(np=np), initBindings=dict(x=part))]
-                    to_retire = to_retire.union(replacing)
-                    
-                for revised in np_graph.pubinfo.objects(np_graph.assertion.identifier, prov.wasRevisionOf):
-                    for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
-                        np_graph.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
-                        to_retire.add(nanopub_uri)
-                        r = True
-                        print("Retiring", nanopub_uri)
-                if r:
-                    np_graph.pubinfo.set((np_graph.assertion.identifier, dc.modified, now))
+            for npg in nanopubs:
+                stores.add(npg.store)
+                if isinstance(npg, Nanopublication):
+                    to_process = [npg]
                 else:
-                    np_graph.pubinfo.set((np_graph.assertion.identifier, dc.created, now))
-                full_list.append(np_graph.identifier)
+                    to_process = [Nanopublication(store=npg.store, identifier=npuri)
+                                  for npuri in npg.subjects(rdflib.RDF.type, np.Nanopublication)]
+
+                for np_graph in to_process:
+                    for entity in np_graph.assertion.subjects(self.app.NS.whyis.hasContent):
+                        localpart = self.db.qname(entity).split(":")[1]
+                        filename = secure_filename(localpart)
+                        f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
+                        print('adding file', filename)
+                        self.app.add_file(f, entity, np_graph)
+                        np_graph.assertion.remove((entity, self.app.NS.whyis.hasContent, None))
+
+                    r = False
+                    now = rdflib.Literal(datetime.utcnow())
+                    for part in [np_graph.assertion.identifier,
+                                np_graph.pubinfo.identifier,
+                                np_graph.provenance.identifier]:
+                        np_query = '''select ?np where { ?np np:hasAssertion|np:hasProvenance|np:hasPublicationInfo ?x}'''
+                        replacing = [x for x, in self.db.query(np_query, initNs=dict(np=np), initBindings=dict(x=part))]
+                        to_retire = to_retire.union(replacing)
+                    
+                    for revised in np_graph.pubinfo.objects(np_graph.assertion.identifier, prov.wasRevisionOf):
+                        for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
+                            np_graph.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
+                            to_retire.add(nanopub_uri)
+                            r = True
+                            print("Retiring", nanopub_uri)
+                    if r:
+                        np_graph.pubinfo.set((np_graph.assertion.identifier, dc.modified, now))
+                    else:
+                        np_graph.pubinfo.set((np_graph.assertion.identifier, dc.created, now))
+                    full_list.append(np_graph.identifier)
 
             bnode_cache = {}
             def skolemize(x):
@@ -216,7 +223,6 @@ class NanopublicationManager(object):
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data)
-            print("Published %s nanopubs" % len(full_list))
 
         for n in full_list:
             self.update_listener(n)

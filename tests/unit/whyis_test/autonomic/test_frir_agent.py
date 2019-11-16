@@ -27,7 +27,6 @@ class SETLRAgentTestCase(AgentUnitTestCase):
         np = list(self.app.nanopub_manager.prepare(g))[0]
         self.app.nanopub_manager.publish(np)
 
-        print(np.serialize(format='trig').decode('utf8'))
         agent = autonomic.FRIRArchiver()
         results = self.run_agent(agent, nanopublication=np)
 
@@ -38,13 +37,9 @@ class SETLRAgentTestCase(AgentUnitTestCase):
         #data = file_handle.read()
         #digest = hashlib.sha256(data).hexdigest()
         #self.assertEquals(pmanif[digest], manifestation)
-        print(np.identifier, len(np), expression, manifestation)
         
         content = self.client.get("/about",query_string={"uri":manifestation},
                                   follow_redirects=True)
-        print(content.data.decode('utf8'))
         self.assertEquals(content.mimetype, "application/n-quads")
-        digest = hashlib.sha256(content.data).hexdigest()
-        print (pmanif[digest])
-        print(manifestation)
+        digest = hashlib.sha256(content.data).hexdigest().lstrip('0')
         self.assertEquals(pmanif[digest], manifestation)
