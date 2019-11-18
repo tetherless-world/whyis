@@ -35,6 +35,7 @@ Config = dict(
     nanopub_archive = {
         'depot.storage_path' : "/data/nanopublications",
     },
+    delete_archive_nanopubs = False,
 
     file_archive = {
         'cache_max_age' : 3600*24*7,

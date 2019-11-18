@@ -29,9 +29,14 @@ def view(name=None, format=None, view=None):
     fileid = resource.value(current_app.NS.whyis.hasFileID)
     if fileid is not None and 'view' not in request.args:
         print (resource.identifier, fileid)
-        f = current_app.file_depot.get(fileid)
-        fsa = FileServeApp(f, current_app.config["file_archive"].get("cache_max_age",3600*24*7))
-        return fsa
+        f = None
+        if current_app.file_depot.exists(fileid):
+            f = current_app.file_depot.get(fileid)
+        elif current_app.nanopub_depot.exists(fileid):
+            f = current_app.nanopub_depot.get(fileid)
+        if f is not None:
+            fsa = FileServeApp(f, current_app.config["file_archive"].get("cache_max_age",3600*24*7))
+            return fsa
             
     if content_type is None:
         content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
