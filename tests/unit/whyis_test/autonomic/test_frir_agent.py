@@ -58,3 +58,18 @@ class FRIRAgentTestCase(AgentUnitTestCase):
         self.app.nanopub_manager.retire(np.identifier)
         self.assertFalse(self.app.nanopub_depot.exists(fileid))
         
+    def test_no_self_archive(self):
+        self.login_new_user()
+        self.dry_run = False
+        
+        g = ConjunctiveGraph()
+        g.parse(data=PERSON_INSTANCE_TRIG, format="trig")
+        np = list(self.app.nanopub_manager.prepare(g))[0]
+        self.app.nanopub_manager.publish(np)
+
+        agent = autonomic.FRIRArchiver()
+        results = self.run_agent(agent, nanopublication=np)
+
+        second_results = self.run_agent(agent,nanopublication=results[0])
+        self.assertEquals(len(second_results),0)
+        

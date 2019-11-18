@@ -83,6 +83,7 @@ select distinct ?resource where {
         i.identifier.split('/')[-1]
         fileid = self.app.nanopub_depot.create(quads, i.identifier.split('/')[-1]+'.nq', "application/n-quads")
         o.add(rdflib.RDF.type, whyis.ArchivedNanopublication)
+        new_np.pubinfo.add((new_np.identifier, rdflib.RDF.type, whyis.FRIRNanopublication))
         expressions = dict([(part.identifier, self.expression_digest(part))
                             for part in [nanopub.assertion, nanopub.provenance, nanopub.pubinfo]])
         expressions[nanopub.identifier] = sum(expressions.values())
