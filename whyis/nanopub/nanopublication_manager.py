@@ -149,8 +149,7 @@ class NanopublicationManager(object):
         # session.delete(self.db.store.endpoint, data=[('c', c.n3()) for c in graphs])
 
     def is_current(self, nanopub_uri):
-        work = self.db.value(rdflib.URIRef(nanopub_uri), frbr.realizationOf)
-        return work is not None
+        return (rdflib.URIRef(nanopub_uri), rdflib.RDF.type, np.Nanopublication) in self.db
 
     def get_path(self, nanopub_uri):
         # print self.prefix, nanopub_uri
