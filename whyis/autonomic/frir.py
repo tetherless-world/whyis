@@ -56,8 +56,7 @@ class FRIRArchiver(UpdateChangeService):
     def __init__(self, expression_digest=rgda1_digest, manifestation_digest=sha256):
         self.expression_digest = expression_digest
         self.manifestation_digest = manifestation_digest
-        self.nanopub_depot = DepotManager.get('nanopublications')
-    
+        
     def getInputClass(self):
         return np.Nanopublication
 
@@ -82,7 +81,7 @@ select distinct ?resource where {
         nanopub = Nanopublication(i.graph.store, i.identifier)
         quads = nanopub.serialize(format="nquads")
         i.identifier.split('/')[-1]
-        fileid = self.nanopub_depot.create(quads, i.identifier.split('/')[-1]+'.nq', "application/n-quads")
+        fileid = self.app.nanopub_depot.create(quads, i.identifier.split('/')[-1]+'.nq', "application/n-quads")
         o.add(rdflib.RDF.type, whyis.ArchivedNanopublication)
         expressions = dict([(part.identifier, self.expression_digest(part))
                             for part in [nanopub.assertion, nanopub.provenance, nanopub.pubinfo]])
@@ -94,7 +93,7 @@ select distinct ?resource where {
             o.graph.add((work, rdflib.RDF.type, frbr.Work))
             o.graph.add((exp, rdflib.RDF.type, frbr.Expression))
         
-        with self.nanopub_depot.get(fileid) as stored_file:
+        with self.app.nanopub_depot.get(fileid) as stored_file:
             manifestation_id = self.manifestation_digest(stored_file)
         manifestation = pmanif[hex(manifestation_id)[2:]]
         o.graph.add((nanopub_expression_uri, frbr.embodiment, manifestation))
