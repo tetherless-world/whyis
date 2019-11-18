@@ -484,7 +484,7 @@ construct {
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name, self.NS.skos.notation]
 
         @lru_cache(maxsize=1000)
         def get_remote_label(uri):
