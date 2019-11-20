@@ -4,6 +4,9 @@ prefixes = dict(
     skos = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#"),
     foaf = rdflib.URIRef("http://xmlns.com/foaf/0.1/"),
     bds = rdflib.URIRef("http://www.bigdata.com/rdf/search#"),
+    schema = rdflib.URIRef("http://schema.org/"),
+    owl = rdflib.OWL,
+    rdfs = rdflib.RDFS,
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
         )
 
@@ -25,8 +28,8 @@ def resolve(graph, g, term, type=None, context=None):
         type_query = """
   ?node rdf:type <%s> .
 """ % type
-    print(type)
-    print(type_query)
+    #print(type)
+    #print(type_query)
 
     query = """
 select distinct
@@ -76,7 +79,7 @@ where {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
 } group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10""" % (term, type_query, context_query)
-    print(query)
+    #print(query)
     results = []
     for hit in graph.query(query, initNs=prefixes):
         result = hit.asdict()
