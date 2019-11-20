@@ -31,21 +31,24 @@ class TestCase(flask_testing.TestCase):
 
     
     def create_app(self):
-        from whyis import config_defaults
-
-        if 'admin_queryEndpoint' in config_defaults.Test:
-            del config_defaults.Test['admin_queryEndpoint']
-            del config_defaults.Test['admin_updateEndpoint']
-            del config_defaults.Test['knowledge_queryEndpoint']
-            del config_defaults.Test['knowledge_updateEndpoint']
+        try:
+            import config
+        except:
+            from whyis import config_defaults as config
+        
+        if 'admin_queryEndpoint' in config.Test:
+            del config.Test['admin_queryEndpoint']
+            del config.Test['admin_updateEndpoint']
+            del config.Test['knowledge_queryEndpoint']
+            del config.Test['knowledge_updateEndpoint']
 
         # Default port is 5000
-        config_defaults.Test['LIVESERVER_PORT'] = 8943
+        config.Test['LIVESERVER_PORT'] = 8943
         # Default timeout is 5 seconds
-        config_defaults.Test['LIVESERVER_TIMEOUT'] = 10
+        config.Test['LIVESERVER_TIMEOUT'] = 10
 
         from whyis.app_factory import app_factory
-        application = app_factory(config_defaults.Test, config_defaults.project_name)
+        application = app_factory(config.Test, config.project_name)
         application.config['TESTING'] = True
         application.config['WTF_CSRF_ENABLED'] = False
 
