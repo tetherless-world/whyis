@@ -15,7 +15,7 @@ from depot.manager import DepotManager
 from datetime import datetime
 import pytz
 
-from whyis.namespace import np, prov, dc, frbr
+from whyis.namespace import np, prov, dc, frbr, whyis
 from uuid import uuid4
 
 from datastore import create_id
@@ -120,17 +120,24 @@ class NanopublicationManager(object):
 
     def retire(self, *nanopub_uris):
         self.db.store.nsBindings = {}
-        graphs = []
+        #graphs = []
+        derived_query = '''select ?np where {
+  ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?r.
+  ?np a np:Nanopublication.
+''' + ('' if self.app.config.get('delete_archive_nanopubs',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
+}'''
         for nanopub_uri in nanopub_uris:
-            for np_uri, assertion, provenance, pubinfo in self.db.query('''select ?np ?assertion ?provenance ?pubinfo where {
-#    hint:Query hint:optimizer "Runtime" .
-    ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?retiree.
-    ?np np:hasAssertion ?assertion;
-        np:hasPublicationInfo ?pubinfo;
-        np:hasProvenance ?provenance.
-}''', initNs={"prov": prov, "np": np}, initBindings={"retiree": nanopub_uri}):
-                graphs.extend([np_uri, assertion, provenance, pubinfo])
+            for np_uri, in self.db.query(derived_query,
+                                         initNs={"prov": prov, "np": np, "whyis" : whyis},
+                                         initBindings={"r": nanopub_uri}):
+                #graphs.extend([np_uri, assertion, provenance, pubinfo])
                 nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
+                
+                for fileid in nanopub.objects(predicate=whyis.hasFileID):
+                    if self.app.file_depot.exists(fileid):
+                        self.app.file_depot.delete(fileid)
+                    elif self.app.nanopub_depot.exists(fileid):
+                        f = self.app.nanopub_depot.delete(fileid)                    
                 self.db.remove((None, None, None, nanopub.assertion.identifier))
                 self.db.remove((None, None, None, nanopub.provenance.identifier))
                 self.db.remove((None, None, None, nanopub.pubinfo.identifier))
@@ -221,7 +228,6 @@ class NanopublicationManager(object):
             self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data)
-            print("Published %s nanopubs" % len(full_list))
 
         for n in full_list:
             self.update_listener(n)

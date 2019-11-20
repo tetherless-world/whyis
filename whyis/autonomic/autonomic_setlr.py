@@ -92,6 +92,7 @@ class SETLr(UpdateChangeService):
         self.app.nanopub_manager.retire(*to_retire)
         # print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
+            print(output_graph)
             if setl_graph.resource(output_graph)[rdflib.RDF.type:whyis.NanopublicationCollection]:
                 self.app.nanopub_manager.publish(resources[output_graph])
             else:
@@ -101,13 +102,11 @@ class SETLr(UpdateChangeService):
                 triples = 0
                 for new_np in self.app.nanopub_manager.prepare(out_conjunctive):
                     self.explain(new_np, i, o)
-                    print("Publishing %s with %s assertions." % (new_np.identifier, len(new_np.assertion)))
                     to_publish.append(new_np)
 
                 # triples += len(new_np)
                 # if triples > 10000:
                 self.app.nanopub_manager.publish(*to_publish)
-            print("Published")
         for resource, obj in list(resources.items()):
             if hasattr(i, 'close'):
                 print("Closing", resource)

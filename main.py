@@ -33,6 +33,7 @@ from whyis import filters
 from whyis import search
 from whyis.blueprint.entity import entity_blueprint
 from whyis.blueprint.nanopub import nanopub_blueprint
+from whyis.blueprint.tableview import tableview_blueprint
 from whyis.blueprint.sparql import sparql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
@@ -247,8 +248,10 @@ class App(Empty):
         if self.file_depot is None:
             DepotManager.configure('files', self.config['file_archive'])
             self.file_depot = DepotManager.get('files')
-        if DepotManager.get('nanopublications') is None:
+        self.nanopub_depot = DepotManager.get('nanopublications')
+        if self.nanopub_depot is None:
             DepotManager.configure('nanopublications', self.config['nanopub_archive'])
+            self.nanopub_depot = DepotManager.get('nanopublications')
 
     def __weighted_route(self, *args, **kwargs):
         """
@@ -305,7 +308,7 @@ construct {
     ?o skos:prefLabel ?prefLabel.
     ?o dc:title ?title.
     ?o foaf:name ?name.
-    ?o ?pattr ?oatter.
+    ?o ?pattr ?oattr.
     ?oattr rdfs:label ?oattrlabel
 } where {
     graph ?g {
@@ -735,6 +738,7 @@ construct {
         self.register_blueprint(nanopub_blueprint)
         self.register_blueprint(sparql_blueprint)
         self.register_blueprint(entity_blueprint)
+        self.register_blueprint(tableview_blueprint)
 
     def get_entity_uri(self, name, format):
         content_type = None
