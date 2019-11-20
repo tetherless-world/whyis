@@ -162,7 +162,7 @@ class NanopublicationManager(object):
         # self.db.store.nsBindings = {}
         stores = set()
         full_list = []
-        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'wb') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
+        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'a+b') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
             to_retire = set([x.identifier for x in nanopubs])
             for npg in nanopubs:
                 stores.add(npg.store)
