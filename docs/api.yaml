@@ -7,13 +7,19 @@ info:
 paths:
   /?view=labels:
     get:
-      description: Crashes with the following error message: "jinja2.exceptions.UndefinedError: 'werkzeug.datastructures.ImmutableMultiDict object' has no attribute 'uris'"
-      #responses:
-      #  '500':
-      #    content:
-      #      application/json:
-      #        schema:
-      #          type: object
+      description: Returns a label for each specified URI. The label returned will be taken from, in order of priority: skos:prefLabel, rdfs:label, schema:name, dc:title, foaf:name, or schema:name.
+      parameters:
+      - name: uris
+        in: query
+        description: A comma-delimited list of URIs.
+        required: true
+      responses:
+        '200':
+         content:
+            application/json:
+              schema:
+                type: object
+                #it's a dict of uri : label but i have no idea how to represent this according to openapi
 
   /?view=latest:
     get:
@@ -39,7 +45,27 @@ paths:
 
   /?view=resolve:
     get:
-      description: Allows searching for terms by a number of properties representing plaintext identifiers (such as rdfs:label, dc:title, and foaf:name).
+      description: Allows searching for entities by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Entities of type sio:Term are excluded.
+      parameters:
+      - name: term
+        in: query
+        description: The string to search for
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: A url corresponding to an rdf:type. If present, only entities of the specified type will be returned.
+        required: false
+        schema:
+          type: string
+          format: url
+      - name: context
+        in: query
+        description: The string to search for
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           content:
