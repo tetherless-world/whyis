@@ -159,20 +159,33 @@ paths:
                         @id:
                           type: string
                           format: uri
-                          description: The URI of this property
+                          description: The URI of this attribute
                         label:
                           type: string
-                          description: The label of this property # TODO taken from the list of label properties
+                          description: The label of this attribute
                         values:
                           type: array
                           items:
                             #TODO
                   description:
-                    description: Basically the same as ?view=summary, I think #TODO
+                    description: A list of summary properties for the specified URI (see /?view=summary).
                     type: array
+                    items:
+                      type: object
+                      properties:
+                        @id:
+                          type: string
+                          format: url
+                          description: The URI of the summary predicate
+                        label:
+                          type: string
+                          description: A human-readable label for the summary predicate
+                        value:
+                          type: string
+                          description: The plaintext string that is the value of the summary property
                   label:
                     type: string
-                    description: The label of this resource, taken from the list of label properties # TODO Explain the list of label properties somewhere                        
+                    description: The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere                        
                   type:
                     description: A list of every rdf:type this resource is a member of.
                     type: array
@@ -267,13 +280,125 @@ paths:
               schema: #TODO
 
   #outgoing
-  #incoming
-  #describe
+  #incoming # most of the relevant code is in filters.py : mergeLink() # that's a _Lot_ of sparql # why are there no comments in filters.py
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          articles:
+            type: list
+          from:
+            type: list
+            items:
+              type: string
+              format: url
+          label:
+            type: string
+          link:
+            type: string
+            format: url
+          link_types:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                uri:
+                  type: string
+                  format: url
+          probability:
+            type: number
+          source:
+            type: string
+            format: url
+          source_label:
+            type: string
+          source_types:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
+                format: url
+          target:
+            type: string
+            format: url
+ 
+  /?view=describe:
+    get:
+      description: Returns every triple contained in a nanopublication assertion whose subject is the specified URI, and provides the rdfs:label. skos:prefLabel, dc:title, and foaf:name for the object of each of these triples. Additionally, for each of these triples where the predicate is sio:hasAttribute or sio:hasPart, all triples whose subject is the object of this triple, and the rdfs:label of their objects, will be returned as well.
+      parameters:
+      - name: uri
+        in: query
+        description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an "@id" field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is "@value" and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is "@id" and its value is the URI of the object.
+                  properties:
+                    @id:
+                      type: string
+                      format: url
+                      description: The URI of the subject of the triples this JSON object represents.
+                    @type:
+                      type: array
+                      items:
+                        type: string
+                        format: url
+                        description: The URI of an rdf:type of the subject. Only present in the object representing the URI being queried.
 
   ###### Class views ######
   
   /?view=constraints:
     get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    class:
+                      type: string
+                      format: url
+                    property:
+                      type: string
+                      format: url
+                    propertyLabel:
+                      type: string
+                    propertyType:
+                      type: string
+                      format: url
+                    range:
+                      type: string
+                      format: url
+                    rangeLabel:
+                      type: string
+                    superClass:
+                      type: string
+                      format: url
   
   /?view=facets:
     get:
@@ -312,7 +437,30 @@ paths:
                     
   
   #facet_values
-  #instance_data
+  
+  /?view=instance_data:
+    get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: variables
+        in: query
+        description:
+        required: false      
+      - name: constraints
+        in: query
+        description:
+        required: false
+      responses:
+        '200':
+          content:
+            application/json:
 
   #outgoing
   #incoming
