@@ -211,7 +211,7 @@ class NanopublicationManager(object):
                 return x
             for store in stores:
                 for s, p, o, c in rdflib.ConjunctiveGraph(store).quads():
-                    if 'BNODE_REWRITE' not in self.app.config or self.app.config['BNODE_REWRITE']:
+                    if self.app.config.get('BNODE_REWRITE', False):
                         s = skolemize(s)
                         o = skolemize(o)
                         # predicates can't be bnodes, and contexts have already been rewritten.
@@ -246,10 +246,11 @@ class NanopublicationManager(object):
         graph ?g { ?s ?p ?o}
         }''', initNs={'np':np}, initBindings={'np':nanopub_uri})
         for s, p, o, g in quads:
-            if instanceof(s, URIRef) and s.startswith('bnode:'):
-                s = rdflib.BNode(s.replace('bnode:','',1))
-            if instanceof(o, URIRef) and o.startswith('bnode:'):
-                o = rdflib.BNode(o.replace('bnode:','',1))
+            if self.app.config.get('BNODE_REWRITE', False):
+                if isinstance(s, rdflib.URIRef) and s.startswith('bnode:'):
+                    s = rdflib.BNode(s.replace('bnode:','',1))
+                if isinstance(o, rdflib.URIRef) and o.startswith('bnode:'):
+                    o = rdflib.BNode(o.replace('bnode:','',1))
             graph.add((s,p,o,g))
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
         return nanopub
