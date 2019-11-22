@@ -3,6 +3,7 @@ import flask_testing
 from flask import Response
 from rdflib import URIRef
 from typing import Optional, Dict
+from depot.manager import DepotManager
 
 class TestCase(flask_testing.TestCase):
 
@@ -41,6 +42,16 @@ class TestCase(flask_testing.TestCase):
             del config.Test['admin_updateEndpoint']
             del config.Test['knowledge_queryEndpoint']
             del config.Test['knowledge_updateEndpoint']
+        config.Test['TESTING'] = True
+        config.Test['WTF_CSRF_ENABLED'] = False
+        config.Test['nanopub_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
+        config.Test['DEFAULT_ANONYMOUS_READ'] = False
+        config.Test['file_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
+
 
         # Default port is 5000
         config.Test['LIVESERVER_PORT'] = 8943
@@ -49,16 +60,10 @@ class TestCase(flask_testing.TestCase):
 
         from whyis.app_factory import app_factory
         application = app_factory(config.Test, config.project_name)
-        application.config['TESTING'] = True
-        application.config['WTF_CSRF_ENABLED'] = False
-        application.config['nanopub_archive'] = {
-            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
-        }
-
-        application.config['DEFAULT_ANONYMOUS_READ'] = False
-        application.config['file_archive'] = {
-            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
-        }
+        
+        from depot.io.memory import MemoryFileStorage
+        application.nanopub_depot = DepotManager.from_config(config.Test['nanopub_archive'])
+        application.file_depot = DepotManager.from_config(config.Test['file_archive'])
 
         return application
 
