@@ -51,6 +51,14 @@ class TestCase(flask_testing.TestCase):
         application = app_factory(config.Test, config.project_name)
         application.config['TESTING'] = True
         application.config['WTF_CSRF_ENABLED'] = False
+        application.config['nanopub_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
+
+        application.config['DEFAULT_ANONYMOUS_READ'] = False
+        application.config['file_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
 
         return application
 
