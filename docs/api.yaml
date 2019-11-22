@@ -3,7 +3,6 @@ info:
   title: Whyis
   description: [to be added]
   version: 0.1.0
-  # TOS, contact, license all optional
 paths:
 
   ###### Homepage views ######
@@ -26,7 +25,7 @@ paths:
 
   /?view=latest:
     get:
-      description: Lists up to 20 of the most recently-changed entities, sorted from newest to oldest. # TODO How recently-changed?
+      description: Lists up to 20 of the most recently-changed entities, sorted from newest to oldest.
       responses:
         '200':
           content:
@@ -47,7 +46,7 @@ paths:
 
   /?view=resolve:
     get:
-      description: Allows searching for entities by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Entities of type sio:Term are excluded.
+      description: Allows searching for resources by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Resources of type sio:Term are excluded.
       parameters:
       - name: term
         in: query
@@ -57,15 +56,15 @@ paths:
           type: string
       - name: type
         in: query
-        description: A url corresponding to an rdf:type. If present, only entities of the specified type will be returned.
+        description: A url corresponding to an rdf:type. If present, only resources of the specified type will be returned.
         required: false
         schema:
           type: string
           format: url
       - name: context
         in: query
-        description: The string to search for
-        required: true
+        description: Additional plaintext to search for in the other attributes of the desired resource.
+        required: false
         schema:
           type: string
       responses:
@@ -84,29 +83,29 @@ paths:
                       description: The URI of the resource that was found
                     title:
                       type: string
-                      description: The dc:title of the resource
+                      description: The dc:title of the resource, if present
                     label:
                       type: string
-                      description: The rdfs:label of the resource
+                      description: The rdfs:label of the resource, if present
                     prefLabel:
                       type: string
-                      description: The skos:prefLabel of the resource
+                      description: The skos:prefLabel of the resource, if present
                     altLabel:
                       type: string
-                      description: The skos:altLabel of the resource
+                      description: The skos:altLabel of the resource, if present
                     name:
                       type: string
-                      description: The foaf:name of the resource
+                      description: The foaf:name of the resource, if present
                     identifier:
                       type: string
-                      description: The dc:identifier of the resource
+                      description: The dc:identifier of the resource, if present
                     score:
                       type: float
                       description: A representation of how closely this node matched the search term
 
   ###### Resource views ######
 
-  /?view=summary&uri={uri}:
+  /?view=summary:
     get:
       description: Returns a list of summary properties for the given resource URI. By default, summary properties are taken from skos:definition, schema:description, dc:abstract, dc:description, dc:summary. rdfs:comment, dcelements:description, obo:UAO_0000115, prov:value, and sio:hasValue. Additional summary properties may be specified by the application configuration.
       parameters:
@@ -118,11 +117,28 @@ paths:
           type: string
           format: uri
       responses:
-        '200': It returns a list of tuples (p,o) where p is taken from the list of summary properties and o is the value.
+        '200':
+          description: A list of tuples (p,o) where p is taken from the list of summary properties and o is the corresponding value
+          content:
+            application/json: 
+              schema:
+                type: array
+                items:
+                  type: array
+                  description: The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question.
+                
           
-  /?view=attributes&uri={uri}:
+  /?view=attributes:
     get:
       description: Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`. # ... And then it pipes them through this "attributes" filter that I haven't looked at yet? It does some sort of jsonld thing. something gets sorted by length?
+      parameters:
+      - name: uri
+        in: query
+        description: URI to display attributes for
+        required: true
+        schema:
+          type: string
+          format: uri
       responses:
         '200':
           content:
@@ -133,23 +149,168 @@ paths:
                   @id:
                     type: string
                     format: uri
+                    description: The URI of this resource.
                   attributes:
+                    description: #TODO
                     type: array
-                  description: #something returned from get_summary
+                    items:
+                      type: object
+                      properties:
+                        @id:
+                          type: string
+                          format: uri
+                          description: The URI of this property
+                        label:
+                          type: string
+                          description: The label of this property # TODO taken from the list of label properties
+                        values:
+                          type: array
+                          items:
+                            #TODO
+                  description:
+                    description: Basically the same as ?view=summary, I think #TODO
                     type: array
                   label:
                     type: string
+                    description: The label of this resource, taken from the list of label properties # TODO Explain the list of label properties somewhere                        
                   type:
+                    description: A list of every rdf:type this resource is a member of.
                     type: array
+                    items:
+                      type: object
+                      description: Represents one rdf:type this resource is a member of
+                      properties:
+                        @id: 
+                          type: string
+                          format: url
+                          description: The URI the rdf:type
+                        label:
+                          type: string
+                          description: The label of the rdf:type, taken from the list of label properties
+                        
+  /?view=nanopublications:
+    get:
+      description: Lists nanopublications that are about (as sio:isAbout) the specified URI, or that have the specified URI as the subject of their assertion.
+      parameters:
+      - name: uri
+        in: query
+        description: URI to display nanopublications for
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                description: Information about one nanopublication
+                properties:
+                  np:
+                    type: string
+                    format: uri
+                    description: The URI of this nanopublication
+                  created:
+                    type: string
+                    format: timestamp
+                    description: The date and time when this nanopublication was originally created
+                  updated:
+                    type: string
+                    format: timestamp
+                    description: The date and time when this nanopublication was most recently modified, or the creation date if it has not been modified
+                  quoted:
+                    type: string
+                    format: uri
+                    description: The URI of another nanopublication that this nanopublication's assertion was quoted from
+                  about:
+                    type: string
+                    format: uri
+                    description: The URI of the topic of this nanopublication, as defined by sio:isAbout
+                  contributor:
+                    type: string
+                    format: uri
+                    description: The URI of a dc:contributor of this nanopublication.
+                  derived_from:
+                    type: string
+                    format: uri
+                    description: The URI of a resource this nanopublication was derived from (as prov:wasDerivedFrom).
+                  generation_type:
+                    type: string
+                    format: uri
+                    description: The type of the activity that generated this nanopublication, as defined by prov:wasGeneratedBy.
+                  content:
+                    type: string
+                    description: The sioc:content of this nanopublication.
+                  reply_of:
+                    type: string
+                    format: uri
+                    description: The URI of a resource this nanopulbication is a reply to (as sioc:reply_of).
+                  
 
-  #related
+  /?view=related&uri={uri}:
+    get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: #TODO
+
   #outgoing
   #incoming
   #describe
 
   ###### Class views ######
-  #constraints
-  #facets
+  
+  /?view=constraints:
+    get:
+  
+  /?view=facets:
+    get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    class:
+                      type: string
+                    label:
+                      type: string
+                    facetId:
+                      type: string
+                    predicate:
+                      type: string
+                    typeProperty:
+                      type: string
+                    specifier:
+                      type: string
+                    propertyType:
+                      type: string
+                    
+  
   #facet_values
   #instance_data
 
