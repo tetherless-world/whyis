@@ -245,6 +245,11 @@ class NanopublicationManager(object):
         ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g.
         graph ?g { ?s ?p ?o}
         }''', initNs={'np':np}, initBindings={'np':nanopub_uri})
-        graph.addN(quads)
+        for s, p, o, g in quads:
+            if instanceof(s, URIRef) and s.startswith('bnode:'):
+                s = rdflib.BNode(s.replace('bnode:','',1))
+            if instanceof(o, URIRef) and o.startswith('bnode:'):
+                o = rdflib.BNode(o.replace('bnode:','',1))
+            graph.add((s,p,o,g))
         nanopub = Nanopublication(store=graph.store, identifier=nanopub_uri)
         return nanopub
