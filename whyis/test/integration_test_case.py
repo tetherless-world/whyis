@@ -1,33 +1,11 @@
 import urllib.request, urllib.error, urllib.parse
 from flask import Flask, g
-from flask_testing import TestCase
+from .test_case import TestCase
 from flask_login import login_user, current_user, current_app
 import requests
 
 
 class IntegrationTestCase(TestCase):
-
-    def create_app(self):
-        from whyis.app_factory import app_factory
-        from depot.manager import DepotManager
-        import config_defaults
-
-        if 'admin_queryEndpoint' in config_defaults.Test:
-            del config_defaults.Test['admin_queryEndpoint']
-            del config_defaults.Test['admin_updateEndpoint']
-            del config_defaults.Test['knowledge_queryEndpoint']
-            del config_defaults.Test['knowledge_updateEndpoint']
-
-        # Default port is 5000
-        config_defaults.Test['LIVESERVER_PORT'] = 8943
-        # Default timeout is 5 seconds
-        config_defaults.Test['LIVESERVER_TIMEOUT'] = 10
-
-        application = app_factory(config_defaults.Test, config_defaults.project_name)
-        application.config['TESTING'] = True
-        application.config['WTF_CSRF_ENABLED'] = False
-
-        return application
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='Admin'):
         import commands

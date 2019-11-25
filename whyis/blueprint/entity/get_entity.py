@@ -27,8 +27,9 @@ def view(name=None, format=None, view=None):
 
     # 'view' is the default view
     fileid = resource.value(current_app.NS.whyis.hasFileID)
+    print('Finding file id for ',resource.identifier, fileid, current_app.db.store)
     if fileid is not None and 'view' not in request.args:
-        print (resource.identifier, fileid)
+        print (resource.identifier, fileid, type(current_app.nanopub_depot))
         f = None
         if current_app.file_depot.exists(fileid):
             f = current_app.file_depot.get(fileid)

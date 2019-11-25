@@ -40,10 +40,10 @@ class FRIRAgentTestCase(AgentUnitTestCase):
         # running the tests. The get_entity blueprint seems to be
         # using the manage.py app.
         
-        #print(content.data.decode('utf8'))
-        #self.assertEquals(content.mimetype, "application/n-quads")
-        #digest = hashlib.sha256(content.data).hexdigest().lstrip('0')
-        #self.assertEquals(pmanif[digest], manifestation)
+        print(content.data.decode('utf8'))
+        self.assertEquals(content.mimetype, "application/n-quads")
+        digest = hashlib.sha256(content.data).hexdigest().lstrip('0')
+        self.assertEquals(pmanif[digest], manifestation)
 
     def test_archive_deletion(self):
         self.login_new_user()
