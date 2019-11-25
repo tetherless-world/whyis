@@ -171,7 +171,6 @@ class NanopublicationManager(object):
                 else:
                     to_process = [Nanopublication(store=npg.store, identifier=npuri)
                                   for npuri in npg.subjects(rdflib.RDF.type, np.Nanopublication)]
-
                 for np_graph in to_process:
                     for entity in np_graph.assertion.subjects(self.app.NS.whyis.hasContent):
                         localpart = self.db.qname(entity).split(":")[1]
