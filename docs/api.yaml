@@ -130,7 +130,7 @@ paths:
           
   /?view=attributes:
     get:
-      description: Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`. # ... And then it pipes them through this "attributes" filter that I haven't looked at yet? It does some sort of jsonld thing. something gets sorted by length?
+      description: Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`.
       parameters:
       - name: uri
         in: query
@@ -151,7 +151,7 @@ paths:
                     format: uri
                     description: The URI of this resource.
                   attributes:
-                    description: #TODO
+                    description: A list of attributes of this URI
                     type: array
                     items:
                       type: object
@@ -165,8 +165,13 @@ paths:
                           description: The label of this attribute
                         values:
                           type: array
+                          description: A list of values this attribute takes
                           items:
-                            #TODO
+                            type: object
+                            properties:
+                              value:
+                                type: string
+                                description: One value this attribute takes
                   description:
                     description: A list of summary properties for the specified URI (see /?view=summary).
                     type: array
@@ -211,7 +216,7 @@ paths:
         required: true
         schema:
           type: string
-          format: uri
+          format: url
       responses:
         '200':
           application/json:
@@ -223,8 +228,7 @@ paths:
                 properties:
                   np:
                     type: string
-                    format: uri
-                    description: The URI of this nanopublication
+                    description: An identifier for this nanopublication
                   created:
                     type: string
                     format: timestamp
@@ -245,6 +249,7 @@ paths:
                     type: string
                     format: uri
                     description: The URI of a dc:contributor of this nanopublication.
+                  contributor_label: #TODO
                   derived_from:
                     type: string
                     format: uri
@@ -262,73 +267,170 @@ paths:
                     description: The URI of a resource this nanopulbication is a reply to (as sioc:reply_of).
                   
 
-  /?view=related&uri={uri}:
+  /?view=related:
     get:
       description:
       parameters:
       - name: uri
         in: query
-        description:
+        description: #TODO
         required: true
         schema:
           type: string
-          format: uri
+          format: url
       responses:
         '200':
           content:
             application/json:
-              schema: #TODO
+              schema:
+                type: list
+                objects:
+                  type: object
+                  description: A description of a related node
+                  properties:
+                    idf:
+                    label:
+                      type: string
+                      description: The label of this related node
+                    node:
+                      type: string
+                      format: url
+                      description: The URI of this related node
+                    relation:
+                      type: string
+                      format: url
+                      description: The RDF property linking this related node and the specified URI
+                    tf:
+                    tfidf:
+                    type:
+                      type: string
+                      format: url
+                      description: The rdf:type of this related node
 
-  #outgoing
-  #incoming # most of the relevant code is in filters.py : mergeLink() # that's a _Lot_ of sparql # why are there no comments in filters.py
-    schema:
-      type: array
-      items:
-        type: object
-        properties:
-          articles:
-            type: list
-          from:
-            type: list
-            items:
-              type: string
-              format: url
-          label:
-            type: string
-          link:
-            type: string
-            format: url
-          link_types:
-            type: array
-            items:
-              type: object
-              properties:
-                label:
-                  type: string
-                uri:
-                  type: string
-                  format: url
-          probability:
-            type: number
-          source:
-            type: string
-            format: url
-          source_label:
-            type: string
-          source_types:
-            type: array
-            items:
-              type: array
-              items:
-                type: string
-                format: url
-          target:
-            type: string
-            format: url
+  /?view=outgoing:
+    get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description: #TODO
+        required: true
+        schema:
+          type: string
+          format: url
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    articles:
+                      type: list
+                    from:
+                      type: list
+                      items:
+                        type: string
+                        format: url
+                    label:
+                      type: string
+                    link:
+                      type: string
+                      format: url
+                    link_types:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          label:
+                            type: string
+                          uri:
+                            type: string
+                            format: url
+                    probability:
+                      type: number
+                    source:
+                      type: string
+                      format: url
+                    source_label:
+                      type: string
+                    source_types:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: string
+                          format: url
+                    target:
+                      type: string
+                      format: url
+
+
+  /?view=incoming:
+    get:
+      description:
+      parameters:
+      - name: uri
+        in: query
+        description: #TODO
+        required: true
+        schema:
+          type: string
+          format: url
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    articles:
+                      type: list
+                    from:
+                      type: list
+                      items:
+                        type: string
+                        format: url
+                    label:
+                      type: string
+                    link:
+                      type: string
+                      format: url
+                    link_types:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          label:
+                            type: string
+                          uri:
+                            type: string
+                            format: url
+                    probability:
+                      type: number
+                    source:
+                      type: string
+                      format: url
+                    source_label:
+                      type: string
+                    source_types:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: string
+                          format: url
+                    target:
+                      type: string
+                      format: url
  
   /?view=describe:
     get:
-      description: Returns every triple contained in a nanopublication assertion whose subject is the specified URI, and provides the rdfs:label. skos:prefLabel, dc:title, and foaf:name for the object of each of these triples. Additionally, for each of these triples where the predicate is sio:hasAttribute or sio:hasPart, all triples whose subject is the object of this triple, and the rdfs:label of their objects, will be returned as well.
+      description: Returns all triples that have the given entity as their subject and that originated in the assertion of a nanopublication. If the objects of these triples have human-readable names (specified as `rdfs:label`, `skos:prefLabel`, `dc:title`, or `foaf:name`), these will be returned as well. If there are any `sio:hasAttribute` or `sio:hasPart` relationships specified for the given entity, then all triples whose subject is the attribute or part will be returned, as well as the `rdfs:label` of their objects.
       parameters:
       - name: uri
         in: query
@@ -362,11 +464,11 @@ paths:
   
   /?view=constraints:
     get:
-      description:
+      description: #TODO
       parameters:
       - name: uri
         in: query
-        description:
+        description: #TODO
         required: true
         schema:
           type: string
@@ -402,11 +504,11 @@ paths:
   
   /?view=facets:
     get:
-      description:
+      description: #TODO
       parameters:
       - name: uri
         in: query
-        description:
+        description: #TODO
         required: true
         schema:
           type: string
@@ -435,12 +537,9 @@ paths:
                     propertyType:
                       type: string
                     
-  
-  #facet_values
-  
-  /?view=instance_data:
+  /?view=facet_values: # what's include(facets) do
     get:
-      description:
+      description: #TODO
       parameters:
       - name: uri
         in: query
@@ -449,13 +548,64 @@ paths:
         schema:
           type: string
           format: uri
-      - name: variables
-        in: query
-        description:
-        required: false      
       - name: constraints
         in: query
+        description: A JSON list of sparql constraints
+        required: false
+        schema:
+          type: list
+          items:
+            type: string
+            description: A SPARQL constraint
+      - name: variables
+        in: query
+        description: A JSON list of 
+        schema:
+          type: list
+          items:
+            type: object
+            properties:
+              field:
+              predicate:
+              typeProperty:
+              unit:
+              unitPredicate:
+              value:
+              valuePredicate:
+  
+
+  /?view=instance_data:
+    get:
+      description: #TODO
+      parameters:
+      - name: uri
+        in: query
         description:
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: constraints
+        in: query
+        description: A JSON list of sparql constraints
+        required: false      
+      - name: variables
+        in: query
+        description: A JSON list of 
+        schema:
+          type: list
+          items:
+            type: object
+            properties:
+              field:
+              predicate:
+              selectionType:
+              specifier:
+              typeProperty:
+              unit:
+              unitPredicate:
+              valuePredicate:
+              
         required: false
       responses:
         '200':
@@ -471,4 +621,21 @@ paths:
   #describe
 
   ###### Nanopublication views ######
-  #describe
+  
+  ?view=describe:
+      get:
+      description: Returns a JSON-LD representation of this nanpublication.
+      parameters:
+      - name: uri
+        in: query
+        description: The URI of the nanopublication to represent
+        required: true
+        schema:
+          type: string
+          format: uri
+      responses:
+        '200':
+          content:
+            application/json:
+              description: An array of three elements, which correspond to a nanopublication, its assertion, and its publication info, each of which is expressed as a JSON-LD serialization of RDF data.
+       
