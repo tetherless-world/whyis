@@ -4,6 +4,7 @@ import urllib.request, urllib.parse, urllib.error
 
 
 class ListRoutes(Command):
+    """Display all valid routes in the application"""
     def run(self):
         output = []
         for rule in current_app.url_map.iter_rules():

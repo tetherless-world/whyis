@@ -51,9 +51,12 @@ class Nanopublication(rdflib.ConjunctiveGraph):
         if self._assertion is None:
             assertion = self.nanopub_resource.value(np.hasAssertion)
             if assertion is None:
-                assertion = self.resource(self.identifier + "_assertion")
+                if isinstance(self.identifier, rdflib.BNode):
+                    assertion = self.resource(rdflib.BNode())
+                else:
+                    assertion = self.resource(self.identifier + "_assertion")
                 assertion.add(rdflib.RDF.type, np.Assertion)
-                self.nanopub_resource.add(np.hasAssertion, assertion)
+                self.add((self.identifier, np.hasAssertion, assertion.identifier))
             self._assertion = rdflib.Graph(store=self.store, identifier=assertion.identifier)
         return self._assertion
 
@@ -64,9 +67,12 @@ class Nanopublication(rdflib.ConjunctiveGraph):
         if self._pubinfo is None:
             pubinfo = self.nanopub_resource.value(np.hasPublicationInfo)
             if pubinfo is None:
-                pubinfo = self.resource(self.identifier + "_pubinfo")
+                if isinstance(self.identifier, rdflib.BNode):
+                    pubinfo = self.resource(rdflib.BNode())
+                else:
+                    pubinfo = self.resource(self.identifier + "_pubinfo")
                 pubinfo.add(rdflib.RDF.type, np.PublicationInfo)
-                self.nanopub_resource.add(np.hasPublicationInfo, pubinfo)
+                self.add((self.identifier, np.hasPublicationInfo, pubinfo.identifier))
             self._pubinfo = rdflib.Graph(store=self.store, identifier=pubinfo.identifier)
         return self._pubinfo
 
@@ -77,9 +83,12 @@ class Nanopublication(rdflib.ConjunctiveGraph):
         if self._provenance is None:
             provenance = self.nanopub_resource.value(np.hasProvenance)
             if provenance is None:
-                provenance = self.resource(self.identifier + "_provenance")
+                if isinstance(self.identifier, rdflib.BNode):
+                    provenance = self.resource(rdflib.BNode())
+                else:
+                    provenance = self.resource(self.identifier + "_provenance")
                 provenance.add(rdflib.RDF.type, np.Provenance)
-                self.nanopub_resource.add(np.hasProvenance, provenance)
+                self.add((self.identifier, np.hasProvenance, provenance.identifier))
             self._provenance = rdflib.Graph(store=self.store, identifier=provenance.identifier)
         return self._provenance
 

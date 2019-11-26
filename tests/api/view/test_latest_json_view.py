@@ -1,10 +1,17 @@
-from ..api_test_data import HOME_INSTANCE_URI, PERSON_INSTANCE_TURTLE
+from ..api_test_data import PERSON_INSTANCE_TURTLE
 from whyis.test.api_test_case import ApiTestCase
 import json
 
 
 class TestLatestJsonView(ApiTestCase):
     def test(self):
+        try:
+            import config
+        except:
+            from whyis import config_defaults as config
+        
+        HOME_INSTANCE_URI = config.LOD_PREFIX + "/Home"
+
         self.login_new_user()
 
         self.post_nanopub(data=PERSON_INSTANCE_TURTLE,

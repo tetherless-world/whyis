@@ -20,7 +20,7 @@ SETLr itself is powerful enough to support the creation of named graphs, which l
 SETLr in Whyis also supports the parameterization of SETL scripts by file type.
 Users can upload files to nodes by HTTP POSTing a file to a node's URI.
 The node then represents that file.
-When adding new metadata about that node, it can include \emph{rdf:type}.
+When adding new metadata about that node, it can include *rdf:type*.
 If a file node has a type that matches one that is used in a SETL script, the file is converted using that script into RDF.
 This lets users (and developers) upload domain-specific file types to contribute knowledge.
 We have provided an example that supports the [conversion of BibTeX files into publication metadata](https://raw.githubusercontent.com/tetherless-world/whyis/master/setl_scripts/bibtex.setl.ttl) that is compatible with Digital Object Identifier (DOI) Linked Data.
@@ -31,11 +31,11 @@ We have provided an example that supports the [conversion of BibTeX files into p
   
   Revisions are expressed by creating a new nanopublication and marking it as a *prov:wasRevisionOf* the original. 
 The revision and anything that *prov:wasDerivedFrom* the prior version are "retired", or removed from the RDF database. 
-Retired nanopublication are still accessible as linked data from a file archive that stores all nanopublications ever published in the knowledge graph. 
+Retired nanopublications are still accessible as linked data from a file archive that stores all nanopublications ever published in the knowledge graph. 
 It is therefore possible to query on current knowledge, but trace back to historical knowledge.
-The use of *prov:wasDerivedFrom}* is essential to truth maintenance, in that agents (and other users of the knowledge graph) are expected to enumerate the nanopublications they use to produce additional knowledge.
+The use of *prov:wasDerivedFrom* is essential to truth maintenance, in that agents (and other users of the knowledge graph) are expected to enumerate the nanopublications they use to produce additional knowledge.
 Whyis is fundamentally organized around the nanopublication as an atom of knowledge and provenance as the means of tracking and organizing that knowledge. 
-Every statement in the knowledge graph is part of a nanopublication, and meta-knowledge, like the probability of a  knowledge statement, is expressed as a nanopublication that talks about other nanopublications.
+Every statement in the knowledge graph is part of a nanopublication, and meta-knowledge, like the probability of a knowledge statement, is expressed as a nanopublication that talks about other nanopublications.
 
 ### On Demand Load
 
@@ -76,7 +76,7 @@ For all nodes that are of type *sio:Protein*, when a user visits the node page, 
 sio:Protein whyis:hasView "protein_view.html".
 ```
 
-If different views for a type are desired, developers can define those custom views. For instance, if the code below is added to the vocabulary, when the page for a given protein is given the parameter `view=structure`, the `protein\_structure\_view.html` template will be used.
+If different views for a type are desired, developers can define those custom views. For instance, if the code below is added to the vocabulary, when the page for a given protein is given the parameter `view=structure`, the `protein_structure_view.html` template will be used.
 Other templates can be used for the same view, if the same predicate is used to link types to the desired template.
 In BioKG, this capability is used to provide biology-specific incoming and outgoing link results.
 For more details, please see the [view documentation](http://tetherless-world.github.io/whyis/views).
@@ -113,22 +113,22 @@ The agent framework provides custom inference capability, and is composed of a S
 The agent is invoked when new nanopublications are added to the knowledge graph that match the SPARQL query defined by the agent.
 Developers can choose to run this query either on just the single nanopublication that has been added, or on the entire graph.
 Whole-graph queries will need to exclude query matches that would cause the agent to be invoked over and over.
-This can take some consideration for complex cases, but  excluding similar knowledge to the expected output or nodes that have already had the agent run on them will often suffice.
+This can take some consideration for complex cases, but excluding similar knowledge to the expected output or nodes that have already had the agent run on them will often suffice.
 The function *head* is invoked on each query match.
 This function can produce unqualified RDF or full nanopublications.
-The agent superclass will assign some basic provenance and publication information related to the given inference activity, but developers can expand on this by overriding the *explain()* function.  
+The agent superclass will assign some basic provenance and publication information related to the given inference activity, but developers can expand on this by overriding the *explain()* function. 
 
 ### Custom Rules
-  
+ 
 > As a knowledge graph developer, I can add custom deductive rules so that I can expand the knowledge graph using domain-specific rule expansion knowledge.
 
-Whyis  provides support for custom deductive rules using the autonomic.Deductor class.
-Developers can write rules by providing a \textit{construct} clause as the head and a \textit{where} clause as the body.
+Whyis provides support for custom deductive rules using the autonomic.Deductor class.
+Developers can write rules by providing a _construct_ clause as the head and a _where_ clause as the body.
 
 ### Standard Inferencing
-  
+ 
 > As a knowledge graph developer, I can add deductive inferencing support for standard entailment regimes, like RDFS, OWL 2 profiles (DL, RL, QL, and EL) so that I can query over the deductive closure of the graph as well as the explicit inferences.
-  
+ 
 Whyis provides customized Deductor instances that are collected up into OWL 2 partial profiles (with an eye towards near-term completion of them) for OWL 2 EL, RL, and QL.
 
 ### NLP Support
@@ -140,6 +140,6 @@ Default inference agent types include some NLP support, including entity detecti
 ### Truth Maintenance
 
 > As a knowledge graph system, I apply generalized truth maintenance to all inferred knowledge, regardless of source, so that revisions to the graph maintain consistency with itself.
-  
+ 
 Truth maintenance is performed through derivation tracing. When a nanopublication is retired from the knowledge graph, either through revision or retirement, all nanopublications that are transitively derived from (*prov:wasDerivedFrom*) the original nanopublication are also retired.
-When a revision occurs, the inclusion of a new nanopublication  triggers inference agents to be run on its content, creatiing a re-calculation cascade in the case of revisions.
+When a revision occurs, the inclusion of a new nanopublication triggers inference agents to be run on its content, creating a re-calculation cascade in the case of revisions.

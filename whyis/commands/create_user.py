@@ -14,16 +14,12 @@ class CreateUser(Command):
 
     def get_options(self):
         return [
-            Option('--email', '-e', dest='email',
-                   type=str),
-            Option('--password', '-p', dest='password',
-                   type=str),
-            Option('--fn', '-f', dest='fn',
-                   type=str),
-            Option('--ln', '-l', dest='ln',
-                   type=str),
-            Option('--username', '-u', dest='identifier', type=str),
-            Option('--roles', dest="roles", type=str)
+            Option('-e', '--email', dest='email', help='Email address for this user', type=str),
+            Option('-p', '--password', dest='password', help='Password for this user', type=str),
+            Option('-f', '--fn', dest='fn', help='First name of this user', type=str),
+            Option('-l', '--ln', dest='ln', help='Last name of this user', type=str),
+            Option('-u', '--username', dest='identifier', help='Username for this user', type=str, required=True),
+            Option('--roles', dest="roles", help='Comma-delimited list of role names', type=str)
         ]
 
     def run(self, email, password, fn, ln, identifier, roles=[]):

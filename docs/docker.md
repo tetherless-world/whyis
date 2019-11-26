@@ -31,19 +31,45 @@ On Mac OS X you must allow Docker to mount these directories by going into Docke
 
 #### Prerequisites
 * Docker
+* Create and share `/data` (see Common Concerns) 
 
 #### Instructions
 Each run of the container should be considered a fresh slate for your Whyis application to be run on. In other words, *most* changes done to the container will be erased after each run. 
 
-To start the monolithic image from Dockerhub, run:
+To start the monolithic image from Dockerhub in detached mode, run:
 
-    docker run -p 80:80 -it tetherlessworld/whyis
+    docker run -p 80:80 -p 5000:5000 -d -it tetherlessworld/whyis
 
-This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). To just pull the image or update the image to the latest version, run:
+This will automatically download the `latest` version of the `whyis` image from the [Docker Hub](https://hub.docker.com/r/tetherlessworld/whyis/). It will also print out your container ID and map ports 80 and 5000 to the host machine.
+
+Once the docker image is running, you will need to open a new terminal and open a shell into the docker container.
+
+To find the container ID, run:
 
 ```shell
-$ docker pull tetherlessworld/whyis
+docker ps
 ```
+
+To open a shell inside the docker container
+
+```shell
+docker exec -it <container_id> bash
+```
+
+This works on Linux systems and in the Windows command prompt. Some third-party shells on Windows (such as git bash), may require instead using
+
+```shell
+winpty docker exec -it <container_id> bash
+```
+
+
+To just pull the image or update the image to the latest version, run:
+
+```shell
+docker pull tetherlessworld/whyis
+```
+
+To verify that the server is working correctly, open a browser to `localhost:80`. This should display a Whyis login screen.
 
 ### Development
 
@@ -95,7 +121,7 @@ Similar to the monolithic image, the _whyis-server_ image is built from multiple
     ./build-deps.sh
     ./push-deps.sh
 
-The `db/docker-compose.yml` can be used to start the databases without the server, so that the server can e.g., be run locally:
+The `db/docker-compose.yml` can be used to start the databases without the server, so that (for example) the server can be run locally:
 
     cd docker-compose/split
     docker-compose -f db/docker-compose.yml

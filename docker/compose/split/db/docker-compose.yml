@@ -3,8 +3,8 @@ services:
   redis:
     container_name: "redis"
     image: "redis:3.0.6-alpine"
-    ports:
-      - "127.0.0.1:6379:6379"
+    expose:
+      - 6379
     volumes:
       - ./../../../../../../data/redis:/data
   blazegraph:
@@ -15,7 +15,5 @@ services:
       dockerfile: docker/image/whyis-blazegraph/Dockerfile
     container_name: "blazegraph"
     image: tetherlessworld/whyis-blazegraph:${WHYIS_IMAGE_TAG:-latest}
-    ports:
-      - "127.0.0.1:8080:8080"
     volumes:
       - ./../../../../../../data:/data

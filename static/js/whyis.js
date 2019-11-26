@@ -1050,11 +1050,11 @@ function whyis() {
                 }
             }
             nanopubs.forEach(function(nanopub) {
-                nanopub.np_local_url = nanopub.np.replace(LOD_PREFIX,'');
+                nanopub.np_local_url = ROOT_URL+"about?uri="+nanopub.np;
                 if (nanopub.modified) nanopub.modified = new Date(nanopub.modified);
                 if (nanopub.created) nanopub.created = new Date(nanopub.created);
                 if (nanopub.updated) nanopub.updated = new Date(nanopub.updated);
-                workMap[nanopub.work] = nanopub;
+                workMap[nanopub.np] = nanopub;
                 npMap[nanopub.np] = nanopub;
                 nanopub.replies = [];
                 nanopub.derivations = [];
@@ -2615,7 +2615,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     if (!d.type) 
                         d.type = "basic";
                 },
-                'http://www.w3.org/2002/07/owl#DataProperty' : function(d) {
+                'http://www.w3.org/2002/07/owl#DatatypeProperty' : function(d) {
                     d.name = d.label;
                     if (!d.facetId)
                         d.facetId = b64_sha256(d.property);

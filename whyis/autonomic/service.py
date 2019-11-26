@@ -59,7 +59,7 @@ class Service(sadi.Service):
         results = []
         for i in instances:
             print("Processing", i.identifier, self)
-            output_nanopub = Nanopublication()
+            output_nanopub = self.app.nanopub_manager.new()
             o = output_nanopub.assertion.resource(i.identifier)  # OutputClass(i.identifier)
             error = False
             try:
@@ -69,7 +69,6 @@ class Service(sadi.Service):
                     (output_nanopub.assertion.identifier, self.app.NS.sioc.content, rdflib.Literal(str(e))))
                 logging.exception("Error processing resource %s in nanopub %s" % (i.identifier, inputGraph.identifier))
                 error = True
-            print("Output Graph", output_nanopub.identifier, len(output_nanopub))
             for new_np in self.app.nanopub_manager.prepare(rdflib.ConjunctiveGraph(store=output_nanopub.store)):
                 if len(new_np.assertion) == 0 and not error:
                     continue
@@ -78,6 +77,8 @@ class Service(sadi.Service):
                 # print new_np.serialize(format="trig")
                 if not self.dry_run:
                     self.app.nanopub_manager.publish(new_np)
+                else:
+                    print("Not publishing",new_np.identifier,", dry run.")
                 results.append(new_np)
         return results
 
