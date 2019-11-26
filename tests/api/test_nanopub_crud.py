@@ -26,16 +26,24 @@ class TestNanopubCrud(ApiTestCase):
 
     def test_bnode_rewrite(self):
         self.login_new_user()
+        self.app.config['BNODE_REWRITE'] = True
         response = self.post_nanopub(data=PERSON_INSTANCE_BNODE_TURTLE,
                                         content_type="text/turtle",
                                         expected_headers=["Location"])
 
+        rewritten_bnode_subjects = [s for s,p,o,context in self.app.db.quads()
+                                    if isinstance(s, URIRef) and s.startswith('bnode:')]
+        bnode_subjects = [s for s,p,o,context in self.app.db.quads() if isinstance(s, BNode)]
+        self.assertEquals(len(rewritten_bnode_subjects),1)
+        self.assertEquals(len(bnode_subjects), 0)
+
+        # Nanopublication bnodes should, when retrieved, get turned back into bnodes
         nanopub = self.app.nanopub_manager.get(URIRef(response.headers['Location']))
         rewritten_bnode_subjects = [s for s,p,o,context in nanopub.quads()
                                     if isinstance(s, URIRef) and s.startswith('bnode:')]
         bnode_subjects = [s for s,p,o,context in nanopub.quads() if isinstance(s, BNode)]
-        self.assertEquals(len(rewritten_bnode_subjects),1)
-        self.assertEquals(len(bnode_subjects), 0)
+        self.assertEquals(len(rewritten_bnode_subjects),0)
+        self.assertEquals(len(bnode_subjects), 1)
 
     def test_no_bnode_rewrite(self):
         self.app.config['BNODE_REWRITE'] = False

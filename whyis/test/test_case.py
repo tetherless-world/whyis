@@ -1,8 +1,10 @@
 import flask_testing
 
+from flask import current_app
 from flask import Response
 from rdflib import URIRef
 from typing import Optional, Dict
+from depot.manager import DepotManager
 
 class TestCase(flask_testing.TestCase):
 
@@ -35,23 +37,29 @@ class TestCase(flask_testing.TestCase):
             import config
         except:
             from whyis import config_defaults as config
-        
+
         if 'admin_queryEndpoint' in config.Test:
             del config.Test['admin_queryEndpoint']
             del config.Test['admin_updateEndpoint']
             del config.Test['knowledge_queryEndpoint']
             del config.Test['knowledge_updateEndpoint']
-
+        config.Test['TESTING'] = True
+        config.Test['WTF_CSRF_ENABLED'] = False
+        config.Test['nanopub_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
+        config.Test['DEFAULT_ANONYMOUS_READ'] = False
+        config.Test['file_archive'] = {
+            'depot.backend' : 'depot.io.memory.MemoryFileStorage'
+        }
         # Default port is 5000
         config.Test['LIVESERVER_PORT'] = 8943
         # Default timeout is 5 seconds
         config.Test['LIVESERVER_TIMEOUT'] = 10
-
+        
         from whyis.app_factory import app_factory
         application = app_factory(config.Test, config.project_name)
-        application.config['TESTING'] = True
-        application.config['WTF_CSRF_ENABLED'] = False
-
+        
         return application
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='Admin'):
