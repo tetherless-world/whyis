@@ -16,19 +16,21 @@ class Test(Command):
     verbosity = 2
     failfast = False
     tests = 'test*'
+    apponly = False
 
     def get_options(self):
         return [
-            Option('--verbosity', '-v', dest='verbosity',
+            Option('-v', '--verbosity', dest='verbosity', help='verbosity level of output, between 0 and 2 (default 2)',
                    type=int, default=self.verbosity),
-            Option('--failfast', dest='failfast',
+            Option('--failfast', dest='failfast', help='Stop the test after the first failure',
                    default=self.failfast, action='store_false'),
-            Option('--test', dest='tests',
+            Option('--test', dest='tests', help='Name of python file (without extension) to run tests from, or glob pattern',
                    default=self.tests, type=str),
-            Option('--ci', dest='ci', default=self.ci, action='store_true')
+            Option('--ci', dest='ci', default=self.ci, help='Analyze coverage and store all results as XML (for CI server)', action='store_true'),
+            Option('--apponly', dest='apponly', default=self.apponly, help='Runs the app tests only', action='store_true')
         ]
 
-    def run(self, verbosity, failfast, tests, ci):
+    def run(self, verbosity, failfast, tests, ci, apponly):
         if ci:
             # Start coverage before importing, so the definitions are marked as executed
             import coverage
@@ -59,20 +61,21 @@ class Test(Command):
         loader = unittest.TestLoader()
         all_tests = []
 
-        if exists('apps'):
-            for path in glob.glob('apps/*'):
-                if isdir(path):
-                    tests_dir = join(path, 'tests')
+        if not apponly:
+            if exists('apps'):
+                for path in glob.glob('apps/*'):
+                    if isdir(path):
+                        tests_dir = join(path, 'tests')
 
-                    if exists(join(path, 'tests.py')):
-                        all_tests.append(loader.discover(path, 'tests.py'))
-                    elif exists(tests_dir):
-                        all_tests.append(loader.discover(tests_dir, pattern=tests + '.py'))
+                        if exists(join(path, 'tests.py')):
+                            all_tests.append(loader.discover(path, 'tests.py'))
+                        elif exists(tests_dir):
+                            all_tests.append(loader.discover(tests_dir, pattern=tests + '.py'))
 
-        if exists('tests') and isdir('tests'):
-            all_tests.append(loader.discover('tests', pattern=tests + '.py'))
-        elif exists('tests.py'):
-            all_tests.append(loader.discover('.', pattern='tests.py'))
+            if exists('tests') and isdir('tests'):
+                all_tests.append(loader.discover('tests', pattern=tests + '.py'))
+            elif exists('tests.py'):
+                all_tests.append(loader.discover('.', pattern='tests.py'))
 
         if 'app_path' in flask.current_app.config:
             print('Adding tests from', flask.current_app.config['app_path'])

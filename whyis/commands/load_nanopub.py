@@ -19,16 +19,13 @@ class LoadNanopub(Command):
 
     def get_options(self):
         return [
-            Option('--input', '-i', dest='input_file',
-                   type=str),
-            Option('--format', '-f', dest='file_format',
-                   type=str),
-            Option('--revises', '-r', dest='was_revision_of',
-                   type=str),
-            Option("--temp-store", dest="temp_store", type=str, default=self._TEMP_STORE_DEFAULT, help="backing store type to use for temporary graphs")
+            Option('-i', '--input', dest='input_file', required=True, help='Path to file containing nanopub', type=str),
+            Option('-f', '--format', dest='file_format', default='trig', help='File format (default: trig; also turtle, json-ld, xml, nquads, nt, rdfa)', type=str),
+            Option('-r', '--revises', dest='was_revision_of', help="URI of nanopublication that this is a revision of", type=str),
+            Option("--temp-store", dest="temp_store", type=str, default=self._TEMP_STORE_DEFAULT, help="backing store type to use for temporary graphs; deprecated")
         ]
 
-    def run(self, input_file, file_format="trig", temp_store=_TEMP_STORE_DEFAULT, was_revision_of=None):
+    def run(self, input_file, file_format, temp_store=_TEMP_STORE_DEFAULT, was_revision_of=None):
         flask.current_app.managed = True
         if was_revision_of is not None:
             wasRevisionOf = set(flask.current_app.db.objects(predicate=np.hasAssertion,
@@ -48,20 +45,16 @@ class LoadNanopub(Command):
         try:
             g1 = load_nanopub_graph(location=input_file, format=file_format, store=g.store)
             
-            try:
-                nanopubs = []
-                for npub in flask.current_app.nanopub_manager.prepare(g):
-                    if was_revision_of is not None:
-                        for r in was_revision_of:
-                            print("Marking as revision of", r)
-                            npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
-                    print('Prepared', npub.identifier)
-                    nanopubs.append(npub)
-                flask.current_app.nanopub_manager.publish(*nanopubs)
-                print("Published", npub.identifier)
-            finally:
-                if nanopub_prepare_graph_store_tempdir is not None:
-                    shutil.rmtree(nanopub_prepare_graph_store_tempdir)
+            nanopubs = []
+            for npub in flask.current_app.nanopub_manager.prepare(g):
+                if was_revision_of is not None:
+                    for r in was_revision_of:
+                        print("Marking as revision of", r)
+                        npub.pubinfo.add((npub.assertion.identifier, flask.current_app.NS.prov.wasRevisionOf, r))
+                print('Prepared', npub.identifier)
+                nanopubs.append(npub)
+            flask.current_app.nanopub_manager.publish(*nanopubs)
+            print("Published", npub.identifier)
         finally:
             if g_store_tempdir is not None:
                 shutil.rmtree(g_store_tempdir)

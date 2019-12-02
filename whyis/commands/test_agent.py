@@ -6,13 +6,13 @@ import flask
 
 
 class TestAgent(Command):
-    '''Add a nanopublication to the knowledge graph.'''
+    '''Runs a specified inference agent.'''
 
     def get_options(self):
         return [
-            Option('--agent', '-a', dest='agent_path',
+            Option('-a', '--agent', dest='agent_path', help='Python path (dotted) of agent to use', required=True,
                    type=str),
-            Option('--dry-run', '-d', action="store_true", dest='dry_run'),
+            Option('-d', '--dry-run', action="store_true", help='Do not store agent output', dest='dry_run'),
         ]
 
     def run(self, agent_path, dry_run=False):

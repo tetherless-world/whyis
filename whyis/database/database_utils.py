@@ -5,6 +5,9 @@ from rdflib import BNode, URIRef
 from rdflib.graph import ConjunctiveGraph
 from rdflib.plugins.stores.sparqlstore import _node_to_sparql
 
+from uuid import uuid4
+from whyis.datastore import create_id
+
 # SPARQL_NS = Namespace('http://www.w3.org/2005/sparql-results#')
 
 
@@ -46,12 +49,39 @@ def engine_from_config(config, prefix):
         def publish(data):
             s = requests.session()
             s.keep_alive = False
-            
-            # result unused
-            s.post(store.query_endpoint,
-                   data=data,
-                   # params={"context-uri":graph.identifier},
-                   headers={'Content-Type':'application/x-trig'})
+
+            if config.get(prefix+"useBlazeGraphBulkLoad",False):
+                prop_file = '''
+quiet=false
+verbose=1
+closure=false
+durableQueues=true
+#Needed for quads
+defaultGraph=%s
+format=text/x-nquads
+com.bigdata.rdf.store.DataLoader.flush=false
+com.bigdata.rdf.store.DataLoader.bufferCapacity=100000
+com.bigdata.rdf.store.DataLoader.queueCapacity=10
+#Namespace to load
+namespace=%s
+propertyFile=%s
+#Files to load
+fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
+                    config[prefix+"bulkLoadNamespace"],
+                    config[prefix+"BlazeGraphProperties"],
+                    data.name)
+                r = s.post(config[prefix+"bulkLoadEndpoint"],
+                           data=prop_file.encode('utf8'),
+                           headers={'Content-Type':'text/plain'})
+
+                
+            else:
+                # result unused
+                r = s.post(store.query_endpoint,
+                           data=data,
+                           # params={"context-uri":graph.identifier},
+                           headers={'Content-Type':'text/x-nquads'})
+            #print(r.content)
 
         store.publish = publish
 
@@ -64,7 +94,7 @@ def engine_from_config(config, prefix):
         graph = ConjunctiveGraph() # memory_graphs[prefix]
         
         def publish(data):
-            graph.parse(data, format='trig')
+            graph.parse(data, format='nquads')
                 
         graph.store.publish = publish
 
