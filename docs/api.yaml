@@ -313,7 +313,7 @@ paths:
       parameters:
       - name: uri
         in: query
-        description: #TODO
+        description: The URI to find outgoing links for
         required: true
         schema:
           type: string
@@ -358,7 +358,7 @@ paths:
                             description: The URI of a property
                     probability:
                       type: number
-                      description: # looks like it's always 1
+                      description: # TODO is this always 1?
                     source:
                       type: string
                       format: url
@@ -381,13 +381,12 @@ paths:
                           description: The URI of one RDF type of the URI listed in the `target` field.
                       zscore:
                         type: number
-                        description: # no idea
+                        description: # TODO purpose of this is unclear
 
 
   /?view=incoming:
     get:
-      description: Lists data about other URIs that are the subject of RDF triples whose object is the specified URI. # It looks like (source link_types[0][uri] target) is a rdf triple or something like that. where target is this.
-      # (and in outgoing, source is this.)
+      description: Lists data about other URIs that are the subject of RDF triples whose object is the specified URI.
       parameters:
       - name: uri
         in: query
@@ -436,7 +435,7 @@ paths:
                             description: The URI of a property
                     probability:
                       type: number
-                      description: # looks like it's always 1
+                      description: # TODO is this always 1?
                     source:
                       type: string
                       format: url
@@ -545,21 +544,15 @@ paths:
                     
   /?view=facets:
     get:
-      description: #TODO
+      description: Lists entities that are prov:specializationOf the class identified by the queried URI, and properties that are specified for them.
       parameters:
       - name: uri
         in: query
-        description: #TODO
+        description: The URI to query facets for
         required: true
         schema:
           type: string
           format: uri
-      - name: facets
-        in: query
-        description: #TODO
-        required:
-        schema:
-          type:
       responses:
         '200':
           content:
@@ -571,20 +564,14 @@ paths:
                   properties:
                     class:
                       type: string
-                    label:
-                      type: string
-                    facetId:
-                      type: string
-                    predicate:
-                      type: string
-                    typeProperty:
-                      type: string
-                    specifier:
-                      type: string
+                      description: The URI of the queried class.
+                    property:
                     propertyType:
                       type: string
+                    inverse:
                     
-  /?view=facet_values: # what's include(facets) do
+                    
+  /?view=facet_values: # TODO
     get:
       description: #TODO
       parameters:
@@ -621,7 +608,7 @@ paths:
               valuePredicate:
   
 
-  /?view=instance_data:
+  /?view=instance_data: # TODO
     get:
       description: #TODO
       parameters:
@@ -634,11 +621,12 @@ paths:
           format: uri
       - name: constraints
         in: query
-        description: A JSON list of sparql constraints
-        required: false      
+        description: A JSON list of sparql graph patterns that will restrict the query
+        required: false
       - name: variables
         in: query
-        description: A JSON list of 
+        description: # TODO
+        required: true
         schema:
           type: list
           items:
@@ -658,14 +646,6 @@ paths:
         '200':
           content:
             application/json:
-
-  #outgoing
-  #incoming
-  
-  ###### Ontology views ######
-  #outgoing
-  #incoming
-  #describe
 
   ###### Nanopublication views ######
   
