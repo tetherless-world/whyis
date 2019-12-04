@@ -4,6 +4,8 @@ import importer
 from whyis import autonomic
 import logging
 
+from rdflib import URIRef
+
 from datetime import datetime, timedelta
 
 project_name = "whyis"
@@ -417,5 +419,6 @@ Test.update(dict(
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },
     TESTING = True,
-    WTF_CSRF_ENABLED = False
+    WTF_CSRF_ENABLED = False,
+    summary_properties = [URIRef('http://example.com/summaryTestProperty')],
 ))
