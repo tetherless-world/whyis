@@ -269,11 +269,11 @@ paths:
 
   /?view=related:
     get:
-      description:
+      description: Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation sio:hasPart is excluded from this. 
       parameters:
       - name: uri
         in: query
-        description: #TODO
+        description: The URI to view related nodes for
         required: true
         schema:
           type: string
@@ -288,7 +288,7 @@ paths:
                   type: object
                   description: A description of a related node
                   properties:
-                    idf:
+                    idf: #TODO
                     label:
                       type: string
                       description: The label of this related node
@@ -300,8 +300,8 @@ paths:
                       type: string
                       format: url
                       description: The RDF property linking this related node and the specified URI
-                    tf:
-                    tfidf:
+                    tf: #TODO
+                    tfidf: #TODO
                     type:
                       type: string
                       format: url
@@ -309,7 +309,7 @@ paths:
 
   /?view=outgoing:
     get:
-      description:
+      description: Lists data about other URIs that are the object of RDF triples whose subject is the specified URI. 
       parameters:
       - name: uri
         in: query
@@ -329,52 +329,69 @@ paths:
                   properties:
                     articles:
                       type: list
+                      description: # TODO this looks blank for incoming; for outgoing it has the same data as link
                     from:
                       type: list
+                      description: # TODO A list of URIs of sources in which this link is specified?
                       items:
                         type: string
                         format: url
                     label:
                       type: string
+                      description: The label of the named graph containing the link.
                     link:
                       type: string
                       format: url
+                      description: The URI of the named graph containing the link.
                     link_types:
                       type: array
+                      description: A list of RDF properties linking from the source to the target.
                       items:
                         type: object
                         properties:
                           label:
                             type: string
+                            description: The label of a property
                           uri:
                             type: string
                             format: url
+                            description: The URI of a property
                     probability:
                       type: number
+                      description: # looks like it's always 1
                     source:
                       type: string
                       format: url
-                    source_label:
+                      description: The subject of this link.
+                    target:
                       type: string
-                    source_types:
+                      format: url
+                      description: The object of this link.
+                    target_label:
+                      type: string
+                      descripion: A plaintext label for the URI listed in the `target` field.
+                    target_types:
                       type: array
+                      description: A list of RDF types of the URI listed in the `target` field.
                       items:
                         type: array
                         items:
                           type: string
                           format: url
-                    target:
-                      type: string
-                      format: url
+                          description: The URI of one RDF type of the URI listed in the `target` field.
+                      zscore:
+                        type: number
+                        description: # no idea
 
 
   /?view=incoming:
     get:
-      description:
+      description: Lists data about other URIs that are the subject of RDF triples whose object is the specified URI. # It looks like (source link_types[0][uri] target) is a rdf triple or something like that. where target is this.
+      # (and in outgoing, source is this.)
       parameters:
       - name: uri
         in: query
-        description: #TODO
+        description: The URI to find incoming links for
         required: true
         schema:
           type: string
@@ -390,43 +407,56 @@ paths:
                   properties:
                     articles:
                       type: list
+                      description: #TODO is this always a blank list?
                     from:
                       type: list
+                      description: # TODO A list of URIs of sources in which this link is specified?
                       items:
                         type: string
                         format: url
                     label:
                       type: string
+                      description: The label of the named graph containing the link.
                     link:
                       type: string
                       format: url
+                      description: The URI of the named graph containing the link.
                     link_types:
                       type: array
+                      description: A list of RDF properties linking from the source to the target.
                       items:
                         type: object
                         properties:
                           label:
                             type: string
+                            description: The label of a property
                           uri:
                             type: string
                             format: url
+                            description: The URI of a property
                     probability:
                       type: number
+                      description: # looks like it's always 1
                     source:
                       type: string
                       format: url
+                      description: The subject of this link.
                     source_label:
                       type: string
+                      descripion: A plaintext label for the URI listed in the `source` field.
                     source_types:
                       type: array
+                      description: A list of RDF types of the URI listed in the `source` field.
                       items:
                         type: array
                         items:
                           type: string
                           format: url
+                          description: The URI of one RDF type of the URI listed in the `source` field.
                     target:
                       type: string
                       format: url
+                      description: The object of this link.
  
   /?view=describe:
     get:
@@ -464,11 +494,11 @@ paths:
   
   /?view=constraints:
     get:
-      description: #TODO
+      description: Lists OWL property restrictions on the specified class and its properties.
       parameters:
       - name: uri
         in: query
-        description: #TODO
+        description: The URI of a class to list constraints for.
         required: true
         schema:
           type: string
@@ -481,27 +511,38 @@ paths:
                 type: array
                 items:
                   type: object
+                  description: Represents one range restriction on the queried class. This includes classes of type owl:Restriction that the queried class is related to via rdfs:subClassOf, owl:equivalentClass, and owl:intersectionOf, and also properties that have an rdfs:domain that is a superclass of the queried class and a specified rdfs:range
                   properties:
                     class:
                       type: string
                       format: url
+                      description: The URI of the queried class.
                     property:
                       type: string
                       format: url
+                      description: The URL of the property that this restriction is on.
                     propertyLabel:
                       type: string
+                      description: A human-readable label for the property that this restriction is on
                     propertyType:
                       type: string
                       format: url
+                      description: The rdf:type of this property; or else whichever of owl:DatatypeProperty or owl:ObjectProperty is most applicable
                     range:
                       type: string
                       format: url
+                      description: The URI of the range of the constraint.
                     rangeLabel:
                       type: string
+                      description: A human-readable label for the range of this restriction.
                     superClass:
                       type: string
                       format: url
-  
+                      description: The URI of the class that is the domain of the constraint.
+                    extent: #TODO
+                    cardinality:
+                      description: The object of a cardinality property specified for this restriction, if any. 
+                    
   /?view=facets:
     get:
       description: #TODO
@@ -513,6 +554,12 @@ paths:
         schema:
           type: string
           format: uri
+      - name: facets
+        in: query
+        description: #TODO
+        required:
+        schema:
+          type:
       responses:
         '200':
           content:
