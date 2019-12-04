@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info: 
   title: Whyis
-  description: [to be added]
+  description: "[to be added]"
   version: 0.1.0
 paths:
 
@@ -9,11 +9,11 @@ paths:
 
   /?view=labels:
     get:
-      description: Returns a label for each specified URI. The label returned will be taken from, in order of priority: skos:prefLabel, rdfs:label, schema:name, dc:title, foaf:name, or schema:name. If no label is found, the URI itself will be used as the label.
+      description: "Returns a label for each specified URI. The label returned will be taken from, in order of priority: skos:prefLabel, rdfs:label, schema:name, dc:title, foaf:name, or schema:name. If no label is found, the URI itself will be used as the label."
       parameters:
       - name: uris
         in: query
-        description: A comma-delimited list of URIs.
+        description: "A comma-delimited list of URIs."
         required: true
       responses:
         '200':
@@ -21,11 +21,11 @@ paths:
             application/json:
               schema:
                 type: object
-                description: An object whose keys are the URIs passed in as a parameter, and whose corresponding values are the labels for those URIs.
+                description: "An object whose keys are the URIs passed in as a parameter, and whose corresponding values are the labels for those URIs."
 
   /?view=latest:
     get:
-      description: Lists up to 20 of the most recently-changed entities, sorted from newest to oldest.
+      description: "Lists up to 20 of the most recently-changed entities, sorted from newest to oldest."
       responses:
         '200':
           content:
@@ -34,36 +34,36 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Contains the URI of a recently-changed entity along with its timestamp. 
+                  description: "Contains the URI of a recently-changed entity along with its timestamp."
                   properties:
                     about:
                       type: string
                       format: url
                     updated:
-                      description: Timestamp, in ISO 8601 format, with six-digit precision on fractional seconds
+                      description: "Timestamp, in ISO 8601 format, with six-digit precision on fractional seconds"
                       type: string
                       format: timestamp
 
   /?view=resolve:
     get:
-      description: Allows searching for resources by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Resources of type sio:Term are excluded.
+      description: "Allows searching for resources by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Resources of type sio:Term are excluded."
       parameters:
       - name: term
         in: query
-        description: The string to search for
+        description: "The string to search for"
         required: true
         schema:
           type: string
       - name: type
         in: query
-        description: A url corresponding to an rdf:type. If present, only resources of the specified type will be returned.
+        description: "A url corresponding to an rdf:type. If present, only resources of the specified type will be returned."
         required: false
         schema:
           type: string
           format: url
       - name: context
         in: query
-        description: Additional plaintext to search for in the other attributes of the desired resource.
+        description: "Additional plaintext to search for in the other attributes of the desired resource."
         required: false
         schema:
           type: string
@@ -75,66 +75,66 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Describes an RDF resource that is somehow labeled with the desired term.
+                  description: "Describes an RDF resource that is somehow labeled with the desired term."
                   properties:
                     node:
                       type: string
                       format: url
-                      description: The URI of the resource that was found
+                      description: "The URI of the resource that was found"
                     title:
                       type: string
-                      description: The dc:title of the resource, if present
+                      description: "The dc:title of the resource, if present"
                     label:
                       type: string
-                      description: The rdfs:label of the resource, if present
+                      description: "The rdfs:label of the resource, if present"
                     prefLabel:
                       type: string
-                      description: The skos:prefLabel of the resource, if present
+                      description: "The skos:prefLabel of the resource, if present"
                     altLabel:
                       type: string
-                      description: The skos:altLabel of the resource, if present
+                      description: "The skos:altLabel of the resource, if present"
                     name:
                       type: string
-                      description: The foaf:name of the resource, if present
+                      description: "The foaf:name of the resource, if present"
                     identifier:
                       type: string
-                      description: The dc:identifier of the resource, if present
+                      description: "The dc:identifier of the resource, if present"
                     score:
                       type: float
-                      description: A representation of how closely this node matched the search term
+                      description: "A representation of how closely this node matched the search term"
 
   ###### Resource views ######
 
   /?view=summary:
     get:
-      description: Returns a list of summary properties for the given resource URI. By default, summary properties are taken from skos:definition, schema:description, dc:abstract, dc:description, dc:summary. rdfs:comment, dcelements:description, obo:UAO_0000115, prov:value, and sio:hasValue. Additional summary properties may be specified by the application configuration.
+      description: "Returns a list of summary properties for the given resource URI. By default, summary properties are taken from skos:definition, schema:description, dc:abstract, dc:description, dc:summary. rdfs:comment, dcelements:description, obo:UAO_0000115, prov:value, and sio:hasValue. Additional summary properties may be specified by the application configuration."
       parameters:
       - name: uri
         in: query
-        description: URI to be summarized
+        description: "URI to be summarized"
         required: true
         schema:
           type: string
           format: uri
       responses:
         '200':
-          description: A list of tuples (p,o) where p is taken from the list of summary properties and o is the corresponding value
+          description: "A list of tuples (p,o) where p is taken from the list of summary properties and o is the corresponding value"
           content:
             application/json: 
               schema:
                 type: array
                 items:
                   type: array
-                  description: The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question.
+                  description: "The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question."
                 
           
   /?view=attributes:
     get:
-      description: Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`.
+      description: "Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`."
       parameters:
       - name: uri
         in: query
-        description: URI to display attributes for
+        description: "URI to display attributes for"
         required: true
         schema:
           type: string
@@ -149,9 +149,9 @@ paths:
                   @id:
                     type: string
                     format: uri
-                    description: The URI of this resource.
+                    description: "The URI of this resource."
                   attributes:
-                    description: A list of attributes of this URI
+                    description: "A list of attributes of this URI"
                     type: array
                     items:
                       type: object
@@ -159,21 +159,21 @@ paths:
                         @id:
                           type: string
                           format: uri
-                          description: The URI of this attribute
+                          description: "The URI of this attribute"
                         label:
                           type: string
-                          description: The label of this attribute
+                          description: "The label of this attribute"
                         values:
                           type: array
-                          description: A list of values this attribute takes
+                          description: "A list of values this attribute takes"
                           items:
                             type: object
                             properties:
                               value:
                                 type: string
-                                description: One value this attribute takes
+                                description: "One value this attribute takes"
                   description:
-                    description: A list of summary properties for the specified URI (see /?view=summary).
+                    description: "A list of summary properties for the specified URI (see /?view=summary)."
                     type: array
                     items:
                       type: object
@@ -181,38 +181,38 @@ paths:
                         @id:
                           type: string
                           format: url
-                          description: The URI of the summary predicate
+                          description: "The URI of the summary predicate"
                         label:
                           type: string
-                          description: A human-readable label for the summary predicate
+                          description: "A human-readable label for the summary predicate"
                         value:
                           type: string
-                          description: The plaintext string that is the value of the summary property
+                          description: "The plaintext string that is the value of the summary property"
                   label:
                     type: string
-                    description: The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere                        
+                    description: "The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere                        "
                   type:
-                    description: A list of every rdf:type this resource is a member of.
+                    description: "A list of every rdf:type this resource is a member of."
                     type: array
                     items:
                       type: object
-                      description: Represents one rdf:type this resource is a member of
+                      description: "Represents one rdf:type this resource is a member of"
                       properties:
                         @id: 
                           type: string
                           format: url
-                          description: The URI the rdf:type
+                          description: "The URI the rdf:type"
                         label:
                           type: string
-                          description: The label of the rdf:type, taken from the list of label properties
+                          description: "The label of the rdf:type, taken from the list of label properties"
                         
   /?view=nanopublications:
     get:
-      description: Lists nanopublications that are about (as sio:isAbout) the specified URI, or that have the specified URI as the subject of their assertion.
+      description: "Lists nanopublications that are about (as sio:isAbout) the specified URI, or that have the specified URI as the subject of their assertion."
       parameters:
       - name: uri
         in: query
-        description: URI to display nanopublications for
+        description: "URI to display nanopublications for"
         required: true
         schema:
           type: string
@@ -224,56 +224,56 @@ paths:
               type: array
               items:
                 type: object
-                description: Information about one nanopublication
+                description: "Information about one nanopublication"
                 properties:
                   np:
                     type: string
-                    description: An identifier for this nanopublication
+                    description: "An identifier for this nanopublication"
                   created:
                     type: string
                     format: timestamp
-                    description: The date and time when this nanopublication was originally created
+                    description: "The date and time when this nanopublication was originally created"
                   updated:
                     type: string
                     format: timestamp
-                    description: The date and time when this nanopublication was most recently modified, or the creation date if it has not been modified
+                    description: "The date and time when this nanopublication was most recently modified, or the creation date if it has not been modified"
                   quoted:
                     type: string
                     format: uri
-                    description: The URI of another nanopublication that this nanopublication's assertion was quoted from
+                    description: "The URI of another nanopublication that this nanopublication's assertion was quoted from"
                   about:
                     type: string
                     format: uri
-                    description: The URI of the topic of this nanopublication, as defined by sio:isAbout
+                    description: "The URI of the topic of this nanopublication, as defined by sio:isAbout"
                   contributor:
                     type: string
                     format: uri
-                    description: The URI of a dc:contributor of this nanopublication.
+                    description: "The URI of a dc:contributor of this nanopublication."
                   contributor_label: #TODO
                   derived_from:
                     type: string
                     format: uri
-                    description: The URI of a resource this nanopublication was derived from (as prov:wasDerivedFrom).
+                    description: "The URI of a resource this nanopublication was derived from (as prov:wasDerivedFrom)."
                   generation_type:
                     type: string
                     format: uri
-                    description: The type of the activity that generated this nanopublication, as defined by prov:wasGeneratedBy.
+                    description: "The type of the activity that generated this nanopublication, as defined by prov:wasGeneratedBy."
                   content:
                     type: string
-                    description: The sioc:content of this nanopublication.
+                    description: "The sioc:content of this nanopublication."
                   reply_of:
                     type: string
                     format: uri
-                    description: The URI of a resource this nanopulbication is a reply to (as sioc:reply_of).
+                    description: "The URI of a resource this nanopulbication is a reply to (as sioc:reply_of)."
                   
 
   /?view=related:
     get:
-      description: Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation sio:hasPart is excluded from this. 
+      description: "Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation sio:hasPart is excluded from this."
       parameters:
       - name: uri
         in: query
-        description: The URI to view related nodes for
+        description: "The URI to view related nodes for"
         required: true
         schema:
           type: string
@@ -286,34 +286,34 @@ paths:
                 type: list
                 objects:
                   type: object
-                  description: A description of a related node
+                  description: "A description of a related node"
                   properties:
                     idf: #TODO
                     label:
                       type: string
-                      description: The label of this related node
+                      description: "The label of this related node"
                     node:
                       type: string
                       format: url
-                      description: The URI of this related node
+                      description: "The URI of this related node"
                     relation:
                       type: string
                       format: url
-                      description: The RDF property linking this related node and the specified URI
+                      description: "The RDF property linking this related node and the specified URI"
                     tf: #TODO
                     tfidf: #TODO
                     type:
                       type: string
                       format: url
-                      description: The rdf:type of this related node
+                      description: "The rdf:type of this related node"
 
   /?view=outgoing:
     get:
-      description: Lists data about other URIs that are the object of RDF triples whose subject is the specified URI. 
+      description: "Lists data about other URIs that are the object of RDF triples whose subject is the specified URI."
       parameters:
       - name: uri
         in: query
-        description: The URI to find outgoing links for
+        description: "The URI to find outgoing links for"
         required: true
         schema:
           type: string
@@ -329,68 +329,68 @@ paths:
                   properties:
                     articles:
                       type: list
-                      description: # TODO this looks blank for incoming; for outgoing it has the same data as link
+                      description: "# TODO this looks blank for incoming; for outgoing it has the same data as link"
                     from:
                       type: list
-                      description: # TODO A list of URIs of sources in which this link is specified?
+                      description: "# TODO A list of URIs of sources in which this link is specified?"
                       items:
                         type: string
                         format: url
                     label:
                       type: string
-                      description: The label of the named graph containing the link.
+                      description: "The label of the named graph containing the link."
                     link:
                       type: string
                       format: url
-                      description: The URI of the named graph containing the link.
+                      description: "The URI of the named graph containing the link."
                     link_types:
                       type: array
-                      description: A list of RDF properties linking from the source to the target.
+                      description: "A list of RDF properties linking from the source to the target."
                       items:
                         type: object
                         properties:
                           label:
                             type: string
-                            description: The label of a property
+                            description: "The label of a property"
                           uri:
                             type: string
                             format: url
-                            description: The URI of a property
+                            description: "The URI of a property"
                     probability:
                       type: number
-                      description: # TODO is this always 1?
+                      description: "# TODO is this always 1?"
                     source:
                       type: string
                       format: url
-                      description: The subject of this link.
+                      description: "The subject of this link."
                     target:
                       type: string
                       format: url
-                      description: The object of this link.
+                      description: "The object of this link."
                     target_label:
                       type: string
                       descripion: A plaintext label for the URI listed in the `target` field.
                     target_types:
                       type: array
-                      description: A list of RDF types of the URI listed in the `target` field.
+                      description: "A list of RDF types of the URI listed in the `target` field."
                       items:
                         type: array
                         items:
                           type: string
                           format: url
-                          description: The URI of one RDF type of the URI listed in the `target` field.
+                          description: "The URI of one RDF type of the URI listed in the `target` field."
                       zscore:
                         type: number
-                        description: # TODO purpose of this is unclear
+                        description: "# TODO purpose of this is unclear"
 
 
   /?view=incoming:
     get:
-      description: Lists data about other URIs that are the subject of RDF triples whose object is the specified URI.
+      description: "Lists data about other URIs that are the subject of RDF triples whose object is the specified URI."
       parameters:
       - name: uri
         in: query
-        description: The URI to find incoming links for
+        description: "The URI to find incoming links for"
         required: true
         schema:
           type: string
@@ -406,60 +406,60 @@ paths:
                   properties:
                     articles:
                       type: list
-                      description: #TODO is this always a blank list?
+                      description: "#TODO is this always a blank list?"
                     from:
                       type: list
-                      description: # TODO A list of URIs of sources in which this link is specified?
+                      description: "# TODO A list of URIs of sources in which this link is specified?"
                       items:
                         type: string
                         format: url
                     label:
                       type: string
-                      description: The label of the named graph containing the link.
+                      description: "The label of the named graph containing the link."
                     link:
                       type: string
                       format: url
-                      description: The URI of the named graph containing the link.
+                      description: "The URI of the named graph containing the link."
                     link_types:
                       type: array
-                      description: A list of RDF properties linking from the source to the target.
+                      description: "A list of RDF properties linking from the source to the target."
                       items:
                         type: object
                         properties:
                           label:
                             type: string
-                            description: The label of a property
+                            description: "The label of a property"
                           uri:
                             type: string
                             format: url
-                            description: The URI of a property
+                            description: "The URI of a property"
                     probability:
                       type: number
-                      description: # TODO is this always 1?
+                      description: "# TODO is this always 1?"
                     source:
                       type: string
                       format: url
-                      description: The subject of this link.
+                      description: "The subject of this link."
                     source_label:
                       type: string
                       descripion: A plaintext label for the URI listed in the `source` field.
                     source_types:
                       type: array
-                      description: A list of RDF types of the URI listed in the `source` field.
+                      description: "A list of RDF types of the URI listed in the `source` field."
                       items:
                         type: array
                         items:
                           type: string
                           format: url
-                          description: The URI of one RDF type of the URI listed in the `source` field.
+                          description: "The URI of one RDF type of the URI listed in the `source` field."
                     target:
                       type: string
                       format: url
-                      description: The object of this link.
+                      description: "The object of this link."
  
   /?view=describe:
     get:
-      description: Returns all triples that have the given entity as their subject and that originated in the assertion of a nanopublication. If the objects of these triples have human-readable names (specified as `rdfs:label`, `skos:prefLabel`, `dc:title`, or `foaf:name`), these will be returned as well. If there are any `sio:hasAttribute` or `sio:hasPart` relationships specified for the given entity, then all triples whose subject is the attribute or part will be returned, as well as the `rdfs:label` of their objects.
+      description: "Returns all triples that have the given entity as their subject and that originated in the assertion of a nanopublication. If the objects of these triples have human-readable names (specified as `rdfs:label`, `skos:prefLabel`, `dc:title`, or `foaf:name`), these will be returned as well. If there are any `sio:hasAttribute` or `sio:hasPart` relationships specified for the given entity, then all triples whose subject is the attribute or part will be returned, as well as the `rdfs:label` of their objects."
       parameters:
       - name: uri
         in: query
@@ -476,28 +476,28 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an "@id" field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is "@value" and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is "@id" and its value is the URI of the object.
+                  description: "Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an "@id" field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is "@value" and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is "@id" and its value is the URI of the object."
                   properties:
                     @id:
                       type: string
                       format: url
-                      description: The URI of the subject of the triples this JSON object represents.
+                      description: "The URI of the subject of the triples this JSON object represents."
                     @type:
                       type: array
                       items:
                         type: string
                         format: url
-                        description: The URI of an rdf:type of the subject. Only present in the object representing the URI being queried.
+                        description: "The URI of an rdf:type of the subject. Only present in the object representing the URI being queried."
 
   ###### Class views ######
   
   /?view=constraints:
     get:
-      description: Lists OWL property restrictions on the specified class and its properties.
+      description: "Lists OWL property restrictions on the specified class and its properties."
       parameters:
       - name: uri
         in: query
-        description: The URI of a class to list constraints for.
+        description: "The URI of a class to list constraints for."
         required: true
         schema:
           type: string
@@ -510,45 +510,45 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Represents one range restriction on the queried class. This includes classes of type owl:Restriction that the queried class is related to via rdfs:subClassOf, owl:equivalentClass, and owl:intersectionOf, and also properties that have an rdfs:domain that is a superclass of the queried class and a specified rdfs:range
+                  description: "Represents one range restriction on the queried class. This includes classes of type owl:Restriction that the queried class is related to via rdfs:subClassOf, owl:equivalentClass, and owl:intersectionOf, and also properties that have an rdfs:domain that is a superclass of the queried class and a specified rdfs:range"
                   properties:
                     class:
                       type: string
                       format: url
-                      description: The URI of the queried class.
+                      description: "The URI of the queried class."
                     property:
                       type: string
                       format: url
-                      description: The URL of the property that this restriction is on.
+                      description: "The URL of the property that this restriction is on."
                     propertyLabel:
                       type: string
-                      description: A human-readable label for the property that this restriction is on
+                      description: "A human-readable label for the property that this restriction is on"
                     propertyType:
                       type: string
                       format: url
-                      description: The rdf:type of this property; or else whichever of owl:DatatypeProperty or owl:ObjectProperty is most applicable
+                      description: "The rdf:type of this property; or else whichever of owl:DatatypeProperty or owl:ObjectProperty is most applicable"
                     range:
                       type: string
                       format: url
-                      description: The URI of the range of the constraint.
+                      description: "The URI of the range of the constraint."
                     rangeLabel:
                       type: string
-                      description: A human-readable label for the range of this restriction.
+                      description: "A human-readable label for the range of this restriction."
                     superClass:
                       type: string
                       format: url
-                      description: The URI of the class that is the domain of the constraint.
+                      description: "The URI of the class that is the domain of the constraint."
                     extent: #TODO
                     cardinality:
-                      description: The object of a cardinality property specified for this restriction, if any. 
+                      description: "The object of a cardinality property specified for this restriction, if any."
                     
   /?view=facets:
     get:
-      description: Lists entities that are prov:specializationOf the class identified by the queried URI, and properties that are specified for them.
+      description: "Lists entities that are prov:specializationOf the class identified by the queried URI, and properties that are specified for them."
       parameters:
       - name: uri
         in: query
-        description: The URI to query facets for
+        description: "The URI to query facets for"
         required: true
         schema:
           type: string
@@ -564,7 +564,7 @@ paths:
                   properties:
                     class:
                       type: string
-                      description: The URI of the queried class.
+                      description: "The URI of the queried class."
                     property:
                     propertyType:
                       type: string
@@ -573,7 +573,7 @@ paths:
                     
   /?view=facet_values: # TODO
     get:
-      description: #TODO
+      description: "#TODO"
       parameters:
       - name: uri
         in: query
@@ -584,16 +584,16 @@ paths:
           format: uri
       - name: constraints
         in: query
-        description: A JSON list of sparql constraints
+        description: "A JSON list of sparql constraints"
         required: false
         schema:
           type: list
           items:
             type: string
-            description: A SPARQL constraint
+            description: "A SPARQL constraint"
       - name: variables
         in: query
-        description: A JSON list of 
+        description: "A JSON list of "
         schema:
           type: list
           items:
@@ -610,7 +610,7 @@ paths:
 
   /?view=instance_data: # TODO
     get:
-      description: #TODO
+      description: "#TODO"
       parameters:
       - name: uri
         in: query
@@ -621,11 +621,11 @@ paths:
           format: uri
       - name: constraints
         in: query
-        description: A JSON list of sparql graph patterns that will restrict the query
+        description: "A JSON list of sparql graph patterns that will restrict the query"
         required: false
       - name: variables
         in: query
-        description: # TODO
+        description: "# TODO"
         required: true
         schema:
           type: list
@@ -651,11 +651,11 @@ paths:
   
   ?view=describe:
       get:
-      description: Returns a JSON-LD representation of this nanpublication.
+      description: "Returns a JSON-LD representation of this nanpublication."
       parameters:
       - name: uri
         in: query
-        description: The URI of the nanopublication to represent
+        description: "The URI of the nanopublication to represent"
         required: true
         schema:
           type: string
@@ -664,5 +664,5 @@ paths:
         '200':
           content:
             application/json:
-              description: An array of three elements, which correspond to a nanopublication, its assertion, and its publication info, each of which is expressed as a JSON-LD serialization of RDF data.
+              description: "An array of three elements, which correspond to a nanopublication, its assertion, and its publication info, each of which is expressed as a JSON-LD serialization of RDF data."
        
