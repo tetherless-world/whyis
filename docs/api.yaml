@@ -476,7 +476,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: "Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an @id field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is @value and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is @id and its value is the URI of the object."
+                  description: "Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an `@id` field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is @value and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is @id and its value is the URI of the object."
                   properties:
                     '@id':
                       type: string
@@ -640,8 +640,6 @@ paths:
               unit:
               unitPredicate:
               valuePredicate:
-              
-        required: false
       responses:
         '200':
           content:
