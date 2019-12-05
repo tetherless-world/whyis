@@ -105,13 +105,13 @@ paths:
 
   ###### Resource views ######
 
-  /?view=summary:
+  /about/{uri}/?view=summary:
     get:
       description: "Returns a list of summary properties for the given resource URI. By default, summary properties are taken from skos:definition, schema:description, dc:abstract, dc:description, dc:summary. rdfs:comment, dcelements:description, obo:UAO_0000115, prov:value, and sio:hasValue. Additional summary properties may be specified by the application configuration."
       parameters:
       - name: uri
-        in: query
-        description: "URI to be summarized"
+        in: path
+        description: "Relative URI to be summarized"
         required: true
         schema:
           type: string
@@ -128,13 +128,13 @@ paths:
                   description: "The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question."
                 
           
-  /?view=attributes:
+  /about/{uri}/?view=attributes:
     get:
       description: "Returns all properties of `uri` whose values are literals, as well as all sio attributes `uri` has. If units are specified for any attributes, the units are also returned. The following properties are excluded: `foaf:depiction`, `sioc:content`, `skos:definition`, `dc:abstract`, `dc:description`, `dc:summary`, `rdfs:comment`, `dcelements:description`, `<http://purl.obolibrary.org/obo/IAO_0000115>`, `prov:value`, `sio:hasValue`, and `<http://dbpedia.org/ontology/abstract>`."
       parameters:
       - name: uri
-        in: query
-        description: "URI to display attributes for"
+        in: path
+        description: "Relative URI to display attributes for"
         required: true
         schema:
           type: string
@@ -190,7 +190,7 @@ paths:
                           description: "The plaintext string that is the value of the summary property"
                   label:
                     type: string
-                    description: "The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere                        "
+                    description: "The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere"
                   type:
                     description: "A list of every rdf:type this resource is a member of."
                     type: array
@@ -206,13 +206,13 @@ paths:
                           type: string
                           description: "The label of the rdf:type, taken from the list of label properties"
                         
-  /?view=nanopublications:
+  /about/{uri}/?view=nanopublications:
     get:
       description: "Lists nanopublications that are about (as sio:isAbout) the specified URI, or that have the specified URI as the subject of their assertion."
       parameters:
       - name: uri
-        in: query
-        description: "URI to display nanopublications for"
+        in: path
+        description: "Relative URI to display nanopublications for"
         required: true
         schema:
           type: string
@@ -267,12 +267,12 @@ paths:
                     description: "The URI of a resource this nanopulbication is a reply to (as sioc:reply_of)."
                   
 
-  /?view=related:
+  /about/{uri}/?view=related:
     get:
       description: "Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation sio:hasPart is excluded from this."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI to view related nodes for"
         required: true
         schema:
@@ -307,12 +307,12 @@ paths:
                       format: url
                       description: "The rdf:type of this related node"
 
-  /?view=outgoing:
+  /about/{uri}/?view=outgoing:
     get:
       description: "Lists data about other URIs that are the object of RDF triples whose subject is the specified URI."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI to find outgoing links for"
         required: true
         schema:
@@ -384,12 +384,12 @@ paths:
                         description: "# TODO purpose of this is unclear"
 
 
-  /?view=incoming:
+  /about/{uri}/?view=incoming:
     get:
       description: "Lists data about other URIs that are the subject of RDF triples whose object is the specified URI."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI to find incoming links for"
         required: true
         schema:
@@ -457,12 +457,12 @@ paths:
                       format: url
                       description: "The object of this link."
  
-  /?view=describe:
+  /about/{uri}/?view=describe:
     get:
       description: "Returns all triples that have the given entity as their subject and that originated in the assertion of a nanopublication. If the objects of these triples have human-readable names (specified as `rdfs:label`, `skos:prefLabel`, `dc:title`, or `foaf:name`), these will be returned as well. If there are any `sio:hasAttribute` or `sio:hasPart` relationships specified for the given entity, then all triples whose subject is the attribute or part will be returned, as well as the `rdfs:label` of their objects."
       parameters:
       - name: uri
-        in: query
+        in: path
         description:
         required: true
         schema:
@@ -476,7 +476,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: "Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an "@id" field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is @value and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is @id and its value is the URI of the object."
+                  description: "Represents all triples in the output with the same subject. One JSON object is returned for each subject; this has an @id field containing the URI of the subject, and a field for the URI of each predicate for which triples with this subject are being returned, which contains an array whose elements are single-field objects. If that predicate takes literal objects, the single field in the objects is @value and its value is the corresponding literal; if the predicate takes objects that are non-literals, the single field is @id and its value is the URI of the object."
                   properties:
                     '@id':
                       type: string
@@ -496,7 +496,7 @@ paths:
       description: "Lists OWL property restrictions on the specified class and its properties."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI of a class to list constraints for."
         required: true
         schema:
@@ -547,7 +547,7 @@ paths:
       description: "Lists entities that are prov:specializationOf the class identified by the queried URI, and properties that are specified for them."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI to query facets for"
         required: true
         schema:
@@ -576,7 +576,7 @@ paths:
       description: "#TODO"
       parameters:
       - name: uri
-        in: query
+        in: path
         description:
         required: true
         schema:
@@ -613,7 +613,7 @@ paths:
       description: "#TODO"
       parameters:
       - name: uri
-        in: query
+        in: path
         description:
         required: true
         schema:
@@ -654,7 +654,7 @@ paths:
       description: "Returns a JSON-LD representation of this nanpublication."
       parameters:
       - name: uri
-        in: query
+        in: path
         description: "The URI of the nanopublication to represent"
         required: true
         schema:
