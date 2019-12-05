@@ -640,8 +640,6 @@ paths:
               unit:
               unitPredicate:
               valuePredicate:
-              
-        required: false
       responses:
         '200':
           content:
