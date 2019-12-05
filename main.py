@@ -221,6 +221,24 @@ class App(Empty):
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
 
+    _file_depot = None
+    @property
+    def file_depot(self):
+        if self._file_depot is None:
+            if DepotManager.get('files') is None:
+                DepotManager.configure('files', self.config['file_archive'])
+            self._file_depot = DepotManager.get('files')
+        return self._file_depot
+
+    _nanopub_depot = None
+    @property
+    def nanopub_depot(self):
+        if self._nanopub_depot is None:
+            if DepotManager.get('nanopublications') is None:
+                DepotManager.configure('nanopublications', self.config['nanopub_archive'])
+            self._nanopub_depot = DepotManager.get('nanopublications')
+        return self._nanopub_depot
+        
     def configure_database(self):
         """
         Database configuration should be set here
@@ -243,15 +261,6 @@ class App(Empty):
         self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
-
-        self.file_depot = DepotManager.get('files')
-        if self.file_depot is None:
-            DepotManager.configure('files', self.config['file_archive'])
-            self.file_depot = DepotManager.get('files')
-        self.nanopub_depot = DepotManager.get('nanopublications')
-        if self.nanopub_depot is None:
-            DepotManager.configure('nanopublications', self.config['nanopub_archive'])
-            self.nanopub_depot = DepotManager.get('nanopublications')
 
     def __weighted_route(self, *args, **kwargs):
         """
@@ -486,7 +495,7 @@ construct {
             matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
             return [m.group(0) for m in matches]
 
-        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name]
+        label_properties = [self.NS.skos.prefLabel, self.NS.RDFS.label, self.NS.schema.name, self.NS.dc.title, self.NS.foaf.name, self.NS.schema.name, self.NS.skos.notation]
 
         @lru_cache(maxsize=1000)
         def get_remote_label(uri):
