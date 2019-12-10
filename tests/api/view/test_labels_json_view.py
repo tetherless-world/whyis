@@ -1,3 +1,4 @@
+from urllib.parse import quote_plus
 from whyis.test.api_test_case import ApiTestCase
 import json
 
@@ -37,11 +38,11 @@ class TestLabelsJsonView(ApiTestCase):
         self.assertEquals(len(json_content), 1)
         self.assertEqual(json_content[HOME_INSTANCE_URI], "Home")
 
-  def test_labels_view_entities(self):
-    self.login_new_user()
-    self.post_nanopub(data = labelsData, content_type="text/turtle")
+    def test_labels_view_entities(self):
+      self.login_new_user()
+      self.post_nanopub(data = labelsData, content_type="text/turtle")
 
-    response = self.client.get("/?view=labels&uris="+','.join(quote_plus(uri) for uri in labelsUris))
-    for i in range(len(labelsUris)):
-      self.assertEquals(response.json[labelsUris[i]], labelsExpected[i])
+      response = self.client.get("/?view=labels&uris="+','.join(quote_plus(uri) for uri in labelsUris))
+      for i in range(len(labelsUris)):
+        self.assertEquals(response.json[labelsUris[i]], labelsExpected[i])
 
