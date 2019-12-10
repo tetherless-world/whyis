@@ -33,6 +33,9 @@
 
 - title: Community
   url: /community
+  
+- title: API Documentation
+  url: /api_docs.html
 
 #- title: Curation
 #  sublinks:
