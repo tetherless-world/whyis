@@ -17,7 +17,7 @@
 
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
-        
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/apple-icon-57x57.png') }}">
@@ -40,110 +40,78 @@
     <style>
       /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
       html, body {
-        background-color: #fff;   
-      } 
+        background-color: #fff;
+      }
       .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
       div.container {
       width: 100%;
       margin-left: 0px;
       margin-right: 0px;
       }
-      a:visited { 
+      a:visited {
       color: #887ab7;
       }
     </style>
-    
+
     {% block styles %}{% endblock %}
-    
+
   </head>
 <body>
   <div id="page">
 {% block body %}
-    <md-toolbar >
-      <div class="md-toolbar-tools">
+    <div class="page-container">
+            <md-toolbar class="md-primary">
+                <div class="md-toolbar-row">
+                    <div class="md-toolbar-section-start">
+                        <md-button href="{{url_for('entity.view',name='')}}">Home</md-button>
+                        <span class="md-title" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small></span>
+                    </div>
+	                <!-- Form for Search -->
+	                <form md-layout="box"
+                          style="color:black"
+	                      role="search"
+	                      action="{{url_for('entity.view',name='search')}}"
+	                      method="get"
+	                      name="search">
+                        <search-autocomplete ></search-autocomplete>
+	                </form><!-- /search form -->
 
-        <a href="{{url_for('entity.view',name='')}}">Home</a>
-	<!-- Form for Search -->
-	<form 
-	      class="navbar-form"
-              style="color:black"
-	      role="search"
-	      action="{{url_for('entity.view',name='search')}}"
-	      method="get"
-	       name="search" layout="row" flex>
-          <search-autocomplete flex></search-autocomplete>
-	</form><!-- /search form -->
-
-        {% block nav %}
-        {% endblock %}
-        {% include "nav.html" %}
-        <h3>
-        {% if not current_user or current_user.is_anonymous %}
-        <md-button ng-href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
-        {% else %}
-        <div flex="none" class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Welcome, {{current_user.givenName}} <span class="caret"></span></a>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <li><a href="{{url_for('security.logout')}}">Log out</a></li>
-            <li><a href="{{url_for('security.change_password')}}">Change password</a></li>
-          </ul>
-        </div>
-        {% endif %}
-        {% if current_user and current_user.is_anonymous and current_user.is_authenticated %}
-        <a flex="none" href="{{url_for('security.register')}}">Register <span class="glyphicon glyphicon-log-in"></span></a>
-        {% endif %}
-        </h3>
-      </div>
-    </md-toolbar>
+                    <div class="md-toolbar-section-end">
+                        {% block nav %}
+                        {% endblock %}
+                        {% include "nav.html" %}
+                        <h3>
+                            {% if not current_user or current_user.is_anonymous %}
+                            <md-button href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
+                            <md-button href="{{url_for('security.register')}}" aria-label="Register" title="">Register</md-button>
+                            {% else %}
+                            <md-menu md-size="medium" md-align-trigger>
+                                <md-button md-menu-trigger >Welcome, {{current_user.givenName}} <span class="caret"></span></md-button>
+                                <md-menu-content>
+                                    <md-menu-item><a href="{{url_for('security.logout')}}">Log out</a></md-menu-item>
+                                    <md-menu-item><a href="{{url_for('security.change_password')}}">Change password</a></md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </md-toolbar>
     {% block pageheader %}
-    <div class="container" >
+    <div >
       <div class="page-header" layout="row">
-        <h1 flex property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
-        </h1>
-        {% if this is defined %}
-        <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
-          {% block actions %}
-          {{ upload_button_modal(this) }}
-          {% if g.current_user and g.current_user.is_authenticated %}
-          <md-button md-secondary ng-href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" class="md-icon-button" aria-label="Edit" title="Edit">
-            <md-icon>create</md-icon>
-          </md-button>
-          {% endif %}
-          {% if this.description().value(ns.whyis.hasFileID) %}
-          <md-button md-secondary ng-href="{{url_for('entity.view',uri=this.identifier)}}" class="md-icon-button" aria-label="Download File" title="Download File">
-            <md-icon>file_download</md-icon>
-          </md-button>
-          {% endif %}
-          {% if not this.identifier.startswith(ns.local) %}
-          <md-button md-secondary ng-href="{{this.identifier}}" class="md-icon-button" aria-label="Visit Page" title="Visit Page">
-            <md-icon>launch</md-icon>
-          </md-button>
-          {% endif %}
-          {% endblock %}
-        </section>
-        {% endif %}
       </div>
       {% endblock %}
       <div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-info alert-{{category}} alert-dismissible" role="alert">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          {{message}}
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
         {% block content %}
         {% endblock %}
       </div>
-      </div>
-      {% include "footer.html" %}
+    </div>
+  </div>
     {% endblock %}
 
   </div>
- 
+
     <script>
       LOD_PREFIX = '{{config.lod_prefix}}';
       {% if 'base_rate_probability' in config %}
@@ -165,18 +133,18 @@
       else NODE = {"@id" : NODE_URI};
       {% endif %}
       ROOT_URL = "{{url_for('entity.view',name='')}}";
-      
+
     </script>
-    
+
     <script src="{{ url_for('static', filename='js/whyis_vue_bundle.js')}}"></script>
 
     <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
 
 
     <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
-    
+
     <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
-    
+
 
 
 {% block scripts %}{% endblock %}

@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import * as VueMaterial from "vue-material";
 import "./components";
+import axios from 'axios';
 
 Vue.use(VueMaterial.default);
 
@@ -15,6 +16,7 @@ if(typeof(ATTRIBUTES) !== "undefined"){
         root_url: ROOT_URL,
         base_rate: BASE_RATE,
         lod_prefix: LOD_PREFIX,
+        axios: axios
     }
 } else {
     data = {};
@@ -23,4 +25,3 @@ new Vue({
     el: '#page',
     data,
 });
-

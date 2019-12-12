@@ -5,6 +5,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "axios": "^0.19.0",
     "tabulator-tables": "^4.4.3",
     "vue": "^2.6.10",
     "vue-material": "^1.0.0-beta-11",
