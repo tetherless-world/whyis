@@ -26,19 +26,19 @@ function decodeDataURI(uri) {
     //  mediatype  := [ type "/" subtype ] *( ";" parameter )
     //  data       := *urlchar
     //  parameter  := attribute "=" value
-    
+
     var m = /^data:([^;,]+)?((?:;(?:[^;,]+))*?)(;base64)?,(.*)/.exec(uri);
     if (!m) {
         throw new Error('Not a valid data URI: "' + uri.slice(0, 20) + '"');
     }
-    
+
     var media    = '';
     var b64      = m[3];
     var body     = m[4];
     var result   = null;
     var charset  = null;
     var mimetype = null;
-    
+
     // If <mediatype> is omitted, it defaults to text/plain;charset=US-ASCII.
     // As a shorthand, "text/plain" can be omitted but the charset parameter
     // supplied.
@@ -54,7 +54,7 @@ function decodeDataURI(uri) {
             media = 'text/plain;charset=US-ASCII';
         }
     }
-    
+
     // The RFC doesn't say what the default encoding is if there is a mediatype
     // so we will return null.  For example, charset doesn't make sense for
     // binary types like image/png
@@ -64,18 +64,18 @@ function decodeDataURI(uri) {
             charset = cm[1];
         }
     }
-    
+
     if (b64) {
         result = {value : atob(body)};
-        
+
     } else {
         result = {value : decodeURIComponent(body)};
     }
-    
+
     result.mimetype  = mimetype;
     result.mediatype = media;
     result.charset   = charset;
-    
+
     return result;
 }
 
@@ -136,15 +136,15 @@ function whyis() {
 
         //var root = concepts[0];
         //root.fixed = true;
-        
+
         layout.start();
         layout.alpha(0.2);
-        
+
         var svg = parent.append("svg")
             .attr("width", layout.size()[0])
             .attr("height", layout.size()[1])
             .attr("xmlns:xlink","http://www.w3.org/1999/xlink");
-        
+
         var transformGroup = svg.append("g");
             //.attr("display","hide");
             //.attr("transform", "translate(" + layout.size()[0] + "," + layout.size()[1] + ")");
@@ -166,7 +166,7 @@ function whyis() {
             .append("text")
             .style("font-size", function(d) {
                 //return d.size + "px";
-                return minFontSize + (maxFontSize-minFontSize) * d.tfidf/maxSize; 
+                return minFontSize + (maxFontSize-minFontSize) * d.tfidf/maxSize;
             })
             .style("font-family", "Helvetica")
             .style("fill", function(d, i) { return fill(i); })
@@ -221,7 +221,7 @@ function whyis() {
                         //quad.point.y += dx;
                     }
                 }
-                return false;//overlap( a, {x: (x1+x2)/2, width:Math.abs(x2-x1), y: (y1 + y2)/2, height: Math.abs(y2-y1) });  
+                return false;//overlap( a, {x: (x1+x2)/2, width:Math.abs(x2-x1), y: (y1 + y2)/2, height: Math.abs(y2-y1) });
             };
         };
 
@@ -251,7 +251,7 @@ function whyis() {
             node.attr("transform", function(d, i) {
                 return "translate(" + [d.x, d.y] + ") ";
             })
-            
+
             zoomGroup.each(function() {
                 var bbox = this.getBBox();
                 var zoomFactor = d3.min([layout.size()[0]/bbox.width, layout.size()[1]/bbox.height]);
@@ -268,7 +268,7 @@ function whyis() {
     function radianToDegree(r) {
         return r * 180 / Math.PI;
     };
-    
+
     function relatedWheel(related) {
         var fill = d3.scale.ordinal()
             .range(PALETTE);
@@ -285,7 +285,7 @@ function whyis() {
             .attr("width", size)
             .attr("height", size)
             .attr("xmlns:xlink","http://www.w3.org/1999/xlink");
-        
+
         var transformGroup = svg.append("g")
             .attr("transform", "translate(" + size/2 + "," + size/2 + ")");
 
@@ -306,7 +306,7 @@ function whyis() {
 
         var spanAngle = offset * nodes[0].factor;
 
-        
+
 
         var rotateGroup = transformGroup.append("g")
             .attr("transform", "rotate("+(90- radianToDegree(offset))+")");
@@ -317,7 +317,7 @@ function whyis() {
             d.x = accumX;
             accumX += d.dx;
         });
-        
+
         var arc = d3.svg.arc()
             .startAngle(function(d) { return  0; })
             .endAngle(function(d) { return d.dx - 0.1; })
@@ -352,7 +352,7 @@ function whyis() {
         });
 
         var barScale = d3.scale.linear().domain([1,0]).range([0, radius/4]);
-        
+
         var relatedNodeGroup = nodeTypeGroup.selectAll("g.Node")
             .data(function(d) {return d.nodes})
             .enter()
@@ -401,20 +401,29 @@ function whyis() {
                 else return d.title;
             });
     }
-    
+
     if (typeof concepts !== 'undefined')
         d3.select("#conceptcloud").datum(concepts).each(wordCloud);
 
     if (typeof related !== 'undefined')
         d3.select("#relatedwheel").datum(related).each(relatedWheel);
-        
-    app = angular.module('App', ['ngSanitize', 'ngMaterial', 'lfNgMdFileInput', 'ui.bootstrap', 'seco.facetedSearch', 'jsonLdEditor', 'openlayers-directive']);
+
+    app = angular.module('App', [
+        'ngSanitize',
+        'ngMaterial',
+        'lfNgMdFileInput',
+        'ui.bootstrap',
+        'seco.facetedSearch',
+        'jsonLdEditor',
+        'openlayers-directive',
+        'mdRangeSlider'
+    ]);
     console.log("Here's the app at whyis.js",app);
-    
+
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');
-        
+
         var csrftoken = $('meta[name=csrf-token]').attr('content');
         $httpProvider.defaults.headers.put.X_CSRFTOKEN = csrftoken;
         $httpProvider.defaults.headers.post.X_CSRFTOKEN = csrftoken;
@@ -484,7 +493,7 @@ function whyis() {
         function setSelectedValue(value) {
             this.selected = value;
         }
-        
+
         function getConstraint() {
             var self = this;
             var values = this.getSelectedValue();
@@ -503,7 +512,7 @@ function whyis() {
 
 
     }
-    
+
     app.controller('SmartFacetController', SmartFacetController);
 
     /* ngInject */
@@ -511,7 +520,7 @@ function whyis() {
         var args = { $scope: $scope, FacetImpl: SmartFacet };
         return $controller('AbstractFacetController', args);
     }
-    
+
     /**
     * @ngdoc directive
     * @name seco.facetedSearch.directive:secoBasicFacet
@@ -576,7 +585,7 @@ function whyis() {
             templateUrl: ROOT_URL+'static/html/smart_facet.html'
         };
     }
-    
+
     app.directive('whyisTextFacet', whyisTextFacet);
 
     function whyisTextFacet() {
@@ -590,7 +599,7 @@ function whyis() {
             templateUrl: ROOT_URL+'static/html/text_facet.html'
         };
     }
-    
+
     app.filter('urlencode', function() {
         return window.encodeURIComponent;
     });
@@ -598,7 +607,7 @@ function whyis() {
     app.filter('uniq', function() {
         return function(values, key) {
             if (values['length'] === undefined) return values;
-            
+
             var included = {};
             return values.filter(function(d) {
                 if (included[d[key]] === undefined) {
@@ -609,10 +618,10 @@ function whyis() {
             });
         };
     });
-    
+
     app.factory('Service', ['$http', 'Graph', function($http, Graph) {
         function Service(endpoint) {
-            
+
         }
         return Service;
     }]);
@@ -626,8 +635,8 @@ function whyis() {
 
     app.factory('Resource', ['listify', function(listify) {
         function resource (id, values) {
-            var result = { 
-                "@id" : id 
+            var result = {
+                "@id" : id
             };
             result.resource = function(id, values) {
                 var valuesGraph = null;
@@ -725,7 +734,7 @@ function whyis() {
         });
         return formats;
     }]);
-    
+
     app.factory('Graph', ['$http', 'listify', function($http, listify) {
         function Resource(uri, graph) {
             var that = this;
@@ -812,7 +821,7 @@ function whyis() {
                                         o = converters[o['@type']](o['@value']);
                                     else
                                         o = o['@value'];
-                                    
+
                                 }
                                 resource.add(key,o);
                             });
@@ -828,7 +837,7 @@ function whyis() {
         }
         return Graph;
     }]);
-    
+
     app.factory('RecursionHelper', ['$compile', function($compile){
         return {
             /**
@@ -842,7 +851,7 @@ function whyis() {
                 if(angular.isFunction(link)){
                     link = { post: link };
                 }
-                
+
                 // Break the recursion loop by removing the contents
                 var contents = element.contents().remove();
                 var compiledContents;
@@ -860,7 +869,7 @@ function whyis() {
                         compiledContents(scope, function(clone){
                             element.append(clone);
                         });
-                        
+
                         // Call the post-linking function, if any
                         if(link && link.post){
                             link.post.apply(null, arguments);
@@ -941,7 +950,7 @@ function whyis() {
 	label.$stateful = true;
 	return label;
     }]);
-        
+
     app.factory("Nanopub", ["$http", "Graph", "Resource", function($http, Graph, Resource) {
         function Nanopub(about, replyTo) {
             var graph = Resource('urn:nanopub');
@@ -1081,7 +1090,7 @@ function whyis() {
         }
         Nanopub.get = function(nanopub) {
             var npID = nanopub.np.split("/").slice(-1)[0]
-            return $http.get(ROOT_URL+'pub/'+npID, 
+            return $http.get(ROOT_URL+'pub/'+npID,
                                         {headers: {'ContentType':"application/ld+json"}, responseType: "json"})
                 .then(function(response, error) {
                     nanopub.graph = processNanopub(response);
@@ -1134,7 +1143,7 @@ function whyis() {
         }
         return Nanopub;
     }]);
-    
+
     app.directive("newnanopub",['Nanopub','formats', function(Nanopub, formats) {
         return {
             restrict: "E",
@@ -1179,7 +1188,7 @@ function whyis() {
                     reader.onload = function (loadEvent) {
                         scope.$apply(function () {
                             scope.fileModel = decodeDataURI(loadEvent.target.result).value;
-                            
+
                         });
                     }
                     reader.readAsDataURL(changeEvent.target.files[0]);
@@ -1187,7 +1196,7 @@ function whyis() {
             }
         };
     }]);
-    
+
     app.directive("nanopubs", ["Resource","$http", "Nanopub", "$sce", "getLabel", function(Resource, $http, Nanopub, $sce, getLabel) {
         return {
             restrict: "E",
@@ -1276,7 +1285,7 @@ function whyis() {
                     }).then(function(response) {
                         console.log('response data: ', response.data);
                         console.log('attrs is: ', attrs)
-                        scope.entities = response.data;  
+                        scope.entities = response.data;
                     });
                 }
             }
@@ -1301,7 +1310,7 @@ function whyis() {
                 if (!self.selectedItemChange) self.selectedItemChange = function() { return selectedItemChange};
                 if (!self.searchTextChange) self.searchTextChange = function() { return searchTextChange};
                 if (!self.newNode) self.newNode = function() { return newNode};
-                
+
 	        //self.querySearch   = querySearch;
 	        //self.selectedItemChange = selectedItemChange;
 	        //self.searchTextChange   = searchTextChange;
@@ -1329,11 +1338,11 @@ function whyis() {
 	         */
 	        function createFilterFor(query) {
 	            var lowercaseQuery = angular.lowercase(query);
-                    
+
 	            return function filterFn(state) {
 		        return lowercaseQuery in state.value;
 	            };
-                    
+
 	        }
             }
         }
@@ -1361,11 +1370,11 @@ function whyis() {
                     });
                 });
             }
-            
+
 	}
         return resolveEntity;
     }]);
-    
+
     app.directive("latest", ["$http", 'getLabel', function($http, getLabel) {
 	return {
 	    restrict: "E",
@@ -1389,7 +1398,7 @@ function whyis() {
 	}
     }]);
 
-    
+
     app.service("topClasses", ["$http", function($http) {
         function topClasses(ontology) {
             var query = 'prefix owl: <http://www.w3.org/2002/07/owl#>\n\
@@ -1467,7 +1476,7 @@ select distinct ?id where {\n\
                 classes: classes.map(function(d) {return "<"+d+">"})
             };
         });
-        
+
         var endpointUrl = ROOT_URL+'sparql';
 
         // We are building a faceted search for classes.
@@ -1692,25 +1701,25 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     app.factory('edgeNames', function() {
         // Maps each type of edge interaction with its name.
         return {
-            "http://purl.obolibrary.org/obo/CHEBI_48705": "Agonist",                   
-            "http://purl.obolibrary.org/obo/MI_0190": "Molecule Connection",  
-            "http://purl.obolibrary.org/obo/CHEBI_23357": "Cofactor",                  
-            "http://purl.obolibrary.org/obo/CHEBI_25212": "Metabolite",                
-            "http://purl.obolibrary.org/obo/CHEBI_35224": "Effector",                   
-            "http://purl.obolibrary.org/obo/CHEBI_48706": "Antagonist",                
-            "http://purl.obolibrary.org/obo/GO_0048018": "Receptor Agonist Activity",                     
-            "http://purl.obolibrary.org/obo/GO_0030547":"Receptor Inhibitor Activity",    
-            "http://purl.obolibrary.org/obo/MI_0915": "Physical Association",          
-            "http://purl.obolibrary.org/obo/MI_0407": "Direct Interaction",          
-            "http://purl.obolibrary.org/obo/MI_0191": "Aggregation",                   
-            "http://purl.obolibrary.org/obo/MI_0914": "Association",                    
-            "http://purl.obolibrary.org/obo/MI_0217": "Phosphorylation Reaction",     
-            "http://purl.obolibrary.org/obo/MI_0403": "Colocalization",               
-            "http://purl.obolibrary.org/obo/MI_0570": "Protein Cleavage",              
-            "http://purl.obolibrary.org/obo/MI_0194": "Cleavage Reaction"             
+            "http://purl.obolibrary.org/obo/CHEBI_48705": "Agonist",
+            "http://purl.obolibrary.org/obo/MI_0190": "Molecule Connection",
+            "http://purl.obolibrary.org/obo/CHEBI_23357": "Cofactor",
+            "http://purl.obolibrary.org/obo/CHEBI_25212": "Metabolite",
+            "http://purl.obolibrary.org/obo/CHEBI_35224": "Effector",
+            "http://purl.obolibrary.org/obo/CHEBI_48706": "Antagonist",
+            "http://purl.obolibrary.org/obo/GO_0048018": "Receptor Agonist Activity",
+            "http://purl.obolibrary.org/obo/GO_0030547":"Receptor Inhibitor Activity",
+            "http://purl.obolibrary.org/obo/MI_0915": "Physical Association",
+            "http://purl.obolibrary.org/obo/MI_0407": "Direct Interaction",
+            "http://purl.obolibrary.org/obo/MI_0191": "Aggregation",
+            "http://purl.obolibrary.org/obo/MI_0914": "Association",
+            "http://purl.obolibrary.org/obo/MI_0217": "Phosphorylation Reaction",
+            "http://purl.obolibrary.org/obo/MI_0403": "Colocalization",
+            "http://purl.obolibrary.org/obo/MI_0570": "Protein Cleavage",
+            "http://purl.obolibrary.org/obo/MI_0194": "Cleavage Reaction"
         }
-    });        
-    
+    });
+
     app.factory("edgeTypes", function() {
         // Maps edge interaction types to values for Cytoscape visualization
         return {
@@ -1718,7 +1727,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "shape": "triangle",
                 "color": "#FED700",
                 "uris": [
-                    "http://purl.obolibrary.org/obo/CHEBI_48705", 
+                    "http://purl.obolibrary.org/obo/CHEBI_48705",
                     "http://purl.obolibrary.org/obo/CHEBI_23357",
                     "http://purl.obolibrary.org/obo/CHEBI_25212",
                     "http://purl.obolibrary.org/obo/MI_2254",
@@ -1787,7 +1796,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             }
         }
     });
-        
+
     app.factory("nodeTypes",function() {
         // Maps node types to values for Cytoscape visualization
         return {
@@ -1844,8 +1853,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return nodeTypes["other"][feature];
         };
     }]);
-                
-                
+
+
     app.factory("getEdgeFeature", ['edgeTypes', 'edgeNames', function(edgeTypes) {
         // Gets the edge feature of a given uri.
         return function(feature, uris) {
@@ -1934,7 +1943,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             var types = edgeEntry.data['link_types'];
                             edgeEntry['@types'] = types;
                             edgeEntry.classes = types.join(' ');
-                            edgeEntry.data.shape = getEdgeFeature("shape", types); 
+                            edgeEntry.data.shape = getEdgeFeature("shape", types);
                             edgeEntry.data.color = getEdgeFeature("color", types);
                             if (getEdgeFeature("label",types) && types.length > 0) {
                                 edgeEntry.data.label = types[0].label;
@@ -2022,7 +2031,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             return result;
         };
     });
-    
+
     app.filter('kglink', function(generateLink) {
         return generateLink;
     });
@@ -2073,7 +2082,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             }
         }
     }]);
-    
+
     app.directive("explore", ["$http", 'links', '$timeout', '$mdSidenav', "resolveEntity", 'getSummary', 'getView',
                               function($http, links, $timeout, $mdSidenav, resolveEntity, getSummary, getView) {
 	return {
@@ -2120,7 +2129,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             && selectedMap[d.data.source] == null
                             && selectedMap[d.data.target] == null ;
                     });
-                    
+
                 }
 
                 scope.loading = [];
@@ -2164,7 +2173,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         });
                     })
                 }
-                
+
                 scope.outgoing = function(entities) {
                     if (entities == null) {
                         var entities = scope.cy.$('node:selected').map(function(d) {return d.id()});
@@ -2178,7 +2187,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         });
                     })
                 }
-                
+
                 if (!scope.style) {
                     scope.style = cytoscape.stylesheet()
                         .selector('node')
@@ -2262,8 +2271,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             'text-opacity': 0
                         })
                 }
-                
-                /* 
+
+                /*
                  * CYTOSCAPE IMPLEMENTATION
                  */
                 scope.neighborhood = [];
@@ -2277,7 +2286,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         //padding: [20,20,20,20],
                         idealEdgeLength: 60,
                         //circle: true,
-                        //concentric: function(){ 
+                        //concentric: function(){
                             //var rank = scope.pageRank.rank(this);
                             //console.log(this, rank, this.degree());
                             //return scope.pageRank.ordinal[rank];
@@ -2290,7 +2299,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.selected = [];
                 scope.selectedNodes = [];
                 scope.selectedEdges = [];
-                
+
                 scope.cy = cytoscape({
                     container: $(element).find('.graph'),
                     style: scope.style,
@@ -2299,7 +2308,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     ready: function(){
                         scope.cy = cy = this;
                         cy.boxSelectionEnabled(true);
-                        
+
                         // Clicking on whitespace removes all CSS changes
                         cy.on('vclick', function(e){
                             if( e.cyTarget === cy ){
@@ -2350,7 +2359,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             $http.get(ROOT_URL+'about',{ params: {uri:d,view:'label'}})
                                 .then(function(response) {
                                     result.label = response.data;
-                                    data.loaded += 1; 
+                                    data.loaded += 1;
                                 });
                             return result;
                         });
@@ -2379,7 +2388,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 }
 
 
-                /* 
+                /*
                  * OPTIONS
                  */
                 scope.showLabel = true;
@@ -2389,7 +2398,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.probThreshold = BASE_RATE;
                 scope.found = -1;
                 scope.once = false;
-                scope.query = "none";     
+                scope.query = "none";
                 scope.filter = {
                     "customNode": {
                         "activator": true,
@@ -2408,12 +2417,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "interaction": true
                     }
                 }
-                
+
 
                 /*
                  * HELPER FUNCTIONS
                  */
-                
+
                 // Error Handling
                 scope.handleError = function(data,status, headers, config) {
                     scope.error = true;
@@ -2479,7 +2488,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         console.log(node.data(), rank);
                     });
                 }
-                
+
                 scope.update = update;
                 function render() {
                     elements = scope.elements.all();
@@ -2503,16 +2512,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                 };
 
-                
+
                 //scope.$watchCollection('elements.edges', update);
-                
+
                 if (scope.start) {
                     incomingOutgoing([scope.start]);
                 }
                 scope.$watch("startList",function() {
                     incomingOutgoing(scope.startList);
                 });
-                
+
             }
         }
     }]);
@@ -2523,7 +2532,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             scope: false,
             link: function(scope, elm, attr) {
                 var raw = elm[0];
-                
+
                 elm.on('scroll', function() {
                     if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
                         scope.$apply(attr.whenScrolled);
@@ -2532,7 +2541,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             }
         };
     });
-    
+
     /*
      * DBpedia service
      * Handles SPARQL queries and defines facet configurations.
@@ -2552,7 +2561,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             result.getFacetOptions = getFacetOptions;
 
             /* Implementation */
-            
+
             // Facet definitions
             // 'facetId' is a "friendly" identifier for the facet,
             //  and should be unique within the set of facets.
@@ -2612,7 +2621,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
                     d.enabled = true;
                     d.preferredLang = "en";
-                    if (!d.type) 
+                    if (!d.type)
                         d.type = "basic";
                 },
                 'http://www.w3.org/2002/07/owl#DatatypeProperty' : function(d) {
@@ -2650,7 +2659,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.specifier = '?value rdfs:subClasOf <http://semanticscience.org/resource/Quality>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
-                    if (!d.type) 
+                    if (!d.type)
                         d.type = "basic";
                 },
                 'http://semanticscience.org/resource/Quantity' : function(d) {
@@ -2671,11 +2680,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     d.specifier = '?value rdfs:subClassOf <http://semanticscience.org/resource/Quantity>.\n';
                     d.enabled = true;
                     d.preferredLang = "en";
-                    if (!d.type) 
+                    if (!d.type)
                         d.type = "basic";
                 }
             }
-            
+
             function processConstraints(response) {
                 response.data.forEach(function (d) {
                     if (facetProcessors[d.propertyType] != null) {
@@ -2724,7 +2733,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
                 ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n' +
                 ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
-            
+
             // This is the result query, with <RESULT_SET> as a placeholder for
             // the result set subquery that is formed from the facet selections.
             // The variable names used in the query will be the property names of
@@ -2759,12 +2768,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     //});
                 });
             result.getFacetValues = function() { return result._facetValues; };
-            
-            
+
+
             // FacetResultHandler is a service that queries the endpoint with
             // the query and maps the results to objects.
             var resultHandler = new FacetResultHandler(endpointUrl, resultOptions);
-            
+
             // This function receives the facet selections from the controller
             // and gets the results from DBpedia.
             // Returns a promise.
@@ -2777,23 +2786,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     pager.all = [];
                     pager.loadedPages = {};
-                    
+
                     pager.numItems = 0;
                     pager._lastPage = null;
-                    
+
                     pager.PAGE_SIZE = resultOptions.resultsPerPage;
-                    
+
                     pager.getItemAtIndex = function(index) {
                         var pageNumber = Math.floor(index / pager.PAGE_SIZE);
                         var page = pager.loadedPages[pageNumber];
-                        
+
                         if (page) {
                             return page[index % pager.PAGE_SIZE];
                         } else if (page !== null) {
                             pager.fetchPage_(pageNumber);
                         }
                     };
-                    
+
                     // Required.
                     pager.getLength = function() {
                         return pager.numItems;
@@ -2832,7 +2841,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             function getFacets() {
                 return facets;
             }
-            
+
             // Getter for the facet options.
             function getFacetOptions() {
                 return facetOptions;
@@ -3071,12 +3080,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             scope.spec.encoding[variable] = scope.spec.dimensions[variable];
                         }
                     }, true);
-                });                
+                });
             }
         };
     });
 
-    
+
     /*
      * The controller.
      */
@@ -3094,7 +3103,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 	        restrict: "E",
                 link: function(scope, element, attrs) {
                     var vm = scope;
-                    
+
                     var updateId = 0;
 
                     var dataConfig = {
@@ -3117,16 +3126,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "height" : 700,
                         "resize" : "true"
                     };
-                    
+
                     var instanceFacets = instanceFacetService(scope.type, scope.constraints);
-                    
+
                     // page is the current page of results.
                     vm.makeArray = makeArray;
                     vm.getLabel = getLabel;
-                    
+
                     vm.disableFacets = disableFacets;
                     scope.view = "table";
-                    
+
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
                     scope.$on('sf-facet-constraints', updateResults);
@@ -3142,24 +3151,24 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     // Initialize the facet handler
                     vm.handler = new FacetHandler(getFacetOptions());
 
-                    
+
                     // Disable the facets while results are being retrieved.
                     function disableFacets() {
                         return vm.isLoadingResults;
                     }
-                    
+
                     // Setup the FacetHandler options.
                     function getFacetOptions() {
                         var options = instanceFacets.getFacetOptions();
                         options.scope = scope;
-                        
+
                         // Get initial facet values from URL parameters (refresh/bookmark) using facetUrlStateHandlerService.
                         options.initialState = facetUrlStateHandlerService.getFacetValuesFromUrlParams();
                         return options;
                     }
-                    
+
                     scope.includeFacetsAsCategory = {};
-                    
+
                     // Get results based on facet selections (each time the selections change).
                     function updateResults(event, facetSelections) {
                         vm.isLoadingResults = true;
@@ -3170,7 +3179,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             if (facetSelections.constraint) {
                                 dataConfig.constraints = facetSelections.constraint;
                             }
-                            
+
                             //var variable_names = {};
                             //for (facetName in facetSelections.facets) {
                             //    variable_names[facetName] = {};
@@ -3182,12 +3191,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             //}
 
                             scope.getFacetValues = instanceFacets.getFacetValues;
-                            
+
                             scope.facetValues = [];
                             for (facetName in facetSelections.facets) {
                                 if (facetSelections.facets[facetName].id) {
                                     facetSelections.facets[facetName].value.forEach(function(val) {
-                                        if (val.field !== undefined) 
+                                        if (val.field !== undefined)
                                             scope.facetValues.push(val);
                                     });
                                 }
@@ -3201,6 +3210,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                     }
                                 }
                             });
+
                                     //return true; // Include top level categories.
                             //    if (variable_names[facetValue.facetId] && variable_names[facetValue.facetId][facetValue.value])
                             //        return true;
@@ -3221,11 +3231,51 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                 }, responseType:'json'})
                                 .then(function(response) {
                                     scope.vizConfig.data = { values: response.data };
+                                    scope.allData = response.data;
+                                    scope.facetValues.forEach(function(facetValue) {
+                                        if (facetValue.type != "nominal") {
+                                            var extent = d3.extent(response.data,
+                                                                   d => d[facetValue.field]);
+                                            facetValue.min = extent[0];
+                                            if (facetValue.lower === undefined) {
+                                                facetValue.lower = facetValue.min;
+                                            }
+                                            facetValue.max = extent[1];
+                                            if (facetValue.upper === undefined) {
+                                                facetValue.upper = facetValue.max;
+                                            }
+                                            console.log(facetValue);
+                                        }
+                                    })
                                 });
-                            
+
                         });
                     }
-                    
+
+                    scope.updateFilters = function() {
+                        console.log(scope.allData);
+                        if (scope.allData) {
+                            scope.vizConfig.data.values = scope.allData.filter(function(row) {
+                                var include = true;
+                                scope.facetValues.forEach(function(facetValue) {
+                                    if (facetValue.min !== undefined) {
+                                        if (row[facetValue.field] <= facetValue.min ||
+                                            row[facetValue.field] >= facetValue.max)
+                                            include = false;
+                                    }
+                                });
+                                return include;
+                            });
+                        }
+                    };
+                    scope.$watch(function(scope) {
+                        if (scope.facetValues) {
+                            return scope.facetValues.map(function(d) {
+                                return {lower:d.lower, upper:d.upper};
+                            });
+                        } else return [];
+                    },scope.updateFilters, true);
+
                     function makeArray(val) {
                         return angular.isArray(val) ? val : [val];
                     }
@@ -3255,10 +3305,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return fn;
     }]);
-    
 
-    
-    
+
+
+
     app.service('makeID',function() {
         var ID = function () {
             // Math.random should be unique because of its seeding algorithm.
@@ -3292,7 +3342,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
         }
         return resolveURI;
     });
-    
+
     /*
      * The controller - New Instance.
      */
@@ -3309,7 +3359,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             });
         }
 
-        
+
         vm.nanopub = {
             "@context" : {
                 "@vocab": LOD_PREFIX+'/',
@@ -3416,15 +3466,15 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 return;
             }
         }
-        
+
         populateJsonObject(vm.instance);
 
         $scope.globalContext = vm.nanopub['@context'];
 
         vm.collapseAll = true;
-        
+
     });
-    
+
     /*
      * New Directive for new_instance_view.html and edit_instance_view.html
      */
@@ -3441,7 +3491,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
     /*
      * The controller - Edit Instance.
      */
-    
+
     app.controller('EditInstanceController', function($scope, $http, makeID, Nanopub, resolveURI) {
         var vm = this;
         var np_id = makeID();
@@ -3454,7 +3504,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 window.location.href = ROOT_URL+'about?uri='+window.encodeURIComponent(entityURI);
             });
         }
-        
+
         vm.nanopub = {
             "@context" : {
                 "@vocab": LOD_PREFIX+'/',
@@ -3574,7 +3624,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 return;
             }
         }
-        
+
         populateJsonObject(vm.instance);
 
         $scope.globalContext = vm.nanopub['@context'];

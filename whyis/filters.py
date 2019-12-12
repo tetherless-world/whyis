@@ -16,6 +16,13 @@ from urllib import parse
 #def composite_z_score(nums):
 #    return norm.cdf(sum([norm.ppf(x) for x in nums]))
 
+class LiteralEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, rdflib.Literal):
+            return json.JSONEncoder.default(obj.value)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
 def configure(app):
 
     @app.template_filter('urlencode')
@@ -25,6 +32,11 @@ def configure(app):
         s = s.encode('utf8')
         s = parse.quote_plus(s)
         return Markup(s)
+
+    @app.template_filter('jsonify')
+    def jsonify(o):
+        print(o[0])
+        return json.dumps(o, cls=LiteralEncoder)
 
     @app.template_filter('labelize')
     def labelize(entry, key='about', label_key='label', fetch=False):
@@ -44,14 +56,20 @@ def configure(app):
             labelize(entry, *args, **kw)
         return entries
 
-    app.labelize = labelize
-    
     @app.template_filter('map_list')
     def map_list(entries, source, destination, fn):
         for entry in entries:
             entry[destination] = fn(entry[source])
         return entries
-        
+
+    app.labelize = labelize
+
+    @app.template_filter('map_list')
+    def map_list(entries, source, destination, fn):
+        for entry in entries:
+            entry[destination] = fn(entry[source])
+        return entries
+
     @app.template_filter('lang')
     def lang_filter(terms):
         terms = list(terms)
@@ -73,7 +91,7 @@ def configure(app):
     def query_filter(query, graph=app.db, prefixes=None, values=None):
         if prefixes is None: # default arguments are evaluated once, ever
             prefixes = {}
-        
+
         namespaces = dict(app.NS.prefixes)
         namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
         params = { 'initNs': namespaces}
@@ -85,12 +103,12 @@ def configure(app):
     @app.template_filter("fromjson")
     def fromjson(json_text):
         return json.loads(json_text)
-        
+
     @app.template_filter('construct')
     def construct_filter(query, graph=app.db, prefixes=None, values=None):
         if prefixes is None:
             prefixes = {}
-        
+
         def remap_bnode(x):
             if isinstance(x, rdflib.URIRef) and x.startswith('bnode:'):
                 return rdflib.BNode(x.replace('bnode:',''))
@@ -148,25 +166,25 @@ def configure(app):
             kwargs = None
 
         return app.render_view(entity, view=view, args=kwargs)[0]
-        
+
     @app.template_filter('probquery')
     def probquery(select):
-        return '''select distinct 
-?source 
+        return '''select distinct
+?source
 ?link
 ?target
-(group_concat(distinct ?link_type; separator=" ") as ?link_types) 
-?np 
+(group_concat(distinct ?link_type; separator=" ") as ?link_types)
+?np
 ?probability
 #(max(?tfidf) as ?tfidf)
 (max(?frequency) as ?frequency)
 (max(?idf) as ?idf)
-(group_concat(distinct ?article; separator=" ") as ?articles) 
+(group_concat(distinct ?article; separator=" ") as ?articles)
 where {
     hint:Query hint:optimizer "Runtime" .
 
     %s
-    
+
     ?assertion a np:Assertion.
     ?np np:hasAssertion ?assertion.
     optional {
@@ -203,14 +221,14 @@ where {
         from scipy.stats import combine_pvalues
 
         base_rate = app.config['base_rate_probability']
-        
+
         def merge(links):
             result = dict(links[0])
             result['from'] = []
             result['articles'] = []
             for i in links:
                 if 'probability' not in i:
-                    
+
                     # Do a very rudimentary meta-analysis based on the number of supporting papers
                     rates = [base_rate for x in i['articles']]
                     if not rates:
@@ -230,7 +248,7 @@ where {
             result['probability'] = max([i['probability'] for i in links])
             #print "end: "
             return result
-    
+
         byLink = collections.defaultdict(list)
         for edge in edges:
 #            edge['source_types'] = [x for x in edge.get('source_types','').split(' ') if len(x) > 0]
@@ -258,7 +276,7 @@ where {
                 from scipy.stats import norm
                 result['zscore'] = norm.ppf(result['probability'])
             return result
-        
+
         result = collections.defaultdict(list)
         for edge in edges:
         #print edge
@@ -268,8 +286,8 @@ where {
         return result
 
     def types(x):
-        return 
-    
+        return
+
     @app.template_filter('probit')
     def probit(q, **values):
         q = probquery(q)
@@ -304,9 +322,10 @@ WHERE {
         ?id rdf:type/rdfs:subClassOf* <{{facet['class']}}> .
         FILTER (!ISBLANK(?id))
         FILTER ( !strstarts(str(?id), "bnode:") )
-        ?id {{facet['predicate']}}/{{facet['typeProperty']}} ?value .
+        ?id {{facet['predicate']}} ?value_object.
+        ?value_object {{facet['typeProperty']}} ?value.
+        {% if 'unitPredicate' in facet %}optional { ?value_object {{facet['unitPredicate']}} ?unit. }{%endif%}
         {{facet['specifier']}}
-        {% if 'unitPredicate' in facet %}optional { ?id {{facet['predicate']}}/{{facet['unitPredicate']}} ?unit. }{%endif%}
 
     {% for constraint in constraints %}{{constraint}}{% endfor %}
 
@@ -325,13 +344,13 @@ WHERE {
       ].
     {% endif %}
   {% endfor %}
-                
+
       } GROUP BY ?value ?unit
     }
     FILTER(BOUND(?value))
   }
 }''')
-    
+
     @app.template_filter('facet_values')
     def facet_values(facets, variables, constraints):
         if constraints:
@@ -389,7 +408,7 @@ WHERE {
     {% endif %}
     {% if variable.selectionType == 'Show' %}} {% endif %}
   {% endfor %}
-  
+
 }''')
     @app.template_filter('instance_data')
     def instance_data(this, variables, constraints):
