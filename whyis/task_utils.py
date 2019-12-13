@@ -19,12 +19,14 @@ def is_running_waiting(service_name):
     """
     if is_waiting(service_name):
         return True
-    running_tasks = list(inspect().active().values())[0]
-    for task in running_tasks:
-        if 'kwargs' in task:
-            args = eval(task['kwargs'])
-            if service_name == args.get('service_name',None):
-                return True
+    active = inspect().active()
+    if active:
+        running_tasks = list(active.values())[0]
+        for task in running_tasks:
+            if 'kwargs' in task:
+                args = eval(task['kwargs'])
+                if service_name == args.get('service_name',None):
+                    return True
     return False
 
 
@@ -32,12 +34,14 @@ def is_waiting(service_name):
     """
     Check if a task is waiting.
     """
-    scheduled_tasks = list(inspect().scheduled().values())[0]
-    for task in scheduled_tasks:
-        if 'kwargs' in task:
-            args = eval(task['kwargs'])
-            if service_name == args.get('service_name',None):
-                return True
+    scheduled = inspect().scheduled()
+    if scheduled:
+        scheduled_tasks = list(scheduled.values())[0]
+        for task in scheduled_tasks:
+            if 'kwargs' in task:
+                args = eval(task['kwargs'])
+                if service_name == args.get('service_name',None):
+                    return True
     return False
 
 

@@ -28,12 +28,12 @@ def view(name=None, format=None, view=None):
     # 'view' is the default view
     fileid = resource.value(current_app.NS.whyis.hasFileID)
     if fileid is not None and 'view' not in request.args:
-        print (resource.identifier, fileid)
+        fileid = fileid.value
         f = None
-        if current_app.file_depot.exists(fileid):
-            f = current_app.file_depot.get(fileid)
-        elif current_app.nanopub_depot.exists(fileid):
+        if current_app.nanopub_depot.exists(fileid):
             f = current_app.nanopub_depot.get(fileid)
+        elif current_app.file_depot.exists(fileid):
+            f = current_app.file_depot.get(fileid)
         if f is not None:
             fsa = FileServeApp(f, current_app.config["file_archive"].get("cache_max_age",3600*24*7))
             return fsa
