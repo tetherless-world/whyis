@@ -16,13 +16,6 @@ from urllib import parse
 #def composite_z_score(nums):
 #    return norm.cdf(sum([norm.ppf(x) for x in nums]))
 
-class LiteralEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, rdflib.Literal):
-            return json.JSONEncoder.default(obj.value)
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
-
 def configure(app):
 
     @app.template_filter('urlencode')
@@ -35,8 +28,16 @@ def configure(app):
 
     @app.template_filter('jsonify')
     def jsonify(o):
-        print(o[0])
-        return json.dumps(o, cls=LiteralEncoder)
+        def preprocess(o):
+            if isinstance(o, rdflib.Literal):
+                return o.value
+            elif isinstance(o, list):
+                return [preprocess(x) for x in o]
+            elif isinstance(o, dict):
+                return dict([(key,preprocess(value)) for key, value in o.items()])
+            else:
+                return o
+        return json.dumps(preprocess(o))
 
     @app.template_filter('labelize')
     def labelize(entry, key='about', label_key='label', fetch=False):

@@ -24,7 +24,7 @@
       </md-chip-template>
     </md-chips>
     <div ng-repeat="value in vm.facet.selected">
-        <div ng-if="value.type != 'nominal' && value.min">
+        <div ng-if="value.type != 'nominal' && value.min !== undefined">
             <label>{{value.name}}: {{value.lower | number}} - {{value.upper | number}}</label>
             <range-slider step="(value.max-value.min)/100"
                           lower-value="value.lower" upper-value="value.upper"

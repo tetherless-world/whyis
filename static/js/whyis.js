@@ -3253,19 +3253,19 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     }
 
                     scope.updateFilters = function() {
-                        console.log(scope.allData);
                         if (scope.allData) {
-                            scope.vizConfig.data.values = scope.allData.filter(function(row) {
+                            scope.vizConfig.data = { values: scope.allData.filter(function(row) {
                                 var include = true;
                                 scope.facetValues.forEach(function(facetValue) {
                                     if (facetValue.min !== undefined) {
-                                        if (row[facetValue.field] <= facetValue.min ||
-                                            row[facetValue.field] >= facetValue.max)
+                                        if (row[facetValue.field] < facetValue.lower ||
+                                            row[facetValue.field] > facetValue.upper) {
                                             include = false;
+                                        }
                                     }
                                 });
                                 return include;
-                            });
+                            })};
                         }
                     };
                     scope.$watch(function(scope) {
