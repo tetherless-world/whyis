@@ -3134,7 +3134,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     vm.getLabel = getLabel;
 
                     vm.disableFacets = disableFacets;
-                    scope.view = "table";
+                    scope.view = "help";
 
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
