@@ -1,7 +1,6 @@
 openapi: 3.0.2
 info: 
   title: Whyis
-  description: "[to be added]"
   version: 0.1.0
 paths:
 
@@ -126,7 +125,9 @@ paths:
               schema:
                 type: array
                 items:
-                  #type: array
+                  type: array
+                  items:
+                    type: string
                   description: "The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question."
                 
           
@@ -192,7 +193,7 @@ paths:
                           description: "The plaintext string that is the value of the summary property"
                   label:
                     type: string
-                    description: "The label of this resource, taken from the list of label properties. # TODO Explain the list of label properties somewhere"
+                    description: "The label of this resource, taken from the list of label properties." # TODO Explain the list of label properties somewhere
                   type:
                     description: "A list of every rdf:type this resource is a member of."
                     type: array
@@ -253,7 +254,8 @@ paths:
                       format: uri
                       description: "The URI of a dc:contributor of this nanopublication."
                     contributor_label:
-                      description: TODO
+                      type: string
+                      description: "A human-readable label for the dc:contributor of this nanopublication."
                     derived_from:
                       type: string
                       format: uri
@@ -293,7 +295,8 @@ paths:
                   description: "A description of a related node"
                   properties:
                     idf:
-                      description: TODO
+                      type: number
+                      description: "The highest `sio:InverseDocumentFrequency` specified for this related node"
                     label:
                       type: string
                       description: "The label of this related node"
@@ -306,9 +309,11 @@ paths:
                       format: url
                       description: "The RDF property linking this related node and the specified URI"
                     tf:
-                      description: TODO
+                      type: number
+                      description: "The highest sio:Frequency of any term such that the specified URI `sio:hasPart` the term and the term is a `prov:specializationOf` this related node, or 1 if there is no such term"
                     tfidf:
-                      description: TODO
+                      type: number
+                      description: "The product of tf and idf"
                     type:
                       type: string
                       format: url
@@ -337,10 +342,10 @@ paths:
                     articles:
                       type: array
                       items:
-                        description: "# TODO this looks blank for incoming; for outgoing it has the same data as link"
+                        description: TODO #this looks blank for incoming; for outgoing it has the same data as link
                     from:
                       type: array
-                      description: "# TODO A list of URIs of sources in which this link is specified?"
+                      description: TODO #A list of URIs of nanopubs in which this link is specified?
                       items:
                         type: string
                         format: url
@@ -366,7 +371,7 @@ paths:
                             description: "The URI of a property"
                     probability:
                       type: number
-                      description: "# TODO is this always 1?"
+                      description: TODO #is this always 1?
                     source:
                       type: string
                       format: url
@@ -389,7 +394,7 @@ paths:
                           description: "The URI of one RDF type of the URI listed in the `target` field."
                     zscore:
                       type: number
-                      description: "# TODO purpose of this is unclear"
+                      description: TODO #purpose of this is unclear
 
 
   /about/{uri}/?view=incoming:
@@ -415,10 +420,10 @@ paths:
                     articles:
                       type: array
                       items:
-                        description: "#TODO is this always a blank list?"
+                        description: TODO #is this always a blank list?
                     from:
                       type: array
-                      description: "# TODO A list of URIs of sources in which this link is specified?"
+                      description: TODO #A list of URIs of sources in which this link is specified?
                       items:
                         type: string
                         format: url
@@ -444,7 +449,7 @@ paths:
                             description: "The URI of a property"
                     probability:
                       type: number
-                      description: "# TODO is this always 1?"
+                      description: TODO #is this always 1?
                     source:
                       type: string
                       format: url
@@ -548,7 +553,9 @@ paths:
                       format: url
                       description: "The URI of the class that is the domain of the constraint."
                     extent:
-                      description: TODO
+                      type: string
+                      format: url
+                      description: "The URI of an OWL property describing the extent of this constraint. For example, whether a range constraint is `owl:someValuesFrom` or `owl:allValuesFrom`, or whether a cardinality is `owl:minCardinality`, `owl:maxCardinality`, or `owl:exactCardinality`."
                     cardinality:
                       description: "The object of a cardinality property specified for this restriction, if any."
                     
@@ -564,7 +571,7 @@ paths:
           format: uri
       responses:
         '200':
-          description: "Lists entities that are prov:specializationOf the class identified by the queried URI, and properties that are specified for them."
+          description: "Lists entities that are members of classes that are `prov:specializationOf` the class identified by the queried URI, and properties that are specified for them."
           content:
             application/json:
               schema:
@@ -576,11 +583,17 @@ paths:
                       type: string
                       description: "The URI of the queried class."
                     property:
-                      description: TODO
+                      type: string
+                      format: url
+                      description: "The URI of an RDF property that has been specified for this entity"
                     propertyType:
                       type: string
+                      format: url
+                      description: "Whichever of `owl:DatatypeProperty` or `owl:ObjectPropety` is a more appropriate descriptor of this property"
                     inverse:
-                      description: TODO
+                      type: string
+                      format: url
+                      description: "Another property that has an `owl:inverseOf` relationship with this property."
                     
 #  /?view=facet_values: # TODO
 #    get:
