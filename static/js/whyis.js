@@ -449,6 +449,7 @@ function whyis() {
         SmartFacetConstructor.prototype.getSelectedValue = getSelectedValue;
         SmartFacetConstructor.prototype.setSelectedValue = setSelectedValue;
         SmartFacetConstructor.prototype.getConstraint = getConstraint;
+        SmartFacetConstructor.prototype.update = update;
 
         SmartFacetConstructor.prototype.getState = function() {
             var self = this;
@@ -464,6 +465,43 @@ function whyis() {
             }
             return facetValues;
         };
+
+        function update(constraints) {
+            var self = this;
+            if (!self.isEnabled()) {
+                return $q.when();
+            }
+
+            var otherCons = this.getOtherSelections(constraints.constraint);
+            if (self.otherCons === otherCons) {
+                return $q.when(self.state);
+            }
+            self.otherCons = otherCons;
+
+            self._isBusy = true;
+
+            var facetValues = this.config.scope.getFacetValues().filter(function(facetValue) {
+                return facetValue.facetId == self.config.facetId;
+            });
+            if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
+                return self.fetchState(constraints).then(function(state) {
+                    if (!_.isEqual(otherCons, self.otherCons)) {
+                        return $q.reject('Facet state changed');
+                    }
+                    self.state = state;
+                    self._isBusy = false;
+
+                    return state;
+                });
+            } else {
+                self.state = facetValues;
+                self._isBusy = false;
+                return $q.when(facetValues);
+            }
+        }
+
+
+
         SmartFacetConstructor.prototype.includeChanged = function(updater) {
             this.config.scope.includeFacetsAsCategory[this.config.facetId] = !this.config.scope.includeFacetsAsCategory[this.config.facetId];
             updater();
