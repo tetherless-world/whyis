@@ -1,7 +1,6 @@
 openapi: 3.0.2
 info: 
   title: Whyis
-  description: "[to be added]"
   version: 0.1.0
 paths:
 
@@ -57,7 +56,7 @@ paths:
           type: string
       - name: type
         in: query
-        description: "A url corresponding to an `rdf:type`. If present, only resources of the specified type will be returned."
+        description: "A uri corresponding to an `rdf:type`. If present, only resources of the specified type will be returned."
         required: false
         schema:
           type: string
@@ -126,7 +125,9 @@ paths:
               schema:
                 type: array
                 items:
-                  #type: array
+                  type: array
+                  items:
+                    type: string
                   description: "The zeroth element of this sub-array is the URI of one of the summary properties and the first element is the string literal that is the value of that property for the resource in question."
                 
           
@@ -269,8 +270,7 @@ paths:
                     reply_of:
                       type: string
                       format: uri
-                      description: "The URI of a resource this nanopulbication is a reply to (as `sioc:reply`_of)."
-                  
+                      description: "The URI of a resource this nanopulbication is a reply to (as `sioc:reply_of`)."                  
 
   /about/{uri}/?view=related:
     get:
@@ -317,7 +317,6 @@ paths:
                       type: string
                       format: url
                       description: "The `rdf:type` of this related node"
-
   /about/{uri}/?view=outgoing:
     get:
       parameters:
@@ -396,7 +395,6 @@ paths:
                     zscore:
                       type: number
                       description: "The inverse CDF of `probability`"
-
 
   /about/{uri}/?view=incoming:
     get:
@@ -506,6 +504,7 @@ paths:
                         format: url
                         description: "The URI of an `rdf:type` of the subject. Only present in the object representing the URI being queried."
 
+
   ###### Class views ######
   
   /?view=constraints:
@@ -556,7 +555,9 @@ paths:
                       format: url
                       description: "The URI of the class that is the domain of the constraint."
                     extent:
-                      description: "The extent of this constraint; for example, one of `owl:someValuesFrom` or `owl:allValuesFrom` for a range constraint, or `owl:minCardinality`, `owl:maxCardinality`, or `owl:exactCardinality` for a cardinality constraint."
+                      type: string
+                      format: url
+                      description: "The URI of an OWL property describing the extent of this constraint. For example, whether a range constraint is `owl:someValuesFrom` or `owl:allValuesFrom`, or whether a cardinality constraint is `owl:minCardinality`, `owl:maxCardinality`, or `owl:exactCardinality`."
                     cardinality:
                       description: "The object of a cardinality property specified for this restriction, if any."
                     
@@ -572,7 +573,7 @@ paths:
           format: uri
       responses:
         '200':
-          description: "Lists entities that are `prov:specializationOf` the class identified by the queried URI, and properties that are specified for them."
+          description: "Lists entities that are members of classes that are `prov:specializationOf` the class identified by the queried URI, and properties that are specified for them."
           content:
             application/json:
               schema:
@@ -586,12 +587,14 @@ paths:
                     property:
                       type: string
                       format: url
-                      description: "The URI of a property specified for this class."
+                      description: "The URI of an RDF property that has been specified for this entity"
                     propertyType:
                       type: string
                       format: url
-                      description: "Whichever of `owl:DatatypeProperty` or `owl:ObjectProperty` is appropriate"
+                      description: "Whichever of `owl:DatatypeProperty` or `owl:ObjectPropety` is a more appropriate descriptor of this property"
                     inverse:
+                      type: string
+                      format: url                      
                       description: "The inverse of this property, as specified by `owl:inverseOf`."
                     
 #  /?view=facet_values: # TODO

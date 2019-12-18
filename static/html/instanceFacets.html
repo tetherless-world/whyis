@@ -4,26 +4,33 @@
       <h2 flex ng-bind="title"></h2>
       <ng-transclude>
       </ng-transclude>
-      <md-button class="md-mini md-icon-button"
+      <md-button class="md-mini"
+                 ng-class="{'md-primary' : view=='help'}"
+                 aria-label="Help"
+                 title="Help"
+                 data-ng-click="view='help'">
+        <md-icon>help_outline</md-icon> Help
+      </md-button>
+      <md-button class="md-mini"
                  ng-class="{'md-primary' : view=='list'}"
                  aria-label="List View"
                  title="List View"
                  data-ng-click="view='list'">
-        <md-icon>view_list</md-icon>
+        <md-icon>view_list</md-icon> List
       </md-button>
-      <md-button class="md-mini md-icon-button"
+      <md-button class="md-mini"
                  ng-class="{'md-primary' : view=='table'}"
                  aria-label="Table View"
                  title="Table View"
                  data-ng-click="view='table'">
-        <md-icon>table_chart</md-icon>
+        <md-icon>table_chart</md-icon> Table
       </md-button>
-      <md-button class=" md-mini md-icon-button"
+      <md-button class=" md-mini"
                  ng-class="{'md-primary' : view=='chart'}"
                  aria-label="Chart View"
                  title="Chart View"
                  data-ng-click="view='chart'">
-        <md-icon>show_chart</md-icon>
+        <md-icon>show_chart</md-icon> Chart
       </md-button>
     </div>
   </md-toolbar>
@@ -45,7 +52,7 @@
 
     <!-- Results view -->
     <div flex="grow" layout="column" >
-      
+
       <md-content layout="column" when-scrolled="pager.loadMore()" ng-if="view=='list'" ng-show="view=='list'" >
         <kg-card ng-repeat="entity in pager.all track by entity.id" compact="true" src="entity.id">
         </kg-card>
@@ -67,6 +74,124 @@
           </tbody>
         </table>
       </md-content>
-    </div>
+      <md-content layout="column" ng-if="view=='help'" ng-show="view=='help'" >
+          <h2>Faceted Search for {{title}}</h2>
+          <p>
+              This faceted browser is configured to help you find instances of {{title}}
+              in the knowledge graph. The search boxes (facets) on the left help you narrow
+              your search by letting you select different kinds of properties and
+              attributes of the things you are looking for.
+          </p>
+          <p>
+              Some facet selections have addititional options. For instance,
+              a numeric property will offer a range slider to let you narrow the
+              selections. Some non-numeric properties can be selected on or added
+              as a property itself to be displayed. These facets have as their
+              first option a "All" entry. Selecting this will add the facet itself
+              as data that can be shown in the chart and table views.
+          </p>
+          <p>
+              As you select facets, the selection will automatically update.
+          </p>
+          <h2>Viewing Selections</h2>
+          <p>
+              Your selected instances can be viewed in a number of ways:
+              as a list (<md-icon>view_list</md-icon>),
+              a table (<md-icon>table_chart</md-icon>),
+              or as a chart (<md-icon>show_chart</md-icon>).
+          </p>
+          <h3><md-icon>view_list</md-icon> List</h3>
+          <p>
+              The list view is fairly simple. It shows a set of "infoboxes" for
+              each of the instances selected. You can visit the page of the
+              instance by clicking on its title.
+          </p>
+          <h3><md-icon>table_chart</md-icon> Table</h3>
+          <p>
+              The table view shows the selected properties of the instances.
+          </p>
+          <h3><md-icon>show_chart</md-icon> Chart</h3>
+          <p>
+              The chart view lets you plot the selected properties using a number
+              of different visualization strategies. Selected properties can be
+              used as variables to plot on the x or y axis, or be set as a size
+              or color variable, depending on the strategy you select. X and Y
+              axes can be configured for linear or logarithmic scales.
+          </p>
+          <p>
+              Visual strategies include:
+          </p>
+          <h4>Scatter Plot</h4>
+          <p>
+              A type of plot or mathematical diagram using Cartesian coordinates
+              to display values for typically two variables for a set of data.
+              Select quantitative values for X and Y axes,
+              and any value for size or color.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Size, Color</p>
+          <h4>Histogram</h4>
+          <p>
+              a graphical display of data using bars of different heights.
+              In a histogram, each bar groups numbers into ranges.
+              Taller bars show that more data falls in that range.
+              A histogram displays the shape and spread of continuous sample data.
+              Select a quantitative value for the X or Y axis.
+          <p>
+          <p><b>Displays:</b> X axis or Y axis</p>
+          <h4>Bar Chart</h4>
+          <p>
+              A chart or graph that presents categorical data with rectangular
+              bars with heights or lengths proportional to the values that they
+              represent. The bars can be plotted vertically or horizontally.
+              Select a quantitative value for the X or Y axis, and a label value
+              for the other axis.  Color may also be selected.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Color</p>
+          <h4>Box Plot</h4>
+          <p>
+              A method for graphically depicting groups of numerical data
+              through their quartiles. Box plots have lines extending vertically
+              from the boxes (whiskers) indicating variability outside the upper
+              and lower quartiles. Outliers are plotted as individual points.
+              Select a quantitative value for the X or Y axis, and a label value
+              for the other axis. Color may also be selected.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Color</p>
+          <h4>Heatmap</h4>
+          <p>
+              A a graphical representation of data where the individual values
+              contained in a matrix are represented as colors.
+              Select label values for X and Y axes,
+              and a quantitative value for color.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Color</p>
+          <h4>Density Plot</h4>
+          <p>
+              A two-dimensional histogram where color indicates the number of
+              instances that intersect a set of bins in two dimensions.
+              Select quantitative values for X and Y axes.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis</p>
+          <h4>Strip Plot</h4>
+          <p>
+              Similar to a box plot, a strip plot can show the density of
+              distributions across categories. Instead of summarizing with a
+              single box, each instance is given a small rectangle along a
+              quantitative axis.
+              Select a label values for the X or Y axis,
+              a label value for the other,
+              and any value for color.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Color</p>
+          <h4>Line Plot</h4>
+          <p>
+              A type of chart which displays information as a series of data
+              points called 'markers' connected by straight line segments.
+              Select quantitative values for X and Y axes,
+              and any value for size or color.
+          <p>
+          <p><b>Displays:</b> X axis, Y axis, Size, Color</p>
+      </md-content>
+  </div>
   </div>
 </div>
