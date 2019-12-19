@@ -17,7 +17,7 @@ paths:
         required: true
       responses:
         '200':
-          description: "Returns a label for each specified URI. The label returned will be taken from, in order of priority: skos:prefLabel, rdfs:label, schema:name, dc:title, foaf:name, or skos:notation. If no label is found, the URI itself will be used as the label."
+          description: "Returns a label for each specified URI. The label returned will be taken from, in order of priority: `skos:prefLabel`, `rdfs:label`, `schema:name`, `dc:title`, `foaf:name`, or `skos:notation`. If no label is found, the URI itself will be used as the label."
           content:
             application/json:
               schema:
@@ -56,7 +56,7 @@ paths:
           type: string
       - name: type
         in: query
-        description: "A url corresponding to an rdf:type. If present, only resources of the specified type will be returned."
+        description: "A uri corresponding to an `rdf:type`. If present, only resources of the specified type will be returned."
         required: false
         schema:
           type: string
@@ -69,7 +69,7 @@ paths:
           type: string
       responses:
         '200':
-          description: "Allows searching for resources by a number of properties representing plaintext identifiers. This includes dc:title, rdfs:label, skos:prefLabel, skos:altLabel, foaf:name, and dc:identifier. Resources of type sio:Term are excluded."
+          description: "Allows searching for resources by a number of properties representing plaintext identifiers. This includes `dc:title`, `rdfs:label`, `skos:prefLabel`, `skos:altLabel`, `foaf:name`, and `dc:identifier`. Resources of type `sio:Term` are excluded."
           content:
             application/json:
               schema:
@@ -84,22 +84,22 @@ paths:
                       description: "The URI of the resource that was found"
                     title:
                       type: string
-                      description: "The dc:title of the resource, if present"
+                      description: "The `dc:title` of the resource, if present"
                     label:
                       type: string
-                      description: "The rdfs:label of the resource, if present"
+                      description: "The `rdfs:label` of the resource, if present"
                     prefLabel:
                       type: string
-                      description: "The skos:prefLabel of the resource, if present"
+                      description: "The `skos:prefLabel` of the resource, if present"
                     altLabel:
                       type: string
-                      description: "The skos:altLabel of the resource, if present"
+                      description: "The `skos:altLabel` of the resource, if present"
                     name:
                       type: string
-                      description: "The foaf:name of the resource, if present"
+                      description: "The `foaf:name` of the resource, if present"
                     identifier:
                       type: string
-                      description: "The dc:identifier of the resource, if present"
+                      description: "The `dc:identifier` of the resource, if present"
                     score:
                       type: number
                       description: "A representation of how closely this node matched the search term"
@@ -108,7 +108,7 @@ paths:
 
   /about/{uri}/?view=summary:
     get:
-      description: "Returns a list of summary properties for the given resource URI. By default, summary properties are taken from skos:definition, schema:description, dc:abstract, dc:description, dc:summary. rdfs:comment, dcelements:description, obo:UAO_0000115, prov:value, and sio:hasValue. Additional summary properties may be specified by the application configuration."
+      description: "Returns a list of summary properties for the given resource URI. By default, summary properties are taken from `skos:definition`, `schema:description`, `dc:abstract`, `dc:description`, `dc:summary`. `rdfs:comment`, `dcelements:description`, `obo:UAO_0000115`, `prov:value`, and `sio:hasValue`. Additional summary properties may be specified by the application configuration."
       parameters:
       - name: uri
         in: path
@@ -193,21 +193,21 @@ paths:
                           description: "The plaintext string that is the value of the summary property"
                   label:
                     type: string
-                    description: "The label of this resource, taken from the list of label properties." # TODO Explain the list of label properties somewhere
+                    description: "The label of this resource, taken from the list of label properties." #TODO Explain the list of label properties somewhere
                   type:
-                    description: "A list of every rdf:type this resource is a member of."
+                    description: "A list of every `rdf:type` this resource is a member of."
                     type: array
                     items:
                       type: object
-                      description: "Represents one rdf:type this resource is a member of"
+                      description: "Represents one `rdf:type` this resource is a member of"
                       properties:
                         '@id': 
                           type: string
                           format: url
-                          description: "The URI the rdf:type"
+                          description: "The URI the `rdf:type`"
                         label:
                           type: string
-                          description: "The label of the rdf:type, taken from the list of label properties"
+                          description: "The label of the `rdf:type`, taken from the list of label properties"
                         
   /about/{uri}/?view=nanopublications:
     get:
@@ -221,7 +221,7 @@ paths:
           format: url
       responses:
         '200':
-          description: "Lists nanopublications that are about (as sio:isAbout) the specified URI, or that have the specified URI as the subject of their assertion."
+          description: "Lists nanopublications that are about (as `sio:isAbout`) the specified URI, or that have the specified URI as the subject of their assertion."
           content:
             application/json:
               schema:
@@ -248,30 +248,29 @@ paths:
                     about:
                       type: string
                       format: uri
-                      description: "The URI of the topic of this nanopublication, as defined by sio:isAbout"
+                      description: "The URI of the topic of this nanopublication, as defined by `sio:isAbout`"
                     contributor:
                       type: string
                       format: uri
-                      description: "The URI of a dc:contributor of this nanopublication."
+                      description: "The URI of a `dc:contributor` of this nanopublication."
                     contributor_label:
                       type: string
-                      description: "A human-readable label for the dc:contributor of this nanopublication."
+                      description: "A human-readable label for the contributor."
                     derived_from:
                       type: string
                       format: uri
-                      description: "The URI of a resource this nanopublication was derived from (as prov:wasDerivedFrom)."
+                      description: "The URI of a resource this nanopublication was derived from (as `prov:wasDerivedFrom`)."
                     generation_type:
                       type: string
                       format: uri
-                      description: "The type of the activity that generated this nanopublication, as defined by prov:wasGeneratedBy."
+                      description: "The type of the activity that generated this nanopublication, as defined by `prov:wasGeneratedBy`."
                     content:
                       type: string
-                      description: "The sioc:content of this nanopublication."
+                      description: "The `sioc:content` of this nanopublication."
                     reply_of:
                       type: string
                       format: uri
-                      description: "The URI of a resource this nanopulbication is a reply to (as sioc:reply_of)."
-                  
+                      description: "The URI of a resource this nanopulbication is a reply to (as `sioc:reply_of`)."                  
 
   /about/{uri}/?view=related:
     get:
@@ -285,7 +284,7 @@ paths:
           format: url
       responses:
         '200':
-          description: "Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation sio:hasPart is excluded from this."
+          description: "Returns a list of other nodes that are related to the given URI, along with their labels and the URI of the relation between them and the starting point. The relation `sio:hasPart` is excluded from this."
           content:
             application/json:
               schema:
@@ -296,7 +295,7 @@ paths:
                   properties:
                     idf:
                       type: number
-                      description: "The highest `sio:InverseDocumentFrequency` specified for this related node"
+                      description: "The inverse document frequency of this related node, as specified with `sio:InverseDocumentFrequency`, or 1 if unspecified."
                     label:
                       type: string
                       description: "The label of this related node"
@@ -310,15 +309,14 @@ paths:
                       description: "The RDF property linking this related node and the specified URI"
                     tf:
                       type: number
-                      description: "The highest sio:Frequency of any term such that the specified URI `sio:hasPart` the term and the term is a `prov:specializationOf` this related node, or 1 if there is no such term"
+                      description: "The term frequency of this related node, defined as the maximum `sio:Frequency` of any term that is part of the queried URI (as `sio:hasPart`) and is a `prov:specializationOf` the related node, or 1 if no such term exists."
                     tfidf:
                       type: number
-                      description: "The product of tf and idf"
+                      description: "The product of `tf` and `idf`"
                     type:
                       type: string
                       format: url
-                      description: "The rdf:type of this related node"
-
+                      description: "The `rdf:type` of this related node"
   /about/{uri}/?view=outgoing:
     get:
       parameters:
@@ -341,11 +339,13 @@ paths:
                   properties:
                     articles:
                       type: array
-                      items:
-                        description: TODO #this looks blank for incoming; for outgoing it has the same data as link
+                      description: "A list of citations for this link"
+                        items:
+                          type: string
+                          format: url
                     from:
                       type: array
-                      description: TODO #A list of URIs of nanopubs in which this link is specified?
+                      description: "A list of nanopublications in which this link is specified."
                       items:
                         type: string
                         format: url
@@ -371,7 +371,7 @@ paths:
                             description: "The URI of a property"
                     probability:
                       type: number
-                      description: TODO #is this always 1?
+                      description: "Represents how likely this link is"
                     source:
                       type: string
                       format: url
@@ -394,8 +394,7 @@ paths:
                           description: "The URI of one RDF type of the URI listed in the `target` field."
                     zscore:
                       type: number
-                      description: TODO #purpose of this is unclear
-
+                      description: "The inverse CDF of `probability`"
 
   /about/{uri}/?view=incoming:
     get:
@@ -419,11 +418,13 @@ paths:
                   properties:
                     articles:
                       type: array
-                      items:
-                        description: TODO #is this always a blank list?
+                      description: "A list of citations for this link"
+                        items:
+                          type: string
+                          format: url
                     from:
                       type: array
-                      description: TODO #A list of URIs of sources in which this link is specified?
+                      description: "A list of nanopublications in which this link is specified."
                       items:
                         type: string
                         format: url
@@ -449,7 +450,7 @@ paths:
                             description: "The URI of a property"
                     probability:
                       type: number
-                      description: TODO #is this always 1?
+                      description: "Represents how likely this link is"
                     source:
                       type: string
                       format: url
@@ -501,7 +502,8 @@ paths:
                       items:
                         type: string
                         format: url
-                        description: "The URI of an rdf:type of the subject. Only present in the object representing the URI being queried."
+                        description: "The URI of an `rdf:type` of the subject. Only present in the object representing the URI being queried."
+
 
   ###### Class views ######
   
@@ -524,7 +526,7 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: "Represents one range restriction on the queried class. This includes classes of type owl:Restriction that the queried class is related to via rdfs:subClassOf, owl:equivalentClass, and owl:intersectionOf, and also properties that have an rdfs:domain that is a superclass of the queried class and a specified rdfs:range"
+                  description: "Represents one range restriction on the queried class. This includes classes of type `owl:Restriction` that the queried class is related to via `rdfs:subClassOf`, `owl:equivalentClass`, and `owl:intersectionOf`, and also properties that have an `rdfs:domain` that is a superclass of the queried class and a specified `rdfs:range`"
                   properties:
                     class:
                       type: string
@@ -540,7 +542,7 @@ paths:
                     propertyType:
                       type: string
                       format: url
-                      description: "The rdf:type of this property; or else whichever of owl:DatatypeProperty or owl:ObjectProperty is most applicable"
+                      description: "The `rdf:type` of this property; or else whichever of `owl:DatatypeProperty` or `owl:ObjectProperty` is most applicable"
                     range:
                       type: string
                       format: url
@@ -555,7 +557,7 @@ paths:
                     extent:
                       type: string
                       format: url
-                      description: "The URI of an OWL property describing the extent of this constraint. For example, whether a range constraint is `owl:someValuesFrom` or `owl:allValuesFrom`, or whether a cardinality is `owl:minCardinality`, `owl:maxCardinality`, or `owl:exactCardinality`."
+                      description: "The URI of an OWL property describing the extent of this constraint. For example, whether a range constraint is `owl:someValuesFrom` or `owl:allValuesFrom`, or whether a cardinality constraint is `owl:minCardinality`, `owl:maxCardinality`, or `owl:exactCardinality`."
                     cardinality:
                       description: "The object of a cardinality property specified for this restriction, if any."
                     
@@ -592,8 +594,8 @@ paths:
                       description: "Whichever of `owl:DatatypeProperty` or `owl:ObjectPropety` is a more appropriate descriptor of this property"
                     inverse:
                       type: string
-                      format: url
-                      description: "Another property that has an `owl:inverseOf` relationship with this property."
+                      format: url                      
+                      description: "The inverse of this property, as specified by `owl:inverseOf`."
                     
 #  /?view=facet_values: # TODO
 #    get:
