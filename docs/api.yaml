@@ -340,9 +340,9 @@ paths:
                     articles:
                       type: array
                       description: "A list of citations for this link"
-                        items:
-                          type: string
-                          format: url
+                      items:
+                        type: string
+                        format: url
                     from:
                       type: array
                       description: "A list of nanopublications in which this link is specified."
@@ -419,9 +419,9 @@ paths:
                     articles:
                       type: array
                       description: "A list of citations for this link"
-                        items:
-                          type: string
-                          format: url
+                      items:
+                        type: string
+                        format: url
                     from:
                       type: array
                       description: "A list of nanopublications in which this link is specified."
