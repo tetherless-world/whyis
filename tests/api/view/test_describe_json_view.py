@@ -21,3 +21,5 @@ class TestDescribeJsonView(ApiTestCase):
         self.assertIsInstance(description, dict)
         self.assertEqual(description["@id"], PERSON_INSTANCE_URI)
         self.assertEqual(description["http://schema.org/jobTitle"], [{"@value": "Professor"}])
+
+# TODO Tests where the URI is a resource, ontology, class, or nanopub, since each of those has their own json template
