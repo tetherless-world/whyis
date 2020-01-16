@@ -3,36 +3,39 @@
 - title: Home
   url: /
 
-- title: Installation
-  sublinks:
-    - title: Quick Start With Docker
-      url: /tutorial
+#- title: Installation
+#  sublinks:
+- title: Quick Start With Docker
+  url: /tutorial
 
-    - title: Basic Installation
-      url: /install
+- title: Basic Installation
+  url: /install
   
-    - title: Docker Installation
-      url: /docker
+- title: Docker Installation
+  url: /docker
 
-- title: Customizing Whyis
-  sublinks:
-    - title: Configuring Whyis
-      url: /config
+#- title: Customizing Whyis
+#  sublinks:
+- title: Configuring Whyis
+  url: /config
 
-    - title: Command Line Reference
-      url: /commands
+- title: Command Line Reference
+  url: /commands
 
-    - title: Creating Whyis Views
-      url: /views
+- title: Creating Whyis Views
+  url: /views
 
-    - title: Creating Inference Agents
-      url: /inference
+- title: Creating Inference Agents
+  url: /inference
       
 - title: Use Cases
   url: /usecases
 
 - title: Community
   url: /community
+  
+- title: API Documentation
+  url: /api_docs.html
 
 #- title: Curation
 #  sublinks:
