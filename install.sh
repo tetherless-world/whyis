@@ -1,5 +1,5 @@
 #!/bin/bash
-
+WHYIS_FORK="${WHYIS_FORK:-tetherless-world}"
 WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
 
 curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
@@ -24,7 +24,7 @@ sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
 else
-     curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/$WHYIS_BRANCH/puppet/manifests/install.pp" > /tmp/install_whyis.pp
+     curl -skL "https://raw.githubusercontent.com/${WHYIS_FORK}/whyis/$WHYIS_BRANCH/puppet/manifests/install.pp" > /tmp/install_whyis.pp
 fi
 echo "Whyis branch: $WHYIS_BRANCH"
 
