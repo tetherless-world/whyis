@@ -13,6 +13,7 @@ import rdflib
 import sadi
 import sadi.mimeparse
 from celery import Celery
+from celery_once import QueueOnce
 from celery.schedules import crontab
 from depot.manager import DepotManager
 from depot.middleware import FileServeApp
@@ -60,7 +61,7 @@ sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
 # top_compare_key = False, -100, [(-2, 0)]
-# increase probability that the rule will be near or at the bottom 
+# increase probability that the rule will be near or at the bottom
 bottom_compare_key = True, 100, [(2, 0)]
 
 
@@ -77,34 +78,50 @@ class ExtendedRegisterForm(RegisterForm):
 class App(Empty):
 
     managed = False
-    
+
     def configure_extensions(self):
 
         Empty.configure_extensions(self)
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
         self.celery.conf.update(self.config)
-        
+        self.celery.conf.ONCE = {
+            'backend': 'celery_once.backends.Redis',
+            'settings': {
+                'url': self.config['CELERY_BROKER_URL'],
+                'default_timeout': 60 * 60 * 24
+            }
+        }
+
+        class ContextTask(self.celery.Task):
+            def __call__(self, *args, **kwargs):
+                with app.app_context():
+                    return self.run(*args, **kwargs)
+        self.celery.Task = ContextTask
+
+        # Make QueueOnce app context aware.
+        class ContextQueueOnce(QueueOnce):
+            def __call__(self, *args, **kwargs):
+                with app.app_context():
+                    return super(ContextQueueOnce, self).__call__(*args, **kwargs)
+
+        # Attach to celery object for easy access.
+        self.celery.QueueOnce = ContextQueueOnce
+
         app = self
 
-        self.redis = self.celery.broker_connection().default_channel.client
-        
         if 'root_path' in self.config:
             self.root_path = self.config['root_path']
-        
+
         if 'WHYIS_TEMPLATE_DIR' in self.config and app.config['WHYIS_TEMPLATE_DIR'] is not None:
             my_loader = jinja2.ChoiceLoader(
-                [jinja2.FileSystemLoader(p) for p in self.config['WHYIS_TEMPLATE_DIR']] 
+                [jinja2.FileSystemLoader(p) for p in self.config['WHYIS_TEMPLATE_DIR']]
                 + [app.jinja_loader]
             )
             app.jinja_loader = my_loader
 
-        @self.celery.task
+        @self.celery.task(base=QueueOnce, once={'graceful': True})
         def process_resource(service_name, taskid=None):
             service = self.config['inferencers'][service_name]
-            if is_waiting(service_name):
-                print("Deferring to a later invocation.", service_name)
-                return
-            print(service_name)
             service.process_graph(app.db)
 
         @self.celery.task
@@ -123,7 +140,7 @@ class App(Empty):
                 print("Triggered task", task['name'])
                 for x, in task['service'].getInstances(app.db):
                     task['do'](x)
-            
+
             @self.celery.task
             def do_task(uri):
                 print("Running task", task['name'], 'on', uri)
@@ -137,14 +154,14 @@ class App(Empty):
             task['do'] = do_task
 
             return task
-            
+
         app.inference_tasks = []
         if 'inference_tasks' in self.config:
             app.inference_tasks = [setup_periodic_task(task) for task in self.config['inference_tasks']]
 
         for name, task in list(self.config['inferencers'].items()):
             task.app = app
-            
+
         for task in app.inference_tasks:
             if 'schedule' in task:
                 #print "Scheduling task", task['name'], task['schedule']
@@ -185,12 +202,15 @@ class App(Empty):
         self.nanopub_update_listener = run_update
 
         app = self
-        @self.celery.task(retry_backoff=True, retry_jitter=True,autoretry_for=(Exception,),max_retries=4, bind=True)
+        @self.celery.task(base=self.celery.QueueOnce,
+                          once={'graceful': True},
+                          retry_backoff=True,
+                          retry_jitter=True,
+                          autoretry_for=(Exception,),
+                          max_retries=4,
+                          bind=True)
         def run_importer(self, entity_name):
             entity_name = URIRef(entity_name)
-            counter = app.redis.incr("import__"+entity_name)
-            if counter > 1:
-                return
             print('importing', entity_name)
             importer = app.find_importer(entity_name)
             if importer is None:
@@ -203,7 +223,6 @@ class App(Empty):
             print("Remote modified:", updated, type(updated), "Local modified:", modified, type(modified))
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
-            app.redis.set("import__"+entity_name,0)
         self.run_importer = run_importer
 
         self.template_imports = {}
@@ -238,7 +257,7 @@ class App(Empty):
                 DepotManager.configure('nanopublications', self.config['nanopub_archive'])
             self._nanopub_depot = DepotManager.get('nanopublications')
         return self._nanopub_depot
-        
+
     def configure_database(self):
         """
         Database configuration should be set here
@@ -297,7 +316,7 @@ class App(Empty):
 
     class Entity (rdflib.resource.Resource):
         _this = None
-        
+
         def this(self):
             if self._this is None:
                 self._this = self._graph.app.get_entity(self.identifier)
@@ -357,11 +376,11 @@ construct {
 #                    print str(e), self.identifier
 #                    raise e
             return self._description
-        
+
     def get_resource(self, entity, async_=True, retrieve=True):
         if retrieve:
             mapped_name, importer = self.map_entity(entity)
-    
+
             if mapped_name is not None:
                 entity = mapped_name
 
@@ -376,9 +395,9 @@ construct {
                 elif not importer.import_once:
                     print("Type of modified is",type(modified))
                     self.run_importer.delay(entity)
-                    
+
         return self.Entity(self.db, entity)
-    
+
     def configure_template_filters(self):
         filters.configure(self)
         if 'filters' in self.config:
@@ -425,7 +444,7 @@ construct {
             if not self._can_edit(np_uri):
                 raise Unauthorized()
             self.nanopub_manager.retire(np_uri)
-        
+
 
     def add_files(self, uri, files, upload_type=NS.pv.File):
         nanopub = self.nanopub_manager.new()
@@ -519,7 +538,7 @@ construct {
                     labels = self.lang_filter(resource_entity[property])
                     if len(labels) > 0:
                         return labels[0]
-                    
+
                 if len(labels) == 0:
                     name = [x.value for x in [resource_entity.value(self.NS.foaf.givenName),
                                               resource_entity.value(self.NS.foaf.familyName)] if x is not None]
@@ -532,7 +551,7 @@ construct {
             except Exception as e:
                 print(str(e), uri)
                 return str(uri)
-        
+
         def get_label(resource):
             for property in label_properties:
                 labels = self.lang_filter(resource[property])
@@ -540,7 +559,7 @@ construct {
                 if len(labels) > 0:
                     return labels[0]
             return get_remote_label(resource.identifier)
-            
+
         @self.before_request
         def load_forms():
             if 'authenticators' in self.config:
@@ -549,7 +568,7 @@ construct {
                     if user is not None:
                     #    login_user(user)
                         break
-                
+
             g.ns = self.NS
             g.get_summary = get_summary
             g.get_label = get_label
@@ -606,7 +625,7 @@ construct {
 #                 print(str(e), entity)
 #                 raise e
 #             return result.resource(entity)
-        
+
         def get_entity_sparql(entity):
             try:
                 statements = self.db.query('''select distinct ?s ?p ?o ?g where {
@@ -627,8 +646,8 @@ construct {
                 raise e
             #print result.serialize(format="trig")
             return result.resource(entity)
-            
-        
+
+
 #         def get_entity_disk(entity):
 #             try:
 #                 nanopubs = self.db.query('''select distinct ?np where {
@@ -652,7 +671,7 @@ construct {
 #             return result.resource(entity)
 
         get_entity = get_entity_sparql
-        
+
         self.get_entity = get_entity
 
         def get_summary(resource):
@@ -735,7 +754,7 @@ construct {
             extension = views[0]['view'].value.split(".")[-1]
             if extension in DATA_EXTENSIONS:
                 headers['Content-Type'] = DATA_EXTENSIONS[extension]
-                
+
 
             # default view (list of nanopubs)
             # if available, replace with class view
@@ -763,11 +782,9 @@ construct {
         else:
             entity = self.NS.local.Home
         return entity, content_type
-            
+
     def get_send_file_max_age(self, filename):
         if self.debug:
             return 0
         else:
             return Empty.get_send_file_max_age(self, filename)
-
-
