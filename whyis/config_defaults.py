@@ -165,7 +165,14 @@ Config = dict(
             "Range Restriction",
             "Functional Data Property",
             #"Assertions", (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
-            #"Keys",
+            "Same Individual",
+            "Different Individuals",
+            #"Class Assertion",
+            #"Object Property Assertion",
+            #"Data Property Assertion"
+            "Negative Object Property Assertion",
+            "Negative Data Property Assertion",
+            "Keys",
         ],
         "OWL2 QL" : [
             "Class Inclusion", 
@@ -181,6 +188,10 @@ Config = dict(
             "Object Property Irreflexivity",
             "Object Property Asymmetry",
             #"Assertions", (DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, and DataPropertyAssertion)
+            "Different Individuals",
+            #"Class Assertion",
+            #"Object Property Assertion",
+            #"Data Property Assertion"
         ],
         "OWL2 RL" : [
             "Class Disjointness" ,
@@ -200,7 +211,14 @@ Config = dict(
             "Property Equivalence" ,
             "Object Property Inversion",
             #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
-            #"Keys" ,
+            "Same Individual",
+            "Different Individuals",
+            #"Class Assertion",
+            #"Object Property Assertion",
+            #"Data Property Assertion"
+            "Negative Object Property Assertion",
+            "Negative Data Property Assertion",
+            "Keys" ,
             #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             #"Self Restriction" (ObjectHasSelf)
             #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
@@ -216,19 +234,19 @@ Config = dict(
             prefixes="", 
             where = "\t?class owl:disjointWith ?disjointClass .\n\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass . ",
             construct="?resource rdf:type owl:Nothing . ",
-            explanation="Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, {{resource}} is an instance of {{class}}, it is not an instance of {{disjointClass}}."), # update explanation
+            explanation="Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, since {{resource}} is an instance of {{class}}, it can not be an instance of {{disjointClass}}."),
         "Object Property Transitivity": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
             where = "\t?resource ?transitiveProperty ?o1 .\n\t?o1  ?transitiveProperty ?o2 .\n\t?transitiveProperty rdf:type owl:TransitiveProperty .",
             construct="?resource ?transitiveProperty ?o2 .",
-            explanation="Since {{transitiveProperty}} is a transitive object property, and the relationships {{resource}} {{transitiveProperty}} {{o1}} ans {{o1}} {{transitiveProperty}} {{o2}} exist, then we can infer that {{resource}} {{transitiveProperty}} {{o2}}."),
+            explanation="Since {{transitiveProperty}} is a transitive object property, and the relationships {{resource}} {{transitiveProperty}} {{o1}} and {{o1}} {{transitiveProperty}} {{o2}} exist, then we can infer that {{resource}} {{transitiveProperty}} {{o2}}."),
         "Object Property Reflexivity": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
-            where = "\t?resource ?reflexiveProperty ?o .\n\t?reflexiveProperty rdf:type owl:ReflexiveProperty .",
+            where = "\t?resource ?reflexiveProperty ?o .\n\t?resource rdf:type ?type.\n\t?o rdf:type ?type.\n\t?reflexiveProperty rdf:type owl:ReflexiveProperty .",
             construct="?resource ?reflexiveProperty ?resource .",
-            explanation="Since {{resource}} has a {{reflexiveProperty}} assertion, and {{reflexiveProperty}} is a reflexive property, we can infer that {{resource}} {{reflexiveProperty}} {{resource}}."),
+            explanation="Since {{resource}} has a {{reflexiveProperty}} assertion to {{o}}, {{resource}} and {{o}} are both of type {{type}}, and {{reflexiveProperty}} is a reflexive property, we can infer that {{resource}} {{reflexiveProperty}} {{resource}}."),
         "Domain Restriction": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
@@ -244,13 +262,13 @@ Config = dict(
         "Functional Data Property" : autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
-            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:DatatypeProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o1 .\n\tFILTER (str(?o1) != str(?o2))",
+            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:DatatypeProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) != str(?o2))",
             construct="?resource rdf:type owl:Nothing .",
             explanation=""),
         "Functional Object Property": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
-            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:ObjectProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o1 .\n\tFILTER (str(?o1) != str(?o2))",
+            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:ObjectProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) != str(?o2))",
             construct="?resource rdf:type owl:Nothing .",
             explanation=""),
         "Property Disjointness": autonomic.Deductor(
@@ -276,7 +294,7 @@ Config = dict(
             prefixes="", 
             where = "\t?resource ?irreflexiveProperty ?o .\n\t?irreflexiveProperty rdf:type owl:IrreflexiveProperty .\n\t?resource ?irreflexiveProperty ?resource .",
             construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."),  # update explanation
+            explanation="Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."),
         "Class Inclusion": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
@@ -326,12 +344,55 @@ Config = dict(
             construct="?o ?inverseProperty ?resource .",
             explanation="The object properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."),
         #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
-        #"Keys" (HasKey): autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t?resource owl:hasKey ?key .",
-        #    construct="",
-        #    explanation=""),
+        "Same Individual": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="",
+            where = "\t?resource owl:sameAs ?individual .\n\t?resource ?p ?o .", 
+            construct="?individual ?p ?o .",
+            explanation="Since {{resource}} is the same as {{individual}}, they share the same properties."),
+        "Different Individuals": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="",
+            where = "\t?resource owl:differentFrom ?individual .\n\t?resource owl:sameAs ?individual .", 
+            construct="?resource rdf:type owl:Nothing . ",
+            explanation="Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."),
+# Still need to address the encoding of the following 3 assertions
+#        "Class Assertion": autonomic.Deductor(
+#            resource="?resource", 
+#            prefixes="",
+#            where = "?resource rdf:type owl:Class.", 
+#            construct="",
+#            explanation=""),
+#        "Object Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
+#            resource="?resource ?p ?o. ?p rdf:type owl:ObjectProperty .", 
+#            prefixes="",
+#            where = "", 
+#            construct="",
+#            explanation=""),
+#        "Data Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
+#            resource="?resource", 
+#            prefixes="",
+#            where = "?resource ?p ?o. ?p rdf:type owl:DatatypeProperty .", 
+#            construct="",
+#            explanation=""),
+        "Negative Object Property Assertion": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="",
+            where = "\t?resource ?p ?o.\n\t?p rdf:type owl:ObjectProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetIndividual ?o .", 
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since a negative object property assertion was made with source {{resource}}, object property {{p}}, and target individual {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."),
+        "Negative Data Property Assertion": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="",
+            where = "\t?resource ?p ?o.\n\t?p rdf:type owl:DatatypeProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetValue ?o .", 
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since a negative datatype property assertion was made with source {{resource}}, datatype property {{p}}, and target value {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."),
+        "Keys" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class .\n\t?class owl:hasKey ( ?keyProperty ) .\n\t?resource ?keyProperty ?keyValue.\n\t?individual rdf:type ?class.\n\t?individual ?keyProperty ?keyValue.",
+            construct="?resource owl:sameAs ?individual",
+            explanation="Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."),
         #"Inverse Functional Object Property"(InverseFunctionalObjectProperty): autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
