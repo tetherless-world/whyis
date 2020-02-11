@@ -17,7 +17,6 @@ CELERYD_NODES="w1"
 # or we could have three nodes:
 #CELERYD_NODES="w1 w2 w3"
 
-
 # Where to chdir at start.
 CELERYD_CHDIR="/apps/whyis"
 CELERYBEAT_CHDIR=$CELERYD_CHDIR
