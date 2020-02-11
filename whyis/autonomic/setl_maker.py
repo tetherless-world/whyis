@@ -61,6 +61,7 @@ select distinct ?resource where {
         }
     }
   filter (!regex(str(?resource), "^bnode:"))
+  filter (!isBLANK(?resource))
 }'''
 
     def process_nanopub(self, i, o, new_np):
