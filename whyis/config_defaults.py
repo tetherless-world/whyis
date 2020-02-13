@@ -220,12 +220,22 @@ Config = dict(
             "Negative Data Property Assertion",
             "Keys" ,
             #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
+            "Object Some Values From",
+            #"Data Some Values From"
             #"Self Restriction" (ObjectHasSelf)
             #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
             #"Individual Enumeration" (ObjectOneOf, DataOneOf)
             #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
+            "Object All Values From",
+            #"Data All Values From"
             #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
-        ]        
+            #"Object Max Cardinality",
+            #"Object Min Cardinality",
+            #"Object Exact Cardinality",
+            "Data Max Cardinality",
+            #"Data Min Cardinality",
+            #"Data Exact Cardinality",
+        ]#, "OWL DL" : [   ]    # Included in DL: FunctionalObjectProperty, InverseFunctionalObjectProperty, IrreflexiveObjectProperty, AsymmetricObjectProperty, and DisjointObjectProperties .. need to check if these are in RL as well.. Also, AllDifferent -> differentFrom individuals. Also need minInclusive, maxInclusive, intersection, union, complementOf ## Disjunction  (ObjectUnionOf, DisjointUnion, and DataUnionOf)
     },
     inferencers = {
         "SETLr": autonomic.SETLr(),
@@ -356,6 +366,12 @@ Config = dict(
             where = "\t?resource owl:differentFrom ?individual .\n\t?resource owl:sameAs ?individual .", 
             construct="?resource rdf:type owl:Nothing . ",
             explanation="Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."),
+        #"All Different": autonomic.Deductor(
+        #    resource="?resource", 
+        #    prefixes="",
+        #    where = "\t?restriction rdf:type owl:AllDifferent ;\n\t\towl:distinctMembers ?members.\n\t?members rdf:first ?resource;\n\t\trdf:rest ?rest.", 
+        #    construct="?resource owl:differentFrom <each member in rest>. ",
+        #    explanation=""),
 # Still need to address the encoding of the following 3 assertions
 #        "Class Assertion": autonomic.Deductor(
 #            resource="?resource", 
@@ -393,43 +409,108 @@ Config = dict(
             where = "\t?resource rdf:type ?class .\n\t?class owl:hasKey ( ?keyProperty ) .\n\t?resource ?keyProperty ?keyValue.\n\t?individual rdf:type ?class.\n\t?individual ?keyProperty ?keyValue.",
             construct="?resource owl:sameAs ?individual",
             explanation="Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."),
-        #"Inverse Functional Object Property"(InverseFunctionalObjectProperty): autonomic.Deductor(
+        #"Inverse Functional Object Property": autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t?resource ?invFunctionalProperty ?o .\n\t?invFunctionalProperty rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty .",
         #    construct="",
         #    explanation=""),
-        #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom): autonomic.Deductor(
+        #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
+        "Object Some Values From": autonomic.Deductor(# Should revisit this after confirming test case
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource ?objectProperty [ rdf:type ?valueclass ] .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:someValuesFrom ?valueclass ] .",
+            construct="?resource rdf:type ?class .",
+            explanation="Since {{resource}} {{objectProperty}} an instance of {{valueclass}}, and {{class}} has a restriction on {{objectProperty}} to have some values from {{valueclass}}, we can infer that {{resource}} rdf:type {{class}}."),
+        #"Data Some Values From": autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Self Restriction" (ObjectHasSelf): autonomic.Deductor(
+        #"Self Restriction" (ObjectHasSelf): 
+        #"Object Has Self" : autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Individual Existential Quantification" (ObjectHasValue, DataHasValue): autonomic.Deductor(
+        #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
+        #"Object Has Value" : autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Individual Enumeration" (ObjectOneOf, DataOneOf): autonomic.Deductor(
+        #"Data Has Value": autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom): autonomic.Deductor(
+        #"Individual Enumeration" (ObjectOneOf, DataOneOf)
+        #"Object One Of": autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
+        #"Data One Of": autonomic.Deductor(
+        #    resource="?resource", 
+        #    prefixes="", 
+        #    where = "\t",
+        #    construct="",
+        #    explanation=""),
+        #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
+        "Object All Values From" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?individual rdf:type ?class ; \n\t\t?objectProperty ?resource .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:allValuesFrom ?valueclass ] .",
+            construct="?resource rdf:type ?valueclass.",
+            explanation="Since {{class}} has a restriction on {{objectProperty}} to have all values from {{valueclass}}, {{individual}} rdf:type {{class}}, and {{individual}} {{objectProperty}} {{resource}}, we can infer that {{resource}} rdf:type {{valueclass}}."),
+        #"Data All Values From" : autonomic.Deductor(
+        #    resource="?resource", 
+        #    prefixes="", 
+        #    where = "\t",
+        #    construct="",
+        #    explanation=""),
+        #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality) 
+        "Object Max Cardinality" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),# Still need to check distinctness of object
+        "Object Min Cardinality": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?objectCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="",
+            explanation="Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."),# Still need to check distinctness of object to determine what to return
+        "Object Exact Cardinality": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),# Still need to check distinctness of object -- This is currently only accounting for max. Need to account for min as well
+        "Data Max Cardinality" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since {{dataProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),
+        "Data Min Cardinality": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?dataCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="",
+            explanation="Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."), # Still need to determine what to return
+        "Data Exact Cardinality": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}"
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."), # -- This is currently only accounting for max. Need to account for min as well
         #"Disjunction" (ObjectUnionOf, DisjointUnion, and DataUnionOf): autonomic.Deductor(
         #    resource="?resource", 
         #    prefixes="", 
