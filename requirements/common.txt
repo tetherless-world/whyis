@@ -10,6 +10,7 @@ binaryornot==0.4.4
 blinker==1.4
 bsddb3==6.2.6
 celery==4.3.0
+celery_once==3.0.1
 certifi==2019.3.9
 cffi==1.12.3
 chardet==3.0.4
