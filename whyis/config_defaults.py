@@ -221,13 +221,13 @@ Config = dict(
             "Keys",
             #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
-            #"Data Some Values From"
+            "Data Some Values From"
             #"Self Restriction" (ObjectHasSelf)
             "Object Has Self",
             #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
-            #"Object Has Value",
+            "Object Has Value",
             "Data Has Value",
-            #"Individual Enumeration" (ObjectOneOf, DataOneOf)
+            #"Individual Enumeration" (ObjectOneOf, DataOneOf) # need to traverse lists to do
             #"Object One Of",
             #"Data One Of",
             #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
@@ -427,12 +427,12 @@ Config = dict(
             where = "\t?resource ?objectProperty [ rdf:type ?valueclass ] .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:someValuesFrom ?valueclass ] .",
             construct="?resource rdf:type ?class .",
             explanation="Since {{resource}} {{objectProperty}} an instance of {{valueclass}}, and {{class}} has a restriction on {{objectProperty}} to have some values from {{valueclass}}, we can infer that {{resource}} rdf:type {{class}}."),
-        #"Data Some Values From": autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        "Data Some Values From": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:someValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)!=?value)",
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),#Data some and all values from behave the same as each other..? May need to revisit
         #"Self Restriction" (ObjectHasSelf): 
         "Object Has Self" : autonomic.Deductor(
             resource="?resource", 
@@ -441,12 +441,12 @@ Config = dict(
             construct="?resource ?objectProperty ?resource",
             explanation="{{resource}} is of type {{class}}, which has a self restriction on the property {{objectProperty}}, allowing us to infer {{resource}} {{objectProperty}} {{resource}}."),
         #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
-        #"Object Has Value" : autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        "Object Has Value" : autonomic.Deductor(
+            resource="\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty.\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasValue ?object ] .",
+            prefixes="", 
+            where = "\t",
+            construct="?resource ?objectProperty?object .",
+            explanation="Since {{resource}} is of type {{class}}, which has a value restriction on {{objectProperty}} to have {{object}}, we can infer that {{resource}} {{objectProperty}} {{object}}."),
         "Data Has Value": autonomic.Deductor(
             resource="?resource", 
             prefixes="", 
@@ -454,7 +454,7 @@ Config = dict(
             construct="?resource rdf:type ?class .",
             explanation="Since {{class}} is equivalent to the restriction on {{datatypeProperty}} to have value {{value}} and {{resource}} {{datatypeProperty}} {{value}}, we can infer that {{resource}} rdf:type {{class}}."),#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
         #"Individual Enumeration" (ObjectOneOf, DataOneOf)
-        #"Object One Of": autonomic.Deductor(
+        #"Object One Of": autonomic.Deductor(#deals with lists rdf:rest+/rdf:first to traverse?
         #    resource="?resource", 
         #    prefixes="", 
         #    where = "\t",
@@ -478,7 +478,7 @@ Config = dict(
             prefixes="", 
             where = "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:allValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)!=?value)",
             construct="?resource rdf:type owl:Nothing .",
-            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),
+            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not have the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),
         #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality) 
         "Object Max Cardinality" : autonomic.Deductor(
             resource="?resource", 
