@@ -194,21 +194,21 @@ Config = dict(
             #"Data Property Assertion"
         ],
         "OWL2 RL" : [
-            "Class Disjointness" ,
-            "Object Property Transitivity" ,
-            "Domain Restriction" ,
-            "Range Restriction" ,
-            "Functional Data Property" ,
+            "Class Disjointness",
+            "Object Property Transitivity",
+            "Domain Restriction",
+            "Range Restriction",
+            "Functional Data Property",
             "Functional Object Property",
-            "Property Disjointness" ,
-            "Object Property Symmetry" ,
+            "Property Disjointness",
+            "Object Property Symmetry",
             "Object Property Asymmetry",
-            "Class Inclusion" ,
-            "Property Inclusion" ,
-            "Object Property Inclusion" ,
-            "Data Property Inclusion" ,
-            "Class Equivalence" ,
-            "Property Equivalence" ,
+            "Class Inclusion",
+            "Property Inclusion",
+            "Object Property Inclusion",
+            "Data Property Inclusion",
+            "Class Equivalence",
+            "Property Equivalence",
             "Object Property Inversion",
             #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
@@ -218,16 +218,21 @@ Config = dict(
             #"Data Property Assertion"
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
-            "Keys" ,
+            "Keys",
             #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
             #"Data Some Values From"
             #"Self Restriction" (ObjectHasSelf)
+            "Object Has Self",
             #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
+            #"Object Has Value",
+            "Data Has Value",
             #"Individual Enumeration" (ObjectOneOf, DataOneOf)
+            #"Object One Of",
+            #"Data One Of",
             #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
             "Object All Values From",
-            #"Data All Values From"
+            "Data All Values From",
             #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
             #"Object Max Cardinality",
             #"Object Min Cardinality",
@@ -372,24 +377,24 @@ Config = dict(
         #    where = "\t?restriction rdf:type owl:AllDifferent ;\n\t\towl:distinctMembers ?members.\n\t?members rdf:first ?resource;\n\t\trdf:rest ?rest.", 
         #    construct="?resource owl:differentFrom <each member in rest>. ",
         #    explanation=""),
-# Still need to address the encoding of the following 3 assertions
+# Not sure if we need to address the encoding of the following 3 assertions explicitly
 #        "Class Assertion": autonomic.Deductor(
 #            resource="?resource", 
 #            prefixes="",
 #            where = "?resource rdf:type owl:Class.", 
-#            construct="",
+#            construct="?resource rdf:type owl:Class.",
 #            explanation=""),
 #        "Object Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
 #            resource="?resource ?p ?o. ?p rdf:type owl:ObjectProperty .", 
 #            prefixes="",
 #            where = "", 
-#            construct="",
+#            construct="?p rdf:type owl:ObjectProperty .",
 #            explanation=""),
 #        "Data Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
 #            resource="?resource", 
 #            prefixes="",
 #            where = "?resource ?p ?o. ?p rdf:type owl:DatatypeProperty .", 
-#            construct="",
+#            construct="?p rdf:type owl:DatatypeProperty .",
 #            explanation=""),
         "Negative Object Property Assertion": autonomic.Deductor(
             resource="?resource", 
@@ -429,12 +434,12 @@ Config = dict(
         #    construct="",
         #    explanation=""),
         #"Self Restriction" (ObjectHasSelf): 
-        #"Object Has Self" : autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        "Object Has Self" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasSelf \"true\"^^xsd:boolean ] .",
+            construct="?resource ?objectProperty ?resource",
+            explanation="{{resource}} is of type {{class}}, which has a self restriction on the property {{objectProperty}}, allowing us to infer {{resource}} {{objectProperty}} {{resource}}."),
         #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
         #"Object Has Value" : autonomic.Deductor(
         #    resource="?resource", 
@@ -442,12 +447,12 @@ Config = dict(
         #    where = "\t",
         #    construct="",
         #    explanation=""),
-        #"Data Has Value": autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        "Data Has Value": autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource ?datatypeProperty ?value.\n\t?class owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:hasValue ?value ].",
+            construct="?resource rdf:type ?class .",
+            explanation="Since {{class}} is equivalent to the restriction on {{datatypeProperty}} to have value {{value}} and {{resource}} {{datatypeProperty}} {{value}}, we can infer that {{resource}} rdf:type {{class}}."),#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
         #"Individual Enumeration" (ObjectOneOf, DataOneOf)
         #"Object One Of": autonomic.Deductor(
         #    resource="?resource", 
@@ -468,12 +473,12 @@ Config = dict(
             where = "\t?individual rdf:type ?class ; \n\t\t?objectProperty ?resource .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:allValuesFrom ?valueclass ] .",
             construct="?resource rdf:type ?valueclass.",
             explanation="Since {{class}} has a restriction on {{objectProperty}} to have all values from {{valueclass}}, {{individual}} rdf:type {{class}}, and {{individual}} {{objectProperty}} {{resource}}, we can infer that {{resource}} rdf:type {{valueclass}}."),
-        #"Data All Values From" : autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        "Data All Values From" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:allValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)!=?value)",
+            construct="?resource rdf:type owl:Nothing .",
+            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),
         #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality) 
         "Object Max Cardinality" : autonomic.Deductor(
             resource="?resource", 
@@ -511,12 +516,25 @@ Config = dict(
             where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}"
             construct="?resource rdf:type owl:Nothing .",
             explanation="Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."), # -- This is currently only accounting for max. Need to account for min as well
-        #"Disjunction" (ObjectUnionOf, DisjointUnion, and DataUnionOf): autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        #"Disjunction" (ObjectUnionOf, DisjointUnion, and DataUnionOf)
+        "Object Union Of" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t",
+            construct="",
+            explanation=""),
+        "Disjoint Union" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t",
+            construct="",
+            explanation=""),
+        "Data Union Of" : autonomic.Deductor(
+            resource="?resource", 
+            prefixes="", 
+            where = "\t",
+            construct="",
+            explanation=""),
 #        "HTML2Text" : nlp.HTML2Text(),
 #        "EntityExtractor" : nlp.EntityExtractor(),
 #        "EntityResolver" : nlp.EntityResolver(),
