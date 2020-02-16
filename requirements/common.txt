@@ -1,4 +1,4 @@
-amqp==2.5.0
+amqp==2.5.1
 arrow==0.14.2
 asn1crypto==0.24.0
 Babel==2.7.0
@@ -10,6 +10,7 @@ binaryornot==0.4.4
 blinker==1.4
 bsddb3==6.2.6
 celery==4.3.0
+celery_once==3.0.1
 certifi==2019.3.9
 cffi==1.12.3
 chardet==3.0.4
@@ -71,7 +72,7 @@ requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
 scipy==1.2.1
-setlr==0.2.11
+setlr==0.2.14
 six==1.12.0
 soupsieve==1.9.1
 SPARQLWrapper==1.8.4
