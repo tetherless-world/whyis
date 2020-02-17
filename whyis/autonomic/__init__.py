@@ -4,8 +4,8 @@ from .frir import FRIRArchiver
 from .dataset_importer import DatasetImporter
 from .deductor import Deduct
 from .deductor import Deductor
-from .deductor import Abduct
-from .deductor import Abductor
+from .abductor import Abduct
+from .abductor import Abductor
 from .email_notifier import EmailNotifier
 from .global_change_service import GlobalChangeService
 from .importer_crawler import ImporterCrawler
