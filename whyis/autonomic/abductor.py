@@ -24,8 +24,8 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 
-class Deductor(UpdateChangeService):
-    def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): 
+class Abductor(UpdateChangeService):
+    def __init__(self, where, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
@@ -43,52 +43,50 @@ class Deductor(UpdateChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
-        return '''SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' % (
+        return '''SELECT DISTINCT %s WHERE {\n%s %s\n}''' % (
         self.resource, self.where, self.construct)
 
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s \nFILTER(regex(str(%s), "^(%s)")) . }''' % (
-        self.where, self.resource, i.identifier), initNs=self.prefixes)
-        # print(context_vars)
+        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s %s\nFILTER(regex(str(%s), "^(%s)")) . }''' % (
+        self.where, self.construct, self.resource, i.identifier), initNs=self.prefixes)
         for key in list(context_vars.json["results"]["bindings"][0].keys()):
             context[key] = context_vars.json["results"]["bindings"][0][key]["value"]
         return context
 
     def process(self, i, o):
         npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query(
-            '''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
-            self.construct, self.where, self.construct, self.resource, i.identifier), initNs=self.prefixes)
+        graph_obj = self.app.db.query(
+            '''SELECT DISTINCT ?g WHERE {GRAPH ?g {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}}''' % (
+            self.construct, self.resource, i.identifier), initNs=self.prefixes)
         for s, p, o, c in triples:
-            print("Deductor Adding ", s, p, o)
+            print("Abductor Adding ", s, p, o)
             npub.assertion.add((s, p, o))
-        npub.provenance.add((npub.assertion.identifier, prov.value,
+        npub.provenance.add((graph_obj.identifier, skos.editorialNote,
                              rdflib.Literal(flask.render_template_string(self.explanation, **self.get_context(i)))))
-
     def __str__(self):
-        return "Deductor Instance: " + str(self.__dict__)
+        return "Abductor Instance: " + str(self.__dict__)
 
-class Deduct(GlobalChangeService):
+class Abduct(GlobalChangeService):
     def process(self, i, o):
         for profile in config.Config["active_profiles"] :
             for inference_rule in config.Config["reasoning_profiles"][profile] :
                 try :
-                    deductor_instance = autonomic.Deductor(
+                    abductor_instance = autonomic.Abductor(
                         resource = config.Config["axioms"][inference_rule]["resource"] ,
                         prefixes = config.Config["axioms"][inference_rule]["prefixes"] ,
-                        where = config.Config["axioms"][inference_rule]["where"] ,
-                        construct = config.Config["axioms"][inference_rule]["construct"] ,
-                        explanation = inference_rule + ": " + config.Config["axioms"][inference_rule]["explanation"]
+                        where = config.Config["axioms"][inference_rule]["where"] 
+                        construct = config.Config["axioms"][inference_rule]["construct"],
+                        explanation = "Derived from axiom - " + inference_rule + ": " + config.Config["axioms"][inference_rule]["explanation"]
                 )
                 except Exception as e:
                     if hasattr(e, 'message'):
-                        print("Error creating deductor instance: " + e.message)
+                        print("Error creating abductor instance: " + e.message)
                     else:
-                        print("Error creating deductor instance: " + e)
+                        print("Error creating abductor instance: " + e)
                 try :
-                    deductor_instance.app = self.app
-                    deductor_instance.process_graph(self.app.db)
+                    abductor_instance.app = self.app
+                    abductor_instance.process_graph(self.app.db)
                 except Exception as e:
                     if hasattr(e, 'message'):
                         print("Error processing graph: " + e.message)
