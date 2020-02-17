@@ -149,6 +149,7 @@ Config = dict(
 #            format='json-ld',
 #        )
     ],
+    active_profiles = {"Inheritance"},
     reasoning_profiles = {
         "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"],
         "OWL2 EL" : [ 
@@ -169,7 +170,7 @@ Config = dict(
             "Different Individuals",
             #"Class Assertion",
             #"Object Property Assertion",
-            #"Data Property Assertion"
+            #"Data Property Assertion",
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
             "Keys",
@@ -215,13 +216,13 @@ Config = dict(
             "Different Individuals",
             #"Class Assertion",
             #"Object Property Assertion",
-            #"Data Property Assertion"
+            #"Data Property Assertion",
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
             "Keys",
             #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
-            "Data Some Values From"
+            "Data Some Values From",
             #"Self Restriction" (ObjectHasSelf)
             "Object Has Self",
             #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
@@ -242,299 +243,349 @@ Config = dict(
             #"Data Exact Cardinality",
         ]#, "OWL DL" : [   ]    # Included in DL: FunctionalObjectProperty, InverseFunctionalObjectProperty, IrreflexiveObjectProperty, AsymmetricObjectProperty, and DisjointObjectProperties .. need to check if these are in RL as well.. Also, AllDifferent -> differentFrom individuals. Also need minInclusive, maxInclusive, intersection, union, complementOf ## Disjunction  (ObjectUnionOf, DisjointUnion, and DataUnionOf)
     },
-    inferencers = {
-        "SETLr": autonomic.SETLr(),
-        "Class Disjointness": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?class owl:disjointWith ?disjointClass .\n\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass . ",
-            construct="?resource rdf:type owl:Nothing . ",
-            explanation="Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, since {{resource}} is an instance of {{class}}, it can not be an instance of {{disjointClass}}."),
-        "Object Property Transitivity": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?transitiveProperty ?o1 .\n\t?o1  ?transitiveProperty ?o2 .\n\t?transitiveProperty rdf:type owl:TransitiveProperty .",
-            construct="?resource ?transitiveProperty ?o2 .",
-            explanation="Since {{transitiveProperty}} is a transitive object property, and the relationships {{resource}} {{transitiveProperty}} {{o1}} and {{o1}} {{transitiveProperty}} {{o2}} exist, then we can infer that {{resource}} {{transitiveProperty}} {{o2}}."),
-        "Object Property Reflexivity": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?reflexiveProperty ?o .\n\t?resource rdf:type ?type.\n\t?o rdf:type ?type.\n\t?reflexiveProperty rdf:type owl:ReflexiveProperty .",
-            construct="?resource ?reflexiveProperty ?resource .",
-            explanation="Since {{resource}} has a {{reflexiveProperty}} assertion to {{o}}, {{resource}} and {{o}} are both of type {{type}}, and {{reflexiveProperty}} is a reflexive property, we can infer that {{resource}} {{reflexiveProperty}} {{resource}}."),
-        "Domain Restriction": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?p ?o .\n\t?p rdfs:domain ?class .",
-            construct="?resource rdf:type ?class",
-            explanation="Since the domain of {{p}} is {{class}}, this implies that {{resource}} is a {{class}}."),
-        "Range Restriction": autonomic.Deductor(
-            resource="?resource",
-            prefixes="", 
-            where = "\t?resource ?p ?o .\n\t?p rdfs:range ?class .",
-            construct="?o rdf:type ?class",
-            explanation="Since the range of {{p}} is {{class}}, this implies that {{o}} is a {{class}}."),
-        "Functional Data Property" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:DatatypeProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) != str(?o2))",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation=""),
-        "Functional Object Property": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:ObjectProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) != str(?o2))",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation=""),
-        "Property Disjointness": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?p1 ?o1 .\n\t?resource ?p2 ?o2.\n\t?p1 owl:propertyDisjointWith ?p2 .\n\t?resource ?p1 ?o2 .",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since properties {p1} and {p2} are disjoint, {{resource}} having both {{p2}} {{o2}} as well as {{p1}} {{o2}} leads to an inconsistency. "),
-        "Object Property Asymmetry": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?asymmetricProperty ?o .\n\t?asymmetricProperty rdf:type owl:AsymmetricProperty . ?o ?asymmetricProperty ?resource .",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{asymmetricProperty}} is an asymmetric property, and {resource}} {{asymmetricProperty}} {{o}}, then the assertion {{o}} {{asymmetricProperty}} {{resource}} results in an inconsistency."),
-        "Object Property Symmetry": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?symmetricProperty ?o .\n\t?symmetricProperty rdf:type owl:SymmetricProperty .",
-            construct="?o ?symmetricProperty ?resource .",
-            explanation="Since {{symmetricProperty}} is a symmetric property, and {resource}} {{symmetricProperty}} {{o}}, we can infer that {{o}} {{symmetricProperty}} {{resource}}."),
-        "Object Property Irreflexivity":  autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?irreflexiveProperty ?o .\n\t?irreflexiveProperty rdf:type owl:IrreflexiveProperty .\n\t?resource ?irreflexiveProperty ?resource .",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."),
-        "Class Inclusion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdfs:subClassOf ?class .\n\t?class rdfs:subClassOf+ ?superClass .",
-            construct="?resource rdfs:subClassOf ?superClass .",
-            explanation="Since {{class}} is a subclass of {{superClass}}, any class that is a subclass of {{class}} is also a subclass of {{superClass}}. Therefore, {{resource}} is a subclass of {{superClass}}."),
-        "Individual Inclusion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class .\n\t?class rdfs:subClassOf+ ?superClass .",
-            construct="?resource rdf:type ?superClass .",
-            explanation="Any instance of {{class}} is also an instance of {{superClass}}. Therefore, since {{resource}} is a {{class}}, it also is a {{superClass}}."),
-        "Property Inclusion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o .\n\t?p rdf:type owl:Property .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
-            construct="?resource ?superProperty ?o .",
-            explanation="Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."),
-        "Object Property Inclusion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
-            construct="?resource ?superProperty ?o .",
-            explanation="Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."),
-        "Data Property Inclusion": autonomic.Deductor(
-            resource="?resource",
-            prefixes="",
-            where = "\t?resource ?p ?o .\n\t?p rdf:type owl:DatatypeProperty .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
-            construct="?resource ?superProperty ?o .",
-            explanation="Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."),
-        "Class Equivalence": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource a ?superClass.\n\t?superClass owl:equivalentClass ?equivClass .", 
-            construct="?resource a ?equivClass .",
-            explanation="{{superClass}} is equivalent to {{equivClass}}, so since {{resource}} is a {{superClass}}, it is also a {{equivClass}}."),
-        "Property Equivalence": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o .\n\t?p owl:equivalentProperty ?equivProperty .", 
-            construct="?resource ?equivProperty ?o .",
-            explanation="The properties {{p}} and {{equivProperty}} are equivalent. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{equivProperty}} {{o}}."),
-        "Object Property Inversion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty .\n\t?p owl:inverseOf ?inverseProperty .", 
-            construct="?o ?inverseProperty ?resource .",
-            explanation="The object properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."),
+    axioms  = {
+        "Class Disjointness": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?class owl:disjointWith ?disjointClass .\n\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass . ",
+            "construct" : "?resource rdf:type owl:Nothing . ",
+            "explanation" : "Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, since {{resource}} is an instance of {{class}}, it can not be an instance of {{disjointClass}}."
+        },
+        "Object Property Transitivity": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?transitiveProperty ?o1 .\n\t?o1  ?transitiveProperty ?o2 .\n\t?transitiveProperty rdf:type owl:TransitiveProperty .",
+            "construct" : "?resource ?transitiveProperty ?o2 .",
+            "explanation" : "Since {{transitiveProperty}} is a transitive object property, and the relationships {{resource}} {{transitiveProperty}} {{o1}} and {{o1}} {{transitiveProperty}} {{o2}} exist, then we can infer that {{resource}} {{transitiveProperty}} {{o2}}."
+        },
+        "Object Property Reflexivity": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?reflexiveProperty ?o .\n\t?resource rdf:type ?type.\n\t?o rdf:type ?type.\n\t?reflexiveProperty rdf:type owl:ReflexiveProperty .",
+            "construct" : "?resource ?reflexiveProperty ?resource .",
+            "explanation" : "Since {{resource}} has a {{reflexiveProperty}} assertion to {{o}}, {{resource}} and {{o}} are both of type {{type}}, and {{reflexiveProperty}} is a reflexive property, we can infer that {{resource}} {{reflexiveProperty}} {{resource}}."
+        },
+        "Domain Restriction": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?p ?o .\n\t?p rdfs:domain ?class .",
+            "construct" : "?resource rdf:type ?class",
+            "explanation" : "Since the domain of {{p}} is {{class}}, this implies that {{resource}} is a {{class}}."
+        },
+        "Range Restriction": {
+            "resource" : "?resource",
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?p ?o .\n\t?p rdfs:range ?class .",
+            "construct" : "?o rdf:type ?class",
+            "explanation" : "Since the range of {{p}} is {{class}}, this implies that {{o}} is a {{class}}."
+        },
+        "Functional Data Property" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:DatatypeProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) ! :  str(?o2))",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : ""
+        },
+        "Functional Object Property": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:ObjectProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) ! :  str(?o2))",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : ""
+        },
+        "Property Disjointness": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?p1 ?o1 .\n\t?resource ?p2 ?o2.\n\t?p1 owl:propertyDisjointWith ?p2 .\n\t?resource ?p1 ?o2 .",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since properties {p1} and {p2} are disjoint, {{resource}} having both {{p2}} {{o2}} as well as {{p1}} {{o2}} leads to an inconsistency. "
+        },
+        "Object Property Asymmetry": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?asymmetricProperty ?o .\n\t?asymmetricProperty rdf:type owl:AsymmetricProperty . ?o ?asymmetricProperty ?resource .",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{asymmetricProperty}} is an asymmetric property, and {resource}} {{asymmetricProperty}} {{o}}, then the assertion {{o}} {{asymmetricProperty}} {{resource}} results in an inconsistency."
+        },
+        "Object Property Symmetry": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?symmetricProperty ?o .\n\t?symmetricProperty rdf:type owl:SymmetricProperty .",
+            "construct" : "?o ?symmetricProperty ?resource .",
+            "explanation" : "Since {{symmetricProperty}} is a symmetric property, and {resource}} {{symmetricProperty}} {{o}}, we can infer that {{o}} {{symmetricProperty}} {{resource}}."
+        },
+        "Object Property Irreflexivity":  {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?irreflexiveProperty ?o .\n\t?irreflexiveProperty rdf:type owl:IrreflexiveProperty .\n\t?resource ?irreflexiveProperty ?resource .",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."
+        },
+        "Class Inclusion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdfs:subClassOf ?class .\n\t?class rdfs:subClassOf+ ?superClass .",
+            "construct" : "?resource rdfs:subClassOf ?superClass .",
+            "explanation" : "Since {{class}} is a subclass of {{superClass}}, any class that is a subclass of {{class}} is also a subclass of {{superClass}}. Therefore, {{resource}} is a subclass of {{superClass}}."
+        },
+        "Individual Inclusion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class .\n\t?class rdfs:subClassOf+ ?superClass .",
+            "construct" : "?resource rdf:type ?superClass .",
+            "explanation" : "Any instance of {{class}} is also an instance of {{superClass}}. Therefore, since {{resource}} is a {{class}}, it also is a {{superClass}}."
+        },
+        "Property Inclusion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o .\n\t?p rdf:type owl:Property .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
+            "construct" : "?resource ?superProperty ?o .",
+            "explanation" : "Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."
+        },
+        "Object Property Inclusion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
+            "construct" : "?resource ?superProperty ?o .",
+            "explanation" : "Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."
+        },
+        "Data Property Inclusion": {
+            "resource" : "?resource",
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o .\n\t?p rdf:type owl:DatatypeProperty .\n\t?p rdfs:subPropertyOf+ ?superProperty .",
+            "construct" : "?resource ?superProperty ?o .",
+            "explanation" : "Any subject and object related by the property {{p}} is also related by {{superProperty}}. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{superProperty}} {{o}}."
+        },
+        "Class Equivalence": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource a ?superClass.\n\t?superClass owl:equivalentClass ?equivClass .", 
+            "construct" : "?resource a ?equivClass .",
+            "explanation" : "{{superClass}} is equivalent to {{equivClass}}, so since {{resource}} is a {{superClass}}, it is also a {{equivClass}}."
+        },
+        "Property Equivalence": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o .\n\t?p owl:equivalentProperty ?equivProperty .", 
+            "construct" : "?resource ?equivProperty ?o .",
+            "explanation" : "The properties {{p}} and {{equivProperty}} are equivalent. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{equivProperty}} {{o}}."
+        },
+        "Object Property Inversion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty .\n\t?p owl:inverseOf ?inverseProperty .", 
+            "construct" : "?o ?inverseProperty ?resource .",
+            "explanation" : "The object properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."
+        },
         #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
-        "Same Individual": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource owl:sameAs ?individual .\n\t?resource ?p ?o .", 
-            construct="?individual ?p ?o .",
-            explanation="Since {{resource}} is the same as {{individual}}, they share the same properties."),
-        "Different Individuals": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource owl:differentFrom ?individual .\n\t?resource owl:sameAs ?individual .", 
-            construct="?resource rdf:type owl:Nothing . ",
-            explanation="Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."),
-        #"All Different": autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="",
-        #    where = "\t?restriction rdf:type owl:AllDifferent ;\n\t\towl:distinctMembers ?members.\n\t?members rdf:first ?resource;\n\t\trdf:rest ?rest.", 
-        #    construct="?resource owl:differentFrom <each member in rest>. ",
-        #    explanation=""),
+        "Same Individual": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource owl:sameAs ?individual .\n\t?resource ?p ?o .", 
+            "construct" : "?individual ?p ?o .",
+            "explanation" : "Since {{resource}} is the same as {{individual}}, they share the same properties."
+        },
+        "Different Individuals": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource owl:differentFrom ?individual .\n\t?resource owl:sameAs ?individual .", 
+            "construct" : "?resource rdf:type owl:Nothing . ",
+            "explanation" : "Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."
+        },
+        #"All Different": {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        #    "where" :  "\t?restriction rdf:type owl:AllDifferent ;\n\t\towl:distinctMembers ?members.\n\t?members rdf:first ?resource;\n\t\trdf:rest ?rest.", 
+        #    "construct" : "?resource owl:differentFrom <each member in rest>. ",
+        #    "explanation" : ""
+        #},
 # Not sure if we need to address the encoding of the following 3 assertions explicitly
-#        "Class Assertion": autonomic.Deductor(
-#            resource="?resource", 
-#            prefixes="",
-#            where = "?resource rdf:type owl:Class.", 
-#            construct="?resource rdf:type owl:Class.",
-#            explanation=""),
-#        "Object Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
-#            resource="?resource ?p ?o. ?p rdf:type owl:ObjectProperty .", 
-#            prefixes="",
-#            where = "", 
-#            construct="?p rdf:type owl:ObjectProperty .",
-#            explanation=""),
-#        "Data Property Assertion": autonomic.Deductor( # Do we inherent restrictions here?
-#            resource="?resource", 
-#            prefixes="",
-#            where = "?resource ?p ?o. ?p rdf:type owl:DatatypeProperty .", 
-#            construct="?p rdf:type owl:DatatypeProperty .",
-#            explanation=""),
-        "Negative Object Property Assertion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o.\n\t?p rdf:type owl:ObjectProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetIndividual ?o .", 
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since a negative object property assertion was made with source {{resource}}, object property {{p}}, and target individual {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."),
-        "Negative Data Property Assertion": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="",
-            where = "\t?resource ?p ?o.\n\t?p rdf:type owl:DatatypeProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetValue ?o .", 
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since a negative datatype property assertion was made with source {{resource}}, datatype property {{p}}, and target value {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."),
-        "Keys" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class .\n\t?class owl:hasKey ( ?keyProperty ) .\n\t?resource ?keyProperty ?keyValue.\n\t?individual rdf:type ?class.\n\t?individual ?keyProperty ?keyValue.",
-            construct="?resource owl:sameAs ?individual",
-            explanation="Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."),
-        #"Inverse Functional Object Property": autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t?resource ?invFunctionalProperty ?o .\n\t?invFunctionalProperty rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty .",
-        #    construct="",
-        #    explanation=""),
+#        "Class Assertion": {
+#            "resource" : "?resource", 
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            "where" :  "?resource rdf:type owl:Class.", 
+#            "construct" : "?resource rdf:type owl:Class.",
+#            "explanation" : ""
+#        },
+#        "Object Property Assertion": { # Do we inherent restrictions here?
+#            "resource" : "?resource ?p ?o. ?p rdf:type owl:ObjectProperty .", 
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            "where" :  "", 
+#            "construct" : "?p rdf:type owl:ObjectProperty .",
+#            "explanation" : ""
+#        },
+#        "Data Property Assertion": { # Do we inherent restrictions here?
+#            "resource" : "?resource", 
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            "where" :  "?resource ?p ?o. ?p rdf:type owl:DatatypeProperty .", 
+#            "construct" : "?p rdf:type owl:DatatypeProperty .",
+#            "explanation" : ""
+#        },
+        "Negative Object Property Assertion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o.\n\t?p rdf:type owl:ObjectProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetIndividual ?o .", 
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since a negative object property assertion was made with source {{resource}}, object property {{p}}, and target individual {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."
+        },
+        "Negative Data Property Assertion": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            "where" :  "\t?resource ?p ?o.\n\t?p rdf:type owl:DatatypeProperty .\n\t?x rdf:type owl:NegativePropertyAssertion ;\n\t\towl:sourceIndividual ?resource ;\n\t\towl:assertionProperty ?p ;\n\t\towl:targetValue ?o .", 
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since a negative datatype property assertion was made with source {{resource}}, datatype property {{p}}, and target value {{o}}, the existence of {{resource}} {{p}} {{o}} results in an inconsistency."
+        },
+        "Keys" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class .\n\t?class owl:hasKey ( ?keyProperty ) .\n\t?resource ?keyProperty ?keyValue.\n\t?individual rdf:type ?class.\n\t?individual ?keyProperty ?keyValue.",
+            "construct" : "?resource owl:sameAs ?individual",
+            "explanation" : "Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."
+        },
+        #"Inverse Functional Object Property": {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t?resource ?invFunctionalProperty ?o .\n\t?invFunctionalProperty rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty .",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
         #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
-        "Object Some Values From": autonomic.Deductor(# Should revisit this after confirming test case
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?objectProperty [ rdf:type ?valueclass ] .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:someValuesFrom ?valueclass ] .",
-            construct="?resource rdf:type ?class .",
-            explanation="Since {{resource}} {{objectProperty}} an instance of {{valueclass}}, and {{class}} has a restriction on {{objectProperty}} to have some values from {{valueclass}}, we can infer that {{resource}} rdf:type {{class}}."),
-        "Data Some Values From": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:someValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)!=?value)",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),#Data some and all values from behave the same as each other..? May need to revisit
+        "Object Some Values From": {# Should revisit this after confirming test case
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?objectProperty [ rdf:type ?valueclass ] .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:someValuesFrom ?valueclass ] .",
+            "construct" : "?resource rdf:type ?class .",
+            "explanation" : "Since {{resource}} {{objectProperty}} an instance of {{valueclass}}, and {{class}} has a restriction on {{objectProperty}} to have some values from {{valueclass}}, we can infer that {{resource}} rdf:type {{class}}."
+        },
+        "Data Some Values From": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:someValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)! : ?value)",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."
+        },#Data some and all values from behave the same as each other..? May need to revisit
         #"Self Restriction" (ObjectHasSelf): 
-        "Object Has Self" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasSelf \"true\"^^xsd:boolean ] .",
-            construct="?resource ?objectProperty ?resource",
-            explanation="{{resource}} is of type {{class}}, which has a self restriction on the property {{objectProperty}}, allowing us to infer {{resource}} {{objectProperty}} {{resource}}."),
+        "Object Has Self" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasSelf \"true\"^^xsd:boolean ] .",
+            "construct" : "?resource ?objectProperty ?resource",
+            "explanation" : "{{resource}} is of type {{class}}, which has a self restriction on the property {{objectProperty}}, allowing us to infer {{resource}} {{objectProperty}} {{resource}}."
+        },
         #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
-        "Object Has Value" : autonomic.Deductor(
-            resource="\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty.\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasValue ?object ] .",
-            prefixes="", 
-            where = "\t",
-            construct="?resource ?objectProperty?object .",
-            explanation="Since {{resource}} is of type {{class}}, which has a value restriction on {{objectProperty}} to have {{object}}, we can infer that {{resource}} {{objectProperty}} {{object}}."),
-        "Data Has Value": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource ?datatypeProperty ?value.\n\t?class owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:hasValue ?value ].",
-            construct="?resource rdf:type ?class .",
-            explanation="Since {{class}} is equivalent to the restriction on {{datatypeProperty}} to have value {{value}} and {{resource}} {{datatypeProperty}} {{value}}, we can infer that {{resource}} rdf:type {{class}}."),#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
+        "Object Has Value" : {
+            "resource" : "\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty.\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasValue ?object ] .",
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t",
+            "construct" : "?resource ?objectProperty?object .",
+            "explanation" : "Since {{resource}} is of type {{class}}, which has a value restriction on {{objectProperty}} to have {{object}}, we can infer that {{resource}} {{objectProperty}} {{object}}."
+        },
+        "Data Has Value": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource ?datatypeProperty ?value.\n\t?class owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:hasValue ?value ].",
+            "construct" : "?resource rdf:type ?class .",
+            "explanation" : "Since {{class}} is equivalent to the restriction on {{datatypeProperty}} to have value {{value}} and {{resource}} {{datatypeProperty}} {{value}}, we can infer that {{resource}} rdf:type {{class}}."
+        },#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
         #"Individual Enumeration" (ObjectOneOf, DataOneOf)
-        #"Object One Of": autonomic.Deductor(#deals with lists rdf:rest+/rdf:first to traverse?
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
-        #"Data One Of": autonomic.Deductor(
-        #    resource="?resource", 
-        #    prefixes="", 
-        #    where = "\t",
-        #    construct="",
-        #    explanation=""),
+        #"Object One Of": {#deals with lists rdf:rest+/rdf:first to traverse?
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
+        #"Data One Of": {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
         #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
-        "Object All Values From" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?individual rdf:type ?class ; \n\t\t?objectProperty ?resource .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:allValuesFrom ?valueclass ] .",
-            construct="?resource rdf:type ?valueclass.",
-            explanation="Since {{class}} has a restriction on {{objectProperty}} to have all values from {{valueclass}}, {{individual}} rdf:type {{class}}, and {{individual}} {{objectProperty}} {{resource}}, we can infer that {{resource}} rdf:type {{valueclass}}."),
-        "Data All Values From" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:allValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)!=?value)",
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not have the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."),
+        "Object All Values From" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?individual rdf:type ?class ; \n\t\t?objectProperty ?resource .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction;\n\t\towl:onProperty ?objectProperty;\n\t\towl:allValuesFrom ?valueclass ] .",
+            "construct" : "?resource rdf:type ?valueclass.",
+            "explanation" : "Since {{class}} has a restriction on {{objectProperty}} to have all values from {{valueclass}}, {{individual}} rdf:type {{class}}, and {{individual}} {{objectProperty}} {{resource}}, we can infer that {{resource}} rdf:type {{valueclass}}."
+        },
+        "Data All Values From" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?datatypeProperty ?val .\n\t?datatypeProperty rdf:type owl:DatatypeProperty .\n\t?class rdf:type owl:Class ;\n\t\trdfs:subClassOf|owl:equivalentClass\n\t\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?datatypeProperty ;\n\t\t\towl:allValuesFrom ?value ] .\n\tFILTER(DATATYPE(?val)! : ?value)",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not have the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."
+        },
         #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality) 
-        "Object Max Cardinality" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),# Still need to check distinctness of object
-        "Object Min Cardinality": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?objectCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="",
-            explanation="Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."),# Still need to check distinctness of object to determine what to return
-        "Object Exact Cardinality": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),# Still need to check distinctness of object -- This is currently only accounting for max. Need to account for min as well
-        "Data Max Cardinality" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{dataProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."),
-        "Data Min Cardinality": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?dataCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="",
-            explanation="Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."), # Still need to determine what to return
-        "Data Exact Cardinality": autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}"
-            construct="?resource rdf:type owl:Nothing .",
-            explanation="Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."), # -- This is currently only accounting for max. Need to account for min as well
+        "Object Max Cardinality" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+        },# Still need to check distinctness of object
+        #"Object Min Cardinality": {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?objectCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}",
+        #    "construct" : "",
+        #    "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."
+        #},# Still need to check distinctness of object to determine what to return
+        "Object Exact Cardinality": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?objectProperty ?object .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?objectCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?object) as ?objectCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?objectProperty ?object .\n\t\t\t?objectProperty rdf:type owl:ObjectProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+        },# Still need to check distinctness of object -- This is currently only accounting for max. Need to account for min as well
+        "Data Max Cardinality" : {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:maxCardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:maxCardinality ?cardinalityValue ].\n\t\t}\n\t}",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{dataProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+        },
+        #"Data Min Cardinality": {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?dataCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}",
+        #    "construct" : "",
+        #    "explanation" : "Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."
+        #}, # Still need to determine what to return
+        "Data Exact Cardinality": {
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            "where" :  "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:cardinality ?cardinalityValue ].\n\tFILTER(?dataCount > ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:cardinality ?cardinalityValue ].\n\t\t}\n\t}",
+            "construct" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+        }, # -- This is currently only accounting for max. Need to account for min as well
         #"Disjunction" (ObjectUnionOf, DisjointUnion, and DataUnionOf)
-        "Object Union Of" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t",
-            construct="",
-            explanation=""),
-        "Disjoint Union" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t",
-            construct="",
-            explanation=""),
-        "Data Union Of" : autonomic.Deductor(
-            resource="?resource", 
-            prefixes="", 
-            where = "\t",
-            construct="",
-            explanation=""),
+        #"Object Union Of" : {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
+        #"Disjoint Union" : {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
+        #"Data Union Of" : {
+        #    "resource" : "?resource", 
+        #    "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        #    "where" :  "\t",
+        #    "construct" : "",
+        #    "explanation" : ""
+        #},
+    },
+    inferencers = {
+        "SETLMaker": autonomic.SETLMaker(),
+        "Deductor": autonomic.Deduct(),
 #        "HTML2Text" : nlp.HTML2Text(),
 #        "EntityExtractor" : nlp.EntityExtractor(),
 #        "EntityResolver" : nlp.EntityResolver(),

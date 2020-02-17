@@ -4,6 +4,7 @@ import rdflib
 import setlr
 from datetime import datetime
 
+from .global_change_service import GlobalChangeService
 from .update_change_service import UpdateChangeService
 from nanopub import Nanopublication
 from datastore import create_id
@@ -24,7 +25,7 @@ from whyis.namespace import *
 
 
 class Deductor(UpdateChangeService):
-    def __init__(self, where, construct, explanation, resource="?resource", prefixes=None):  # prefixes should be
+    def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
@@ -35,10 +36,10 @@ class Deductor(UpdateChangeService):
         self.explanation = explanation
 
     def getInputClass(self):
-        return pv.File  # input and output class should be customized for the specific inference
+        return pv.File  #should update
 
     def getOutputClass(self):
-        return setl.SETLedFile
+        return whyis.InferencedOver 
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
@@ -67,3 +68,30 @@ class Deductor(UpdateChangeService):
 
     def __str__(self):
         return "Deductor Instance: " + str(self.__dict__)
+
+class Deduct(GlobalChangeService):
+    def process(self, i, o):
+        for profile in config.Config["active_profiles"] :
+            for inference_rule in config.Config["reasoning_profiles"][profile] :
+                try :
+                    deductor_instance = autonomic.Deductor(
+                        resource = config.Config["axioms"][inference_rule]["resource"] ,
+                        prefixes = config.Config["axioms"][inference_rule]["prefixes"] ,
+                        where = config.Config["axioms"][inference_rule]["where"] ,
+                        construct = config.Config["axioms"][inference_rule]["construct"] ,
+                        explanation = config.Config["axioms"][inference_rule]["explanation"]
+                )
+                except Exception as e:
+                    if hasattr(e, 'message'):
+                        print("Error creating deductor instance: " + e.message)
+                    else:
+                        print("Error creating deductor instance: " + e)
+                try :
+                    deductor_instance.app = self.app
+                    deductor_instance.process_graph(self.app.db)
+                except Exception as e:
+                    if hasattr(e, 'message'):
+                        print("Error processing graph: " + e.message)
+                    else:
+                        print("Error processing graph: " + e)
+
