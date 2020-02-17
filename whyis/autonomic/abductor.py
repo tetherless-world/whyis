@@ -75,7 +75,7 @@ class Abduct(GlobalChangeService):
                     abductor_instance = autonomic.Abductor(
                         resource = config.Config["axioms"][inference_rule]["resource"] ,
                         prefixes = config.Config["axioms"][inference_rule]["prefixes"] ,
-                        where = config.Config["axioms"][inference_rule]["where"] 
+                        where = config.Config["axioms"][inference_rule]["where"] ,
                         construct = config.Config["axioms"][inference_rule]["construct"],
                         explanation = "Derived from axiom - " + inference_rule + ": " + config.Config["axioms"][inference_rule]["explanation"]
                 )
