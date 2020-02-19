@@ -5,24 +5,37 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@rdfjs/data-model": "^1.1.2",
+    "ajv": "^6.11.0",
     "axios": "^0.19.0",
+    "jsonschema": "^1.2.5",
+    "prismjs": "^1.19.0",
+    "rdf-literal": "^1.1.0",
     "tabulator-tables": "^4.4.3",
+    "v-jsoneditor": "^1.2.3",
+    "vega-schema-url-parser": "^1.1.0",
     "vue": "^2.6.10",
     "vue-material": "^1.0.0-beta-11",
+    "vue-prism-editor": "^0.3.0",
+    "vue-splitpane": "^1.0.6",
+    "vue-vega": "^1.0.0-alpha.13",
     "webpack": "^4.35.2",
     "webpack-cli": "^3.3.5"
   },
   "devDependencies": {
     "css-loader": "2.1.0",
     "eslint": "5.16.0",
+    "eslint-config-standard": "^14.1.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-vue": "^5.2.3",
     "mini-css-extract-plugin": "0.5.0",
+    "node-sass": "^4.13.1",
     "raw-loader": "1.0.0",
+    "sass-loader": "^8.0.2",
     "style-loader": "0.23.1",
     "vue-loader": "^15.7.1",
     "vue-template-compiler": "^2.6.10",
-    "webpack-dev-server": "^3.8.2"
+    "webpack-dev-server": "^3.10.3"
   },
   "scripts": {
     "lint": "eslint",
