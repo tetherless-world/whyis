@@ -24,7 +24,7 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 
-class Abductor(UpdateChangeService):
+class Abductor(GlobalChangeService):
     def __init__(self, where, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
@@ -57,8 +57,8 @@ class Abductor(UpdateChangeService):
     def process(self, i, o):
         npub = Nanopublication(store=o.graph.store)
         graph_obj = self.app.db.query(
-            '''SELECT DISTINCT ?g WHERE {GRAPH ?g {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}}''' % (
-            self.construct, self.resource, i.identifier), initNs=self.prefixes)
+            '''SELECT DISTINCT ?g WHERE {GRAPH ?g {\n%s }\nFILTER NOT EXISTS {\n GRAPH ?g {%s }\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}}''' % (
+            self.construct, self.construct, self.resource, i.identifier), initNs=self.prefixes)
         for s, p, o, c in triples:
             print("Abductor Adding ", s, p, o)
             npub.assertion.add((s, p, o))
@@ -67,7 +67,7 @@ class Abductor(UpdateChangeService):
     def __str__(self):
         return "Abductor Instance: " + str(self.__dict__)
 
-class Abduct(GlobalChangeService):
+'''class Abduct(GlobalChangeService):
     def process(self, i, o):
         for profile in config.Config["active_profiles"] :
             for inference_rule in config.Config["reasoning_profiles"][profile] :
@@ -75,7 +75,7 @@ class Abduct(GlobalChangeService):
                     abductor_instance = autonomic.Abductor(
                         resource = config.Config["axioms"][inference_rule]["resource"] ,
                         prefixes = config.Config["axioms"][inference_rule]["prefixes"] ,
-                        where = config.Config["axioms"][inference_rule]["where"] 
+                        where = config.Config["axioms"][inference_rule]["where"] ,
                         construct = config.Config["axioms"][inference_rule]["construct"],
                         explanation = "Derived from axiom - " + inference_rule + ": " + config.Config["axioms"][inference_rule]["explanation"]
                 )
@@ -92,4 +92,6 @@ class Abduct(GlobalChangeService):
                         print("Error processing graph: " + e.message)
                     else:
                         print("Error processing graph: " + e)
+'''
+
 

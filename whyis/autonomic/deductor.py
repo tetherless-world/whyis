@@ -23,8 +23,7 @@ from depot.io.interfaces import StoredFile
 
 from whyis.namespace import *
 
-
-class Deductor(UpdateChangeService):
+class Deductor(GlobalChangeService):
     def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
@@ -36,10 +35,10 @@ class Deductor(UpdateChangeService):
         self.explanation = explanation
 
     def getInputClass(self):
-        return pv.File  #should update
+        return pv.File
 
     def getOutputClass(self):
-        return whyis.InferencedOver 
+        return whyis.InferencedOver
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
@@ -69,7 +68,7 @@ class Deductor(UpdateChangeService):
     def __str__(self):
         return "Deductor Instance: " + str(self.__dict__)
 
-class Deduct(GlobalChangeService):
+'''class Deduct(GlobalChangeService):
     def process(self, i, o):
         for profile in config.Config["active_profiles"] :
             for inference_rule in config.Config["reasoning_profiles"][profile] :
@@ -94,4 +93,4 @@ class Deduct(GlobalChangeService):
                         print("Error processing graph: " + e.message)
                     else:
                         print("Error processing graph: " + e)
-
+'''
