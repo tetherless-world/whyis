@@ -314,7 +314,7 @@ Config = dict(
             consequent = "?o ?symmetricProperty ?resource .",
             explanation = "Since {{symmetricProperty}} is a symmetric property, and {resource}} {{symmetricProperty}} {{o}}, we can infer that {{o}} {{symmetricProperty}} {{resource}}."
         ),
-        "Object Property Irreflexivity":  {
+        "Object Property Irreflexivity": autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource ?irreflexiveProperty ?o .\n\t?irreflexiveProperty rdf:type owl:IrreflexiveProperty .\n\t?resource ?irreflexiveProperty ?resource .",
