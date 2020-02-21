@@ -24,14 +24,14 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 class Deductor(GlobalChangeService):
-    def __init__(self, where, construct, explanation, resource="?resource", prefixes=None): 
+    def __init__(self, antecedent, consequent, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
-        self.where = where
-        self.construct = construct
+        self.antecedent = antecedent
+        self.consequent = consequent
         self.explanation = explanation
 
     def getInputClass(self):
@@ -43,12 +43,12 @@ class Deductor(GlobalChangeService):
     def get_query(self):
         self.app.db.store.nsBindings = {}
         return '''SELECT DISTINCT %s WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\n}''' % (
-        self.resource, self.where, self.construct)
+        self.resource, self.antecedent, self.consequent)
 
     def get_context(self, i):
         context = {}
         context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s \nFILTER(regex(str(%s), "^(%s)")) . }''' % (
-        self.where, self.resource, i.identifier), initNs=self.prefixes)
+        self.antecedent, self.resource, i.identifier), initNs=self.prefixes)
         # print(context_vars)
         for key in list(context_vars.json["results"]["bindings"][0].keys()):
             context[key] = context_vars.json["results"]["bindings"][0][key]["value"]
@@ -58,7 +58,7 @@ class Deductor(GlobalChangeService):
         npub = Nanopublication(store=o.graph.store)
         triples = self.app.db.query(
             '''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
-            self.construct, self.where, self.construct, self.resource, i.identifier), initNs=self.prefixes)
+            self.consequent, self.antecedent, self.consequent, self.resource, i.identifier), initNs=self.prefixes)
         for s, p, o, c in triples:
             print("Deductor Adding ", s, p, o)
             npub.assertion.add((s, p, o))
@@ -76,8 +76,8 @@ class Deductor(GlobalChangeService):
                     deductor_instance = autonomic.Deductor(
                         resource = config.Config["axioms"][inference_rule]["resource"] ,
                         prefixes = config.Config["axioms"][inference_rule]["prefixes"] ,
-                        where = config.Config["axioms"][inference_rule]["where"] ,
-                        construct = config.Config["axioms"][inference_rule]["construct"] ,
+                        antecedent = config.Config["axioms"][inference_rule]["antecedent"] ,
+                        consequent = config.Config["axioms"][inference_rule]["consequent"] ,
                         explanation = inference_rule + ": " + config.Config["axioms"][inference_rule]["explanation"]
                 )
                 except Exception as e:
