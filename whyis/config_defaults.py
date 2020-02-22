@@ -149,7 +149,7 @@ Config = dict(
 #            format='json-ld',
 #        )
     ],
-    active_profiles = {"OWL2 RL"},
+    active_profiles = ["OWL2 RL"],
     reasoning_profiles = {
         "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"],
         "OWL2 EL" : [ 
@@ -248,7 +248,7 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?class owl:disjointWith ?disjointClass .\n\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass . ",
-            consequent = "?resource rdf:type owl:Nothing . ",
+            consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, since {{resource}} is an instance of {{class}}, it can not be an instance of {{disjointClass}}."
         ),
         "Object Property Transitivity" : autonomic.Deductor(
@@ -269,14 +269,14 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource ?p ?o .\n\t?p rdfs:domain ?class .",
-            consequent = "?resource rdf:type ?class",
+            consequent = "?resource rdf:type ?class .",
             explanation = "Since the domain of {{p}} is {{class}}, this implies that {{resource}} is a {{class}}."
         ),
         "Range Restriction" : autonomic.Deductor(
             resource = "?resource",
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource ?p ?o .\n\t?p rdfs:range ?class .",
-            consequent = "?o rdf:type ?class",
+            consequent = "?o rdf:type ?class .",
             explanation = "Since the range of {{p}} is {{class}}, this implies that {{o}} is a {{class}}."
         ),
         "Functional Data Property" : autonomic.Deductor(
@@ -389,7 +389,7 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
             antecedent =  "\t?resource owl:differentFrom ?individual .\n\t?resource owl:sameAs ?individual .", 
-            consequent = "?resource rdf:type owl:Nothing . ",
+            consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."
         ),
         #"All Different" : autonomic.Deductor(
@@ -439,7 +439,7 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource rdf:type ?class .\n\t?class owl:hasKey ( ?keyProperty ) .\n\t?resource ?keyProperty ?keyValue.\n\t?individual rdf:type ?class.\n\t?individual ?keyProperty ?keyValue.",
-            consequent = "?resource owl:sameAs ?individual",
+            consequent = "?resource owl:sameAs ?individual .",
             explanation = "Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."
         ),
         #"Inverse Functional Object Property" : autonomic.Deductor(
@@ -469,7 +469,7 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource rdf:type ?class .\n\t?objectProperty rdf:type owl:ObjectProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\t\towl:onProperty ?objectProperty ;\n\t\t\towl:hasSelf \"true\"^^xsd:boolean ] .",
-            consequent = "?resource ?objectProperty ?resource",
+            consequent = "?resource ?objectProperty ?resource .",
             explanation = "{{resource}} is of type {{class}}, which has a self restriction on the property {{objectProperty}}, allowing us to infer {{resource}} {{objectProperty}} {{resource}}."
         ),
         #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
