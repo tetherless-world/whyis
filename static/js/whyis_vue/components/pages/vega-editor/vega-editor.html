@@ -1,61 +1,78 @@
 <div>
-  <split-pane :min-percent='20' :default-percent='40' split="vertical">
-    <template slot="paneL">
-      <form class="md-layout" style="display:none;">
-        <md-field>
-          <md-input v-model="urii"></md-input>
-        </md-field>
-        <md-button @click="describePub">Describe</md-button>
-        <md-button @click="getLocalPub">Get</md-button>
+  <form class="md-layout" style="display:none;">
+    <md-field>
+      <md-input v-model="urii"></md-input>
+    </md-field>
+    <md-button @click="describePub">Describe</md-button>
+    <md-button @click="getLocalPub">Get</md-button>
 
-      </form>
-      <form class="md-layout title-form" @submit.prevent="saveChart">
-        <md-card class="chart-metadata">
-          <md-card-content>
-            <div class="title-bar">
-              <md-field class="chart-title-field">
-                <label for="chart-title">Title</label>
-                <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
-              </md-field>
-              <md-button type="submit" class="save-button md-primary">Save</md-button>
-            </div>
-            <md-field class="chart-description-field">
-              <label for="chart-description">Description</label>
-              <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
-            </md-field>
-          </md-card-content>
-        </md-card>
-        <div class="editors">
+  </form>
+  <split-pane :min-percent='20' :default-percent='66' split="vertical">
+    <template slot="paneL">
+      <split-pane :default-percent="50" split="vertical">
+        <template slot="paneL">
           <md-card>
             <md-card-header>
               <div class="md-title">SPARQL Query</div>
             </md-card-header>
             <md-card-content>
-              <yasqe v-if="chart.query" :query="chart.query" v-on:query-success="onQuerySuccess"></yasqe>
+              <yasqe v-if="chart.query"
+                     :query="chart.query"
+                     v-on:query-success="onQuerySuccess">
+              </yasqe>
             </md-card-content>
           </md-card>
+        </template>
+        <template slot="paneR">
           <md-card>
             <md-card-header>
               <div class="md-title">Vega Specification</div>
             </md-card-header>
             <md-card-content>
-              <v-jsoneditor v-if="chart.baseSpec" v-model="chart.baseSpec" :options="specJsonEditorOpts" :error="onSpecJsonError"></v-jsoneditor>
+              <v-jsoneditor v-if="chart.baseSpec"
+                            v-model="chart.baseSpec"
+                            :options="specJsonEditorOpts"
+                            :error="onSpecJsonError">
+              </v-jsoneditor>
             </md-card-content>
           </md-card>
-        </div>
-      </form>
+        </template>
+      </split-pane>
     </template>
     <template slot="paneR">
-      <md-tabs>
-        <md-tab md-label="Chart">
-          <div class="vega-container">
-            <vega-lite v-if="spec" :spec="spec"/>
-          </div>
-        </md-tab>
-        <md-tab md-label="Table">
-          <yasr v-bind:results="results"></yasr>
-        </md-tab>
-      </md-tabs>
+      <split-pane :default-percent="30" split="horizontal">
+        <template slot="paneL">
+          <form class="md-layout title-form" @submit.prevent="saveChart">
+            <md-card class="chart-metadata">
+              <md-card-content>
+                <div class="title-bar">
+                  <md-field class="chart-title-field">
+                    <label for="chart-title">Title</label>
+                    <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
+                  </md-field>
+                  <md-button type="submit" class="save-button md-primary">Save</md-button>
+                </div>
+                <md-field class="chart-description-field">
+                  <label for="chart-description">Description</label>
+                  <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
+                </md-field>
+              </md-card-content>
+            </md-card>
+          </form>
+        </template>
+        <template slot="paneR">
+          <md-tabs>
+            <md-tab md-label="Chart">
+              <div class="vega-container">
+                <vega-lite v-if="spec" :spec="spec"/>
+              </div>
+            </md-tab>
+            <md-tab md-label="Table">
+              <yasr v-bind:results="results"></yasr>
+            </md-tab>
+          </md-tabs>
+        </template>
+      </split-pane>
     </template>
   </split-pane>
 </div>
