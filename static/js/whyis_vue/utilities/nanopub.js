@@ -7,17 +7,21 @@ function getNanopubUrl (id) {
   return `${nanopubBaseUrl}/${id}`
 }
 
-function getNanopubDescribeUrl (uri) {
-  return `${ROOT_URL}about?uri=${uri}&view=describe`
+function getAboutUrl(uri) {
+  return `${ROOT_URL}about?uri=${uri}`
 }
 
 function describeNanopub (uri) {
   console.log(`loading nanopub ${uri}`)
-  return axios.get(getNanopubDescribeUrl(uri))
+  return axios.get(`${ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
     .then((response) => {
       console.log('received nanopub data for uri:', uri, response)
       return response.data
     })
+}
+
+function listNanopubs (uri) {
+  return axios.get(`${ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
 }
 
 function getLocalNanopub (id) {
@@ -30,11 +34,11 @@ function getLocalNanopub (id) {
     })
 }
 
-function postNewNanopub (pub) {
+function postNewNanopub (pubData) {
   const request = {
     method: 'post',
     url: nanopubBaseUrl,
-    data: pub,
+    data: pubData,
     headers: {
       'Content-Type': 'application/ld+json'
     }
@@ -42,12 +46,21 @@ function postNewNanopub (pub) {
   return axios(request)
     .then((response) => {
       console.log('we done it', response)
+      describeNanopub(response.headers.location)
+      describeNanopub(pubData['@id'])
+      listNanopubs(pubData['@id'])
       return response
     })
 }
 
-function updateNanopub (pub) {
-
+function deleteNanopub (uri) {
+  return axios.delete(getAboutUrl(uri))
 }
 
-export { getLocalNanopub, describeNanopub, postNewNanopub, updateNanopub, lodPrefix }
+export {
+  listNanopubs,
+  getLocalNanopub,
+  describeNanopub,
+  postNewNanopub,
+  lodPrefix
+}
