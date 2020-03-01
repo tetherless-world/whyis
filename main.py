@@ -45,7 +45,6 @@ from whyis.html_mime_types import HTML_MIME_TYPES
 from whyis.namespace import NS
 from whyis.nanopub import NanopublicationManager
 # from flask_login.config import EXEMPT_METHODS
-from whyis.task_utils import is_waiting, is_running_waiting
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
@@ -187,14 +186,12 @@ class App(Empty):
                 for name, service in list(self.config['inferencers'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
-                        #print "checking", name, nanopub_uri, service.get_query()
                         if service.getInstances(nanopub_graph):
                             print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in list(self.config['inferencers'].items()):
                     service.app = self
-                    if service.query_predicate == self.NS.whyis.globalChangeQuery and not is_running_waiting(name):
-                        #print "checking", name, service.get_query()
+                    if service.query_predicate == self.NS.whyis.globalChangeQuery:
                         process_resource.apply_async(kwargs={'service_name':name}, priority=5)
 
         def run_update(nanopub_uri):
