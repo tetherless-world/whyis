@@ -48,13 +48,6 @@ function postNewNanopub (pubData) {
     }
   }
   return axios(request)
-    .then((response) => {
-      console.debug('we done it', response)
-      describeNanopub(response.headers.location)
-      describeNanopub(pubData['@id'])
-      listNanopubs(pubData['@id'])
-      return response
-    })
 }
 
 function deleteNanopub (uri) {

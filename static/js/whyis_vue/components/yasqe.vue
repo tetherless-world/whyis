@@ -7,7 +7,7 @@ import Vue from "vue"
 
 export default Vue.component('yasqe', {
     props: {
-        query: {
+        value: {
             type: String,
             default: () => ""
         },
@@ -34,7 +34,10 @@ export default Vue.component('yasqe', {
                 }
             },
         })
-        this.yasqe.setValue(this.query)
+        this.yasqe.setValue(this.value)
+        this.yasqe.on('changes', () => {
+            yasqeContext.$emit('input', yasqeContext.yasqe.getValue())
+        })
         this.yasqe.setSize("100%", "100%")
     }
 })

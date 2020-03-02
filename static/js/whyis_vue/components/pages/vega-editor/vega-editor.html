@@ -9,7 +9,7 @@
             </md-card-header>
             <md-card-content>
               <yasqe v-if="chart.query"
-                     :query="chart.query"
+                     v-model="chart.query"
                      v-on:query-success="onQuerySuccess">
               </yasqe>
             </md-card-content>
