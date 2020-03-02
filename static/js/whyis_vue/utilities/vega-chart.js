@@ -1,5 +1,5 @@
 
-import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, lodPrefix } from './nanopub'
+import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from './nanopub'
 
 const defaultChartUri = 'http://example.com/example_chart'
 
@@ -15,7 +15,7 @@ const chartFieldUris = {
 const chartPrefix = 'viz'
 const chartIdLen = 16
 
-function generateChartId (chart) {
+function generateChartId () {
   const intArr = new Uint8Array(chartIdLen / 2)
   window.crypto.getRandomValues(intArr)
   const chartId = Array.from(intArr, (dec) => ('0' + dec.toString(16)).substr(-2)).join('')
@@ -24,11 +24,12 @@ function generateChartId (chart) {
 }
 
 function buildChartLd (chart) {
+  chart = Object.assign({}, chart)
+  chart.baseSpec = JSON.stringify(chart.baseSpec)
   const chartLd = Object.entries(chart)
     .reduce((o, [field, value]) => Object.assign(o, { [chartFieldUris[field]]: [{ '@value': value }] }), {})
-  chartLd[chartFieldUris.baseSpec] = JSON.stringify(chartLd[chartFieldUris.baseSpec])
   chartLd['@type'] = [chartType]
-  chartLd['@id'] = generateChartId(chart)
+  chartLd['@id'] = chart.uri
   return chartLd
 }
 
@@ -36,6 +37,9 @@ function extractChart (chartLd) {
   const chart = Object.entries(chartFieldUris)
     .reduce((o, [field, uri]) => Object.assign(o, { [field]: chartLd[uri][0]['@value'] }), {})
   chart.baseSpec = JSON.parse(chart.baseSpec)
+  if (chartLd['@id'] !== defaultChartUri) {
+    chart.uri = chartLd['@id']
+  }
 
   return chart
 }
@@ -46,16 +50,45 @@ function loadDefaultChart () {
     .then(extractChart)
 }
 
-function loadNanopubChart (chartUri) {
-  return describeNanopub(chartUri)
-    .then((response) => response[0]['@graph'][0])
-    .then(extractChart)
+function loadChartFromNanopub(nanopubUri, chartUri) {
+  return describeNanopub(nanopubUri)
+    .then((describeData) => {
+      const graphs = describeData.filter(obj => chartUri.startsWith(obj['@id']) && typeof(obj['@graph']) === 'object')
+      if (graphs.length === 0) {
+        return
+      }
+      const charts = graphs[0]['@graph'].filter(obj => obj['@id'] === chartUri)
+      if (charts.length > 0) {
+        return extractChart(charts[0])
+      }
+    })
+}
+
+function loadChart (chartUri) {
+  return listNanopubs(chartUri)
+    .then(nanopubs => {
+      if (nanopubs.length > 0) {
+        const nanopubUri = nanopubs[0].np
+        return loadChartFromNanopub(nanopubUri, chartUri)
+      }
+    })
 }
 
 function saveChart (chart) {
+  let deletePromise = Promise.resolve()
+  if (chart.uri) {
+    deletePromise = deleteChart(chart.uri)
+  } else {
+    chart.uri = generateChartId()
+  }
   const chartLd = buildChartLd(chart)
-  return postNewNanopub(chartLd)
-    .then((resp) => console.log(resp))
+  return deletePromise
+    .then(() => postNewNanopub(chartLd))
 }
 
-export { loadDefaultChart, loadNanopubChart, saveChart }
+function deleteChart (chartUri) {
+  return listNanopubs(chartUri)
+    .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
+}
+
+export { loadDefaultChart, loadChart, saveChart }

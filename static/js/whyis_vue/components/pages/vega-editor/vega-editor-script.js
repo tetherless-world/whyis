@@ -10,7 +10,8 @@ import { validate as jsonValidate } from 'jsonschema'
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 
-import { loadDefaultChart, loadNanopubChart, saveChart } from '../../../utilities/vega-chart'
+import { loadDefaultChart, loadChart, saveChart } from '../../../utilities/vega-chart'
+import { goToView } from '../../../utilities/views'
 
 export default Vue.component('vega-editor', {
   components: {
@@ -25,7 +26,6 @@ export default Vue.component('vega-editor', {
         title: null,
         description: null
       },
-      urii: '',
       results: null,
       chartPub: null,
       specJsonEditorOpts: {
@@ -79,7 +79,7 @@ export default Vue.component('vega-editor', {
       console.log('bad', arguments)
     },
     loadChart () {
-      const loadChartPromise = this.pageView === 'new' ? loadDefaultChart() : loadNanopubChart(this.pageUri)
+      const loadChartPromise = this.pageView === 'new' ? loadDefaultChart() : loadChart(this.pageUri)
 
       loadChartPromise.then(chart => {
         console.log('got the chart', chart)
@@ -87,7 +87,9 @@ export default Vue.component('vega-editor', {
       })
     },
     saveChart () {
+      console.log(this.chart)
       saveChart(this.chart)
+        .then(() => goToView(this.chart.uri, 'edit'))
     }
   }
 })

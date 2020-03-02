@@ -12,24 +12,28 @@ function getAboutUrl(uri) {
 }
 
 function describeNanopub (uri) {
-  console.log(`loading nanopub ${uri}`)
+  console.debug(`loading nanopub ${uri}`)
   return axios.get(`${ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
     .then((response) => {
-      console.log('received nanopub data for uri:', uri, response)
+      console.debug('received nanopub data for uri:', uri, response)
       return response.data
     })
 }
 
 function listNanopubs (uri) {
   return axios.get(`${ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
+    .then(response => {
+      console.debug('list nanopub response', response)
+      return response.data
+    })
 }
 
 function getLocalNanopub (id) {
-  console.log(`loading nanopub ${id}`)
+  console.debug(`loading nanopub ${id}`)
   const url = getNanopubUrl(id)
   return axios.get(url)
     .then((response) => {
-      console.log('received nanopub data for url:', url, response)
+      console.debug('received nanopub data for url:', url, response)
       return response
     })
 }
@@ -45,7 +49,7 @@ function postNewNanopub (pubData) {
   }
   return axios(request)
     .then((response) => {
-      console.log('we done it', response)
+      console.debug('we done it', response)
       describeNanopub(response.headers.location)
       describeNanopub(pubData['@id'])
       listNanopubs(pubData['@id'])
@@ -54,7 +58,12 @@ function postNewNanopub (pubData) {
 }
 
 function deleteNanopub (uri) {
+  console.debug('deleting nanopub', uri)
   return axios.delete(getAboutUrl(uri))
+    .then(resp => {
+      console.debug('delete nanopub response', uri, resp)
+      return resp
+    })
 }
 
 export {
@@ -62,5 +71,6 @@ export {
   getLocalNanopub,
   describeNanopub,
   postNewNanopub,
+  deleteNanopub,
   lodPrefix
 }
