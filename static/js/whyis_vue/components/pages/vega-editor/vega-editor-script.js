@@ -12,6 +12,7 @@ import { fromRdf } from 'rdf-literal'
 
 import { getDefaultChart, loadChart, saveChart } from '../../../utilities/vega-chart'
 import { goToView } from '../../../utilities/views'
+import { querySparql } from '../../../utilities/sparql'
 
 export default Vue.component('vega-editor', {
   components: {
@@ -71,6 +72,10 @@ export default Vue.component('vega-editor', {
     this.loadChart()
   },
   methods: {
+    getSparqlData () {
+      querySparql(this.chart.query)
+        .then(this.onQuerySuccess)
+    },
     onQuerySuccess (results) {
       console.log('got results', results)
       this.results = results
@@ -79,16 +84,17 @@ export default Vue.component('vega-editor', {
       console.log('bad', arguments)
     },
     loadChart () {
+      let getChartPromise
       if (this.pageView === 'new') {
-        this.chart = getDefaultChart()
+        getChartPromise = Promise.resolve(getDefaultChart())
       } else {
-        loadChart(this.pageUri)
-          .then(chart => {
-            console.log('got the chart', chart)
-            this.chart = chart
-          })
+        getChartPromise = loadChart(this.pageUri)
       }
-
+      getChartPromise
+        .then(chart => {
+          this.chart = chart
+          this.getSparqlData()
+        })
     },
     saveChart () {
       console.log(this.chart)

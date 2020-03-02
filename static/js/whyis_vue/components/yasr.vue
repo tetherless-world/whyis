@@ -18,7 +18,6 @@ export default Vue.component('yasr', {
     },
     methods: {
         setResults (results) {
-            console.log('set results', this)
             if (results) {
                 this.yasr.setResponse(results)
             }
