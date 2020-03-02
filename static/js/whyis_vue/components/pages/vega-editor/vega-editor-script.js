@@ -10,7 +10,7 @@ import { validate as jsonValidate } from 'jsonschema'
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 
-import { loadDefaultChart, loadChart, saveChart } from '../../../utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart } from '../../../utilities/vega-chart'
 import { goToView } from '../../../utilities/views'
 
 export default Vue.component('vega-editor', {
@@ -79,12 +79,16 @@ export default Vue.component('vega-editor', {
       console.log('bad', arguments)
     },
     loadChart () {
-      const loadChartPromise = this.pageView === 'new' ? loadDefaultChart() : loadChart(this.pageUri)
+      if (this.pageView === 'new') {
+        this.chart = getDefaultChart()
+      } else {
+        loadChart(this.pageUri)
+          .then(chart => {
+            console.log('got the chart', chart)
+            this.chart = chart
+          })
+      }
 
-      loadChartPromise.then(chart => {
-        console.log('got the chart', chart)
-        this.chart = chart
-      })
     },
     saveChart () {
       console.log(this.chart)

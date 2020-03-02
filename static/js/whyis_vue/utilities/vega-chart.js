@@ -1,7 +1,38 @@
 
 import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from './nanopub'
 
-const defaultChartUri = 'http://example.com/example_chart'
+const defaultQuery = `
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?c (MIN(?class) AS ?class) (COUNT(?x) AS ?count)
+WHERE {
+    ?x a ?c.
+    ?c rdfs:label ?class.
+}
+GROUP BY ?c
+ORDER BY DESC(?count)
+`.trim()
+
+const defaultSpec = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "mark": "bar",
+  "encoding": {
+    "x": {
+      "field": "count",
+      "type": "quantitative"
+    },
+    "y": {
+      "field": "class",
+      "type": "ordinal"
+    }
+  }
+}
+
+const defaultChart = {
+  baseSpec: defaultSpec,
+  query: defaultQuery,
+  title: 'Example Bar Chart',
+  description: 'An example chart that looks up the frequency for each class in the knowledge graph.'
+}
 
 const chartType = 'http://semanticscience.org/resource/Chart'
 
@@ -37,17 +68,13 @@ function extractChart (chartLd) {
   const chart = Object.entries(chartFieldUris)
     .reduce((o, [field, uri]) => Object.assign(o, { [field]: chartLd[uri][0]['@value'] }), {})
   chart.baseSpec = JSON.parse(chart.baseSpec)
-  if (chartLd['@id'] !== defaultChartUri) {
-    chart.uri = chartLd['@id']
-  }
+  chart.uri = chartLd['@id']
 
   return chart
 }
 
-function loadDefaultChart () {
-  return describeNanopub(defaultChartUri)
-    .then((data) => data.filter((pub) => pub['@id'] === defaultChartUri)[0])
-    .then(extractChart)
+function getDefaultChart () {
+  return Object.assign({}, defaultChart)
 }
 
 function loadChartFromNanopub(nanopubUri, chartUri) {
@@ -91,4 +118,4 @@ function deleteChart (chartUri) {
     .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
 }
 
-export { loadDefaultChart, loadChart, saveChart }
+export { getDefaultChart, loadChart, saveChart }
