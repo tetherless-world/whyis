@@ -128,22 +128,28 @@ class NanopublicationManager(object):
   ?np a np:Nanopublication.
 ''' + ('' if self.app.config.get('delete_archive_nanopubs',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
 }'''
+        file_query = '''select ?fileid where {
+  ?np np:hasAssertion ?assertion.
+  graph ?assertion {
+    ?resource whis:hasFileID ?fileid.
+  }
+}'''
         for nanopub_uri in nanopub_uris:
             for np_uri, in self.db.query(derived_query,
                                          initNs={"prov": prov, "np": np, "whyis" : whyis},
                                          initBindings={"r": nanopub_uri}):
-                #graphs.extend([np_uri, assertion, provenance, pubinfo])
-                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-
-                for fileid in nanopub.objects(predicate=whyis.hasFileID):
+                for fileid, in self.db.query(file_query, initNs={"np": np, "whyis" : whyis},
+                                             initBindings={'np': np_uri}):
                     if self.app.file_depot.exists(fileid):
+                        print("Deleting file",fileid, "in", np_uri,
+                              "because retire was called on",nanopub_uri)
                         self.app.file_depot.delete(fileid)
                     elif self.app.nanopub_depot.exists(fileid):
                         f = self.app.nanopub_depot.delete(fileid)
-                self.db.remove((None, None, None, nanopub.assertion.identifier))
-                self.db.remove((None, None, None, nanopub.provenance.identifier))
-                self.db.remove((None, None, None, nanopub.pubinfo.identifier))
-                self.db.remove((None, None, None, nanopub.identifier))
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasAssertion)))
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasProvenance)))
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasPublicationInfo)))
+                self.db.remove((None, None, None, np_uri))
         self.db.commit()
         # data = [('c', c.n3()) for c in graphs]
         # session = requests.session()

@@ -177,9 +177,9 @@ class App(Empty):
             '''gets called whenever there is a change in the knowledge graph.
             Performs a breadth-first knowledge expansion of the current change.'''
             #print "Updating on", nanopub_uri
-            if not app.nanopub_manager.is_current(nanopub_uri):
-                print("Skipping retired nanopub", nanopub_uri)
-                return
+            #if not app.nanopub_manager.is_current(nanopub_uri):
+            #    print("Skipping retired nanopub", nanopub_uri)
+            #    return
             nanopub = app.nanopub_manager.get(nanopub_uri)
             nanopub_graph = ConjunctiveGraph(nanopub.store)
             if 'inferencers' in self.config:
