@@ -131,7 +131,7 @@ class NanopublicationManager(object):
         file_query = '''select ?fileid where {
   ?np np:hasAssertion ?assertion.
   graph ?assertion {
-    ?resource whis:hasFileID ?fileid.
+    ?resource whyis:hasFileID ?fileid.
   }
 }'''
         for nanopub_uri in nanopub_uris:
