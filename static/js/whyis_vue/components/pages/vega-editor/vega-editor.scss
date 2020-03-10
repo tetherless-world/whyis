@@ -6,6 +6,11 @@
 
   .chart-metadata {
     margin-bottom: 20px;
+    max-height: 100%;
+    .md-card-content {
+      max-height: 100%;
+      overflow: auto;
+    }
   }
 
   .title-bar {
