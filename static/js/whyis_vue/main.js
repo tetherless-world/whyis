@@ -1,12 +1,10 @@
 import Vue from 'vue'
 import * as VueMaterial from 'vue-material'
 import axios from 'axios'
-import VueVega from 'vue-vega'
 import './components'
 import nanopubMixin from './mixins/nanopub-mixin'
 
 Vue.use(VueMaterial.default)
-Vue.use(VueVega)
 Vue.mixin(nanopubMixin)
 
 let data

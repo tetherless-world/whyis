@@ -1,18 +1,14 @@
 import Vue from 'vue'
 import splitPane from 'vue-splitpane'
 
-import vegaLiteSchema from 'vue-vega/schema/vega-lite-schema.json'
-
 import VJsoneditor from 'v-jsoneditor'
-
-import { validate as jsonValidate } from 'jsonschema'
 
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 
-import { getDefaultChart, loadChart, saveChart } from '../../../utilities/vega-chart'
-import { goToView } from '../../../utilities/views'
-import { querySparql } from '../../../utilities/sparql'
+import { getDefaultChart, loadChart, saveChart } from 'utilities/vega-chart'
+import { goToView } from 'utilities/views'
+import { querySparql } from 'utilities/sparql'
 
 export default Vue.component('vega-editor', {
   components: {
@@ -30,7 +26,6 @@ export default Vue.component('vega-editor', {
       results: null,
       chartPub: null,
       specJsonEditorOpts: {
-        schema: vegaLiteSchema,
         mode: 'code',
         mainMenuBar: false
       }
@@ -61,10 +56,6 @@ export default Vue.component('vega-editor', {
       const spec = Object.assign({}, this.chart.baseSpec)
       spec.data = { values: this.data }
       console.log('spec changed', spec)
-      const validation = jsonValidate(spec, vegaLiteSchema)
-      if (!validation.valid) {
-        console.warn('Invalid schema', validation)
-      }
       return spec
     }
   },
