@@ -24,6 +24,10 @@
   }
 }
 
+#vega-spec-editor .jsoneditor-container.min-box {
+  min-width: unset;
+}
+
 .md-tab {
   height: 100%;
 }
