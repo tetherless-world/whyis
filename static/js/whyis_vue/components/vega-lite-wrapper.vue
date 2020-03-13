@@ -9,6 +9,8 @@
 import Vue from 'vue'
 import vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json'
 
+import debounce from 'utilities/debounce'
+
 import { validate as jsonValidate } from 'jsonschema'
 
 
@@ -27,27 +29,26 @@ export default Vue.component('vega-lite', {
   },
   methods: {
     plotSpec () {
-      console.debug('plotting new spec', this.spec)
+      console.debug('plotting spec', this.spec)
       window.vegaEmbed(`#${this.id}`, this.spec)
     },
     validateSpec () {
       const validation = jsonValidate(this.spec, vegaLiteSchema)
-      window.vlood = validation
       if (!validation.valid) {
         console.warn('Invalid spec', validation)
       } else {
-        console.log('spec checks out', validation)
+        console.debug('spec checks out', validation)
       }
       this.specValidation = validation
     }
   },
   watch: {
-    spec () {
+    spec: debounce(function () {
       this.validateSpec()
       if (this.specValidation.valid) {
         this.plotSpec()
       }
-    }
+    }, 300)
   }
 })
 
