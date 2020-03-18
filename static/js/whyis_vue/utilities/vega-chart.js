@@ -1,4 +1,7 @@
 
+import { literal, namedNode } from '@rdfjs/data-model'
+import { fromRdf } from 'rdf-literal'
+
 import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from './nanopub'
 
 const defaultQuery = `
@@ -118,4 +121,31 @@ function deleteChart (chartUri) {
     .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
 }
 
-export { getDefaultChart, loadChart, saveChart }
+function transformSparqlData (sparqlResults) {
+  const data = []
+  if (sparqlResults) {
+    for (const row of sparqlResults.results.bindings) {
+      const resultData = {}
+      data.push(resultData)
+      Object.entries(row).forEach(([field, result, t]) => {
+        let value = result.value
+        if (result.type === 'literal' && result.datatype) {
+          value = fromRdf(literal(value, namedNode(result.datatype)))
+        }
+        resultData[field] = value
+      })
+    }
+  }
+  return data
+}
+
+function buildSparqlSpec (baseSpec, sparqlResults) {
+  if (!baseSpec) {
+    return null
+  }
+  const spec = Object.assign({}, baseSpec)
+  spec.data = { values: transformSparqlData(sparqlResults) }
+  return spec
+}
+
+export { getDefaultChart, loadChart, saveChart, buildSparqlSpec}

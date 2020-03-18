@@ -3,12 +3,10 @@ import splitPane from 'vue-splitpane'
 
 import VJsoneditor from 'v-jsoneditor'
 
-import { literal, namedNode } from '@rdfjs/data-model'
-import { fromRdf } from 'rdf-literal'
-
-import { getDefaultChart, loadChart, saveChart } from 'utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
 import { goToView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
+
 
 export default Vue.component('vega-editor', {
   components: {
@@ -32,29 +30,8 @@ export default Vue.component('vega-editor', {
     }
   },
   computed: {
-    data () {
-      const data = []
-      if (this.results) {
-        for (const row of this.results.results.bindings) {
-          const resultData = {}
-          data.push(resultData)
-          Object.entries(row).forEach(([field, result, t]) => {
-            let value = result.value
-            if (result.type === 'literal' && result.datatype) {
-              value = fromRdf(literal(value, namedNode(result.datatype)))
-            }
-            resultData[field] = value
-          })
-        }
-      }
-      return data
-    },
     spec () {
-      if (!this.chart.baseSpec) {
-        return null
-      }
-      const spec = Object.assign({}, this.chart.baseSpec)
-      spec.data = { values: this.data }
+      const spec = buildSparqlSpec(this.chart.baseSpec, this.results)
       console.log('spec changed', spec)
       return spec
     }

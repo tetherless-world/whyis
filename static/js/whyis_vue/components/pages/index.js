@@ -1,1 +1,1 @@
-import './vega-editor'
+import './vega'

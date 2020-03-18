@@ -2,10 +2,10 @@ import Vue from 'vue'
 import * as VueMaterial from 'vue-material'
 import axios from 'axios'
 import './components'
-import nanopubMixin from './mixins/nanopub-mixin'
+import viewMixin from './mixins/view-mixin'
 
 Vue.use(VueMaterial.default)
-Vue.mixin(nanopubMixin)
+Vue.mixin(viewMixin)
 
 let data
 if (typeof (ATTRIBUTES) !== 'undefined') {

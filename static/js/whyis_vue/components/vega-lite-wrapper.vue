@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="specValidation.valid" v-bind:id="id"></div>
-    <p v-else>Invalid Vega-Lite specification.</p>
+    <p v-else-if="specValidation.valid === false">Invalid Vega-Lite specification.</p>
   </div>
 </template>
 
@@ -27,6 +27,10 @@ export default Vue.component('vega-lite', {
       default: () => null
     }
   },
+  created ()  {
+    this.onSpecChange = debounce(this.processSpec, 300)
+    this.onSpecChange()
+  },
   methods: {
     plotSpec () {
       console.debug('plotting spec', this.spec)
@@ -40,15 +44,18 @@ export default Vue.component('vega-lite', {
         console.debug('spec checks out', validation)
       }
       this.specValidation = validation
-    }
-  },
-  watch: {
-    spec: debounce(function () {
+    },
+    processSpec () {
       this.validateSpec()
       if (this.specValidation.valid) {
         this.plotSpec()
       }
-    }, 300)
+    }
+  },
+  watch: {
+    spec () {
+      this.onSpecChange()
+    }
   }
 })
 
