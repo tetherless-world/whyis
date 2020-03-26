@@ -38,7 +38,7 @@ class SETLr(UpdateChangeService):
                 resource = self.app.get_resource(location)
                 fileid = resource.value(self.app.NS.whyis.hasFileID)
                 if fileid is not None:
-                    return self.app.file_depot.get(fileid)
+                    return self.app.file_depot.get(fileid.value)
 
             setlr.content_handlers.insert(0, _whyis_content_handler)
             setlr_handlers_added = True
