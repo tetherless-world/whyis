@@ -474,6 +474,7 @@ whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
 
 whyis:ChartClass a owl:Class;
     rdfs:subClassOf owl:Class;
+    whyis:hasView "chart_gallery.html";
     whyis:newInstanceView "chart_new.html".
 
 sio:Chart a whyis:ChartClass;

@@ -2,7 +2,8 @@
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 
-import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from './nanopub'
+import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
+import { querySparql } from 'utilities/sparql'
 
 const defaultQuery = `
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -61,7 +62,12 @@ function buildChartLd (chart) {
   chart = Object.assign({}, chart)
   chart.baseSpec = JSON.stringify(chart.baseSpec)
   const chartLd = Object.entries(chart)
-    .reduce((o, [field, value]) => Object.assign(o, { [chartFieldUris[field]]: [{ '@value': value }] }), {})
+    .reduce((o, [field, value]) => {
+      if (chartFieldUris[field]) {
+        Object.assign(o, { [chartFieldUris[field]]: [{ '@value': value }] })
+      }
+      return o
+    }, {})
   chartLd['@type'] = [chartType]
   chartLd['@id'] = chart.uri
   return chartLd
@@ -117,8 +123,42 @@ function saveChart (chart) {
 }
 
 function deleteChart (chartUri) {
+  console.log('Deleting chart', chartUri)
   return listNanopubs(chartUri)
     .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
+}
+
+const chartQuery = `
+  PREFIX dcterms: <http://purl.org/dc/terms/>
+  PREFIX schema: <http://schema.org/>
+  PREFIX sio: <http://semanticscience.org/resource/>
+  PREFIX owl: <http://www.w3.org/2002/07/owl#>
+  SELECT DISTINCT ?chart ?title ?description ?query ?baseSpec
+  WHERE {
+    ?chart a sio:Chart .
+    ?chart dcterms:title ?title .
+    ?chart dcterms:description ?description .
+    ?chart schema:query ?query .
+    ?chart sio:hasValue ?baseSpec
+  }
+  `
+
+function getCharts () {
+  return querySparql(chartQuery)
+    .then(data =>
+      data.results.bindings.map((chartResult) => {
+        const chart = Object.entries(chartResult)
+          .reduce((o, [field, value]) => {
+            o[field] = value.value
+            return o
+          }, {})
+        chart.uri = chart.chart
+        delete chart.chart
+        chart.baseSpec = JSON.parse(chart.baseSpec)
+        return chart
+      })
+    )
+
 }
 
 function transformSparqlData (sparqlResults) {
@@ -148,4 +188,4 @@ function buildSparqlSpec (baseSpec, sparqlResults) {
   return spec
 }
 
-export { getDefaultChart, loadChart, saveChart, buildSparqlSpec}
+export { getDefaultChart, loadChart, saveChart, getCharts, buildSparqlSpec}
