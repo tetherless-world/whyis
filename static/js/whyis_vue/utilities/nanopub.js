@@ -38,11 +38,59 @@ function getLocalNanopub (id) {
     })
 }
 
-function postNewNanopub (pubData) {
+function makeNanopubId() {
+  // Math.random should be unique because of its seeding algorithm.
+  // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+  // after the decimal.
+  return Math.random().toString(36).substr(2, 10);
+}
+
+function getNanopubSkeleton () {
+  //doot
+  const npId = `${LOD_PREFIX}/${makeNanopubId()}`
+  return {
+    "@context": {
+      "@vocab": LOD_PREFIX+'/',
+      "@base": LOD_PREFIX+'/',
+      "np" : "http://www.nanopub.org/nschema#",
+    },
+    "@id": npId,
+    "@graph" : {
+      "@id" : npId,
+      "@type": "np:Nanopublication",
+      "np:hasAssertion" : {
+        "@id" : npId + "_assertion",
+        "@type" : "np:Assertion",
+        "@graph" : []
+      },
+      "np:hasProvenance" : {
+        "@id" : npId + "_provenance",
+        "@type" : "np:Provenance",
+        "@graph" : {
+          "@id": npId + "_assertion"
+        }
+      },
+      "np:hasPublicationInfo" : {
+        "@id" : npId + "_pubinfo",
+        "@type" : "np:PublicationInfo",
+        "@graph" : {
+            "@id": npId,
+        }
+      }
+    }
+  }
+}
+
+function postNewNanopub (pubData, context) {
+  const nanopub = getNanopubSkeleton()
+  if (context) {
+    nanopub['@context'] = {...nanopub['@context'], ...context}
+  }
+  nanopub['@graph']['np:hasAssertion']['@graph'].push(pubData)
   const request = {
     method: 'post',
     url: nanopubBaseUrl,
-    data: pubData,
+    data: nanopub,
     headers: {
       'Content-Type': 'application/ld+json'
     }

@@ -89,13 +89,15 @@ function getDefaultChart () {
 function loadChartFromNanopub(nanopubUri, chartUri) {
   return describeNanopub(nanopubUri)
     .then((describeData) => {
-      const graphs = describeData.filter(obj => chartUri.startsWith(obj['@id']) && typeof(obj['@graph']) === 'object')
-      if (graphs.length === 0) {
-        return
-      }
-      const charts = graphs[0]['@graph'].filter(obj => obj['@id'] === chartUri)
-      if (charts.length > 0) {
-        return extractChart(charts[0])
+      const assertion_id = `${nanopubUri}_assertion`
+      for (let graph of describeData) {
+        if (graph['@id'] === assertion_id) {
+          for (let resource of graph['@graph']) {
+            if (resource['@id'] === chartUri) {
+              return extractChart(resource)
+            }
+          }
+        }
       }
     })
 }
