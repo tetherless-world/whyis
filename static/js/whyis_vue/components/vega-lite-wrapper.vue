@@ -32,9 +32,10 @@ export default Vue.component('vega-lite', {
     this.onSpecChange()
   },
   methods: {
-    plotSpec () {
+    async plotSpec () {
       console.debug('plotting spec', this.spec)
-      window.vegaEmbed(`#${this.id}`, this.spec)
+      let embedResult = await window.vegaEmbed(`#${this.id}`, this.spec)
+      this.$emit('new-vega-view', embedResult.view)
     },
     validateSpec () {
       const validation = jsonValidate(this.spec, vegaLiteSchema)

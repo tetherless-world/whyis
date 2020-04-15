@@ -142,7 +142,7 @@ def configure(app):
         result['description'] = sorted(result['description'], key=lambda x: len(x['value']))
         thumbnail = this.description().value(app.NS.foaf.depiction)
         if thumbnail is not None:
-            result['thumbnail'] = thumbnail.identifier
+            result['thumbnail'] = thumbnail.value if type(thumbnail) is rdflib.Literal else thumbnail.identifier
         labelize(result, key="@id")
         attrs = query_filter(query, values=dict(this=this.identifier))
         for attr in attrs:

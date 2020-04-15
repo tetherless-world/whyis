@@ -44,7 +44,8 @@ const chartFieldUris = {
   baseSpec: 'http://semanticscience.org/resource/hasValue',
   query: 'http://schema.org/query',
   title: 'http://purl.org/dc/terms/title',
-  description: 'http://purl.org/dc/terms/description'
+  description: 'http://purl.org/dc/terms/description',
+  depiction: 'http://xmlns.com/foaf/0.1/depiction'
 }
 
 const chartPrefix = 'viz'
@@ -75,10 +76,16 @@ function buildChartLd (chart) {
 
 function extractChart (chartLd) {
   const chart = Object.entries(chartFieldUris)
-    .reduce((o, [field, uri]) => Object.assign(o, { [field]: chartLd[uri][0]['@value'] }), {})
+    .reduce((o, [field, uri]) => {
+      let value = ""
+      if (uri in chartLd) {
+        value = chartLd[uri][0]['@value']
+      }
+      o[field] = value
+      return o
+    }, {})
   chart.baseSpec = JSON.parse(chart.baseSpec)
   chart.uri = chartLd['@id']
-
   return chart
 }
 
