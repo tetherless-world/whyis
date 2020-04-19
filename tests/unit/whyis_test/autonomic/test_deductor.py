@@ -14,6 +14,8 @@ config = import_config_module()
 from whyis import autonomic
 from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
+SIO = Namespace("http://semanticscience.org/resource/")
+
 prefixes = '''@prefix ncit: <http://purl.obolibrary.org/obo/NCIT_> .
 @prefix uo: <http://purl.obolibrary.org/obo/UO_> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -96,7 +98,7 @@ ex-kb:ImaginaryFriend
 
 # ------- Class Disjointness ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Class Disjointness"]
+        agent =  config.Config["inferencers"]["Class Disjointness"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#ImaginaryFriend'))[RDF.type:OWL.Nothing])
@@ -161,7 +163,7 @@ ex-kb:Hand rdf:type owl:Individual ;
 # ------- Object Property Transitivity ------->
 
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Transitivity"]
+        agent =  config.Config["inferencers"]["Object Property Transitivity"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Fingernail'))[SIO.isPartOf:URIRef('http://example.com/kb/example#Hand')])
@@ -197,7 +199,7 @@ ex-kb:Step rdf:type sio:Process ;
 # Should return "ex-kb:Workflow sio:hasPart ex-kb:Workflow ." is returned
 # ------- Object Property Reflexivity  ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Reflexivity"]
+        agent =  config.Config["inferencers"]["Object Property Reflexivity"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Workflow'))[SIO.hasPart:URIRef('http://example.com/kb/example#Workflow')])
@@ -249,7 +251,7 @@ ex-kb:Group rdf:type sio:Collection ;
 
 # ------- Object Property Irreflexivity  ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Irreflexivity"]
+        agent =  config.Config["inferencers"]["Object Property Irreflexivity"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Group'))[RDF.type:OWL.Nothing])
@@ -372,7 +374,7 @@ ex-kb:Tim rdf:type sio:Human ;
     rdfs:label "Tim" .
 # ------- Functional Object Property ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Functional Object Property"]
+        agent =  config.Config["inferencers"]["Functional Object Property"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sarah'))[SIO.hasRole:URIRef('http://example.com/kb/example#Mother')])
@@ -494,7 +496,7 @@ ex-kb:Tim rdf:type sio:Human ;
     rdfs:label "Tim" .
 # ------- Domain Restriction ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Domain Restriction"]
+        agent =  config.Config["inferencers"]["Domain Restriction"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Mother'))[RDF.type:URIRef('http://semanticscience.org/resource/Role')])
@@ -561,7 +563,7 @@ ex-kb:Meter rdf:type owl:Individual ;
     rdfs:label "meter" .
 # ------- Range Restriction ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Range Restriction"]
+        agent =  config.Config["inferencers"]["Range Restriction"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Meter'))[RDF.type:URIRef('http://semanticscience.org/resource/UnitOfMeasurement')])
@@ -575,7 +577,7 @@ ex-kb:Meter rdf:type owl:Individual ;
 # <------- Inverse Functional Object Property ------- 
 # ------- Inverse Functional Object Property ------->
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Inverse Functional Object Property"]
+#        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -596,7 +598,7 @@ ex-kb:HeightOfTom sio:hasValue "5"^^xsd:integer .
 ex-kb:HeightOfTom sio:hasValue "6"^^xsd:integer .
 # ------- Functional Data Property ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Functional Data Property"]
+        agent =  config.Config["inferencers"]["Functional Data Property"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#HeightOfTom'))[RDF.type:OWL.Nothing])
@@ -625,7 +627,7 @@ ex-kb:Susan rdf:type sio:Human ;
 
 # ------- Property Disjointness ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Property Disjointness"]
+        agent =  config.Config["inferencers"]["Property Disjointness"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Susan'))[RDF.type:OWL.Nothing])
@@ -650,7 +652,7 @@ ex-kb:Samantha rdf:type sio:Human ;
 
 # ------- Object Property Symmetry ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Symmetry"]
+        agent =  config.Config["inferencers"]["Object Property Symmetry"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Samantha'))[SIO.isRelatedTo:URIRef('http://example.com/kb/example#Peter')])
@@ -678,7 +680,7 @@ ex-kb:Face rdf:type owl:Individual ;
 
 # ------- Object Property Asymmetry ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Asymmetry"]
+        agent =  config.Config["inferencers"]["Object Property Asymmetry"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Face'))[RDF.type:OWL.Nothing])
@@ -691,7 +693,7 @@ ex-kb:Face rdf:type owl:Individual ;
 # <------- Class Inclusion ------- 
 # ------- Class Inclusion ------->
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Class Inclusion"]
+#        agent =  config.Config["inferencers"]["Class Inclusion"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -755,7 +757,7 @@ ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" .
 # ------- Object Property Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Inclusion "]
+        agent =  config.Config["inferencers"]["Object Property Inclusion "]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Samantha'))[sio.hasAttribute.type:URIRef('http://example.com/kb/example#AgeOfSamantha')])
@@ -776,7 +778,7 @@ ex:hasExactValue rdf:type owl:DatatypeProperty ;
 ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
 # ------- Data Property Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Property Inclusion"]
+        agent =  config.Config["inferencers"]["Data Property Inclusion"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[SIO.hasValue:Literal('25.82')])
@@ -795,7 +797,7 @@ ex-kb:Hubert rdf:type ex:Fake ;
     rdfs:label "Hubert" .
 # ------- Class Equivalence ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Class Equivalence"]
+        agent =  config.Config["inferencers"]["Class Equivalence"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Hubert'))[RDF.type:URIRef('http://semanticscience.org/resource/Fictional')])
@@ -811,7 +813,7 @@ ex:hasValue rdf:type owl:DatatypeProperty ;
     owl:equivalentProperty sio:hasValue .
 # ------- Property Equivalence ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Property Equivalence"]
+        agent =  config.Config["inferencers"]["Property Equivalence"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[URIRef('http://example.com/ont/example#hasValue'):Literal('25.82')])
@@ -831,7 +833,7 @@ ex-kb:Farmer rdf:type sio:Role ;
     rdfs:label "farmer" .
 # ------- Individual Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Individual Inclusion"]
+        agent =  config.Config["inferencers"]["Individual Inclusion"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Farmer'))[RDF.type:URIRef('http://semanticscience.org/resource/RealizableEntity')])
@@ -885,7 +887,7 @@ ex-kb:Fingernail rdf:type owl:Individual ;
     sio:isPartOf ex-kb:Finger .
 # ------- Object Property Inversion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Property Inversion"]
+        agent =  config.Config["inferencers"]["Object Property Inversion"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Finger'))[SIO.hasPart:URIRef('http://example.com/kb/example#Fingernail')])
@@ -906,7 +908,7 @@ ex-kb:Samantha rdf:type sio:Human ;
 ex-kb:Peter owl:sameAs ex-kb:Pete .
 # -------  Same Individual ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Same Individual"]
+        agent =  config.Config["inferencers"]["Same Individual"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Pete'))[RDF.type:URIRef('http://semanticscience.org/resource/Human')])
@@ -923,7 +925,7 @@ ex-kb:Sam owl:differentFrom ex-kb:Samantha .
 ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Different Individuals ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Different Individuals"]
+        agent =  config.Config["inferencers"]["Different Individuals"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sam'))[RDF.type:OWL.Nothing])
@@ -938,7 +940,7 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # Need to come back to this
 # -------  Class Assertion ------->
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Class Assertion"]
+#        agent =  config.Config["inferencers"]["Class Assertion"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -953,7 +955,7 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # Need to come back to this
 # -------  Object Property Assertion -------> 
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Object Property Assertion"]
+#        agent =  config.Config["inferencers"]["Object Property Assertion"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -967,7 +969,7 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # Need to come back to this
 # -------  Data Property Assertion -------> 
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Data Property Assertion"]
+#        agent =  config.Config["inferencers"]["Data Property Assertion"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -989,7 +991,7 @@ ex-kb:NOPA rdf:type owl:NegativePropertyAssertion ;
 ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
 # -------  Negative Object Property Assertion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Negative Object Property Assertion"]
+        agent =  config.Config["inferencers"]["Negative Object Property Assertion"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[RDF.type:OWL.Nothing])
@@ -1011,7 +1013,7 @@ ex-kb:AgeOfPeter rdf:type sio:Age;
     sio:hasValue "10" .
 # -------  Negative DataProperty Assertion ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Negative Data Property Assertion"]
+        agent =  config.Config["inferencers"]["Negative Data Property Assertion"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfPeter'))[RDF.type:OWL.Nothing])
@@ -1041,7 +1043,7 @@ ex-kb:Jack rdf:type ex:Person ;
 ex-kb:John owl:differentFrom ex-kb:Jack .
 # ------- Keys ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Keys"]
+        agent =  config.Config["inferencers"]["Keys"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
@@ -1099,7 +1101,7 @@ ex-kb:MolecularCollection rdf:type owl:Individual ;
 ex-kb:WaterMolecule rdf:type sio:3dStructureModel  .
 # -------  Object Some Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Some Values From"]
+        agent =  config.Config["inferencers"]["Object Some Values From"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#MolecularCollection'))[RDF.type:URIRef('http://semanticscience.org/resource/CollectionOf3dMolecularStructureModels')])
@@ -1120,7 +1122,7 @@ ex-kb:Question rdf:type ex:Text ;
     sio:hasValue "4"^^xsd:integer .
 # -------  Data Some Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Some Values From"]
+        agent =  config.Config["inferencers"]["Data Some Values From"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Question'))[RDF.type:OWL.Nothing])
@@ -1140,7 +1142,7 @@ ex:SelfAttributing rdf:type owl:Class ;
 ex-kb:Blue rdf:type ex:SelfAttributing .
 # -------  Object Has Self ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Has Self"]
+        agent =  config.Config["inferencers"]["Object Has Self"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Blue'))[SIO.hasAttribute:URIRef('http://example.com/kb/example#Blue')])
@@ -1163,7 +1165,7 @@ ex-kb:Car rdf:type ex:Vehicle ;
 ex-kb:Mirror owl:differentFrom ex-kb:Wheel .
 # -------  Object Has Value ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Has Value"]
+        agent =  config.Config["inferencers"]["Object Has Value"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Car'))[SIO.hasPart:URIRef('http://example.com/kb/example#Wheel')])
@@ -1183,7 +1185,7 @@ ex:Unliked rdf:type owl:Class ;
 ex-kb:Tom ex:hasAge "23"^^xsd:integer .
 # -------  Data Has Value ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Has Value"]
+        agent =  config.Config["inferencers"]["Data Has Value"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Tom'))[RDF.type:URIRef('http://example.com/ont/example#Unliked')])
@@ -1210,7 +1212,7 @@ ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
 ex-kb:Tuple rdf:type ex:Type .
 # -------  Object One Of ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object One Of"]
+        agent =  config.Config["inferencers"]["Object One Of"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Integer'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
@@ -1235,7 +1237,7 @@ ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
 # Note that we need to update range rule to account for data ranges
 # -------  Data One Of ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data One Of"]
+        agent =  config.Config["inferencers"]["Data One Of"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sarah'))[RDF.type:OWL.Nothing])
@@ -1263,7 +1265,7 @@ ex-kb:NamespaceInstance rdf:type sio:Namespace ;
     sio:hasMember ex-kb:NamespaceID .
 # -------  Object All Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object All Values From"]
+        agent =  config.Config["inferencers"]["Object All Values From"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#NamespaceID'))[RDF.type:URIRef('http://semanticscience.org/resource/Identifier')])
@@ -1285,7 +1287,7 @@ ex-kb:Ten rdf:type ex:Integer ;
     sio:hasValue "ten"^^xsd:string .
 # -------  Data All Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data All Values From"]
+        agent =  config.Config["inferencers"]["Data All Values From"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Ten'))[RDF.type:OWL.Nothing])
@@ -1327,7 +1329,7 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         ex-kb:Redundancy ) .
 # -------  Object Max Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Max Cardinality"]
+        agent =  config.Config["inferencers"]["Object Max Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#SevenDeadlySins'))[RDF.type:OWL.Nothing])
@@ -1362,7 +1364,7 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         ex-kb:Ali ) .
 # -------  Object Min Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Min Cardinality"]
+        agent =  config.Config["inferencers"]["Object Min Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         #self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])  # need to come back to this
@@ -1393,7 +1395,7 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         ex-kb:Curly ) .
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Exact Cardinality"]
+        agent =  config.Config["inferencers"]["Object Exact Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Stooges'))[RDF.type:OWL.Nothing]) # Need to update test to include blank node generation when cardinality is higher than the number of members provided
@@ -1414,7 +1416,7 @@ ex:Person rdfs:subClassOf
 ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 # -------  Data Max Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Max Cardinality"]
+        agent =  config.Config["inferencers"]["Data Max Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
@@ -1438,7 +1440,7 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
 # Does not result in inconsistency if the property is used less than twice. (Not sure a blank node is created however.)
 # -------  Data Min Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Min Cardinality"]
+        agent =  config.Config["inferencers"]["Data Min Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         #self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])  # need to come back to this
@@ -1458,7 +1460,7 @@ ex:Person rdfs:subClassOf
 ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 # -------  Data Exact Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Data Exact Cardinality"]
+        agent =  config.Config["inferencers"]["Data Exact Cardinality"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
@@ -1539,7 +1541,7 @@ ex-kb:Pat rdf:type sio:Human ;
 # Typing both vital statuses leads to a error in HermiT as expected
 # -------  Object Complement Of ------->
 ''', format="turtle")
-        agent =  config.Config["inference_rules"]["Object Complement Of"]
+        agent =  config.Config["inferencers"]["Object Complement Of"]
 
         results = self.run_agent(agent, nanopublication=np)
         self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Efficiency'))[RDF.type:OWL.Nothing])
@@ -1555,7 +1557,7 @@ ex-kb:Pat rdf:type sio:Human ;
 # Need to come back to this
 # -------  Object Union Of -------> 
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Object Union Of"]
+#        agent =  config.Config["inferencers"]["Object Union Of"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -1569,7 +1571,7 @@ ex-kb:Pat rdf:type sio:Human ;
 # Need to come back to this
 # -------  Data Union Of -------> 
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Data Union Of"]
+#        agent =  config.Config["inferencers"]["Data Union Of"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
@@ -1583,7 +1585,7 @@ ex-kb:Pat rdf:type sio:Human ;
 # Need to come back to this
 # -------  Disjoint Union -------> 
 #''', format="turtle")
-#        agent =  config.Config["inference_rules"]["Disjoint Union"]
+#        agent =  config.Config["inferencers"]["Disjoint Union"]
 #
 #        results = self.run_agent(agent, nanopublication=np)
 #        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
