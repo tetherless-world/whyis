@@ -1,0 +1,21 @@
+@prefix sio: <http://semanticscience.org/resource/>.
+@prefix schema: <http://schema.org/>.
+@prefix dcterms: <http://purl.org/dc/terms/>.
+@prefix : <http://example.com/>.
+
+:example_chart a sio:Chart;
+  dcterms:title "Example Bar Chart";
+  dcterms:description "An example chart that looks up the frequency for each class in the knowledge graph.";
+  schema:query '''PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT distinct ?c (min(?class) as ?class) (count(?x) as ?count) WHERE {
+    ?x a ?c.
+    ?c rdfs:label ?class.
+} group by ?c order by desc(?count)''';
+  sio:hasValue '''{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "count", "type": "quantitative"},
+    "y": {"field": "class", "type": "ordinal"}
+  }
+}'''.
