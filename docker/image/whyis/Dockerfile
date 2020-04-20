@@ -8,7 +8,7 @@ RUN mvn -q clean compile assembly:single -PwhyisProfile
 FROM node:12-alpine as build-js
 COPY static /static
 WORKDIR /static
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 # Deploy image from here
