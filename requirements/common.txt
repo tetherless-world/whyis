@@ -64,8 +64,7 @@ python-slugify==3.0.2
 pytidylib==0.3.2
 pytz==2019.1
 rdflib==5.0.0
-git+git://github.com/RDFLib/rdflib.git#egg=rdflib
-git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
+rdflib-jsonld==0.5.0
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 redis==3.3.8
 requests[security]==2.22.0
