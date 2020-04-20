@@ -2,8 +2,8 @@
     "baseUrl": "http://whyis",
     "reporter": "junit",
     "reporterOptions": {
-	"mochaFile": "results/results-[hash].xml",
-	"toConsole": false
+        "mochaFile": "results/results-[hash].xml",
+        "toConsole": false
     },
     "screenshotsFolder": "results/screenshots",
     "videosFolder": "results/videos"
