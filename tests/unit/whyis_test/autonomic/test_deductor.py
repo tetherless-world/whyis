@@ -99,9 +99,9 @@ ex-kb:ImaginaryFriend
 # ------- Class Disjointness ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Class Disjointness"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#ImaginaryFriend'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#ImaginaryFriend'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_property_transitivity(self):
         self.dry_run = False
@@ -164,9 +164,9 @@ ex-kb:Hand rdf:type owl:Individual ;
 
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Transitivity"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Fingernail'))[SIO.isPartOf:URIRef('http://example.com/kb/example#Hand')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Fingernail'), SIO.isPartOf, URIRef('http://example.com/kb/example#Hand')), self.app.db)
 
     def test_object_property_reflexivity(self):
         self.dry_run = False
@@ -200,9 +200,10 @@ ex-kb:Step rdf:type sio:Process ;
 # ------- Object Property Reflexivity  ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Reflexivity"]
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Group'), SIO.hasPart, URIRef('http://example.com/kb/example#Workflow')), self.app.db)
 
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Workflow'))[SIO.hasPart:URIRef('http://example.com/kb/example#Workflow')])
 
     def test_object_property_irreflexivity(self):
         self.dry_run = False
@@ -252,9 +253,9 @@ ex-kb:Group rdf:type sio:Collection ;
 # ------- Object Property Irreflexivity  ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Irreflexivity"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Group'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Group'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_functional_object_property(self):
         self.dry_run = False
@@ -375,9 +376,9 @@ ex-kb:Tim rdf:type sio:Human ;
 # ------- Functional Object Property ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Functional Object Property"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sarah'))[SIO.hasRole:URIRef('http://example.com/kb/example#Mother')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Sarah'), SIO.hasRole,URIRef('http://example.com/kb/example#Mother')), self.app.db)
 
     def test_domain_restriction(self):
         self.dry_run = False
@@ -497,9 +498,9 @@ ex-kb:Tim rdf:type sio:Human ;
 # ------- Domain Restriction ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Domain Restriction"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Mother'))[RDF.type:URIRef('http://semanticscience.org/resource/Role')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Mother'), RDF.type, SIO.Role), self.app.db)
 
     def test_range_restriction(self):
         self.dry_run = False
@@ -564,9 +565,9 @@ ex-kb:Meter rdf:type owl:Individual ;
 # ------- Range Restriction ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Range Restriction"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Meter'))[RDF.type:URIRef('http://semanticscience.org/resource/UnitOfMeasurement')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Meter'), RDF.type, SIO.UnitOfMeasurement), self.app.db)
 
 
 #    def test_inverse_functional_object_property(self):
@@ -578,9 +579,9 @@ ex-kb:Meter rdf:type owl:Individual ;
 # ------- Inverse Functional Object Property ------->
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_functional_data_property(self):
         self.dry_run = False
@@ -599,9 +600,9 @@ ex-kb:HeightOfTom sio:hasValue "6"^^xsd:integer .
 # ------- Functional Data Property ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Functional Data Property"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#HeightOfTom'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#HeightOfTom'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_property_disjointness(self):
         self.dry_run = False
@@ -628,9 +629,9 @@ ex-kb:Susan rdf:type sio:Human ;
 # ------- Property Disjointness ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Property Disjointness"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Susan'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Susan'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_property_symmetry(self):
         self.dry_run = False
@@ -653,9 +654,9 @@ ex-kb:Samantha rdf:type sio:Human ;
 # ------- Object Property Symmetry ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Symmetry"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Samantha'))[SIO.isRelatedTo:URIRef('http://example.com/kb/example#Peter')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Samantha'), SIO.isRelatedTo, URIRef('http://example.com/kb/example#Peter')), self.app.db)
 
     def test_object_property_asymmetry(self):
         self.dry_run = False
@@ -681,9 +682,9 @@ ex-kb:Face rdf:type owl:Individual ;
 # ------- Object Property Asymmetry ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Asymmetry"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Face'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Face'), RDF.type, OWL.Nothing), self.app.db)
 
 #    def test_class_inclusion(self):
 #        self.dry_run = False
@@ -694,9 +695,9 @@ ex-kb:Face rdf:type owl:Individual ;
 # ------- Class Inclusion ------->
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Class Inclusion"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_property_inclusion(self):
         self.dry_run = False
@@ -757,10 +758,10 @@ ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" .
 # ------- Object Property Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Inclusion "]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Samantha'))[sio.hasAttribute.type:URIRef('http://example.com/kb/example#AgeOfSamantha')])
+        agent =  config.Config["inferencers"]["Object Property Inclusion"]
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Samantha'), sio.hasAttribute, URIRef('http://example.com/kb/example#AgeOfSamantha')), self.app.db)
 
     def test_data_property_inclusion(self):
         self.dry_run = False
@@ -779,9 +780,9 @@ ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
 # ------- Data Property Inclusion ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Property Inclusion"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[SIO.hasValue:Literal('25.82')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), SIO.hasValue, Literal('25.82')), self.app.db)
 
     def test_class_equivalence (self):
         self.dry_run = False
@@ -797,10 +798,12 @@ ex-kb:Hubert rdf:type ex:Fake ;
     rdfs:label "Hubert" .
 # ------- Class Equivalence ------->
 ''', format="turtle")
+        #nanopubs = []
         agent =  config.Config["inferencers"]["Class Equivalence"]
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Hubert'), RDF.type, URIRef('http://semanticscience.org/resource/Fictional')), self.app.db)
 
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Hubert'))[RDF.type:URIRef('http://semanticscience.org/resource/Fictional')])
 
     def test_property_equivalence(self):
         self.dry_run = False
@@ -808,15 +811,19 @@ ex-kb:Hubert rdf:type ex:Fake ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Equivalence -------
+ex-kb:AgeOfSamantha rdf:type sio:Age ;
+    rdfs:label "Samantha's age" ;
+    sio:hasValue "25.82"^^xsd:decimal .
+
 ex:hasValue rdf:type owl:DatatypeProperty ;
     rdfs:label "has value" ;
     owl:equivalentProperty sio:hasValue .
 # ------- Property Equivalence ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Property Equivalence"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[URIRef('http://example.com/ont/example#hasValue'):Literal('25.82')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), URIRef('http://example.com/ont/example#hasValue'),Literal('25.82')), self.app.db)
 
     def test_individual_inclusion(self):
         self.dry_run = False
@@ -834,9 +841,9 @@ ex-kb:Farmer rdf:type sio:Role ;
 # ------- Individual Inclusion ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Individual Inclusion"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Farmer'))[RDF.type:URIRef('http://semanticscience.org/resource/RealizableEntity')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Farmer'), RDF.type, SIO.RealizableEntity), self.app.db)
 
     def test_object_property_inversion(self):
         self.dry_run = False
@@ -888,9 +895,9 @@ ex-kb:Fingernail rdf:type owl:Individual ;
 # ------- Object Property Inversion ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Inversion"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Finger'))[SIO.hasPart:URIRef('http://example.com/kb/example#Fingernail')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Finger'), SIO.hasPart, URIRef('http://example.com/kb/example#Fingernail')), self.app.db)
 
     def test_same_individual(self):
         self.dry_run = False
@@ -909,11 +916,11 @@ ex-kb:Peter owl:sameAs ex-kb:Pete .
 # -------  Same Individual ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Same Individual"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Pete'))[RDF.type:URIRef('http://semanticscience.org/resource/Human')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Pete'))[RDFS.label:Literal('Peter')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Pete'))[SIO.isRelatedTo:URIRef('http://example.com/kb/example#Sarah')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Pete'), RDF.type, SIO.Human), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Pete'), RDFS.label, Literal('Peter')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Pete'), SIO.isRelatedTo, URIRef('http://example.com/kb/example#Samantha')), self.app.db)
 
     def test_different_individuals(self):
         self.dry_run = False
@@ -926,9 +933,9 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Different Individuals ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Different Individuals"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sam'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Sam'), RDF.type, OWL.Nothing), self.app.db)
 
 
 #    def test_inverse_class_assertion(self):
@@ -941,9 +948,9 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Class Assertion ------->
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Class Assertion"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
 
 #    def test_object_property_assertion(self):
@@ -956,9 +963,9 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Object Property Assertion -------> 
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Object Property Assertion"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
 #    def test_data_property_assertion(self):
 #        self.dry_run = False
@@ -970,9 +977,9 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Data Property Assertion -------> 
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Data Property Assertion"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_negative_object_property_assertion(self):
         self.dry_run = False
@@ -992,9 +999,9 @@ ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
 # -------  Negative Object Property Assertion ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Negative Object Property Assertion"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfSamantha'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), RDF.type, OWL.Nothing), self.app.db)
 
 
     def test_negative_data_property_assertion(self):
@@ -1014,9 +1021,9 @@ ex-kb:AgeOfPeter rdf:type sio:Age;
 # -------  Negative DataProperty Assertion ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Negative Data Property Assertion"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#AgeOfPeter'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfPeter'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_keys(self):
         self.dry_run = False
@@ -1044,9 +1051,9 @@ ex-kb:John owl:differentFrom ex-kb:Jack .
 # ------- Keys ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Keys"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_some_values_from(self):
         self.dry_run = False
@@ -1102,9 +1109,9 @@ ex-kb:WaterMolecule rdf:type sio:3dStructureModel  .
 # -------  Object Some Values From ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Some Values From"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#MolecularCollection'))[RDF.type:URIRef('http://semanticscience.org/resource/CollectionOf3dMolecularStructureModels')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#MolecularCollection'), RDF.type, SIO.CollectionOf3dMolecularStructureModels), self.app.db)
 
     def test_data_some_values_from(self):
         self.dry_run = False
@@ -1123,9 +1130,9 @@ ex-kb:Question rdf:type ex:Text ;
 # -------  Data Some Values From ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Some Values From"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Question'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Question'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_has_self(self):
         self.dry_run = False
@@ -1143,9 +1150,9 @@ ex-kb:Blue rdf:type ex:SelfAttributing .
 # -------  Object Has Self ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Has Self"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Blue'))[SIO.hasAttribute:URIRef('http://example.com/kb/example#Blue')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Blue'), SIO.hasAttribute, URIRef('http://example.com/kb/example#Blue')), self.app.db)
 
     def test_object_has_value(self):
         self.dry_run = False
@@ -1166,9 +1173,9 @@ ex-kb:Mirror owl:differentFrom ex-kb:Wheel .
 # -------  Object Has Value ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Has Value"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Car'))[SIO.hasPart:URIRef('http://example.com/kb/example#Wheel')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Car'), SIO.hasPart, URIRef('http://example.com/kb/example#Wheel')), self.app.db)
 
     def test_data_has_value(self):
         self.dry_run = False
@@ -1186,9 +1193,9 @@ ex-kb:Tom ex:hasAge "23"^^xsd:integer .
 # -------  Data Has Value ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Has Value"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Tom'))[RDF.type:URIRef('http://example.com/ont/example#Unliked')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tom'), RDF.type, URIRef('http://example.com/ont/example#Unliked')), self.app.db)
 
     def test_object_one_of(self):
         self.dry_run = False
@@ -1213,14 +1220,14 @@ ex-kb:Tuple rdf:type ex:Type .
 # -------  Object One Of ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object One Of"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Integer'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#String'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Boolean'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Double'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Float'))[RDF.type:URIRef('http://example.com/ont/example#Type')])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Tuple'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
 
     def test_data_one_of(self):
         self.dry_run = False
@@ -1238,9 +1245,9 @@ ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
 # -------  Data One Of ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data One Of"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Sarah'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Sarah'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_all_values_from(self):
         self.dry_run = False
@@ -1266,9 +1273,9 @@ ex-kb:NamespaceInstance rdf:type sio:Namespace ;
 # -------  Object All Values From ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object All Values From"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#NamespaceID'))[RDF.type:URIRef('http://semanticscience.org/resource/Identifier')])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#NamespaceID'), RDF.type, SIO.Identifier), self.app.db)
 
     def test_data_all_values_from(self):
         self.dry_run = False
@@ -1288,9 +1295,9 @@ ex-kb:Ten rdf:type ex:Integer ;
 # -------  Data All Values From ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data All Values From"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Ten'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Ten'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_max_cardinality(self):
         self.dry_run = False
@@ -1330,9 +1337,9 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
 # -------  Object Max Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Max Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#SevenDeadlySins'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#SevenDeadlySins'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_min_cardinality(self):
         self.dry_run = False
@@ -1365,9 +1372,9 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
 # -------  Object Min Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Min Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        #self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])  # need to come back to this
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_exact_cardinality(self):
         self.dry_run = False
@@ -1396,9 +1403,10 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Exact Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Stooges'))[RDF.type:OWL.Nothing]) # Need to update test to include blank node generation when cardinality is higher than the number of members provided
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Stooges'), RDF.type, OWL.Nothing), self.app.db)
+        # Need to update test to include blank node generation when cardinality is higher than the number of members provided
 
     def test_data_max_cardinality(self):
         self.dry_run = False
@@ -1417,9 +1425,9 @@ ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 # -------  Data Max Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Max Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_data_min_cardinality(self):
         self.dry_run = False
@@ -1441,9 +1449,10 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
 # -------  Data Min Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Min Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        #self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])  # need to come back to this
+        #self.app.nanopub_manager.publish(*[np])
+        #agent.process_graph(self.app.db)
+        #self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
+        # need to come back to this
 
     def test_data_exact_cardinality(self):
         self.dry_run = False
@@ -1461,9 +1470,9 @@ ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 # -------  Data Exact Cardinality ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Data Exact Cardinality"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#John'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_complement_of(self):
         self.dry_run = False
@@ -1542,10 +1551,10 @@ ex-kb:Pat rdf:type sio:Human ;
 # -------  Object Complement Of ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Complement Of"]
-
-        results = self.run_agent(agent, nanopublication=np)
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#Efficiency'))[RDF.type:OWL.Nothing])
-        self.assertTrue(results[0].resource(URIRef('http://example.com/kb/example#VitalStatusOfPat'))[RDF.type:OWL.Nothing])
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Efficiency'), RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#VitalStatusOfPat'), RDF.type, OWL.Nothing), self.app.db)
 
 
 #    def test_object_union_of(self):
@@ -1558,9 +1567,9 @@ ex-kb:Pat rdf:type sio:Human ;
 # -------  Object Union Of -------> 
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Object Union Of"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
 #    def test_data_union_of(self):
 #        self.dry_run = False
@@ -1572,9 +1581,9 @@ ex-kb:Pat rdf:type sio:Human ;
 # -------  Data Union Of -------> 
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Data Union Of"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
 #    def test_disjoint_union(self):
 #        self.dry_run = False
@@ -1586,7 +1595,7 @@ ex-kb:Pat rdf:type sio:Human ;
 # -------  Disjoint Union -------> 
 #''', format="turtle")
 #        agent =  config.Config["inferencers"]["Disjoint Union"]
-#
-#        results = self.run_agent(agent, nanopublication=np)
-#        self.assertTrue(results[0].resource(URIRef(''))[RDF.type:URIRef('')])
+#        self.app.nanopub_manager.publish(*[np])
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
