@@ -1,5 +1,5 @@
 # For running CI purposes
-FROM cypress/included:3.2.0
+FROM cypress/included:3.8.3
 
 COPY docker/image/whyis-integration/docker-entrypoint.sh /
 COPY docker/image/whyis-integration/cypress.json /integration/

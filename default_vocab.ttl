@@ -473,3 +473,12 @@ whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
   dc:identifier "incoming".
 whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
   dc:identifier "attributes".
+
+whyis:ChartClass a owl:Class;
+    rdfs:subClassOf owl:Class;
+    whyis:hasView "chart_gallery.html";
+    whyis:newInstanceView "chart_new.html".
+
+sio:Chart a whyis:ChartClass;
+  whyis:hasView "chart_view.html";
+  whyis:editInstanceView "chart_edit.html".
