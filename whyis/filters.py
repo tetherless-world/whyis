@@ -44,6 +44,9 @@ def configure(app):
         if key not in entry:
             return None
         resource = None
+        if not isinstance(entry[key],rdflib.URIRef):
+            entry[label_key] = entry[key]
+            return entry
         if fetch:
             resource = app.get_resource(rdflib.URIRef(entry[key]))
         else:
@@ -315,17 +318,28 @@ where {
 
     env = Environment()
     facet_value_template = env.from_string('''
-SELECT DISTINCT ?count ?value ?unit
+SELECT DISTINCT (1 as ?count) ?value ?unit ?indep_value ?indep_unit
 WHERE {
-  SELECT DISTINCT ?count ?value ?unit {
+  SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit {
     {
-      SELECT DISTINCT (count(DISTINCT ?id) as ?count) ?value ?unit {
+      SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit {
         ?id rdf:type/rdfs:subClassOf* <{{facet['class']}}> .
         FILTER (!ISBLANK(?id))
         FILTER ( !strstarts(str(?id), "bnode:") )
+        {% if facet['typeProperty']|length %}
         ?id {{facet['predicate']}} ?value_object.
         ?value_object {{facet['typeProperty']}} ?value.
         {% if 'unitPredicate' in facet %}optional { ?value_object {{facet['unitPredicate']}} ?unit. }{%endif%}
+        {% if 'independentVariables' in facet %}optional {
+          ?value_object {{facet['independentVariables']}} ?indep.
+          ?indep {{facet['typeProperty']}} ?indep_value.
+          {% if 'unitPredicate' in facet %}optional {
+            ?indep {{facet['unitPredicate']}} ?indep_unit.
+          }{%endif%}
+        }{%endif%}
+        {% else %}
+        ?id {{facet['predicate']}} ?value.
+        {% endif %}
         {{facet['specifier']}}
 
     {% for constraint in constraints %}{{constraint}}{% endfor %}
@@ -346,7 +360,7 @@ WHERE {
     {% endif %}
   {% endfor %}
 
-      } GROUP BY ?value ?unit
+      } GROUP BY ?value ?unit ?indep_value ?indep_unit
     }
     FILTER(BOUND(?value))
   }
@@ -363,11 +377,33 @@ WHERE {
         results = []
         for facet in facets:
             facet['type'] = 'nominal'
-            if 'valuePredicate' in facet:
+            if True:#'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
                 print(query)
-                values = query_filter(query)
-                for value in values:
+                values = {}
+                for value in query_filter(query):
+                    if (value['value'],value.get('unit',None)) not in values:
+                        val = {
+                          'value' : value['value'],
+                          'count' : value['count'],
+                          'indep_vals' : []
+                        }
+                        values[(value['value'],value.get('unit',None))] = val
+                        if 'unit' in value:
+                            val['unit'] = value['unit']
+                    val = values[(value['value'],value.get('unit',None))]
+                    if 'indep_value' in value:
+                        v = { 'value' : value['indep_value'] }
+                        if 'indep_unit' in value:
+                            v['unit'] = value['indep_unit']
+                        val['indep_vals'].append(v)
+                if 'valuePredicate' not in facet:
+                    f = dict(facet)
+                    f['field'] = f['facetId']
+                    f['name'] = f['label']
+                    f['unit_label'] = 'All'
+                    results.append(f)
+                for value in values.values():
                     value.update(facet)
                     fieldName = [value['facetId'],
                                  slugify(value['value'],separator='_',lowercase=False)]
@@ -376,6 +412,18 @@ WHERE {
                     value['type'] = 'quantitative'
                     fieldName = '__'.join(fieldName)
                     value['field'] = fieldName
+                    for indep_value in value['indep_vals']:
+                        indepFieldName = [
+                            fieldName,
+                            slugify(indep_value['value'],separator='_',lowercase=False)
+                        ]
+                        if 'unit' in indep_value:
+                            indepFieldName.append(slugify(indep_value['unit'],separator='_',lowercase=False))
+                        indep_value['type'] = 'quantitative'
+                        indepFieldName = '__'.join(indepFieldName)
+                        indep_value['field'] = indepFieldName
+                    iter_labelize(value['indep_vals'], key='value', label_key='name')
+                    iter_labelize(value['indep_vals'], key='unit', label_key='unit_label')
                     results.append(value)
             else:
                 facet['field'] = facet['facetId']
@@ -389,20 +437,40 @@ WHERE {
         return results
 
     instance_data_template = env.from_string('''
-SELECT DISTINCT ?id {% for variable in variables %} ?{{variable['field']}}{% endfor %}
+SELECT DISTINCT
+?id
+{% for variable in variables %}
+?{{variable['field']}}
+{% for indep_variable in variable['indep_vals'] %}
+?{{indep_variable['field']}}
+{% endfor %}
+{% endfor %}
 WHERE {
     {% for constraint in constraints %}{{constraint}}{% endfor %}
 
     {% for variable in variables %}
     {% if variable.selectionType == 'Show' %}optional { {% endif %}
     {% if 'valuePredicate' in variable %}
-      ?id {{variable['predicate']}} [
-        {{variable['typeProperty']}} {{variable['value']}};
+      ?id {{variable['predicate']}} ?{{variable['field']}}_instance.
+
+      ?{{variable['field']}}_instance {{variable['typeProperty']}} {{variable['value']}};
         {{variable['valuePredicate']}} ?{{variable['field']}};
         {% if 'unit' in variable %}
           {{variable['unitPredicate']}} <{{variable['unit']}}>;
         {% endif %}
-      ].
+      .
+
+        {% for indep_variable in variable['indep_vals'] %}
+        optional {
+          ?{{variable['field']}}_instance {{variable['independentVariables']}} [
+            {{variable['typeProperty']}} <{{indep_variable['value']}}>;
+            {{variable['valuePredicate']}} ?{{indep_variable['field']}};
+            {% if 'unit' in indep_variable %}
+              {{variable['unitPredicate']}} <{{indep_variable['unit']}}>;
+            {% endif %}
+          ].
+        }
+        {% endfor %}
     {% else %}
       {{variable['specifier'].replace('?value', '?uri_'+variable['field'])}}
       ?uri_{{variable['field']}} rdfs:label ?{{variable['field']}}.
@@ -422,4 +490,5 @@ WHERE {
         else:
             variables = []
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
+        print(query)
         return query

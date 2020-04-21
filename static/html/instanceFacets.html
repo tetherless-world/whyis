@@ -38,7 +38,16 @@
   <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert>
   <div layout="row" flex>
     <md-content flex="30" style="overflow:scroll">
-      <md-subheader ng-show="pager.numItems">{{pager.getLength()}} results found.</md-subheader>
+      <md-subheader>
+          <span ng-show="pager.numItems">{{pager.getLength()}} results found.</span>
+          <md-button class=" md-mini md-primary"
+                     aria-label="Update"
+                     title="Update Results"
+                     data-ng-click="updateResults(null, cons)">
+            Update
+          </md-button>
+          <md-progress-circular ng-hide="pager.numItems" md-diameter="20px"></md-progress-circular>
+      </md-subheader>
       <vega-controller spec="vizConfig" facet-values="facetValues" ng-show="view=='chart'" ></vega-controller>
       <!-- Facets are defined here using the configurations defined in the controller -->
         <div ng-repeat="facet in facets" ng-switch="facet.type">

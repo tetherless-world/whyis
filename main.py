@@ -237,6 +237,12 @@ class App(Empty):
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
 
+        if 'CACHE_TYPE' in self.config:
+            from flask_caching import Cache
+            self.cache = Cache(self)
+        else:
+            self.cache = None
+
     _file_depot = None
     @property
     def file_depot(self):
@@ -698,7 +704,12 @@ construct {
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
-        def render_view(resource, view=None, args=None):
+        def render_view(resource, view=None, args=None, use_cache=True):
+            if use_cache and self.cache is not None:
+                key = str((str(resource),view))
+                result = self.cache.get(key)
+                if result is not None:
+                    return result[0], 200, headers[1]
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(

@@ -31,7 +31,7 @@ Config = dict(
     site_header_image = 'static/images/random_network.png',
 
     site_description = '',
-    
+
     root_path = '/apps/whyis',
 
     # use TESTING mode?
@@ -101,13 +101,18 @@ Config = dict(
 
     admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
-    
+
     knowledge_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
     knowledge_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
 
     LOGIN_USER_TEMPLATE = "auth/login.html",
     CELERY_BROKER_URL = 'redis://localhost:6379/0',
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
+    CACHE_TYPE = "redis", # Flask-Caching related configs
+    CACHE_KEY_PREFIX = 'whyis_cache_',
+    CACHE_REDIS_URL = 'redis://localhost:6379/0',
+    CACHE_DEFAULT_TIMEOUT = None,
+
     default_language = 'en',
     namespaces = [
         importer.LinkedData(
@@ -178,4 +183,3 @@ Test.update(dict(
     TESTING = True,
     WTF_CSRF_ENABLED = False
 ))
-
