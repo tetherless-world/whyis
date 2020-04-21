@@ -5,6 +5,12 @@
 # A production compose file would have a separate blazegraph container, and others.
 version: '3'
 services:
+  whyis-deps:
+    build:
+      context: ../../..
+      dockerfile: docker/image/whyis-deps/Dockerfile
+    container_name: "whyis-deps"
+    image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
   whyis:
     build:
       args:
@@ -19,11 +25,16 @@ services:
       - "127.0.0.1:80:80"
       - "127.0.0.1:6379:6379"
       - "127.0.0.1:8080:8080"
+      - "9000:9000"
+      - "5000:5000"
     volumes:
       - ./../../../../../data:/data
-  whyis-deps:
-    build:
-      context: ../../..
-      dockerfile: docker/image/whyis-deps/Dockerfile
-    container_name: "whyis-deps"
-    image: tetherlessworld/whyis-deps:${WHYIS_IMAGE_TAG:-latest}
+      - ./../../../tests/integration:/tests/integration
+      - ./../../../static:/static
+      - ./../../../templates:/templates
+      - ./../../../default_vocab.ttl:/default_vocab.ttl
+      - ./../../../whyis:/whyis
+      - ./../../../manage.py:/manage.py
+    command: bash -c "python3 manage.py createuser -e whyis@whyis.com -p whyis -u whyis --roles=admin && python3 manage.py runserver -h 0.0.0.0"
+
+  

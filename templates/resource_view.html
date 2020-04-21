@@ -1,26 +1,35 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/rdfviewer.css"></link>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="//cpettitt.github.io/project/dagre/latest/dagre.js"></script>
+<script src="/static/js/rdfviewer.js"></script>
+<script>
+$( function() {
+   graph = new Graph();
+   graph.load(DESCRIPTION).await(function(error) {
+       d3.select("#rdfviewer").datum(graph).each(rdfview());
+   });
+});
+</script>
+{% endblock %}
 {% block content %}
-<div layout="row" style="height:max-content;">
-  <div flex="66" layout="column">
-    {{ content(this.description()) }}
-    <div md-whiteframe="2" layout="column" style="height: 50em">
-      <explore flex layout-fill start="{{this.identifier}}"></explore>
-    </div>
-  </div>
-  <div flex="33" layout="column">
-    <kg-card src="'{{this.identifier}}'"></kg-card>
-    <md-card >
-      <md-card-header>
-        <md-card-header-text>
-          <span class="md-title">Nanopublications for {{get_label(this.description())}}</span>
-        </md-card-header-text>
-      </md-card-header>
-      <md-card-content>
+<md-tabs layout="column" layout-fill md-border-bottom>
+    <md-tab label="About" flex>
+        {{ content(this.description()) }}
+        <kg-card src="'{{this.identifier}}'"></kg-card>
+    </md-tab>
+    <md-tab label="Details"flex >
+        <svg class="panel-body"  id="rdfviewer" style="width: 100%; height:600px"></svg>
+    </md-tab>
+    <md-tab label="Explore" flex>
+        <explore flex layout-fill start="{{this.identifier}}"></explore>
+    </md-tab>
+    <md-tab label="Nanopublications" flex>
         <nanopubs resource="{{this.identifier}}"/>
-      </md-card-content>
-    </md-card>
-  </div>
-</div>
+    </md-tab>
+</md-tabs>
 {% endblock %}

@@ -39,7 +39,12 @@ a {
   text-decoration: none;
 }
 
-md-toolbar:not(.md-menu-toolbar) {
+md-toolbar.md-primary:not(.md-menu-toolbar) {
+    color: white;
+    background-color: #08233c;
+}
+
+md-app-toolbar {
     color: white;
     background-color: #08233c;
 }
