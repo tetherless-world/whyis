@@ -39,14 +39,14 @@
   <div layout="row" flex>
     <md-content flex="30" style="overflow:scroll">
       <md-subheader>
-          <span ng-show="pager.numItems">{{pager.getLength()}} results found.</span>
+          <span ng-show="vizConfig.data.values.length">{{vizConfig.data.values.length}} results found.</span>
           <md-button class=" md-mini md-primary"
                      aria-label="Update"
                      title="Update Results"
                      data-ng-click="updateResults(null, cons)">
             Update
           </md-button>
-          <md-progress-circular ng-hide="pager.numItems" md-diameter="20px"></md-progress-circular>
+          <md-progress-circular ng-show="vm.isLoadingResults" md-diameter="20px"></md-progress-circular>
       </md-subheader>
       <vega-controller spec="vizConfig" facet-values="facetValues" ng-show="view=='chart'" ></vega-controller>
       <!-- Facets are defined here using the configurations defined in the controller -->

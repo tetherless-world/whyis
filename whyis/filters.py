@@ -51,7 +51,7 @@ def configure(app):
             resource = app.get_resource(rdflib.URIRef(entry[key]))
         else:
             resource = app.Entity(app.db, rdflib.URIRef(entry[key]))
-        entry[label_key] = g.get_label(resource.description())
+        entry[label_key] = app.get_label(resource.description())
         return entry
 
     @app.template_filter('iter_labelize')

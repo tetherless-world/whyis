@@ -111,7 +111,7 @@ Config = dict(
     CACHE_TYPE = "redis", # Flask-Caching related configs
     CACHE_KEY_PREFIX = 'whyis_cache_',
     CACHE_REDIS_URL = 'redis://localhost:6379/0',
-    CACHE_DEFAULT_TIMEOUT = None,
+    CACHE_DEFAULT_TIMEOUT = 0,
 
     default_language = 'en',
     namespaces = [

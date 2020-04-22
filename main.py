@@ -7,6 +7,8 @@ from functools import lru_cache
 from re import finditer
 from urllib.parse import urlencode
 
+import json
+
 import jinja2
 import pytz
 import rdflib
@@ -563,6 +565,8 @@ construct {
                     return labels[0]
             return get_remote_label(resource.identifier)
 
+        self.get_label = get_label
+
         @self.before_request
         def load_forms():
             if 'authenticators' in self.config:
@@ -705,11 +709,18 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         def render_view(resource, view=None, args=None, use_cache=True):
+            if view is None and 'view' in request.args:
+                view = request.args['view']
+
+            if view is None:
+                view = 'view'
+
             if use_cache and self.cache is not None:
-                key = str((str(resource),view))
+                key = str((str(resource.identifier),view))
                 result = self.cache.get(key)
                 if result is not None:
-                    return result[0], 200, headers[1]
+                    r, headers = result
+                    return r, 200, headers
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(
@@ -727,11 +738,6 @@ construct {
                 config=self.config,
                 hasattr=hasattr,
                 set=set))
-            if view is None and 'view' in request.args:
-                view = request.args['view']
-
-            if view is None:
-                view = 'view'
 
             types = []
             if 'as' in request.args:

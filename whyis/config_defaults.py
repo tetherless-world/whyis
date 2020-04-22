@@ -105,7 +105,7 @@ Config = dict(
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
 
     CACHE_TYPE = "simple", # Flask-Caching related configs
-    CACHE_DEFAULT_TIMEOUT = None,
+    CACHE_DEFAULT_TIMEOUT = 0,
 
     namespaces = [
         importer.LinkedData(

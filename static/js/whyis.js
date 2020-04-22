@@ -472,32 +472,32 @@ function whyis() {
                 return $q.when();
             }
 
-            var otherCons = this.getOtherSelections(constraints.constraint);
-            if (self.otherCons === otherCons) {
-                return $q.when(self.state);
-            }
-            self.otherCons = otherCons;
+            //var otherCons = this.getOtherSelections(constraints.constraint);
+            //if (self.otherCons === otherCons) {
+            //    return $q.when(self.state);
+            //}
+            //self.otherCons = otherCons;
 
             self._isBusy = true;
 
             var facetValues = this.config.scope.getFacetValues().filter(function(facetValue) {
                 return facetValue.facetId == self.config.facetId;
             });
-            if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
-                return self.fetchState(constraints).then(function(state) {
-                    if (!_.isEqual(otherCons, self.otherCons)) {
-                        return $q.reject('Facet state changed');
-                    }
-                    self.state = state;
-                    self._isBusy = false;
+            //if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
+            //    return self.fetchState(constraints).then(function(state) {
+            //        if (!_.isEqual(otherCons, self.otherCons)) {
+            //            return $q.reject('Facet state changed');
+            //        }
+            //        self.state = state;
+            //        self._isBusy = false;
 
-                    return state;
-                });
-            } else {
-                self.state = facetValues;
-                self._isBusy = false;
-                return $q.when(facetValues);
-            }
+            //        return state;
+            //    });
+            //} else {
+            self.state = facetValues;
+            self._isBusy = false;
+            return $q.when(facetValues);
+            //}
         }
 
 
@@ -2865,9 +2865,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     pager.fetchNumItems_ = function() {
                         pager.numItems = null;
-                        pager.getTotalCount().then(function(count) {
-                            pager.numItems = count;
-                        });
+                        //pager.getTotalCount().then(function(count) {
+                        //    pager.numItems = count;
+                        //});
                     };
                     pager.fetchNumItems_();
                     pager.fetchPage_(0);
@@ -3219,7 +3219,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         vm.isLoadingResults = true;
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
-                            vm.isLoadingResults = false;
                             dataConfig.constraints = [];
                             if (facetSelections.constraint) {
                                 dataConfig.constraints = facetSelections.constraint;
@@ -3301,6 +3300,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                             console.log(facetValue);
                                         }
                                     })
+                                    vm.isLoadingResults = false;
                                 });
 
                         });
