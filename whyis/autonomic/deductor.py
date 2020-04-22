@@ -59,7 +59,7 @@ class Deductor(GlobalChangeService):
         triples = self.app.db.query(
             '''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
             self.consequent, self.antecedent, self.consequent, self.resource, i.identifier), initNs=self.prefixes)
-        for s, p, o, c in triples:
+        for s, p, o in triples:
             print("Deductor Adding ", s, p, o)
             npub.assertion.add((s, p, o))
         npub.provenance.add((npub.assertion.identifier, prov.value,
