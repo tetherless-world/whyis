@@ -266,7 +266,7 @@ Config = dict(
         "Class Disjointness" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  "\t?class owl:disjointWith ?disjointClass .\n\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass . ",
+            antecedent =  "\t?resource rdf:type ?class .\n\t?resource rdf:type ?disjointClass .\n\t{?class owl:disjointWith ?disjointClass .} UNION {?disjointClass owl:disjointWith ?class .}",
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{class}} is a disjoint with {{disjointClass}}, any resource that is an instance of {{class}} is not an instance of {{disjointClass}}. Therefore, since {{resource}} is an instance of {{class}}, it can not be an instance of {{disjointClass}}."
         ),
@@ -315,7 +315,7 @@ Config = dict(
         "Property Disjointness" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  "\t?resource ?p1 ?o1 .\n\t?resource ?p2 ?o2.\n\t?p1 owl:propertyDisjointWith ?p2 .\n\t?resource ?p1 ?o2 .",
+            antecedent =  "\t?resource ?p1 ?o1 .\n\t?resource ?p2 ?o2.\n\t?resource ?p1 ?o2 .\n\t{?p1 owl:propertyDisjointWith ?p2 .}UNION{?p2 owl:propertyDisjointWith ?p1 .}",
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since properties {p1} and {p2} are disjoint, {{resource}} having both {{p2}} {{o2}} as well as {{p1}} {{o2}} leads to an inconsistency. "
         ),
@@ -378,21 +378,21 @@ Config = dict(
         "Class Equivalence" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-            antecedent =  "\t?resource a ?superClass.\n\t?superClass owl:equivalentClass ?equivClass .", 
+            antecedent =  "\t?resource a ?superClass.\n\t{?superClass owl:equivalentClass ?equivClass .} UNION {?equivClass owl:equivalentClass ?superClass .}", 
             consequent = "?resource rdf:type ?equivClass .",
             explanation = "{{superClass}} is equivalent to {{equivClass}}, so since {{resource}} is a {{superClass}}, it is also a {{equivClass}}."
         ),
         "Property Equivalence" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-            antecedent =  "\t?resource ?p ?o .\n\t?p owl:equivalentProperty ?equivProperty .", 
+            antecedent =  "\t?resource ?p ?o .\n\t{?p owl:equivalentProperty ?equivProperty .} UNION {?equivProperty owl:equivalentProperty ?p . }", 
             consequent = "?resource ?equivProperty ?o .",
             explanation = "The properties {{p}} and {{equivProperty}} are equivalent. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{resource}} {{equivProperty}} {{o}}."
         ),
         "Object Property Inversion" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-            antecedent =  "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty ;\n\t\towl:inverseOf ?inverseProperty .", 
+            antecedent =  "\t?resource ?p ?o .\n\t?p rdf:type owl:ObjectProperty .\n\t{?p owl:inverseOf ?inverseProperty .} UNION {?inverseProperty owl:inverseOf ?p .}", 
             consequent = "?o ?inverseProperty ?resource .",
             explanation = "The object properties {{p}} and {{inverseProperty}} are inversely related to eachother. Therefore, since {{resource}} {{p}} {{o}}, it is implied that {{o}} {{inverseProperty}} {{resource}}."
         ),

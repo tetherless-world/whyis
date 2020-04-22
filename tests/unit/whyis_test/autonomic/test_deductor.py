@@ -196,13 +196,13 @@ ex-kb:Workflow rdf:type sio:Process ;
 ex-kb:Step rdf:type sio:Process ;
     rdfs:label "step" .
 
-# Should return "ex-kb:Workflow sio:hasPart ex-kb:Workflow ." is returned
+# Should return "ex-kb:Workflow sio:hasPart ex-kb:Workflow ."
 # ------- Object Property Reflexivity  ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Object Property Reflexivity"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#Group'), SIO.hasPart, URIRef('http://example.com/kb/example#Workflow')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Workflow'), SIO.hasPart, URIRef('http://example.com/kb/example#Workflow')), self.app.db)
 
 
     def test_object_property_irreflexivity(self):
@@ -761,7 +761,7 @@ ex-kb:AgeOfSamantha rdf:type sio:Age ;
         agent =  config.Config["inferencers"]["Object Property Inclusion"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#Samantha'), sio.hasAttribute, URIRef('http://example.com/kb/example#AgeOfSamantha')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Samantha'), SIO.hasAttribute, URIRef('http://example.com/kb/example#AgeOfSamantha')), self.app.db)
 
     def test_data_property_inclusion(self):
         self.dry_run = False
