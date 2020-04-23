@@ -1,5 +1,5 @@
 <div ng-cloak md-whiteframe="2"  style="height:100%" layout="column" layout-fill>
-  <md-toolbar>
+  <md-toolbar class="md-primary" >
     <div class="md-toolbar-tools" layout="row">
       <h2 flex ng-bind="title"></h2>
       <ng-transclude>
@@ -40,7 +40,7 @@
     <md-content flex="30" style="overflow:scroll">
       <md-subheader>
           <span ng-show="vizConfig.data.values.length">{{vizConfig.data.values.length}} results found.</span>
-          <md-button class=" md-mini md-primary"
+          <md-button ng-disabled="!updatable"  class=" md-mini md-primary"
                      aria-label="Update"
                      title="Update Results"
                      data-ng-click="updateResults(null, cons)">

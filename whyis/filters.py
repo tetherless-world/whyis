@@ -446,8 +446,11 @@ SELECT DISTINCT
 {% endfor %}
 {% endfor %}
 WHERE {
-    {% for constraint in constraints %}{{constraint}}{% endfor %}
-
+  {
+    select ?id where {
+      {% for constraint in constraints %}{{constraint}}{% endfor %}
+    }
+  }
     {% for variable in variables %}
     {% if variable.selectionType == 'Show' %}optional { {% endif %}
     {% if 'valuePredicate' in variable %}

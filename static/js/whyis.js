@@ -3181,6 +3181,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     // This event is triggered when a facet's selection has changed.
                     scope.$on('sf-facet-constraints', function(event, cons) {
                         scope.cons = cons;
+                        scope.updatable = true;
                     });
                     // This is the initial configuration event
                     var initListener = scope.$on('sf-initial-constraints', function(event, cons) {
@@ -3216,6 +3217,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                     // Get results based on facet selections (each time the selections change).
                     function updateResults(event, facetSelections) {
                         console.log("Updating facet instance data.");
+                        scope.updatable = false;
                         vm.isLoadingResults = true;
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
