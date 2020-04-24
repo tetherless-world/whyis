@@ -40,12 +40,14 @@ const defaultChart = {
 
 const chartType = 'http://semanticscience.org/resource/Chart'
 
+const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
+const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
+
 const chartFieldUris = {
   baseSpec: 'http://semanticscience.org/resource/hasValue',
   query: 'http://schema.org/query',
   title: 'http://purl.org/dc/terms/title',
   description: 'http://purl.org/dc/terms/description',
-  depiction: 'http://xmlns.com/foaf/0.1/depiction'
 }
 
 const chartPrefix = 'viz'
@@ -62,30 +64,35 @@ function generateChartId () {
 function buildChartLd (chart) {
   chart = Object.assign({}, chart)
   chart.baseSpec = JSON.stringify(chart.baseSpec)
-  const chartLd = Object.entries(chart)
-    .reduce((o, [field, value]) => {
-      if (chartFieldUris[field]) {
-        Object.assign(o, { [chartFieldUris[field]]: [{ '@value': value }] })
-      }
-      return o
-    }, {})
-  chartLd['@type'] = [chartType]
-  chartLd['@id'] = chart.uri
+  const chartLd =  {
+    '@id': chart.uri,
+    '@type': [chartType],
+    [foafDepictionUri]: {
+      '@id': `${chart.uri}_depiction`,
+      [hasContentUri]: chart.depiction
+    }
+  }
+  Object.entries(chart)
+    .filter(([field, value]) => chartFieldUris[field])
+    .forEach(([field, value]) => chartLd[chartFieldUris[field]] = [{ '@value': value }])
   return chartLd
 }
 
 function extractChart (chartLd) {
-  const chart = Object.entries(chartFieldUris)
-    .reduce((o, [field, uri]) => {
+  const chart = {
+    uri: chartLd['@id'],
+    depiction: chartLd[foafDepictionUri][0]['@id'],
+  }
+
+  Object.entries(chartFieldUris)
+    .forEach(([field, uri]) => {
       let value = ""
       if (uri in chartLd) {
         value = chartLd[uri][0]['@value']
       }
-      o[field] = value
-      return o
-    }, {})
+      chart[field] = value
+    })
   chart.baseSpec = JSON.parse(chart.baseSpec)
-  chart.uri = chartLd['@id']
   return chart
 }
 
