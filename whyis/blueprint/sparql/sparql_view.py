@@ -31,7 +31,7 @@ def sparql_view():
             return "Update not allowed.", 403
         #print(request.get_data())
         req = requests.post(current_app.db.store.query_endpoint, data=request.get_data(),
-                            headers = request.headers, params=request.args)
+                            headers = request.headers, params=request.values)
     #print self.db.store.query_endpoint
     #print req.status_code
     response = Response(req.content, content_type = req.headers['content-type'])
