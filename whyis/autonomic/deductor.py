@@ -50,8 +50,10 @@ class Deductor(GlobalChangeService):
         context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s \nFILTER(regex(str(%s), "^(%s)")) . }''' % (
         self.antecedent, self.resource, i.identifier), initNs=self.prefixes)
         # print(context_vars)
-        for key in list(context_vars.json["results"]["bindings"][0].keys()):
-            context[key] = context_vars.json["results"]["bindings"][0][key]["value"]
+        #for key in list(context_vars.json["results"]["bindings"][0].keys()):
+        #    context[key] = context_vars.json["results"]["bindings"][0][key]["value"]
+        for key in context_vars.vars :
+            context[key] = context_vars.bindings[0][key]
         return context
 
     def process(self, i, o):
