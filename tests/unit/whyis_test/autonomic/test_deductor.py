@@ -262,8 +262,7 @@ ex-kb:Group rdf:type sio:Collection ;
 
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
-# <------- Functional Object Property -------
-
+# NEED TO COME BACK TO THIS<------- Functional Object Property -------
 sio:Role rdf:type owl:Class ;
     rdfs:label "role" ;
     rdfs:subClassOf sio:RealizableEntity ;
@@ -589,7 +588,6 @@ ex-kb:Meter rdf:type owl:Individual ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Functional Data Property -------
-
 sio:hasValue rdf:type owl:DatatypeProperty ,
                                 owl:FunctionalProperty;
     rdfs:label "has value" ;
@@ -705,6 +703,23 @@ ex-kb:Face rdf:type owl:Individual ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Inclusion -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasProperty rdf:type owl:ObjectProperty ,
+                                owl:InverseFunctionalProperty;
+    rdfs:label "has property" ;
+    owl:inverseOf sio:isPropertyOf ;
+    dct:description "has property is a relation between an entity and the quality, capability or role that it and it alone bears." ;
+    rdfs:subPropertyOf sio:hasAttribute .
+
 sio:Age rdf:type owl:Class ;
     rdfs:label "age" ;
     rdfs:subClassOf sio:DimensionalQuantity ;
@@ -769,6 +784,11 @@ ex-kb:AgeOfSamantha rdf:type sio:Age ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Data Property Inclusion -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" .
 
@@ -782,7 +802,7 @@ ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
         agent =  config.Config["inferencers"]["Data Property Inclusion"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), SIO.hasValue, Literal('25.82')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), SIO.hasValue, Literal('25.82', datatype=XSD.decimal)), self.app.db)
 
     def test_class_equivalence (self):
         self.dry_run = False
@@ -811,6 +831,11 @@ ex-kb:Hubert rdf:type ex:Fake ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Equivalence -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" ;
     sio:hasValue "25.82"^^xsd:decimal .
@@ -823,7 +848,7 @@ ex:hasValue rdf:type owl:DatatypeProperty ;
         agent =  config.Config["inferencers"]["Property Equivalence"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), URIRef('http://example.com/ont/example#hasValue'),Literal('25.82')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), URIRef('http://example.com/ont/example#hasValue'),Literal('25.82', datatype=XSD.decimal)), self.app.db)
 
     def test_individual_inclusion(self):
         self.dry_run = False
@@ -987,6 +1012,14 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Negative Object Property Assertion -------
+sio:hasUnit rdf:type owl:ObjectProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has unit" ;
+    owl:inverseOf sio:isUnitOf ;
+    rdfs:range sio:UnitOfMeasurement ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    dct:description "has unit is a relation between a quantity and the unit it is a multiple of." .
+
 ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" .
 
@@ -1010,6 +1043,11 @@ ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Negative DataPropertyAssertion -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex-kb:NDPA rdf:type owl:NegativePropertyAssertion ; 
     owl:sourceIndividual ex-kb:AgeOfPeter ; 
     owl:assertionProperty sio:hasValue ; 
@@ -1046,14 +1084,12 @@ ex-kb:John rdf:type ex:Person ;
 ex-kb:Jack rdf:type ex:Person ;
     rdfs:label "Jack" ;
     ex:uniqueID "101D" .
-
-ex-kb:John owl:differentFrom ex-kb:Jack .
 # ------- Keys ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Keys"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#John'), OWL.sameAs, URIRef('http://example.com/kb/example#Jack')), self.app.db)
 
     def test_object_some_values_from(self):
         self.dry_run = False
@@ -1061,6 +1097,23 @@ ex-kb:John owl:differentFrom ex-kb:Jack .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Some Values From -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasMember rdf:type owl:ObjectProperty ,
+                                owl:IrreflexiveProperty ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    owl:inverseOf sio:isMemberOf ;
+    rdfs:label "has member" ;
+    dct:description "has member is a mereological relation between a collection and an item." .
+
 sio:CollectionOf3dMolecularStructureModels rdf:type owl:Class ;
     rdfs:subClassOf sio:Collection ,
         [ rdf:type owl:Restriction ;
@@ -1140,6 +1193,16 @@ ex-kb:Question rdf:type ex:Text ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Has Self -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
 ex:SelfAttributing rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
@@ -1160,6 +1223,31 @@ ex-kb:Blue rdf:type ex:SelfAttributing .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Has Value -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:isSpatiotemporallyRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:subPropertyOf sio:isRelatedTo ;
+    rdfs:label "is spatiotemporally related to" ;
+    dct:description "A is spatiotemporally related to B iff A is in the spatial or temporal vicinity of B" .
+
+sio:isLocationOf rdf:type owl:ObjectProperty ,
+                                owl:TransitiveProperty ;
+    rdfs:subPropertyOf sio:isSpatiotemporallyRelatedTo ;
+    rdfs:label "is location of" ;
+    dct:description "A is location of B iff the spatial region occupied by A has the spatial region occupied by B as a part." .
+
+sio:hasPart rdf:type owl:ObjectProperty ,
+                                owl:TransitiveProperty ,
+                                owl:ReflexiveProperty ;
+    rdfs:subPropertyOf sio:isLocationOf ;
+    owl:inverseOf sio:isPartOf ;
+    rdfs:label "has part" ;
+    dct:description "has part is a transitive, reflexive and antisymmetric relation between a whole and itself or a whole and its part" .
+
 ex:Vehicle rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
@@ -1255,6 +1343,23 @@ ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object All Values From -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasMember rdf:type owl:ObjectProperty ,
+                                owl:IrreflexiveProperty ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    owl:inverseOf sio:isMemberOf ;
+    rdfs:label "has member" ;
+    dct:description "has member is a mereological relation between a collection and an item." .
+
 sio:Namespace rdf:type owl:Class ;
     rdfs:subClassOf sio:ComputationalEntity ,
         [ rdf:type owl:Restriction ;
@@ -1283,6 +1388,11 @@ ex-kb:NamespaceInstance rdf:type sio:Namespace ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data All Values From -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex:Integer rdf:type owl:Class ;
     rdfs:subClassOf sio:ComputationalEntity ,
         [ rdf:type owl:Restriction ;
@@ -1305,6 +1415,23 @@ ex-kb:Ten rdf:type ex:Integer ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Max Cardinality -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasMember rdf:type owl:ObjectProperty ,
+                                owl:IrreflexiveProperty ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    owl:inverseOf sio:isMemberOf ;
+    rdfs:label "has member" ;
+    dct:description "has member is a mereological relation between a collection and an item." .
+
 ex:DeadlySins rdf:type owl:Class ;
     rdfs:subClassOf sio:Collection ;
     rdfs:subClassOf 
@@ -1347,6 +1474,23 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Min Cardinality -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasMember rdf:type owl:ObjectProperty ,
+                                owl:IrreflexiveProperty ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    owl:inverseOf sio:isMemberOf ;
+    rdfs:label "has member" ;
+    dct:description "has member is a mereological relation between a collection and an item." .
+
 ex:StudyGroup rdf:type owl:Class ;
     rdfs:subClassOf sio:Collection ,
         [ rdf:type owl:Restriction ;
@@ -1382,6 +1526,23 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Exact Cardinality -------
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasMember rdf:type owl:ObjectProperty ,
+                                owl:IrreflexiveProperty ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    owl:inverseOf sio:isMemberOf ;
+    rdfs:label "has member" ;
+    dct:description "has member is a mereological relation between a collection and an item." .
+
 ex:Trio rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
