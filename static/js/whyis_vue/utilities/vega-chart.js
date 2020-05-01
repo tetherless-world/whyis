@@ -149,13 +149,15 @@ const chartQuery = `
   PREFIX schema: <http://schema.org/>
   PREFIX sio: <http://semanticscience.org/resource/>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
-  SELECT DISTINCT ?chart ?title ?description ?query ?baseSpec
+  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+  SELECT DISTINCT ?uri ?title ?description ?query ?baseSpec ?depiction
   WHERE {
-    ?chart a sio:Chart .
-    ?chart dcterms:title ?title .
-    ?chart dcterms:description ?description .
-    ?chart schema:query ?query .
-    ?chart sio:hasValue ?baseSpec
+    ?uri a sio:Chart ;
+         dcterms:title ?title ;
+         dcterms:description ?description ;
+         schema:query ?query ;
+         sio:hasValue ?baseSpec ;
+         foaf:depiction ?depiction .
   }
   `
 
@@ -163,13 +165,9 @@ function getCharts () {
   return querySparql(chartQuery)
     .then(data =>
       data.results.bindings.map((chartResult) => {
-        const chart = Object.entries(chartResult)
-          .reduce((o, [field, value]) => {
-            o[field] = value.value
-            return o
-          }, {})
-        chart.uri = chart.chart
-        delete chart.chart
+        const chart = {}
+        Object.entries(chartResult)
+          .forEach(([field, value]) => chart[field] = value.value)
         chart.baseSpec = JSON.parse(chart.baseSpec)
         return chart
       })
