@@ -456,13 +456,13 @@ function whyis() {
             var facetValues = this.config.scope.getFacetValues().filter(function(facetValue) {
                 return facetValue.facetId == self.config.facetId;
             });
-            if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
-                facetValues.forEach(function(d) { console.log(d); d.unit_label = "All"});
-                this.getBasicState().forEach(function(d) {
-                    d.name = d.text;
-                    facetValues.push(d);
-                });
-            }
+            //if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
+            //    facetValues.forEach(function(d) { console.log(d); d.unit_label = "All"});
+            //    this.getBasicState().forEach(function(d) {
+            //        d.name = d.text;
+            //        facetValues.push(d);
+            //    });
+            //}
             return facetValues;
         };
 
@@ -472,32 +472,32 @@ function whyis() {
                 return $q.when();
             }
 
-            var otherCons = this.getOtherSelections(constraints.constraint);
-            if (self.otherCons === otherCons) {
-                return $q.when(self.state);
-            }
-            self.otherCons = otherCons;
+            //var otherCons = this.getOtherSelections(constraints.constraint);
+            //if (self.otherCons === otherCons) {
+            //    return $q.when(self.state);
+            //}
+            //self.otherCons = otherCons;
 
             self._isBusy = true;
 
             var facetValues = this.config.scope.getFacetValues().filter(function(facetValue) {
                 return facetValue.facetId == self.config.facetId;
             });
-            if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
-                return self.fetchState(constraints).then(function(state) {
-                    if (!_.isEqual(otherCons, self.otherCons)) {
-                        return $q.reject('Facet state changed');
-                    }
-                    self.state = state;
-                    self._isBusy = false;
+            //if (facetValues.filter(function(d) { return d.value !== undefined; }).length == 0) {
+            //    return self.fetchState(constraints).then(function(state) {
+            //        if (!_.isEqual(otherCons, self.otherCons)) {
+            //            return $q.reject('Facet state changed');
+            //        }
+            //        self.state = state;
+            //        self._isBusy = false;
 
-                    return state;
-                });
-            } else {
-                self.state = facetValues;
-                self._isBusy = false;
-                return $q.when(facetValues);
-            }
+            //        return state;
+            //    });
+            //} else {
+            self.state = facetValues;
+            self._isBusy = false;
+            return $q.when(facetValues);
+            //}
         }
 
 
@@ -2865,9 +2865,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     pager.fetchNumItems_ = function() {
                         pager.numItems = null;
-                        pager.getTotalCount().then(function(count) {
-                            pager.numItems = count;
-                        });
+                        //pager.getTotalCount().then(function(count) {
+                        //    pager.numItems = count;
+                        //});
                     };
                     pager.fetchNumItems_();
                     pager.fetchPage_(0);
@@ -2899,6 +2899,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             template: '',
             restrict: 'E',
             link: function(scope, element, attrs) {
+                scope.opt = {};
+                scope.opt.renderer = "svg";
                 scope.$watch("spec", function(oldvalue, newvalue) {
                     var result = vegaEmbed(element[0], scope.spec, scope.opt);
                     if (scope.then) result.then(scope.then);
@@ -3173,12 +3175,17 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     vm.disableFacets = disableFacets;
                     scope.view = "help";
+                    vm.updateResults = updateResults;
 
                     // Listen for the facet events
                     // This event is triggered when a facet's selection has changed.
-                    scope.$on('sf-facet-constraints', updateResults);
+                    scope.$on('sf-facet-constraints', function(event, cons) {
+                        scope.cons = cons;
+                        scope.updatable = true;
+                    });
                     // This is the initial configuration event
                     var initListener = scope.$on('sf-initial-constraints', function(event, cons) {
+                        scope.cons = cons;
                         updateResults(event, cons);
                         // Only listen once, then unregister
                         initListener();
@@ -3209,10 +3216,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
                     // Get results based on facet selections (each time the selections change).
                     function updateResults(event, facetSelections) {
+                        console.log("Updating facet instance data.");
+                        scope.updatable = false;
                         vm.isLoadingResults = true;
                         instanceFacets.getResults(facetSelections).then(function(pager) {
                             vm.pager = pager;
-                            vm.isLoadingResults = false;
                             dataConfig.constraints = [];
                             if (facetSelections.constraint) {
                                 dataConfig.constraints = facetSelections.constraint;
@@ -3234,8 +3242,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             for (facetName in facetSelections.facets) {
                                 if (facetSelections.facets[facetName].id) {
                                     facetSelections.facets[facetName].value.forEach(function(val) {
-                                        if (val.field !== undefined)
+                                        if (val.field !== undefined) {
                                             scope.facetValues.push(val);
+                                            if (val.indep_vals !== undefined) {
+                                                val.indep_vals.forEach(function (indep_val) {
+                                                    indep_val.indep_val = true;
+                                                    scope.facetValues.push(indep_val);
+                                                })
+                                            }
+                                        }
+
                                     });
                                 }
                             }
@@ -3265,7 +3281,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                     uri: scope.type,
                                     view:'instance_data',
                                     constraints: JSON.stringify(facetSelections.constraint),
-                                    variables: JSON.stringify(scope.facetValues)
+                                    variables: JSON.stringify(scope.facetValues
+                                        .filter(function(v) { return !v.indep_val}))
                                 }, responseType:'json'})
                                 .then(function(response) {
                                     scope.vizConfig.data = { values: response.data };
@@ -3285,10 +3302,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                                             console.log(facetValue);
                                         }
                                     })
+                                    vm.isLoadingResults = false;
                                 });
 
                         });
                     }
+                    scope.updateResults = updateResults;
 
                     scope.updateFilters = function() {
                         if (scope.allData) {
@@ -3329,8 +3348,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 params: {
                     uri:type,
                     view:'facet_values',
-                    constraints:JSON.stringify(constraints),
-                    variables:JSON.stringify(variables)
+                    //constraints:JSON.stringify(constraints),
+                    //variables:JSON.stringify(variables)
                 },
                 responseType:'json'
             })

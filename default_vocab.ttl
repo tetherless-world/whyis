@@ -377,6 +377,8 @@ rdfs:Resource whyis:hasView "resource_view.html";
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
 
+whyis:hasFacetValues a whyis:CachedView.
+
 owl:Class rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasFacets "class_facets.json";

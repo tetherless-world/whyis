@@ -30,6 +30,15 @@
                           lower-value="value.lower" upper-value="value.upper"
                           min="value.min" max="value.max" >
             </range-slider>
+            <div ng-repeat="indep_value in value.indep_vals">
+                <div ng-if="indep_value.type != 'nominal' && indep_value.min !== undefined">
+                    <label>{{indep_value.name}}: {{indep_value.lower | number}} - {{indep_value.upper | number}}</label>
+                    <range-slider step="(indep_value.max-value.min)/100"
+                                  lower-value="indep_value.lower" upper-value="indep_value.upper"
+                                  min="indep_value.min" max="indep_value.max" >
+                    </range-slider>
+                </div>
+            </div>
         </div>
     </div>
   </div>
