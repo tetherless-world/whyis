@@ -16,8 +16,7 @@ from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
 SIO = Namespace("http://semanticscience.org/resource/")
 
-prefixes = '''@prefix ncit: <http://purl.obolibrary.org/obo/NCIT_> .
-@prefix uo: <http://purl.obolibrary.org/obo/UO_> .
+prefixes = '''@prefix uo: <http://purl.obolibrary.org/obo/UO_> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix sio: <http://semanticscience.org/resource/> .
@@ -262,7 +261,7 @@ ex-kb:Group rdf:type sio:Collection ;
 
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
-# NEED TO COME BACK TO THIS<------- Functional Object Property -------
+# <------- Functional Object Property -------
 sio:Role rdf:type owl:Class ;
     rdfs:label "role" ;
     rdfs:subClassOf sio:RealizableEntity ;
@@ -310,74 +309,21 @@ sio:isRoleOf rdf:type owl:ObjectProperty ,
     dct:description "is role of is a relation between a role and the entity that it is a property of." ;
     owl:inverseOf sio:hasRole .
 
-sio:hasRole rdf:type owl:ObjectProperty ,
-                                owl:InverseFunctionalProperty;
-    rdfs:label "has role" ;
-    rdfs:subPropertyOf sio:hasRealizableProperty ;
-    dct:description "has role is a relation between an entity and a role that it bears." .
+ex-kb:Tutor rdf:type sio:Human ;
+    rdfs:label "tutor" .
 
-sio:Human  rdf:type owl:Class ;
-    rdfs:label "human" ;
-    rdfs:subClassOf sio:MulticellularOrganism ;
-    dct:description "A human is a primates of the family Hominidae and are characterized by having a large brain relative to body size, with a well developed neocortex, prefrontal cortex and temporal lobes, making them capable of abstract reasoning, language, introspection, problem solving and culture through social learning." .
+ex-kb:Teacher rdf:type sio:Human ;
+    rdfs:label "teacher" .
 
-sio:MulticellularOrganism  rdf:type owl:Class ;
-    rdfs:label "multicellular organism" ;
-    rdfs:subClassOf sio:CellularOrganism ;
-    dct:description "A multi-cellular organism is an organism that consists of more than one cell." .
-
-sio:CellularOrganism  rdf:type owl:Class ;
-    rdfs:label "cellular organism" ;
-    rdfs:subClassOf sio:Organism ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/Non-cellularOrganism"/>
-    dct:description "A cellular organism is an organism that contains one or more cells." .
-
-sio:Organism  rdf:type owl:Class ;
-    rdfs:label "organism" ;
-    rdfs:subClassOf sio:BiologicalEntity ;
-    dct:description "A biological organisn is a biological entity that consists of one or more cells and is capable of genomic replication (independently or not)." .
-
-sio:BiologicalEntity  rdf:type owl:Class ;
-    rdfs:label "biological entity" ;
-    rdfs:subClassOf sio:HeterogeneousSubstance ;
-    dct:description "A biological entity is a heterogeneous substance that contains genomic material or is the product of a biological process." .
-
-sio:HeterogeneousSubstance  rdf:type owl:Class ;
-    rdfs:label "heterogeneous substance" ;
-    rdfs:subClassOf sio:MaterialEntity ;
-    rdfs:subClassOf sio:ChemicalEntity ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
-    dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
-
-sio:MaterialEntity  rdf:type owl:Class ;
-    rdfs:label "material entity" ;
-    rdfs:subClassOf sio:Object ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
-    dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
-
-sio:ChemicalEntity  rdf:type owl:Class ;
-    rdfs:label "chemical entity" ;
-    rdfs:subClassOf sio:MaterialEntity ;
-#    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
-    dct:description "A chemical entity is a material entity that pertains to chemistry." .
-
-ex-kb:Mother rdf:type owl:Individual ;
-    rdfs:label "mother" ;
-    sio:isRoleOf ex-kb:Sarah ;
-    sio:inRelationTo ex-kb:Tim .
-
-ex-kb:Sarah rdf:type sio:Human ;
-    rdfs:label "Sarah" .
-
-ex-kb:Tim rdf:type sio:Human ;
-    rdfs:label "Tim" .
+ex-kb:TeachingRole rdf:type sio:Role ;
+    rdfs:label "teaching role" ;
+    sio:isRoleOf ex-kb:Teacher , ex-kb:Tutor .
 # ------- Functional Object Property ------->
 ''', format="turtle")
         agent =  config.Config["inferencers"]["Functional Object Property"]
         self.app.nanopub_manager.publish(*[np])
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#Sarah'), SIO.hasRole,URIRef('http://example.com/kb/example#Mother')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Teacher'), OWL.sameAs,URIRef('http://example.com/kb/example#Tutor')), self.app.db)
 
     def test_domain_restriction(self):
         self.dry_run = False
@@ -569,18 +515,56 @@ ex-kb:Meter rdf:type owl:Individual ;
         self.assertIn((URIRef('http://example.com/kb/example#Meter'), RDF.type, SIO.UnitOfMeasurement), self.app.db)
 
 
-#    def test_inverse_functional_object_property(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
-# <------- Inverse Functional Object Property ------- 
+    def test_inverse_functional_object_property(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <------- Inverse Functional Object Property -------
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
+sio:hasProperty rdf:type owl:ObjectProperty ,
+                                owl:InverseFunctionalProperty;
+    rdfs:label "has property" ;
+    owl:inverseOf sio:isPropertyOf ;
+    dct:description "has property is a relation between an entity and the quality, capability or role that it and it alone bears." ;
+    rdfs:subPropertyOf sio:hasAttribute .
+
+sio:Symbol rdf:type owl:Class ;
+    rdfs:subClassOf sio:Representation ;
+    dct:description "A symbol is a proposition about what an entity represents." ;
+    rdfs:label "symbol" .
+
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:Representation rdf:type owl:Class ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    dct:description "A representation is a entity that in some way represents another entity (or attribute thereof)." ;
+    rdfs:label "representation" .
+
+ex:MolecularFormula rdfs:subClassOf sio:Symbol ;
+    rdfs:label "molecular formula" .
+
+ex-kb:Water sio:hasProperty ex-kb:H2O ;
+    rdfs:label "water" .
+
+ex-kb:HyrdogenDioxide sio:hasProperty ex-kb:H2O ;
+    rdfs:label "hydrogen dioxide" .
+
+ex-kb:H2O rdf:type ex:MolecularFormula ;
+    rdfs:label "H2O" .
 # ------- Inverse Functional Object Property ------->
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+''', format="turtle")
+        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Water'), OWL.sameAs, URIRef('http://example.com/kb/example#HyrdogenDioxide')), self.app.db)
 
     def test_functional_data_property(self):
         self.dry_run = False
@@ -963,20 +947,41 @@ ex-kb:Sam owl:sameAs ex-kb:Samantha .
         self.assertIn((URIRef('http://example.com/kb/example#Sam'), RDF.type, OWL.Nothing), self.app.db)
 
 
-#    def test_inverse_class_assertion(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
-# <-------  Class Assertion -------
-# Need to come back to this
-# -------  Class Assertion ------->
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Class Assertion"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+    def test_class_assertion(self):
+        self.dry_run = False
 
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  Class Assertion -------
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
+
+sio:Attribute rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "attribute" ;
+    dct:description "An attribute is a characteristic of some entity." .
+
+sio:RealizableEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Attribute ;
+    dct:description "A realizable entity is an attribute that is exhibited under some condition and is realized in some process." ;
+    rdfs:label "realizable entity" .
+
+sio:Quality rdf:type owl:Class ;
+    rdfs:subClassOf sio:Attribute ;
+    owl:disjointWith sio:RealizableEntity ;
+    dct:description "A quality is an attribute that is intrinsically associated with its bearer (or its parts), but whose presence/absence and observed/measured value may vary." ;
+    rdfs:label "quality" .
+
+ex-kb:Reliable rdf:type sio:Quality ;
+    rdfs:label "reliable" .
+# -------  Class Assertion ------->
+''', format="turtle")
+        agent =  config.Config["inferencers"]["Class Assertion"]
+        self.app.nanopub_manager.publish(*[np])
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Attribute), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Entity), self.app.db)
 
 #    def test_object_property_assertion(self):
 #        self.dry_run = False
@@ -1172,6 +1177,11 @@ ex-kb:WaterMolecule rdf:type sio:3dStructureModel  .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Some Values From -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex:Text rdf:type owl:Class ;
     rdfs:subClassOf
         [ rdf:type owl:Restriction ;

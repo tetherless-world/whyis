@@ -168,7 +168,7 @@ Config = dict(
             #"Assertions", (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
             "Different Individuals",
-            #"Class Assertion",
+            "Class Assertion",
             #"Object Property Assertion",
             #"Data Property Assertion",
             "Negative Object Property Assertion",
@@ -204,7 +204,7 @@ Config = dict(
             "Object Property Asymmetry",
             #"Assertions", (DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, and DataPropertyAssertion)
             "Different Individuals",
-            #"Class Assertion",
+            "Class Assertion",
             #"Object Property Assertion",
             #"Data Property Assertion"
             #
@@ -232,7 +232,7 @@ Config = dict(
             #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
             "Different Individuals",
-            #"Class Assertion",
+            "Class Assertion",
             #"Object Property Assertion",
             #"Data Property Assertion",
             "Negative Object Property Assertion",
@@ -303,14 +303,14 @@ Config = dict(
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:DatatypeProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) !=  str(?o2))",
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""#Add explanation
+            explanation = "Since {{functionalProperty}} is a functional data property, {{resource}} can only have one value for {{functionalProperty}}. Since {{resource}} {{functionalProperty}} both {{o1}} and {{o2}}, and {{o1}} is different from {{o2}}, an inconsistency occurs."
         ),
         "Functional Object Property" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  "\t?resource ?functionalProperty ?o1 .\n\t?functionalProperty rdf:type owl:ObjectProperty , owl:FunctionalProperty . ?resource ?functionalProperty ?o2 .\n\tFILTER (str(?o1) !=  str(?o2))",
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""#Add explanation
+            consequent = "?o1 owl:sameAs ?o2 .",
+            explanation = "Since {{functionalProperty}} is a functional object property, {{resource}} can only have one value for {{functionalProperty}}. Since {{resource}} {{functionalProperty}} both {{o1}} and {{o2}}, we can infer that {{o1}} and {{o2}} must be the same individual."
         ),
         "Property Disjointness" : autonomic.Deductor(
             resource = "?resource", 
@@ -418,14 +418,13 @@ Config = dict(
         #    consequent = "?resource owl:differentFrom <each member in rest>. ",
         #    explanation = ""
         #),
-# Not sure if we need to address the encoding of the following 3 assertions explicitly
-#        "Class Assertion" : autonomic.Deductor(
-#            resource = "?resource", 
-#            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-#            antecedent =  "?resource rdf:type owl:Class.", 
-#            consequent = "?resource rdf:type owl:Class.",
-#            explanation = ""
-#        ),
+        "Class Assertion" : autonomic.Deductor(
+            resource = "?resource", 
+            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+            antecedent =  "?resource rdf:type ?class . ?class rdf:type owl:Class . ?class rdfs:subClassOf+ ?superClass .", 
+            consequent = "?resource rdf:type ?superClass .",
+            explanation = "Since {{class}} is a subclass of {{superClass}}, any individual that is an instance of {{class}} is also an instance of {{superClass}}. Therefore, {{resource}} is an instance of {{superClass}}."
+        ),
 #        "Object Property Assertion" : autonomic.Deductor( # Do we inherent restrictions here?
 #            resource = "?resource ?p ?o. ?p rdf:type owl:ObjectProperty .", 
 #            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
@@ -461,13 +460,13 @@ Config = dict(
             consequent = "?resource owl:sameAs ?individual .",
             explanation = "Since {{class}} has key {{keyProperty}}, {{resource}} and {{individual}} are both of type {{class}}, and {{resource}} and {{individual}} both {{keyProperty}} {{keyValue}}, then {{resource}} and {{individual}} must be the same."
         ),
-        #"Inverse Functional Object Property" : autonomic.Deductor(
-        #    resource = "?resource", 
-        #    prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-        #    antecedent =  "\t?resource ?invFunctionalProperty ?o .\n\t?invFunctionalProperty rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty .",
-        #    consequent = "",
-        #    explanation = ""
-        #),
+        "Inverse Functional Object Property" : autonomic.Deductor(
+            resource = "?resource", 
+            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            antecedent =  "\t?resource ?invFunctionalProperty ?o .\n\t?individual ?invFunctionalProperty ?o .\n\t?invFunctionalProperty rdf:type owl:ObjectProperty , owl:InverseFunctionalProperty .",
+            consequent = "?resource owl:sameAs ?individual",
+            explanation = "Since {{invFunctionalProperty}} is an inverse functional property, and {{resource}} and {{individual}} both have the relationship {{invFunctionalProperty}} {{o}}, then we can infer that {{resource}} is the same as {{individual}}."
+        ),
         #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
         "Object Some Values From" : autonomic.Deductor(# Should revisit this after confirming test case
             resource = "?resource", 
@@ -569,9 +568,9 @@ Config = dict(
         #    resource = "?resource", 
         #    prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
         #    antecedent =  "\t?resource rdf:type ?class ;\n\t\t?dataProperty ?data .\n\t?dataProperty rdf:type owl:DatatypeProperty .\n\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t[ rdf:type owl:Restriction ;\n\t\t\towl:onProperty ?dataProperty ;\n\t\t\towl:minCardinality ?cardinalityValue ].\n\tFILTER(?dataCount < ?cardinalityValue)\n\t{\n\t\tSELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)\n\t\tWHERE {\n\t\t\t?resource rdf:type ?class ;\n\t\t\t\t?dataProperty ?data .\n\t\t\t?dataProperty rdf:type owl:DatatypeProperty .\n\t\t\t?class rdfs:subClassOf|owl:equivalentClass\n\t\t\t\t[ rdf:type owl:Restriction ;\n\t\t\t\t\towl:onProperty ?dataProperty ;\n\t\t\t\t\towl:minCardinality ?cardinalityValue ].\n\t\t}\n\t}",
-        #    consequent = "",
+        #    consequent = "?resource ?dataProperty :x .",
         #    explanation = "Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."
-        #), # Still need to determine what to return
+        #), # Still need to determine what to return, returning blanknode construction
         "Data Exact Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
