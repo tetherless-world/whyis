@@ -5,8 +5,23 @@ from whyis.blueprint.sparql import sparql_blueprint
 from whyis.decorator import conditional_login_required
 
 
+import cProfile
+
+def do_cprofile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            profile.print_stats()
+    return profiled_func
+
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
 @conditional_login_required
+@do_cprofile
 def sparql_view():
     has_query = False
     for arg in list(request.args.keys()):
@@ -30,7 +45,7 @@ def sparql_view():
         if 'update' in request.values:
             return "Update not allowed.", 403
         #print(request.get_data())
-        req = requests.post(current_app.db.store.query_endpoint, data=request.get_data(),
+        req = requests.get(current_app.db.store.query_endpoint,# data=request.values,
                             headers = request.headers, params=request.values)
     #print self.db.store.query_endpoint
     #print req.status_code
