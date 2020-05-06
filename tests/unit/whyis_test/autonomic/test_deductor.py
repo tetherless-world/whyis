@@ -36,10 +36,15 @@ class DeductorAgentTestCase(AgentUnitTestCase):
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Class Disjointness -------
-
 sio:Entity rdf:type owl:Class ;
     rdfs:label "entity" ;
     dct:description "Every thing is an entity." .
+
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:Attribute rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
@@ -97,8 +102,8 @@ ex-kb:ImaginaryFriend
 
 # ------- Class Disjointness ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Class Disjointness"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Class Disjointness"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#ImaginaryFriend'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -162,8 +167,8 @@ ex-kb:Hand rdf:type owl:Individual ;
 # ------- Object Property Transitivity ------->
 
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Transitivity"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Transitivity"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Fingernail'), SIO.isPartOf, URIRef('http://example.com/kb/example#Hand')), self.app.db)
 
@@ -198,8 +203,8 @@ ex-kb:Step rdf:type sio:Process ;
 # Should return "ex-kb:Workflow sio:hasPart ex-kb:Workflow ."
 # ------- Object Property Reflexivity  ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Reflexivity"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Reflexivity"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Workflow'), SIO.hasPart, URIRef('http://example.com/kb/example#Workflow')), self.app.db)
 
@@ -222,26 +227,36 @@ sio:isMemberOf rdf:type owl:ObjectProperty ;
     rdfs:label "is member of" ;
     dct:description "is member of is a mereological relation between a item and a collection." .
 
-sio:Collection rdf:type owl:Class ;
-    rdfs:subClassOf sio:Set ;
-    rdfs:label "collection" ;
-    dct:description "A collection is a set for which there exists at least one member, although any member need not to exist at any point in the collection's existence." .
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
 
-sio:Set rdf:type owl:Class ;
-    rdfs:subClassOf sio:MathematicalEntity ;
-    rdfs:label "set" ;
-    dct:description "A set is a collection of entities, for which there may be zero members." .
-
-sio:MathematicalEntity rdf:type owl:Class ;
-    rdfs:subClassOf sio:InformationContentEntity ;
-    rdfs:label "mathematical entity" ;
-    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
 #    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:MathematicalEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    rdfs:label "mathematical entity" ;
+    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+
+sio:Set rdf:type owl:Class ;
+    rdfs:subClassOf sio:MathematicalEntity ;
+    rdfs:label "set" ;
+    dct:description "A set is a collection of entities, for which there may be zero members." .
+
+sio:Collection rdf:type owl:Class ;
+    rdfs:subClassOf sio:Set ;
+    rdfs:label "collection" ;
+    dct:description "A collection is a set for which there exists at least one member, although any member need not to exist at any point in the collection's existence." .
 
 ex-kb:Group rdf:type sio:Collection ;
     rdfs:label "group" ;
@@ -251,8 +266,8 @@ ex-kb:Group rdf:type sio:Collection ;
 
 # ------- Object Property Irreflexivity  ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Irreflexivity"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Irreflexivity"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Group'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -320,8 +335,8 @@ ex-kb:TeachingRole rdf:type sio:Role ;
     sio:isRoleOf ex-kb:Teacher , ex-kb:Tutor .
 # ------- Functional Object Property ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Functional Object Property"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Functional Object Property"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Teacher'), OWL.sameAs,URIRef('http://example.com/kb/example#Tutor')), self.app.db)
 
@@ -384,38 +399,15 @@ sio:hasRole rdf:type owl:ObjectProperty ,
     rdfs:subPropertyOf sio:hasRealizableProperty ;
     dct:description "has role is a relation between an entity and a role that it bears." .
 
-sio:Human  rdf:type owl:Class ;
-    rdfs:label "human" ;
-    rdfs:subClassOf sio:MulticellularOrganism ;
-    dct:description "A human is a primates of the family Hominidae and are characterized by having a large brain relative to body size, with a well developed neocortex, prefrontal cortex and temporal lobes, making them capable of abstract reasoning, language, introspection, problem solving and culture through social learning." .
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
 
-sio:MulticellularOrganism  rdf:type owl:Class ;
-    rdfs:label "multicellular organism" ;
-    rdfs:subClassOf sio:CellularOrganism ;
-    dct:description "A multi-cellular organism is an organism that consists of more than one cell." .
-
-sio:CellularOrganism  rdf:type owl:Class ;
-    rdfs:label "cellular organism" ;
-    rdfs:subClassOf sio:Organism ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/Non-cellularOrganism"/>
-    dct:description "A cellular organism is an organism that contains one or more cells." .
-
-sio:Organism  rdf:type owl:Class ;
-    rdfs:label "organism" ;
-    rdfs:subClassOf sio:BiologicalEntity ;
-    dct:description "A biological organisn is a biological entity that consists of one or more cells and is capable of genomic replication (independently or not)." .
-
-sio:BiologicalEntity  rdf:type owl:Class ;
-    rdfs:label "biological entity" ;
-    rdfs:subClassOf sio:HeterogeneousSubstance ;
-    dct:description "A biological entity is a heterogeneous substance that contains genomic material or is the product of a biological process." .
-
-sio:HeterogeneousSubstance  rdf:type owl:Class ;
-    rdfs:label "heterogeneous substance" ;
-    rdfs:subClassOf sio:MaterialEntity ;
-    rdfs:subClassOf sio:ChemicalEntity ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
-    dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:MaterialEntity  rdf:type owl:Class ;
     rdfs:label "material entity" ;
@@ -430,6 +422,43 @@ sio:ChemicalEntity  rdf:type owl:Class ;
 #    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
     dct:description "A chemical entity is a material entity that pertains to chemistry." .
 
+sio:HeterogeneousSubstance  rdf:type owl:Class ;
+    rdfs:label "heterogeneous substance" ;
+    rdfs:subClassOf sio:MaterialEntity ;
+    rdfs:subClassOf sio:ChemicalEntity ;
+#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
+    dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
+
+sio:BiologicalEntity  rdf:type owl:Class ;
+    rdfs:label "biological entity" ;
+    rdfs:subClassOf sio:HeterogeneousSubstance ;
+    dct:description "A biological entity is a heterogeneous substance that contains genomic material or is the product of a biological process." .
+
+sio:Organism rdf:type owl:Class ;
+    owl:equivalentClass 
+        [   rdf:type owl:Class ;
+            owl:unionOf ( sio:CellularOrganism sio:Non-cellularOrganism ) ] ;
+    rdfs:subClassOf sio:BiologicalEntity ;
+    dct:description "A biological organisn is a biological entity that consists of one or more cells and is capable of genomic replication (independently or not)." ;
+    rdfs:label "organism" .
+
+sio:CellularOrganism  rdf:type owl:Class ;
+    rdfs:label "cellular organism" ;
+    rdfs:subClassOf sio:Organism ;
+#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/Non-cellularOrganism"/>
+    dct:description "A cellular organism is an organism that contains one or more cells." .
+
+sio:MulticellularOrganism  rdf:type owl:Class ;
+    rdfs:label "multicellular organism" ;
+    rdfs:subClassOf sio:CellularOrganism ;
+    dct:description "A multi-cellular organism is an organism that consists of more than one cell." .
+
+sio:Human  rdf:type owl:Class ;
+    rdfs:label "human" ;
+    rdfs:subClassOf sio:MulticellularOrganism ;
+    dct:description "A human is a primates of the family Hominidae and are characterized by having a large brain relative to body size, with a well developed neocortex, prefrontal cortex and temporal lobes, making them capable of abstract reasoning, language, introspection, problem solving and culture through social learning." .
+
+
 ex-kb:Mother rdf:type owl:Individual ;
     rdfs:label "mother" ;
     sio:isRoleOf ex-kb:Sarah ;
@@ -442,8 +471,8 @@ ex-kb:Tim rdf:type sio:Human ;
     rdfs:label "Tim" .
 # ------- Domain Restriction ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Domain Restriction"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Domain Restriction"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Mother'), RDF.type, SIO.Role), self.app.db)
 
@@ -509,11 +538,10 @@ ex-kb:Meter rdf:type owl:Individual ;
     rdfs:label "meter" .
 # ------- Range Restriction ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Range Restriction"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Range Restriction"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Meter'), RDF.type, SIO.UnitOfMeasurement), self.app.db)
-
 
     def test_inverse_functional_object_property(self):
         self.dry_run = False
@@ -533,10 +561,15 @@ sio:hasProperty rdf:type owl:ObjectProperty ,
     dct:description "has property is a relation between an entity and the quality, capability or role that it and it alone bears." ;
     rdfs:subPropertyOf sio:hasAttribute .
 
-sio:Symbol rdf:type owl:Class ;
-    rdfs:subClassOf sio:Representation ;
-    dct:description "A symbol is a proposition about what an entity represents." ;
-    rdfs:label "symbol" .
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
+
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
@@ -547,6 +580,11 @@ sio:Representation rdf:type owl:Class ;
     rdfs:subClassOf sio:InformationContentEntity ;
     dct:description "A representation is a entity that in some way represents another entity (or attribute thereof)." ;
     rdfs:label "representation" .
+
+sio:Symbol rdf:type owl:Class ;
+    rdfs:subClassOf sio:Representation ;
+    dct:description "A symbol is a proposition about what an entity represents." ;
+    rdfs:label "symbol" .
 
 ex:MolecularFormula rdfs:subClassOf sio:Symbol ;
     rdfs:label "molecular formula" .
@@ -561,8 +599,8 @@ ex-kb:H2O rdf:type ex:MolecularFormula ;
     rdfs:label "H2O" .
 # ------- Inverse Functional Object Property ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Inverse Functional Object Property"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Water'), OWL.sameAs, URIRef('http://example.com/kb/example#HyrdogenDioxide')), self.app.db)
 
@@ -581,8 +619,8 @@ ex-kb:HeightOfTom sio:hasValue "5"^^xsd:integer .
 ex-kb:HeightOfTom sio:hasValue "6"^^xsd:integer .
 # ------- Functional Data Property ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Functional Data Property"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Functional Data Property"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#HeightOfTom'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -610,8 +648,8 @@ ex-kb:Susan rdf:type sio:Human ;
 
 # ------- Property Disjointness ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Property Disjointness"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Property Disjointness"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Susan'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -635,8 +673,8 @@ ex-kb:Samantha rdf:type sio:Human ;
 
 # ------- Object Property Symmetry ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Symmetry"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Symmetry"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Samantha'), SIO.isRelatedTo, URIRef('http://example.com/kb/example#Peter')), self.app.db)
 
@@ -663,23 +701,39 @@ ex-kb:Face rdf:type owl:Individual ;
 
 # ------- Object Property Asymmetry ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Asymmetry"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Asymmetry"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Face'), RDF.type, OWL.Nothing), self.app.db)
 
-#    def test_class_inclusion(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
+    def test_class_inclusion(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
 # <------- Class Inclusion ------- 
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
+
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
+
+sio:MaterialEntity  rdf:type owl:Class ;
+    rdfs:label "material entity" ;
+    rdfs:subClassOf sio:Object ;
+#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
+#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
+    dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
 # ------- Class Inclusion ------->
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Class Inclusion"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Class Inclusion"]
+        agent.process_graph(self.app.db)
+        self.assertIn((SIO.MaterialEntity, RDFS.subClassOf, SIO.Entity), self.app.db)
 
     def test_object_property_inclusion(self):
         self.dry_run = False
@@ -703,6 +757,15 @@ sio:hasProperty rdf:type owl:ObjectProperty ,
     owl:inverseOf sio:isPropertyOf ;
     dct:description "has property is a relation between an entity and the quality, capability or role that it and it alone bears." ;
     rdfs:subPropertyOf sio:hasAttribute .
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
+
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:Age rdf:type owl:Class ;
     rdfs:label "age" ;
@@ -757,8 +820,8 @@ ex-kb:AgeOfSamantha rdf:type sio:Age ;
     rdfs:label "Samantha's age" .
 # ------- Object Property Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Inclusion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Inclusion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Samantha'), SIO.hasAttribute, URIRef('http://example.com/kb/example#AgeOfSamantha')), self.app.db)
 
@@ -783,8 +846,8 @@ ex:hasExactValue rdf:type owl:DatatypeProperty ;
 ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
 # ------- Data Property Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data Property Inclusion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Property Inclusion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), SIO.hasValue, Literal('25.82', datatype=XSD.decimal)), self.app.db)
 
@@ -802,12 +865,10 @@ ex-kb:Hubert rdf:type ex:Fake ;
     rdfs:label "Hubert" .
 # ------- Class Equivalence ------->
 ''', format="turtle")
-        #nanopubs = []
-        agent =  config.Config["inferencers"]["Class Equivalence"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Class Equivalence"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Hubert'), RDF.type, URIRef('http://semanticscience.org/resource/Fictional')), self.app.db)
-
 
     def test_property_equivalence(self):
         self.dry_run = False
@@ -829,8 +890,8 @@ ex:hasValue rdf:type owl:DatatypeProperty ;
     owl:equivalentProperty sio:hasValue .
 # ------- Property Equivalence ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Property Equivalence"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Property Equivalence"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), URIRef('http://example.com/ont/example#hasValue'),Literal('25.82', datatype=XSD.decimal)), self.app.db)
 
@@ -849,8 +910,8 @@ ex-kb:Farmer rdf:type sio:Role ;
     rdfs:label "farmer" .
 # ------- Individual Inclusion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Individual Inclusion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Individual Inclusion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Farmer'), RDF.type, SIO.RealizableEntity), self.app.db)
 
@@ -903,8 +964,8 @@ ex-kb:Fingernail rdf:type owl:Individual ;
     sio:isPartOf ex-kb:Finger .
 # ------- Object Property Inversion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Property Inversion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Inversion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Finger'), SIO.hasPart, URIRef('http://example.com/kb/example#Fingernail')), self.app.db)
 
@@ -924,8 +985,8 @@ ex-kb:Samantha rdf:type sio:Human ;
 ex-kb:Peter owl:sameAs ex-kb:Pete .
 # -------  Same Individual ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Same Individual"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Same Individual"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Pete'), RDF.type, SIO.Human), self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Pete'), RDFS.label, Literal('Peter')), self.app.db)
@@ -941,8 +1002,8 @@ ex-kb:Sam owl:differentFrom ex-kb:Samantha .
 ex-kb:Sam owl:sameAs ex-kb:Samantha .
 # -------  Different Individuals ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Different Individuals"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Different Individuals"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Sam'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -977,39 +1038,39 @@ ex-kb:Reliable rdf:type sio:Quality ;
     rdfs:label "reliable" .
 # -------  Class Assertion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Class Assertion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Class Assertion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Attribute), self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Entity), self.app.db)
 
-#    def test_object_property_assertion(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
-# <-------  Object Property Assertion ------- 
-# Need to come back to this
-# -------  Object Property Assertion -------> 
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Object Property Assertion"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+    def test_object_property_assertion(self):
+        self.dry_run = False
 
-#    def test_data_property_assertion(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
-# <-------  Data Property Assertion ------- 
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  Positive Object Property Assertion ------- 
 # Need to come back to this
-# -------  Data Property Assertion -------> 
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Data Property Assertion"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+# -------  Positive Object Property Assertion -------> 
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Positive Object Property Assertion"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+
+    def test_data_property_assertion(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <------- Positive Data Property Assertion ------- 
+# Need to come back to this
+# -------  Positive Data Property Assertion -------> 
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Positive Data Property Assertion"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_negative_object_property_assertion(self):
         self.dry_run = False
@@ -1017,6 +1078,11 @@ ex-kb:Reliable rdf:type sio:Quality ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Negative Object Property Assertion -------
+sio:hasAttribute rdf:type owl:ObjectProperty ;
+    rdfs:label "has attribute" ;
+    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+    rdfs:subPropertyOf sio:isRelatedTo .
+
 sio:hasUnit rdf:type owl:ObjectProperty ,
                                 owl:FunctionalProperty;
     rdfs:label "has unit" ;
@@ -1036,8 +1102,8 @@ ex-kb:NOPA rdf:type owl:NegativePropertyAssertion ;
 ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
 # -------  Negative Object Property Assertion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Negative Object Property Assertion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Negative Object Property Assertion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1063,8 +1129,8 @@ ex-kb:AgeOfPeter rdf:type sio:Age;
     sio:hasValue "10" .
 # -------  Negative DataProperty Assertion ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Negative Data Property Assertion"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Negative Data Property Assertion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#AgeOfPeter'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1091,8 +1157,8 @@ ex-kb:Jack rdf:type ex:Person ;
     ex:uniqueID "101D" .
 # ------- Keys ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Keys"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Keys"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#John'), OWL.sameAs, URIRef('http://example.com/kb/example#Jack')), self.app.db)
 
@@ -1166,8 +1232,8 @@ ex-kb:MolecularCollection rdf:type owl:Individual ;
 ex-kb:WaterMolecule rdf:type sio:3dStructureModel  .
 # -------  Object Some Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Some Values From"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Some Values From"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#MolecularCollection'), RDF.type, SIO.CollectionOf3dMolecularStructureModels), self.app.db)
 
@@ -1192,8 +1258,8 @@ ex-kb:Question rdf:type ex:Text ;
     sio:hasValue "4"^^xsd:integer .
 # -------  Data Some Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data Some Values From"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Some Values From"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Question'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1222,8 +1288,8 @@ ex:SelfAttributing rdf:type owl:Class ;
 ex-kb:Blue rdf:type ex:SelfAttributing .
 # -------  Object Has Self ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Has Self"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Has Self"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Blue'), SIO.hasAttribute, URIRef('http://example.com/kb/example#Blue')), self.app.db)
 
@@ -1270,8 +1336,8 @@ ex-kb:Car rdf:type ex:Vehicle ;
 ex-kb:Mirror owl:differentFrom ex-kb:Wheel .
 # -------  Object Has Value ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Has Value"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Has Value"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Car'), SIO.hasPart, URIRef('http://example.com/kb/example#Wheel')), self.app.db)
 
@@ -1290,10 +1356,61 @@ ex:Unliked rdf:type owl:Class ;
 ex-kb:Tom ex:hasAge "23"^^xsd:integer .
 # -------  Data Has Value ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data Has Value"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Has Value"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Tom'), RDF.type, URIRef('http://example.com/ont/example#Unliked')), self.app.db)
+
+    def test_all_different(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  All Different -------
+ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
+    owl:distinctMembers
+        ( ex-kb:Integer
+        ex-kb:String 
+        ex-kb:Boolean
+        ex-kb:Double 
+        ex-kb:Float 
+        ex-kb:Tuple 
+        ) .
+# -------  All Different ------->
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["All Different"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), OWL.differentFrom, URIRef('http://example.com/kb/example#String')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), OWL.differentFrom, URIRef('http://example.com/kb/example#Boolean')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), OWL.differentFrom, URIRef('http://example.com/kb/example#Double')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), OWL.differentFrom, URIRef('http://example.com/kb/example#Float')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Integer'), OWL.differentFrom, URIRef('http://example.com/kb/example#Tuple')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), OWL.differentFrom, URIRef('http://example.com/kb/example#Integer')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), OWL.differentFrom, URIRef('http://example.com/kb/example#Boolean')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), OWL.differentFrom, URIRef('http://example.com/kb/example#Double')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), OWL.differentFrom, URIRef('http://example.com/kb/example#Float')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#String'), OWL.differentFrom, URIRef('http://example.com/kb/example#Tuple')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), OWL.differentFrom, URIRef('http://example.com/kb/example#Integer')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), OWL.differentFrom, URIRef('http://example.com/kb/example#String')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), OWL.differentFrom, URIRef('http://example.com/kb/example#Double')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), OWL.differentFrom, URIRef('http://example.com/kb/example#Float')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Boolean'), OWL.differentFrom, URIRef('http://example.com/kb/example#Tuple')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), OWL.differentFrom, URIRef('http://example.com/kb/example#Integer')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), OWL.differentFrom, URIRef('http://example.com/kb/example#String')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), OWL.differentFrom, URIRef('http://example.com/kb/example#Boolean')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), OWL.differentFrom, URIRef('http://example.com/kb/example#Float')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Double'), OWL.differentFrom, URIRef('http://example.com/kb/example#Tuple')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), OWL.differentFrom, URIRef('http://example.com/kb/example#Integer')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), OWL.differentFrom, URIRef('http://example.com/kb/example#String')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), OWL.differentFrom, URIRef('http://example.com/kb/example#Boolean')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), OWL.differentFrom, URIRef('http://example.com/kb/example#Double')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Float'), OWL.differentFrom, URIRef('http://example.com/kb/example#Tuple')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), OWL.differentFrom, URIRef('http://example.com/kb/example#Integer')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), OWL.differentFrom, URIRef('http://example.com/kb/example#String')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), OWL.differentFrom, URIRef('http://example.com/kb/example#Boolean')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), OWL.differentFrom, URIRef('http://example.com/kb/example#Double')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Tuple'), OWL.differentFrom, URIRef('http://example.com/kb/example#Float')), self.app.db)
 
     def test_object_one_of(self):
         self.dry_run = False
@@ -1301,6 +1418,7 @@ ex-kb:Tom ex:hasAge "23"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object One Of -------
+# Need to come back to this
 ex:Type rdf:type owl:Class ;
     owl:oneOf (ex-kb:Integer ex-kb:String ex-kb:Boolean ex-kb:Double ex-kb:Float) .
 
@@ -1317,8 +1435,10 @@ ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
 ex-kb:Tuple rdf:type ex:Type .
 # -------  Object One Of ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object One Of"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["All Different"]
+        agent.process_graph(self.app.db)
+        agent =  config.Config["inferencers"]["Object One Of"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Tuple'), RDF.type, OWL.Nothing), self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Integer'), RDF.type, URIRef('http://example.com/kb/example#Type')), self.app.db)
@@ -1333,6 +1453,7 @@ ex-kb:Tuple rdf:type ex:Type .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data One Of -------
+# Need to come back to this
 ex:hasTeenAge rdf:type owl:DatatypeProperty ;
     rdfs:label "has age" ;
     rdfs:range [ rdf:type owl:DataRange ;
@@ -1342,8 +1463,8 @@ ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
 # Note that we need to update range rule to account for data ranges
 # -------  Data One Of ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data One Of"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data One Of"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Sarah'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1370,6 +1491,17 @@ sio:hasMember rdf:type owl:ObjectProperty ,
     rdfs:label "has member" ;
     dct:description "has member is a mereological relation between a collection and an item." .
 
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:ComputationalEntity rdf:type owl:Class;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    rdfs:label "computational entity" ;
+    dct:description "A computational entity is an information content entity operated on using some computational system." .
+
 sio:Namespace rdf:type owl:Class ;
     rdfs:subClassOf sio:ComputationalEntity ,
         [ rdf:type owl:Restriction ;
@@ -1378,17 +1510,12 @@ sio:Namespace rdf:type owl:Class ;
     rdfs:label "namespace" ;
     dct:description "A namespace is an informational entity that defines a logical container for a set of symbols or identifiers." .
 
-sio:ComputationalEntity rdf:type owl:Class;
-    rdfs:subClassOf sio:InformationContentEntity ;
-    rdfs:label "computational entity" ;
-    dct:description "A computational entity is an information content entity operated on using some computational system." .
-
 ex-kb:NamespaceInstance rdf:type sio:Namespace ;
     sio:hasMember ex-kb:NamespaceID .
 # -------  Object All Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object All Values From"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object All Values From"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#NamespaceID'), RDF.type, SIO.Identifier), self.app.db)
 
@@ -1414,8 +1541,8 @@ ex-kb:Ten rdf:type ex:Integer ;
     sio:hasValue "ten"^^xsd:string .
 # -------  Data All Values From ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data All Values From"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data All Values From"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Ten'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1473,8 +1600,10 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         ex-kb:Redundancy ) .
 # -------  Object Max Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Max Cardinality"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["All Different"]
+        agent.process_graph(self.app.db)
+        agent =  config.Config["inferencers"]["Object Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#SevenDeadlySins'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1483,6 +1612,7 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
 
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
+# Need to come back to this
 # <-------  Object Min Cardinality -------
 sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                 owl:SymmetricProperty ;
@@ -1525,10 +1655,12 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         ex-kb:Ali ) .
 # -------  Object Min Cardinality ------->
 ''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["All Different"]
+        agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Min Cardinality"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_exact_cardinality(self):
         self.dry_run = False
@@ -1573,8 +1705,10 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         ex-kb:Curly ) .
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Exact Cardinality"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["All Different"]
+        agent.process_graph(self.app.db)
+        agent =  config.Config["inferencers"]["Object Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Stooges'), RDF.type, OWL.Nothing), self.app.db)
         # Need to update test to include blank node generation when cardinality is higher than the number of members provided
@@ -1585,6 +1719,7 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Max Cardinality -------
+# Need to come back to this
 ex:hasAge rdf:type owl:DatatypeProperty .
 
 ex:Person rdfs:subClassOf
@@ -1595,8 +1730,8 @@ ex:Person rdfs:subClassOf
 ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 # -------  Data Max Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data Max Cardinality"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1606,6 +1741,7 @@ ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Min Cardinality -------
+# Need to come back to this
 ex:hasDiameterValue rdf:type owl:DatatypeProperty .
 
 ex:ConicalCylinder rdfs:subClassOf
@@ -1619,10 +1755,10 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
 # Does not result in inconsistency if the property is used less than twice. (Not sure a blank node is created however.)
 # -------  Data Min Cardinality ------->
 ''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Min Cardinality"]
-        #self.app.nanopub_manager.publish(*[np])
-        #agent.process_graph(self.app.db)
-        #self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
         # need to come back to this
 
     def test_data_exact_cardinality(self):
@@ -1631,6 +1767,7 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Exact Cardinality -------
+# Need to come back to this
 ex:hasBirthYear rdf:type owl:DatatypeProperty .
 ex:Person rdfs:subClassOf
     [ rdf:type owl:Restriction ;
@@ -1640,8 +1777,8 @@ ex:Person rdfs:subClassOf
 ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 # -------  Data Exact Cardinality ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Data Exact Cardinality"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#John'), RDF.type, OWL.Nothing), self.app.db)
 
@@ -1651,7 +1788,38 @@ ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Complement Of ------- 
+ex:VitalStatus rdfs:subClassOf sio:Attribute ;
+    rdfs:label "vital status" .
 
+ex:Dead rdf:type owl:Class ;
+    rdfs:subClassOf ex:VitalStatus ;
+    rdfs:label "dead" .
+
+ex:Alive rdf:type owl:Class ;
+    rdfs:subClassOf ex:VitalStatus ;
+    rdfs:label "alive" ;
+    owl:complementOf ex:Dead .
+
+ex-kb:VitalStatusOfPat rdf:type ex:Alive , ex:Dead ;
+    rdfs:label "Pat's Vital Status" ;
+    sio:isAttributeOf ex-kb:Pat .
+
+ex-kb:Pat rdf:type sio:Human ;
+    rdfs:label "Pat" .
+# -------  Object Complement Of ------->
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Complement Of"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#VitalStatusOfPat'), RDF.type, OWL.Nothing), self.app.db)
+
+    def test_object_property_complement_of(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  Object Property Complement Of ------- 
+# Need to come back to this
 sio:DimensionlessQuantity rdf:type owl:Class ;
     rdfs:label "dimensionless quantity" ;
     rdfs:subClassOf sio:Quantity ,
@@ -1700,73 +1868,173 @@ ex-kb:Efficiency rdf:type sio:DimensionlessQuantity  ;
 
 ex:Percentage rdf:subClassOf sio:UnitOfMeasurement ;
     rdfs:label "percentage" .
-
-ex:Dead rdfs:subClassOf ex:VitalStatus ;
-    rdfs:label "dead" .
-
-ex:Alive rdfs:subClassOf ex:VitalStatus ;
-    rdfs:label "alive" .
-
-ex:Alive owl:complementOf ex:Dead .
-
-ex:VitalStatus rdfs:subClassOf sio:Attribute ;
-    rdfs:label "vital status" .
-
-ex-kb:VitalStatusOfPat rdf:type ex:Alive , ex:Dead ;
-    rdfs:label "Pat's Vital Status" ;
-    sio:isAttributeOf ex-kb:Pat .
-
-ex-kb:Pat rdf:type sio:Human ;
-    rdfs:label "Pat" .
-# Typing both vital statuses leads to a error in HermiT as expected
-# -------  Object Complement Of ------->
+# -------  Object Property Complement Of ------->
 ''', format="turtle")
-        agent =  config.Config["inferencers"]["Object Complement Of"]
         self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Property Complement Of"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Efficiency'), RDF.type, OWL.Nothing), self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#VitalStatusOfPat'), RDF.type, OWL.Nothing), self.app.db)
 
+    def test_object_union_of(self):
+        self.dry_run = False
 
-#    def test_object_union_of(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
 # <-------  Object Union Of ------- 
-# Need to come back to this
-# -------  Object Union Of -------> 
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Object Union Of"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
-#    def test_data_union_of(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
+sio:GeometricEntity rdf:type owl:Class ;
+    rdfs:label "geometric entity" ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    dct:description "A geometric entity is an information content entity that pertains to the structure and topology of a space." .
+
+sio:Curve rdf:type owl:Class ;
+    rdfs:label "curve" ;
+    rdfs:subClassOf sio:GeometricEntity ;
+    dct:description "A curve is a geometric entity that may be located in n-dimensional spatial region whose extension may be n-dimensional,  is composed of at least two fully connected points and does not intersect itself." .
+
+sio:Line rdf:type owl:Class ;
+    rdfs:subClassOf sio:Curve ;
+    rdfs:label "line" ;
+    owl:equivalentClass 
+        [   rdf:type owl:Class ;
+            owl:unionOf ( sio:LineSegment sio:Ray sio:InfiniteLine ) ] ;
+    dct:description "A line is curve that extends in a single dimension (e.g. straight line; exhibits no curvature), and is composed of at least two fully connected points." .
+# -------  Object Union Of -------> 
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Union Of"]
+        agent.process_graph(self.app.db)
+        self.assertIn((SIO.LineSegment, RDFS.subClassOf, SIO.Line), self.app.db)
+        self.assertIn((SIO.Ray, RDFS.subClassOf, SIO.Line), self.app.db)
+        self.assertIn((SIO.InfiniteLine, RDFS.subClassOf, SIO.Line), self.app.db)
+
+    def test_data_union_of(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
 # <-------  Data Union Of ------- 
 # Need to come back to this
-# -------  Data Union Of -------> 
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Data Union Of"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-#    def test_disjoint_union(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:MathematicalEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    rdfs:label "mathematical entity" ;
+    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+
+sio:Number rdf:type owl:Class ;
+    rdfs:label "number" ;
+    rdfs:subClassOf sio:MathematicalEntity ;
+    dct:description "A number is a mathematical object used to count, label, and measure." .
+
+sio:MeasurementValue rdf:type owl:Class ;
+    rdfs:label "measurement value" ;
+    rdfs:subClassOf sio:Number ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Class ;
+            owl:unionOf ( 
+                [ rdf:type owl:Restriction ; 
+                    owl:onProperty sio:hasValue ;
+                    owl:someValuesFrom xsd:dateTime ] 
+                [ rdf:type owl:Restriction ; 
+                    owl:onProperty sio:hasValue ;
+                    owl:someValuesFrom xsd:double ]
+                [ rdf:type owl:Restriction ; 
+                    owl:onProperty sio:hasValue ;
+                    owl:someValuesFrom xsd:float ]
+                [ rdf:type owl:Restriction ; 
+                    owl:onProperty sio:hasValue ;
+                    owl:someValuesFrom xsd:integer ]
+            ) ] ;
+    dct:description "A measurement value is a quantitative description that reflects the magnitude of some attribute." .
+# -------  Data Union Of -------> 
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Union Of"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+
+    def test_disjoint_union(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
 # <-------  Disjoint Union ------- 
-# Need to come back to this
+sio:BiologicalEntity  rdf:type owl:Class ;
+    rdfs:label "biological entity" ;
+    rdfs:subClassOf sio:HeterogeneousSubstance ;
+    dct:description "A biological entity is a heterogeneous substance that contains genomic material or is the product of a biological process." .
+
+sio:HeterogeneousSubstance  rdf:type owl:Class ;
+    rdfs:label "heterogeneous substance" ;
+    rdfs:subClassOf sio:MaterialEntity ;
+    rdfs:subClassOf sio:ChemicalEntity ;
+#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
+    dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
+
+sio:MaterialEntity  rdf:type owl:Class ;
+    rdfs:label "material entity" ;
+    rdfs:subClassOf sio:Object ;
+#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
+#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
+    dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
+
+sio:ChemicalEntity  rdf:type owl:Class ;
+    rdfs:label "chemical entity" ;
+    rdfs:subClassOf sio:MaterialEntity ;
+#    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
+    dct:description "A chemical entity is a material entity that pertains to chemistry." .
+
+ex:Lobe rdf:type owl:Class ;
+    rdfs:subClassOf sio:BiologicalEntity ;
+    rdfs:label "lobe" ;
+    dct:description "A lobe that is part the brain." ;
+    owl:equivalentClass 
+        [ rdf:type owl:Class ;
+            owl:disjointUnionOf ( ex:FrontalLobe ex:ParietalLobe ex:TemporalLobe ex:OccipitalLobe ex:LimbicLobe ) ] .
 # -------  Disjoint Union -------> 
-#''', format="turtle")
-#        agent =  config.Config["inferencers"]["Disjoint Union"]
-#        self.app.nanopub_manager.publish(*[np])
-#        agent.process_graph(self.app.db)
-#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Disjoint Union"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#FrontalLobe'), RDFS.subClassOf, URIRef('http://example.com/ont/example#Lobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#ParietalLobe'), RDFS.subClassOf, URIRef('http://example.com/ont/example#Lobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#TemporalLobe'), RDFS.subClassOf, URIRef('http://example.com/ont/example#Lobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#OccipitalLobe'), RDFS.subClassOf, URIRef('http://example.com/ont/example#Lobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#LimbicLobe'), RDFS.subClassOf, URIRef('http://example.com/ont/example#Lobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#FrontalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#ParietalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#FrontalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#TemporalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#FrontalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#OccipitalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#FrontalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#LimbicLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#ParietalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#FrontalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#ParietalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#TemporalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#ParietalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#OccipitalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#ParietalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#LimbicLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#TemporalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#FrontalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#TemporalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#ParietalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#TemporalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#OccipitalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#TemporalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#LimbicLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#OccipitalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#FrontalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#OccipitalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#ParietalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#OccipitalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#TemporalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#OccipitalLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#LimbicLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#LimbicLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#FrontalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#LimbicLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#ParietalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#LimbicLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#TemporalLobe')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#LimbicLobe'), OWL.disjointWith, URIRef('http://example.com/ont/example#OccipitalLobe')), self.app.db)
+        
 
