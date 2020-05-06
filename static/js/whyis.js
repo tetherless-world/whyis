@@ -3163,8 +3163,23 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         },
                         "encoding" : {},
                         "width" : 1000,
-                        "height" : 700,
-                        "resize" : "true"
+                        "resize" : "true",
+                        "config": {
+                            "style": {
+                                "guide-label" : {
+                                    "fontSize": 16
+                                },
+                                "guide-title" : {
+                                    "fontSize": 20
+                                },
+                                "label" : {
+                                    "fontSize": 14
+                                },
+                                "group-title" : {
+                                    "fontSize": 24
+                                }
+                            }
+                        }
                     };
 
                     var instanceFacets = instanceFacetService(scope.type, scope.constraints);
