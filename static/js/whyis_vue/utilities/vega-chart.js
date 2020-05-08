@@ -58,8 +58,7 @@ function generateChartId () {
   window.crypto.getRandomValues(intArr)
   const chartId = Array.from(intArr, (dec) => ('0' + dec.toString(16)).substr(-2)).join('')
 
-  return `${lodPrefix}/${chartPrefix}/${chartId}`
-}
+  return `${lodPrefix}/${chartPrefix}/${chartId}`}
 
 function buildChartLd (chart) {
   chart = Object.assign({}, chart)

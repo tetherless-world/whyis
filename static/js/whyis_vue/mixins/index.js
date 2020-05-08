@@ -1,1 +1,1 @@
-import './nanopub-mixin'
+import './view-mixin'

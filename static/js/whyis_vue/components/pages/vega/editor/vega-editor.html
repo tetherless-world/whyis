@@ -34,23 +34,41 @@
     <template slot="paneR">
       <split-pane :default-percent="30" split="horizontal">
         <template slot="paneL">
-          <form class="md-layout title-form" @submit.prevent="saveChart">
-            <md-card class="chart-metadata">
-              <md-card-content>
-                <div class="title-bar">
-                  <md-field class="chart-title-field">
-                    <label for="chart-title">Title</label>
-                    <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
-                  </md-field>
-                  <md-button type="submit" class="save-button md-primary">Save</md-button>
-                </div>
-                <md-field class="chart-description-field">
-                  <label for="chart-description">Description</label>
-                  <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
+          <md-card class="chart-metadata">
+            <md-card-actions md-alignment="left">
+              <md-button class="md-primary md-raised"
+                        :disabled="!unsavedChanges"
+                        v-bind:title="saveLabel"
+                        v-bind:aria-label="saveLabel"
+                        @click="saveChart()"
+                        >
+                <md-icon>save</md-icon>
+                Save
+              </md-button>
+              <md-button class="md-primary md-raised"
+                        v-show="pageView === 'edit'"
+                        :href="viewVisUrl"
+                        @click="onNavClick($event)"
+                        title="View this visualization"
+                        aria-label="View this visualization"
+                        >
+                <md-icon>visibility</md-icon>
+                View
+              </md-button>
+            </md-card-actions>
+            <md-card-content>
+              <div class="title-bar">
+                <md-field class="chart-title-field">
+                  <label for="chart-title">Title</label>
+                  <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
                 </md-field>
-              </md-card-content>
-            </md-card>
-          </form>
+              </div>
+              <md-field class="chart-description-field">
+                <label for="chart-description">Description</label>
+                <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
+              </md-field>
+            </md-card-content>
+          </md-card>
         </template>
         <template slot="paneR">
           <md-tabs>
@@ -67,4 +85,12 @@
       </split-pane>
     </template>
   </split-pane>
+  <md-dialog-confirm
+      :md-active.sync="discardChangesDialogActive"
+      md-title="Discard Changes?"
+      md-content="You are navigating away from this page.
+                  Any changes will be discarded. Proceed?"
+      md-confirm-text="Proceed"
+      md-cancel-text="Cancel"
+      @md-confirm="discardChangesAndGo()" />
 </div>

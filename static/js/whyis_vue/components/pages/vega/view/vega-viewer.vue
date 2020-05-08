@@ -12,6 +12,15 @@
       <div class="chart-metadata">
         <div class="md-title">{{chart.title}}</div>
         <p class="chart-description">{{chart.description}}</p>
+        <div>
+          <md-button class="md-primary md-raised"
+                     title="Edit this visualization"
+                     aria-label="Edit this visualization"
+                     >
+            <md-icon>edit</md-icon>
+            Edit
+          </md-button>
+        </div>
       </div>
       <vega-lite :spec="spec"/>
     </div>
@@ -21,6 +30,7 @@
 <script>
 import Vue from 'vue'
 
+import { getViewUrl } from 'utilities/views'
 import { loadChart, buildSparqlSpec } from 'utilities/vega-chart'
 import { querySparql } from 'utilities/sparql'
 
@@ -34,6 +44,11 @@ export default Vue.component('vega-viewer', {
   },
   created () {
     this.loadVisualization()
+  },
+  computed: {
+    editUrl () {
+      return getViewUrl(this.pageUri, 'edit')
+    }
   },
   methods: {
     loadVisualization () {
