@@ -567,6 +567,24 @@ construct {
 
         self.get_label = get_label
 
+        def initialize_g():
+            if not hasattr(g, "initialized"):
+                g.initialized = True
+                g.ns = self.NS
+                g.get_summary = get_summary
+                g.get_label = get_label
+                g.labelize = self.labelize
+                g.get_resource = self.get_resource
+                g.get_entity = self.get_entity
+                g.rdflib = rdflib
+                g.isinstance = isinstance
+                g.current_user = current_user
+                g.slugify = slugify
+                g.db = self.db
+
+
+        self.initialize_g = initialize_g
+
         @self.before_request
         def load_forms():
             if 'authenticators' in self.config:
@@ -575,18 +593,7 @@ construct {
                     if user is not None:
                     #    login_user(user)
                         break
-
-            g.ns = self.NS
-            g.get_summary = get_summary
-            g.get_label = get_label
-            g.labelize = self.labelize
-            g.get_resource = self.get_resource
-            g.get_entity = self.get_entity
-            g.rdflib = rdflib
-            g.isinstance = isinstance
-            g.current_user = current_user
-            g.slugify = slugify
-            g.db = self.db
+            initialize_g()
 
         @self.login_manager.user_loader
         def load_user(user_id):
@@ -709,6 +716,7 @@ construct {
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
         def render_view(resource, view=None, args=None, use_cache=True):
+            self.initialize_g()
             if view is None and 'view' in request.args:
                 view = request.args['view']
 

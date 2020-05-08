@@ -5,23 +5,8 @@ from whyis.blueprint.sparql import sparql_blueprint
 from whyis.decorator import conditional_login_required
 
 
-import cProfile
-
-def do_cprofile(func):
-    def profiled_func(*args, **kwargs):
-        profile = cProfile.Profile()
-        try:
-            profile.enable()
-            result = func(*args, **kwargs)
-            profile.disable()
-            return result
-        finally:
-            profile.print_stats()
-    return profiled_func
-
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
 @conditional_login_required
-@do_cprofile
 def sparql_view():
     has_query = False
     for arg in list(request.args.keys()):
