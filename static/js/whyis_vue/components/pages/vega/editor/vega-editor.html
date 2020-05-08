@@ -56,7 +56,7 @@
           <md-tabs>
             <md-tab md-label="Chart">
               <div class="vega-container">
-                <vega-lite :spec="spec"/>
+                <vega-lite :spec="spec" @new-vega-view="onNewVegaView"/>
               </div>
             </md-tab>
             <md-tab md-label="Table">
