@@ -509,7 +509,7 @@ Config = dict(
     FILTER(?restriction = ?restrict) 
     FILTER(?member != ?item)''', 
             consequent = "?member owl:differentFrom ?item .",
-            explanation = "Since {{restriction}} is an all different restrictions with individuals listed in {{list}}, each member in {{list}} is different from each other member in the list."
+            explanation = "Since {{restriction}} is an all different restriction with individuals listed in {{list}}, each member in {{list}} is different from each other member in the list."
         ),
         "Class Assertion" : autonomic.Deductor(
             resource = "?resource", 
@@ -521,35 +521,35 @@ Config = dict(
             consequent = "?resource rdf:type ?superClass .",
             explanation = "Since {{class}} is a subclass of {{superClass}}, any individual that is an instance of {{class}} is also an instance of {{superClass}}. Therefore, {{resource}} is an instance of {{superClass}}."
         ),
-        "Positive Object Property Assertion" : autonomic.Deductor(
-            resource = "?resource", 
-            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-            antecedent =  '''
-    ?resource ?objectProperty ?o.
-    ?objectProperty rdf:type owl:ObjectProperty .
-    ?class rdf:type owl:Class;
-        rdfs:subClassOf|owl:equivalentClass
-            [ rdf:type owl:Restriction ;
-                owl:onProperty ?objectProperty ;
-                owl:someValuesFrom owl:Thing ] .''',#may need to come back to this 
-            consequent = "?resource rdf:type ?class .",
-            explanation = "Since {{resource}} {{objectProperty}} {{o}}, and {{class}} has an object property restriction on {{objectProperty}} to have any value that is an owl:Thing, we can infer that {{resource}} is a {{class}}."
-        ),
-        "Positive Data Property Assertion" : autonomic.Deductor( # Need to revisit to include data ranges
-            resource = "?resource", 
-            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
-            antecedent =  '''
-    ?resource ?dataProperty ?o.
-    ?dataProperty rdf:type owl:DatatypeProperty .
-    ?class rdf:type owl:Class;
-        rdfs:subClassOf|owl:equivalentClass
-            [ rdf:type owl:Restriction ;
-                owl:onProperty ?dataProperty ;
-                owl:someValuesFrom ?value ] .
-    FILTER(DATATYPE(?o) = ?value)''', 
-            consequent = "?resource rdf:type ?class .",
-            explanation = "Since {{resource}} {{dataProperty}} {{o}}, and {{class}} has an object property restriction on {{dataProperty}} to have a value of type {{value}}, and {{o}} is of type {{value}}, we can infer that {{resource}} is a {{class}}."
-        ),
+#        "Positive Object Property Assertion" : autonomic.Deductor(
+#            resource = "?resource", 
+#            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            antecedent =  '''
+#    ?resource ?objectProperty ?o.
+#    ?objectProperty rdf:type owl:ObjectProperty .
+#    ?class rdf:type owl:Class;
+#        rdfs:subClassOf|owl:equivalentClass
+#            [ rdf:type owl:Restriction ;
+#                owl:onProperty ?objectProperty ;
+#                owl:someValuesFrom owl:Thing ] .''',#may need to come back to this 
+#            consequent = "?resource rdf:type ?class .",
+#            explanation = "Since {{resource}} {{objectProperty}} {{o}}, and {{class}} has an object property restriction on {{objectProperty}} to have any value that is an owl:Thing, we can infer that {{resource}} is a {{class}}."
+#        ),
+#        "Positive Data Property Assertion" : autonomic.Deductor( # Need to revisit to include data ranges
+#            resource = "?resource", 
+#            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            antecedent =  '''
+#    ?resource ?dataProperty ?o.
+#    ?dataProperty rdf:type owl:DatatypeProperty .
+#    ?class rdf:type owl:Class;
+#        rdfs:subClassOf|owl:equivalentClass
+#            [ rdf:type owl:Restriction ;
+#                owl:onProperty ?dataProperty ;
+#                owl:someValuesFrom ?value ] .
+#    FILTER(DATATYPE(?o) = ?value)''', 
+#            consequent = "?resource rdf:type ?class .",
+#            explanation = "Since {{resource}} {{dataProperty}} {{o}}, and {{class}} has an object property restriction on {{dataProperty}} to have a value of type {{value}}, and {{o}} is of type {{value}}, we can infer that {{resource}} is a {{class}}."
+#        ), # the previous two might just be s p o assertion
         "Negative Object Property Assertion" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
@@ -685,7 +685,12 @@ Config = dict(
         "Data One Of" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?datatypeProperty rdf:type owl:DatatypeProperty ;
+        rdfs:range [ rdf:type owl:DataRange ;
+            owl:oneOf ?list ] .
+    ?resource ?datatypeProperty ?value .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "",
             explanation = ""
         ), #need to come back to this
@@ -860,7 +865,7 @@ Config = dict(
                         owl:minCardinality ?cardinalityValue ].
         }
     }''',
-            consequent = "?resource ?dataProperty :x .",
+            consequent = "",
             explanation = "Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."
         ), # Still need to determine what to return, returning blanknode construction
         "Data Exact Cardinality" : autonomic.Deductor(
@@ -965,7 +970,9 @@ Config = dict(
         "Data Complement Of" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?datatype rdf:type rdfs:Datatype ;
+        owl:datatypeComplementOf ?complement .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
@@ -997,86 +1004,185 @@ Config = dict(
         "Object Intersection Of" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            antecedent =  '''
+    ?class rdf:type owl:Class ;
+        owl:intersectionOf ?list .
+    ?list rdf:rest*/rdf:first ?member .
+    ?resource rdf:type ?member .
+    {
+        SELECT DISTINCT ?item ?restrict WHERE
+        {
+            ?concept rdf:type owl:Class ;
+                owl:intersectionOf ?list .
+            ?list rdf:rest*/rdf:first ?item .
+            ?individual rdf:type ?item .
+        }
+    }
+    FILTER(?class = ?concept) 
+    FILTER(?resource = ?individual) 
+    FILTER(?member != ?item)''',# As currently implemented, i think that is the resource is of type any two members in the list, it gets assigned to be of type class
+            consequent = "?resource rdf:type ?class.",
+            explanation = "Since {{class}} is the intersection of the the members in {{list}}, and {{resource}} is of type each of the members in the list, then we can infer {{resource}} is a {{class}}."
         ),
         "Data Intersection Of" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?datatype rdf:type rdfs:Datatype ;
+        owl:intersectionOf ?list .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Object Qualified Max Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?resource rdf:type ?class ;
+        ?objectProperty ?object .
+    ?object rdf:type ?restrictedClass .
+    ?objectProperty rdf:type owl:ObjectProperty .
+    ?class rdfs:subClassOf|owl:equivalentClass
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ?objectProperty ; 
+            owl:maxQualifiedCardinality ?value ;
+            owl:onClass ?restrictedClass ] .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Object Qualified Min Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?resource rdf:type ?class ;
+        ?objectProperty ?object .
+    ?object rdf:type ?restrictedClass .
+    ?objectProperty rdf:type owl:ObjectProperty .
+    ?class rdfs:subClassOf|owl:equivalentClass
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ?objectProperty ; 
+            owl:minQualifiedCardinality ?value ;
+            owl:onClass ?restrictedClass ] .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Object Qualified Exact Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?resource rdf:type ?class ;
+        ?objectProperty ?object .
+    ?object rdf:type ?restrictedClass .
+    ?objectProperty rdf:type owl:ObjectProperty .
+    ?class rdfs:subClassOf|owl:equivalentClass
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ?objectProperty ; 
+            owl:qualifiedCardinality ?value ;
+            owl:onClass ?restrictedClass ] .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Data Qualified Max Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?restriction rdf:type owl:Restriction ;
+        owl:onProperty ?datatypeProperty ;
+        owl:maxQualifiedCardinality ?value ;
+        owl:onDataRange ?list .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Data Qualified Min Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?restriction rdf:type owl:Restriction ;
+        owl:onProperty ?datatypeProperty ;
+        owl:minQualifiedCardinality ?value ;
+        owl:onDataRange ?list .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Data Qualified Exact Cardinality" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?restriction rdf:type owl:Restriction ;
+        owl:onProperty ?datatypeProperty ;
+        owl:qualifiedCardinality ?value ;
+        owl:onDataRange ?list .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "Datatype Restriction" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?datatype rdf:type rdfs:Datatype ;
+        owl:onDatatype ?restrictedDatatype ;
+        owl:withRestrictions ?list .
+    ?list rdf:rest*/rdf:first ?member .''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
         "All Disjoint Classes" : autonomic.Deductor(
-            resource = "?resource", 
+            resource = "?restriction", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            antecedent =  '''
+    ?restriction rdf:type owl:AllDisjointClasses ;
+        owl:distinctMembers ?list .
+    ?list rdf:rest*/rdf:first ?member .
+    {
+        SELECT DISTINCT ?item ?restrict WHERE
+        {
+            ?restrict rdf:type owl:AllDifferent ;
+                owl:distinctMembers ?list .
+            ?list rdf:rest*/rdf:first ?item .
+        }
+    }
+    FILTER(?restriction = ?restrict)
+    FILTER(?member != ?item)''', 
+            consequent = "?member owl:disjointWith ?item .",
+            explanation = "Since {{restriction}} is an all disjoint classes restriction with classes listed in {{list}}, each member in {{list}} is disjoint with each other member in the list."
         ),
         "All Disjoint Properties" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            antecedent =  '''
+    ?restriction rdf:type owl:AllDisjointProperties ;
+        owl:members ?list .
+    ?list rdf:rest*/rdf:first ?member .
+    {
+        SELECT DISTINCT ?item ?restrict WHERE
+        {
+            ?restrict rdf:type owl:AllDisjointProperties ;
+                owl:members ?list .
+            ?list rdf:rest*/rdf:first ?item .
+        }
+    }
+    FILTER(?restriction = ?restrict) 
+    FILTER(?member != ?item)''',
+            consequent = "?member owl:propertyDisjointWith ?item .",
+            explanation = "Since {{restriction}} is an all disjoint properties restriction with properties listed in {{list}}, each member in {{list}} is disjoint with each other property in the list."
         ),
         "Object Property Chain Inclusion" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            antecedent =  '''
+    ?objectProperty rdf:type owl:ObjectProperty ;
+        owl:propertyChainAxiom ?list .
+    ?list rdf:first ?prop1 .
+    ?list rdf:rest/rdf:first ?prop2 .
+    ?resource ?prop1 [ ?prop2 ?o ] .''',
+            consequent = "?resource ?objectProperty ?o .",
+            explanation = ""#currently limited to two properties
         ),
         "SETLr": autonomic.SETLr(),
         "SETLMaker": autonomic.SETLMaker(),

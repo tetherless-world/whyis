@@ -97,9 +97,6 @@ ex-kb:ImaginaryFriend
     rdfs:label "my imaginary friend" ;
     rdf:type sio:Real ;
     rdf:type sio:Fictional .
-
-# Should return ex-kb:ImaginaryFriend rdf:type owl:Nothing .
-
 # ------- Class Disjointness ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -113,7 +110,6 @@ ex-kb:ImaginaryFriend
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Transitivity -------
-
 sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                 owl:SymmetricProperty ;
     rdfs:label "is related to" ;
@@ -162,8 +158,6 @@ ex-kb:Finger rdf:type owl:Individual ;
 
 ex-kb:Hand rdf:type owl:Individual ;
     rdfs:label "hand" .
-
-# should return "ex-kb:Fingernail sio:isPartOf ex-kb:Hand ."
 # ------- Object Property Transitivity ------->
 
 ''', format="turtle")
@@ -199,8 +193,6 @@ ex-kb:Workflow rdf:type sio:Process ;
 
 ex-kb:Step rdf:type sio:Process ;
     rdfs:label "step" .
-
-# Should return "ex-kb:Workflow sio:hasPart ex-kb:Workflow ."
 # ------- Object Property Reflexivity  ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -261,9 +253,6 @@ sio:Collection rdf:type owl:Class ;
 ex-kb:Group rdf:type sio:Collection ;
     rdfs:label "group" ;
     sio:hasMember ex-kb:Group .
-
-# Should return ex-kb:Group rdf:type owl:Nothing
-
 # ------- Object Property Irreflexivity  ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -458,7 +447,6 @@ sio:Human  rdf:type owl:Class ;
     rdfs:subClassOf sio:MulticellularOrganism ;
     dct:description "A human is a primates of the family Hominidae and are characterized by having a large brain relative to body size, with a well developed neocortex, prefrontal cortex and temporal lobes, making them capable of abstract reasoning, language, introspection, problem solving and culture through social learning." .
 
-
 ex-kb:Mother rdf:type owl:Individual ;
     rdfs:label "mother" ;
     sio:isRoleOf ex-kb:Sarah ;
@@ -645,7 +633,6 @@ ex-kb:Susan rdf:type sio:Human ;
     rdfs:label "Susan" ;
     ex:hasFather ex-kb:Jordan ;
     ex:hasMother ex-kb:Jordan .
-
 # ------- Property Disjointness ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -670,7 +657,6 @@ ex-kb:Peter rdf:type sio:Human ;
 
 ex-kb:Samantha rdf:type sio:Human ;
     rdfs:label "Samantha" .
-
 # ------- Object Property Symmetry ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -698,7 +684,6 @@ ex-kb:Nose rdf:type owl:Individual ;
 ex-kb:Face rdf:type owl:Individual ;
     sio:isProperPartOf ex-kb:Nose ;
     rdfs:label "face" .
-
 # ------- Object Property Asymmetry ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -858,12 +843,41 @@ ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Chain Inclusion -------
 #	P owl:propertyChainAxiom (P1 … Pn).
+sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:label "is related to" ;
+    dct:description "A is related to B iff there is some relation between A and B." .
+
+sio:isSpatiotemporallyRelatedTo rdf:type owl:ObjectProperty ,
+                                owl:SymmetricProperty ;
+    rdfs:subPropertyOf sio:isRelatedTo ;
+    rdfs:label "is spatiotemporally related to" ;
+    dct:description "A is spatiotemporally related to B iff A is in the spatial or temporal vicinity of B" .
+
+sio:overlapsWith rdf:type owl:ObjectProperty ,
+        owl:SymmetricProperty ,
+        owl:ReflexiveProperty ;
+    rdfs:subPropertyOf sio:isSpatiotemporallyRelatedTo ;
+    owl:propertyChainAxiom ( sio:overlapsWith sio:isPartOf ) ;
+    dct:description "A overlaps with B iff there is some C that is part of both A and B." ;
+    rdfs:label "overlaps with" .
+
+ex-kb:Rug rdf:type sio:Object ;
+    rdfs:label "rug" ;
+    sio:overlapsWith ex-kb:FloorPanel .
+
+ex-kb:FloorPanel rdf:type sio:Object ;
+    rdfs:label "floor panel" ;
+    sio:isPartOf ex-kb:Floor .
+
+ex-kb:Floor rdf:type sio:Object ;
+    rdfs:label "floor" .
 # ------- Object Property Chain Inclusion ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Chain Inclusion"]
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), SIO.hasAttribute, URIRef('http://example.com/kb/example#')), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#Rug'), SIO.overlapsWith, URIRef('http://example.com/kb/example#Floor')), self.app.db)
 
     def test_class_equivalence (self):
         self.dry_run = False
@@ -1058,13 +1072,13 @@ ex-kb:Reliable rdf:type sio:Quality ;
         self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Attribute), self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#Reliable'), RDF.type, SIO.Entity), self.app.db)
 
-    def test_positive_object_property_assertion(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------  Positive Object Property Assertion ------- 
-# Need to come back to this
+#    def test_positive_object_property_assertion(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <-------  Positive Object Property Assertion ------- 
+## Need to come back to this
 #
 #?resource ?objectProperty ?o.
 #?objectProperty rdf:type owl:ObjectProperty .
@@ -1073,26 +1087,26 @@ ex-kb:Reliable rdf:type sio:Quality ;
 #        [ rdf:type owl:Restriction ;
 #            owl:onProperty ?objectProperty ;
 #            owl:someValuesFrom owl:Thing ] .
-# -------  Positive Object Property Assertion -------> 
-''', format="turtle")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Positive Object Property Assertion"]
-        agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
-
-    def test_positive_data_property_assertion(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <------- Positive Data Property Assertion ------- 
-# Need to come back to this
+## -------  Positive Object Property Assertion -------> 
+#''', format="turtle")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Positive Object Property Assertion"]
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+#
+#    def test_positive_data_property_assertion(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <------- Positive Data Property Assertion ------- 
+## Need to come back to this
 # -------  Positive Data Property Assertion -------> 
-''', format="turtle")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Positive Data Property Assertion"]
-        agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+#''', format="turtle")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Positive Data Property Assertion"]
+#        agent.process_graph(self.app.db)
+#        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
     def test_negative_object_property_assertion(self):
         self.dry_run = False
@@ -1128,7 +1142,6 @@ ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
         agent =  config.Config["inferencers"]["Negative Object Property Assertion"]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#AgeOfSamantha'), RDF.type, OWL.Nothing), self.app.db)
-
 
     def test_negative_data_property_assertion(self):
         self.dry_run = False
@@ -1389,14 +1402,41 @@ ex-kb:Tom ex:hasAge "23"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Disjoint Classes-------
-_:x rdf:type owl:AllDisjointClasses.
-_:x owl:members ( C1 … Cn ).
+sio:Entity rdf:type owl:Class ;
+    rdfs:label "entity" ;
+    dct:description "Every thing is an entity." .
+
+sio:Process rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+#    <rdfs:subClassOf rdf:nodeID="arc0158b17"/>
+#    <rdfs:subClassOf rdf:nodeID="arc0158b18"/>
+    dct:description "A process is an entity that is identifiable only through the unfolding of time, has temporal parts, and unless otherwise specified/predicted, cannot be identified from any instant of time in which it exists." ;
+    rdfs:label "process" .
+
+sio:Attribute rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "attribute" ;
+    dct:description "An attribute is a characteristic of some entity." .
+
+sio:Object rdf:type owl:Class ;
+    rdfs:subClassOf sio:Entity ;
+    rdfs:label "object" ;
+    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
+    dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
+
+[ rdf:type owl:AllDisjointClasses ;
+    owl:members ( sio:Process sio:Attribute sio:Object ) ] .
 # -------  All Disjoint Classes ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Classes"]
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, URIRef('http://example.com/ont/example#Unliked')), self.app.db)
+        self.assertIn((SIO.Process,OWL.disjointWith,SIO.Attribute), self.app.db)
+        self.assertIn((SIO.Process,OWL.disjointWith,SIO.Object), self.app.db)
+        self.assertIn((SIO.Attribute,OWL.disjointWith,SIO.Process), self.app.db)
+        self.assertIn((SIO.Attribute,OWL.disjointWith,SIO.Object), self.app.db)
+        self.assertIn((SIO.Object,OWL.disjointWith,SIO.Process), self.app.db)
+        self.assertIn((SIO.Object,OWL.disjointWith,SIO.Attribute), self.app.db)
 
     def test_all_disjoint_properties(self):
         self.dry_run = False
@@ -1404,14 +1444,29 @@ _:x owl:members ( C1 … Cn ).
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Disjoint Properties-------
-#_:x rdf:type owl:AllDisjointProperties.
-#_:x owl:members ( P1 … Pn ).
+ex-kb:DisjointPropertiesRestriction rdf:type owl:AllDisjointProperties ;
+    owl:members ( ex:hasMother ex:hasFather ex:hasSibling ) .
+
+ex:hasMother rdf:type owl:ObjectProperty ;
+    rdfs:label "has mother" .
+
+ex:hasFather rdf:type owl:ObjectProperty ;
+    rdfs:label "has father" .
+
+ex:hasSibling rdf:type owl:ObjectProperty ;
+    rdfs:label "has sibling" .
+
 # -------  All Disjoint Properties ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Properties"]
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, URIRef('http://example.com/ont/example#')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasMother'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasFather')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasMother'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasSibling')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasFather'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasMother')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasFather'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasSibling')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasSibling'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasMother')), self.app.db)
+        self.assertIn((URIRef('http://example.com/ont/example#hasSibling'), OWL.propertyDisjointWith, URIRef('http://example.com/ont/example#hasFather')), self.app.db)
 
     def test_all_different_individuals(self):
         self.dry_run = False
@@ -1528,6 +1583,31 @@ ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
         np.assertion.parse(data=prefixes+'''
 # <-------  Datatype Restriction -------
 # Need to come back to this
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
+sio:ProbabilityMeasure rdf:type owl:Class ;
+    rdfs:subClassOf sio:DimensionlessQuantity ;
+    dct:description "A probability measure is quantity of how likely it is that some event will occur." ;
+    rdfs:label "probability measure" .
+
+sio:ProbabilityValue rdf:type owl:Class ;
+    rdfs:subClassOf sio:ProbabilityMeasure ;
+    rdfs:subClassOf
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:hasValue ;
+            owl:someValuesFrom 
+                [ rdf:type rdfs:Datatype ;
+                    owl:onDatatype xsd:double ;
+                    owl:withRestrictions ( [ xsd:minInclusive "0.0"^^xsd:double ] [ xsd:maxInclusive "1.0"^^xsd:double ] ) 
+                ]
+        ] ;
+    dct:description "A p-value or probability value is the probability of obtaining a test statistic at least as extreme as the one that was actually observed, assuming that the null hypothesis is true" ;
+    #<sio:hasSynonym xml:lang="en">p-value</sio:hasSynonym>
+    rdfs:label "probability value" .
+
 #_:x rdf:type rdfs:Datatype.
 #_:x owl:onDatatype DN.
 #_:x owl:withRestrictions (_:x1 ... _:xn).
@@ -1688,6 +1768,38 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
 #_:x owl:onProperty P.
 #_:x owl:maxQualifiedCardinality n.
 #_:x owl:onClass C.
+sio:Triangle rdf:type owl:Class ;
+    rdfs:subClassOf sio:Polygon ;
+    dct:description "A triangle is a polygon composed of three points and three line segments, in which each point is fully connected to another point along through the line segment." ;
+    rdfs:label "triangle" .
+
+sio:LineSegment rdf:type owl:Class ;
+    rdfs:subClassOf sio:Line ;
+#    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
+    dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
+    rdfs:label "line segment" .
+
+sio:DirectedLineSegment rdf:type owl:Class ;
+    rdfs:subClassOf sio:LineSegment ;
+#    <rdfs:subClassOf rdf:nodeID="arc703eb253"/>
+#    <rdfs:subClassOf rdf:nodeID="arc703eb254"/>
+    dct:description "A directed line segment is a line segment that is contained by an ordered pair 
+of endpoints (a start point and an endpoint)." ;
+    rdfs:label "directed line segment" .
+
+sio:ArrowedLineSegment rdf:type owl:Class ;
+    rdfs:subClassOf sio:DirectedLineSegment ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:hasPart ;
+            owl:someValuesFrom sio:Triangle ] ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:hasComponentPart ; 
+            owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+            owl:onClass sio:Triangle ] ;
+    dct:description "An arrowed line is a directed line segment in which one or both endpoints is tangentially part of a triangle that bisects the line." ;
+    rdfs:label "arrowed line segment" .
 # -------  Object Qualified Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -1762,6 +1874,16 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
 #_:x owl:onProperty P.
 #_:x owl:minQualifiedCardinality n.
 #_:x owl:onClass C.
+
+sio:Polyline rdf:type owl:Class ;
+    rdfs:subClassOf sio:GeometricEntity ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:hasComponentPart ; 
+            owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+            owl:onClass sio:LineSegment ] ;
+    dct:description "A polyline is a connected sequence of line segments." ;
+    rdfs:label "polyline" .
 # -------  Object Qualified Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -1830,6 +1952,20 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
 #_:x owl:onProperty P.
 #_:x owl:qualifiedCardinality n.
 #_:x owl:onClass C.
+
+sio:PolygonEdge rdf:type owl:Class ;
+    rdfs:subClassOf sio:LineSegment ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:isPartOf ;
+            owl:someValuesFrom sio:Polygon ] ;
+    rdfs:subClassOf 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:hasComponentPart ; 
+            owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+            owl:onClass sio:PolygonVertex ] ;
+    dct:description "A polygon edge is a line segment joining two polygon vertices." ;
+    rdfs:label "polygon edge" .
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -2067,6 +2203,20 @@ ex:Percentage rdf:subClassOf sio:UnitOfMeasurement ;
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
 
+    def test_data_property_complement_of(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  Data Property Complement Of ------- 
+# Need to come back to this
+# -------  Data Property Complement Of ------->
+''', format="turtle")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Data Property Complement Of"]
+        agent.process_graph(self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+
     def test_object_union_of(self):
         self.dry_run = False
 
@@ -2237,12 +2387,26 @@ ex:Lobe rdf:type owl:Class ;
 # <------- Object Intersection Of ------- 
 # _:x rdf:type owl:Class.
 # _:x owl:intersectionOf ( C1 … Cn ).
+sio:Target rdf:type owl:Class  ;
+    owl:intersectionOf ( 
+        sio:Molecule 
+        [ rdf:type owl:Restriction ;
+            owl:onProperty sio:isTargetIn ;
+            owl:someValuesFrom sio:Process ] ) ;
+    rdfs:label "target" .
+
+ex-kb:ProteinReceptor rdf:type sio:Molecule ;
+    rdfs:label "protein receptor" ;
+    sio:isTargetIn ex-kb:Therapy .
+
+ex-kb:Therapy rdf:type sio:Process ;
+    rdfs:label "therapy" .
 # ------- Object Intersection Of -------> 
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Intersection Of"]
         agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((URIRef('http://example.com/kb/example#ProteinReceptor'), RDF.type, SIO.Target), self.app.db)
 
     def test_data_intersection_of(self):
         self.dry_run = False
@@ -2256,31 +2420,5 @@ ex:Lobe rdf:type owl:Class ;
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Intersection Of"]
-        agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
-
-    def test_(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------   ------- 
-# -------  -------> 
-''', format="turtle")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"][""]
-        agent.process_graph(self.app.db)
-        self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
-
-    def test_(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------   ------- 
-# -------  -------> 
-''', format="turtle")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"][""]
         agent.process_graph(self.app.db)
         self.assertIn((URIRef('http://example.com/kb/example#'), RDF.type, OWL.Nothing), self.app.db)
