@@ -672,15 +672,37 @@ Config = dict(
             explanation = "Since {{class}} is equivalent to the restriction on {{datatypeProperty}} to have value {{value}} and {{resource}} {{datatypeProperty}} {{value}}, we can infer that {{resource}} rdf:type {{class}}."
         ),#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
         #"Individual Enumeration" (ObjectOneOf, DataOneOf)
-        "Object One Of" : autonomic.Deductor(#deals with lists rdf:rest+/rdf:first to traverse?
+        "Object One Of Membership" : autonomic.Deductor(#deals with lists rdf:rest+/rdf:first to traverse?
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
     ?resource rdf:type owl:Class ;
         owl:oneOf ?list .
     ?list rdf:rest*/rdf:first ?member .''',
-            consequent = "?member rdf:type ?resource.",
-            explanation = ""# need to address inconsistency when something not in the list is of type resource
+            consequent = "?member rdf:type ?resource .",
+            explanation = "Since {{resource}} has a one of relationship with {{list}}, the member {{member}} in {{list}} is of type {{resource}}."
+        ),
+        "Object One Of Inconsistency" : autonomic.Deductor(#deals with lists rdf:rest+/rdf:first to traverse?
+            resource = "?resource", 
+            prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+            antecedent =  '''
+    ?class rdf:type owl:Class ;
+        owl:oneOf ?list .
+    ?list rdf:rest*/rdf:first ?member .
+  	?resource rdf:type ?class .
+    {
+    SELECT DISTINCT (COUNT(?concept) as ?conceptCount) WHERE 
+        {
+            ?concept rdf:type owl:Class ;
+                owl:oneOf ?list .
+          	?resource rdf:type ?class .
+            ?list rdf:rest*/rdf:first ?member .
+            FILTER(?resource = ?member)
+        }
+    }
+    FILTER(?conceptCount=0)''',
+            consequent = "?resource rdf:type owl:Nothing .",
+            explanation = "Since {{class}} has a one of relationship with {{list}}, and {{resource}} is not in {{list}}, the assertion {{resource}} is a {{class}} leads to an inconsistency."# may need to revisit.. do we also check owl:differentFrom?
         ),
         "Data One Of" : autonomic.Deductor(
             resource = "?resource", 
@@ -690,9 +712,22 @@ Config = dict(
         rdfs:range [ rdf:type owl:DataRange ;
             owl:oneOf ?list ] .
     ?resource ?datatypeProperty ?value .
-    ?list rdf:rest*/rdf:first ?member .''',
-            consequent = "",
-            explanation = ""
+    ?list rdf:rest*/rdf:first ?member .
+    {
+        SELECT DISTINCT (COUNT(?datatypeProperty) as ?dataCount) WHERE 
+        {
+            ?datatypeProperty rdf:type owl:DatatypeProperty ;
+            rdfs:range [ rdf:type owl:DataRange ;
+                owl:oneOf ?list ] .
+            ?resource ?datatypeProperty ?value .
+            ?list rdf:rest*/rdf:first ?member .
+            FILTER(?value=?member)
+        }
+    }
+    FILTER(?dataCount=0)
+''',
+            consequent = "?resource rdf:type owl:Nothing .",
+            explanation = "Since {{datatypeProperty}} is restricted to have a value from {{list}}, and {{resource}} {{datatypeProperty}} {{value}}, but {{value}} is not in {{list}}, an inconsistency occurs."
         ), #need to come back to this
         #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
         "Object All Values From" : autonomic.Deductor(
@@ -879,8 +914,7 @@ Config = dict(
         rdfs:subClassOf|owl:equivalentClass
             [ rdf:type owl:Restriction ;
                 owl:onProperty ?dataProperty ;
-                owl:cardinality ?cardinalityValue ].
-    FILTER(?dataCount > ?cardinalityValue)
+                owl:cardinality ?cardinalityValue ] .
     {
         SELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)
         WHERE 
@@ -894,7 +928,8 @@ Config = dict(
                         owl:onProperty ?dataProperty ;
                         owl:cardinality ?cardinalityValue ].
         }
-    }''',
+    }
+    FILTER(?dataCount > ?cardinalityValue)''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ), # -- This is currently only accounting for max. Need to account for min as well
@@ -972,9 +1007,12 @@ Config = dict(
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
     ?datatype rdf:type rdfs:Datatype ;
-        owl:datatypeComplementOf ?complement .''',
+        owl:datatypeComplementOf ?complement .
+    ?resource ?dataProperty ?value .
+    FILTER(DATATYPE(?value) = ?complement)
+    FILTER(DATATYPE(?value) = ?datatype)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{datatype}} is the complement of {{complement}}, and {{resource}} {{dataProperty}} {{value}}, but {{value}} is of type both {{datatype}} and {{complement}}, an inconsistency occurs."
         ),
         "Object Property Complement Of" : autonomic.Deductor(
             resource = "?resource", 
@@ -1008,19 +1046,42 @@ Config = dict(
     ?class rdf:type owl:Class ;
         owl:intersectionOf ?list .
     ?list rdf:rest*/rdf:first ?member .
-    ?resource rdf:type ?member .
     {
-        SELECT DISTINCT ?item ?restrict WHERE
+        ?member rdf:type owl:Class .
+        ?resource rdf:type ?member .
+    }
+    UNION 
+    {
+        ?member rdf:type owl:Restriction ;
+            owl:onProperty ?objectProperty ;
+            owl:someValuesFrom ?restrictedClass .
+        ?objectProperty rdf:type owl:ObjectProperty .
+        ?resource ?objectProperty [rdf:type  ?restrictedClass ] .
+    }
+    {
+        SELECT DISTINCT * WHERE
         {
             ?concept rdf:type owl:Class ;
                 owl:intersectionOf ?list .
             ?list rdf:rest*/rdf:first ?item .
-            ?individual rdf:type ?item .
+            {
+                ?item rdf:type owl:Class .
+                ?individual rdf:type ?item .
+            }
+            UNION
+            {
+                ?item rdf:type owl:Restriction ;
+                    owl:onProperty ?objectProperty ;
+                    owl:someValuesFrom ?restrictedClass .
+                ?objectProperty rdf:type owl:ObjectProperty .
+                ?individual ?objectProperty [rdf:type  ?restrictedClass ] .
+            }
         }
     }
     FILTER(?class = ?concept) 
     FILTER(?resource = ?individual) 
-    FILTER(?member != ?item)''',# As currently implemented, i think that is the resource is of type any two members in the list, it gets assigned to be of type class
+    FILTER(?member != ?item)
+''',# As currently implemented, i think that is the resource is of type any two members in the list, it gets assigned to be of type class
             consequent = "?resource rdf:type ?class.",
             explanation = "Since {{class}} is the intersection of the the members in {{list}}, and {{resource}} is of type each of the members in the list, then we can infer {{resource}} is a {{class}}."
         ),
@@ -1125,25 +1186,46 @@ Config = dict(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
+    ?resource rdf:type ?class ;
+        ?dataProperty ?value .
+    ?class rdf:type owl:Class ;
+        rdfs:subClassOf|owl:equivalentClass
+            [ rdf:type owl:Restriction ;
+                owl:onProperty ?dataProperty ; 
+                owl:someValuesFrom ?datatype ] .
+    ?dataProperty rdf:type owl:DatatypeProperty .
     ?datatype rdf:type rdfs:Datatype ;
         owl:onDatatype ?restrictedDatatype ;
         owl:withRestrictions ?list .
-    ?list rdf:rest*/rdf:first ?member .''',
+  	{
+        ?list rdf:first ?min .
+        ?list rdf:rest/rdf:first ?max .
+        ?min xsd:minInclusive ?minValue .
+        ?max xsd:maxInclusive ?maxValue .
+  	}
+  	UNION
+	{
+        ?list rdf:first ?max .
+        ?list rdf:rest/rdf:first ?min .
+        ?min xsd:minInclusive ?minValue .
+        ?max xsd:maxInclusive ?maxValue .
+  	}
+    FILTER(?value < ?minValue || ?value > ?maxValue)''',# assuming with restriction of the form min exclusive max exclusive
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{class}} has a with restriction on datatype property {{dataProperty}} to be within the range specified in {{list}} with min value {{minValue}} and max value {{maxValue}}, and {{resource}} is of type {{class}} and has a value {{value}} for {{dataProperty}} which is outside the specified range, an inconsistency occurs."
         ),
         "All Disjoint Classes" : autonomic.Deductor(
             resource = "?restriction", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
     ?restriction rdf:type owl:AllDisjointClasses ;
-        owl:distinctMembers ?list .
+        owl:members ?list .
     ?list rdf:rest*/rdf:first ?member .
     {
         SELECT DISTINCT ?item ?restrict WHERE
         {
-            ?restrict rdf:type owl:AllDifferent ;
-                owl:distinctMembers ?list .
+            ?restrict rdf:type owl:AllDisjointClasses ;
+                owl:members ?list .
             ?list rdf:rest*/rdf:first ?item .
         }
     }
@@ -1169,7 +1251,7 @@ Config = dict(
     }
     FILTER(?restriction = ?restrict) 
     FILTER(?member != ?item)''',
-            consequent = "?member owl:propertyDisjointWith ?item .",
+            consequent = "?member owl:propertyDisjointWith ?item . ?item owl:propertyDisjointWith ?member .",
             explanation = "Since {{restriction}} is an all disjoint properties restriction with properties listed in {{list}}, each member in {{list}} is disjoint with each other property in the list."
         ),
         "Object Property Chain Inclusion" : autonomic.Deductor(
