@@ -3163,6 +3163,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         },
                         "encoding" : {},
                         "width" : 1000,
+                        "height" : 700,
                         "resize" : "true",
                         "config": {
                             "style": {
