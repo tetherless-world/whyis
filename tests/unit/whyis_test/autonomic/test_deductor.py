@@ -1446,10 +1446,8 @@ sio:Object rdf:type owl:Class ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Disjoint Properties-------
-#ex-kb:DisjointPropertiesRestriction rdf:type owl:AllDisjointProperties ;
-#    owl:members ( ex:hasMother ex:hasFather ex:hasSibling ) .
-[ rdf:type owl:AllDisjointProperties ;
-    owl:members ( ex:hasMother ex:hasFather ex:hasSibling ) ] .
+ex-kb:DisjointPropertiesRestriction rdf:type owl:AllDisjointProperties ;
+    owl:members ( ex:hasMother ex:hasFather ex:hasSibling ) .
 
 ex:hasMother rdf:type owl:ObjectProperty ;
     rdfs:label "has mother" .
@@ -2165,6 +2163,14 @@ ex-kb:Pat rdf:type sio:Human ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Property Complement Of ------- 
 # Need to come back to this
+sio:hasUnit rdf:type owl:ObjectProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has unit" ;
+    owl:inverseOf sio:isUnitOf ;
+    rdfs:range sio:UnitOfMeasurement ;
+    rdfs:subPropertyOf sio:hasAttribute ;
+    dct:description "has unit is a relation between a quantity and the unit it is a multiple of." .
+
 sio:DimensionlessQuantity rdf:type owl:Class ;
     rdfs:label "dimensionless quantity" ;
     rdfs:subClassOf sio:Quantity ,
@@ -2211,7 +2217,7 @@ ex-kb:Efficiency rdf:type sio:DimensionlessQuantity  ;
     sio:hasUnit [ rdf:type ex:Percentage ] ;
     rdfs:label "efficiency" .
 
-ex:Percentage rdf:subClassOf sio:UnitOfMeasurement ;
+ex:Percentage rdfs:subClassOf sio:UnitOfMeasurement ;
     rdfs:label "percentage" .
 # -------  Object Property Complement Of ------->
 ''', format="turtle")

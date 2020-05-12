@@ -956,7 +956,7 @@ Config = dict(
                 owl:disjointUnionOf ?list ] .
     ?list rdf:rest*/rdf:first ?member .
     {
-        SELECT DISTINCT ?item ?individual WHERE 
+        SELECT DISTINCT ?item ?class WHERE 
         {
             ?class rdf:type owl:Class ;
                 rdfs:subClassOf|owl:equivalentClass
@@ -1026,9 +1026,16 @@ Config = dict(
                         owl:onProperty ?objectProperty ;
                         owl:someValuesFrom ?restrictedClass ] 
             ] .
-    ?resource rdf:type ?class ;
-        ?objectProperty
-            [ rdf:type ?restrictedClass ] .''',
+  	?resource rdf:type ?class ;
+        ?objectProperty [ rdf:type ?objectClass ] .
+  	?objectProperty rdf:type owl:ObjectProperty .
+  	{
+	  	FILTER(?objectClass = ?restrictedClass)
+    }
+  	UNION
+  	{
+        ?objectClass rdfs:subClassOf*|owl:equivalentClass ?restrictedClass . 
+    }''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{class}} is a subclass of or is equivalent to a class with a complement restriction on the use of {{objectProperty}} to have values from {{restrictedClass}}, and {{resource}} is of type {{class}}, but has the link {{objectProperty}} to have values from an instance of {{restrictedClass}}, an inconsistency occurs." # do we also consider lists or complementary properties here?
         ),
@@ -1235,7 +1242,7 @@ Config = dict(
             explanation = "Since {{restriction}} is an all disjoint classes restriction with classes listed in {{list}}, each member in {{list}} is disjoint with each other member in the list."
         ),
         "All Disjoint Properties" : autonomic.Deductor(
-            resource = "?resource", 
+            resource = "?restriction", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
     ?restriction rdf:type owl:AllDisjointProperties ;
@@ -1251,7 +1258,7 @@ Config = dict(
     }
     FILTER(?restriction = ?restrict) 
     FILTER(?member != ?item)''',
-            consequent = "?member owl:propertyDisjointWith ?item . ?item owl:propertyDisjointWith ?member .",
+            consequent = "?member owl:propertyDisjointWith ?item .",
             explanation = "Since {{restriction}} is an all disjoint properties restriction with properties listed in {{list}}, each member in {{list}} is disjoint with each other property in the list."
         ),
         "Object Property Chain Inclusion" : autonomic.Deductor(
