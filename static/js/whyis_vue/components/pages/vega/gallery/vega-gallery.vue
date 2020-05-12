@@ -26,7 +26,7 @@ export default Vue.component('vega-gallery', {
   created () {
     this.loading = true
     getCharts()
-      .then((charts) => this.charts = charts)
+      .then((charts) => {this.charts = charts; console.log(charts)})
       .finally(() => this.loading = false)
   }
 })

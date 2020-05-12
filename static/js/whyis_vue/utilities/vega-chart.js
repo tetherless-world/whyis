@@ -40,11 +40,14 @@ const defaultChart = {
 
 const chartType = 'http://semanticscience.org/resource/Chart'
 
+const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
+const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
+
 const chartFieldUris = {
   baseSpec: 'http://semanticscience.org/resource/hasValue',
   query: 'http://schema.org/query',
   title: 'http://purl.org/dc/terms/title',
-  description: 'http://purl.org/dc/terms/description'
+  description: 'http://purl.org/dc/terms/description',
 }
 
 const chartPrefix = 'viz'
@@ -61,24 +64,35 @@ function generateChartId () {
 function buildChartLd (chart) {
   chart = Object.assign({}, chart)
   chart.baseSpec = JSON.stringify(chart.baseSpec)
-  const chartLd = Object.entries(chart)
-    .reduce((o, [field, value]) => {
-      if (chartFieldUris[field]) {
-        Object.assign(o, { [chartFieldUris[field]]: [{ '@value': value }] })
-      }
-      return o
-    }, {})
-  chartLd['@type'] = [chartType]
-  chartLd['@id'] = chart.uri
+  const chartLd =  {
+    '@id': chart.uri,
+    '@type': [chartType],
+    [foafDepictionUri]: {
+      '@id': `${chart.uri}_depiction`,
+      [hasContentUri]: chart.depiction
+    }
+  }
+  Object.entries(chart)
+    .filter(([field, value]) => chartFieldUris[field])
+    .forEach(([field, value]) => chartLd[chartFieldUris[field]] = [{ '@value': value }])
   return chartLd
 }
 
 function extractChart (chartLd) {
-  const chart = Object.entries(chartFieldUris)
-    .reduce((o, [field, uri]) => Object.assign(o, { [field]: chartLd[uri][0]['@value'] }), {})
-  chart.baseSpec = JSON.parse(chart.baseSpec)
-  chart.uri = chartLd['@id']
+  const chart = {
+    uri: chartLd['@id'],
+    depiction: chartLd[foafDepictionUri][0]['@id'],
+  }
 
+  Object.entries(chartFieldUris)
+    .forEach(([field, uri]) => {
+      let value = ""
+      if (uri in chartLd) {
+        value = chartLd[uri][0]['@value']
+      }
+      chart[field] = value
+    })
+  chart.baseSpec = JSON.parse(chart.baseSpec)
   return chart
 }
 
@@ -135,13 +149,15 @@ const chartQuery = `
   PREFIX schema: <http://schema.org/>
   PREFIX sio: <http://semanticscience.org/resource/>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
-  SELECT DISTINCT ?chart ?title ?description ?query ?baseSpec
+  PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+  SELECT DISTINCT ?uri ?title ?description ?query ?baseSpec ?depiction
   WHERE {
-    ?chart a sio:Chart .
-    ?chart dcterms:title ?title .
-    ?chart dcterms:description ?description .
-    ?chart schema:query ?query .
-    ?chart sio:hasValue ?baseSpec
+    ?uri a sio:Chart ;
+         dcterms:title ?title ;
+         dcterms:description ?description ;
+         schema:query ?query ;
+         sio:hasValue ?baseSpec ;
+         foaf:depiction ?depiction .
   }
   `
 
@@ -149,13 +165,9 @@ function getCharts () {
   return querySparql(chartQuery)
     .then(data =>
       data.results.bindings.map((chartResult) => {
-        const chart = Object.entries(chartResult)
-          .reduce((o, [field, value]) => {
-            o[field] = value.value
-            return o
-          }, {})
-        chart.uri = chart.chart
-        delete chart.chart
+        const chart = {}
+        Object.entries(chartResult)
+          .forEach(([field, value]) => chart[field] = value.value)
         chart.baseSpec = JSON.parse(chart.baseSpec)
         return chart
       })

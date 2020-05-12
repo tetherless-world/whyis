@@ -29,7 +29,7 @@ Config = dict(
 
     WTF_CSRF_ENABLED = True,
     SECRET_KEY = "secret",  # import os; os.urandom(24)
-    
+
     site_url_path = '/',
 
     nanopub_archive = {
@@ -51,7 +51,7 @@ Config = dict(
 
     # JAVA
     JAVA_CLASSPATH = '/apps/whyis/jars',
-    
+
     # LOGGING
     LOGGER_NAME = "%s_log" % project_name,
     LOG_FILENAME = "/var/log/%s/output-%s.log" % (project_name,str(datetime.now()).replace(' ','_')),
@@ -96,13 +96,17 @@ Config = dict(
 
     admin_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
     admin_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/admin/sparql',
-    
+
     knowledge_queryEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
     knowledge_updateEndpoint = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql',
 
     LOGIN_USER_TEMPLATE = "auth/login.html",
     CELERY_BROKER_URL = 'redis://localhost:6379/0',
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0',
+
+    CACHE_TYPE = "simple", # Flask-Caching related configs
+    CACHE_DEFAULT_TIMEOUT = 0,
+
     namespaces = [
         importer.LinkedData(
             prefix = LOD_PREFIX+'/doi/',
@@ -152,12 +156,12 @@ Config = dict(
     active_profiles = ["OWL2 RL"],
     reasoning_profiles = {
         "Inheritance" : ["Class Inclusion", "Individual Inclusion", "Object Property Inclusion", "Data Property Inclusion"],
-        "OWL2 EL" : [ 
-            "Class Inclusion", 
-            "Class Equivalence", 
-            "Class Disjointness", 
-            "Property Inclusion", 
-            "Object Property Inclusion", 
+        "OWL2 EL" : [
+            "Class Inclusion",
+            "Class Equivalence",
+            "Class Disjointness",
+            "Property Inclusion",
+            "Object Property Inclusion",
             "Data Property Inclusion",
             "Property Equivalence",
             "Object Property Transitivity",
@@ -256,6 +260,7 @@ Config = dict(
             "Object All Values From",
             "Data All Values From",
             #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
+<<<<<<< HEAD
             #"Object Max Cardinality",
             #"Object Min Cardinality",
             #"Object Exact Cardinality",
@@ -1289,7 +1294,6 @@ Config = dict(
 #              )
     ]
 )
-
 
 # config class for development environment
 Dev = dict(Config)

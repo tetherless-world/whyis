@@ -51,6 +51,18 @@ export default Vue.component('vega-editor', {
     onSpecJsonError () {
       console.log('bad', arguments)
     },
+    async onNewVegaView (view) {
+      const blob = await view.toImageURL('png')
+        .then(url => fetch(url))
+        .then(resp => resp.blob())
+      const fr = new FileReader()
+      fr.addEventListener('load', () => {
+        this.chart.depiction = fr.result
+        // document.getElementById('page')
+        //   .appendChild(jQuery.parseHTML(`<img src="${fr.result}">`)[0])
+      })
+      fr.readAsDataURL(blob)
+    },
     loadChart () {
       let getChartPromise
       if (this.pageView === 'new') {

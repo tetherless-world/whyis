@@ -7,6 +7,8 @@ from functools import lru_cache
 from re import finditer
 from urllib.parse import urlencode
 
+import json
+
 import jinja2
 import pytz
 import rdflib
@@ -236,6 +238,12 @@ class App(Empty):
                                                       Namespace('%s/pub/'%(self.config['lod_prefix'])),
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
+
+        if 'CACHE_TYPE' in self.config:
+            from flask_caching import Cache
+            self.cache = Cache(self)
+        else:
+            self.cache = None
 
     _file_depot = None
     @property
@@ -557,6 +565,26 @@ construct {
                     return labels[0]
             return get_remote_label(resource.identifier)
 
+        self.get_label = get_label
+
+        def initialize_g():
+            if not hasattr(g, "initialized"):
+                g.initialized = True
+                g.ns = self.NS
+                g.get_summary = get_summary
+                g.get_label = get_label
+                g.labelize = self.labelize
+                g.get_resource = self.get_resource
+                g.get_entity = self.get_entity
+                g.rdflib = rdflib
+                g.isinstance = isinstance
+                g.current_user = current_user
+                g.slugify = slugify
+                g.db = self.db
+
+
+        self.initialize_g = initialize_g
+
         @self.before_request
         def load_forms():
             if 'authenticators' in self.config:
@@ -565,18 +593,7 @@ construct {
                     if user is not None:
                     #    login_user(user)
                         break
-
-            g.ns = self.NS
-            g.get_summary = get_summary
-            g.get_label = get_label
-            g.labelize = self.labelize
-            g.get_resource = self.get_resource
-            g.get_entity = self.get_entity
-            g.rdflib = rdflib
-            g.isinstance = isinstance
-            g.current_user = current_user
-            g.slugify = slugify
-            g.db = self.db
+            initialize_g()
 
         @self.login_manager.user_loader
         def load_user(user_id):
@@ -698,7 +715,20 @@ construct {
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
-        def render_view(resource, view=None, args=None):
+        def render_view(resource, view=None, args=None, use_cache=True):
+            self.initialize_g()
+            if view is None and 'view' in request.args:
+                view = request.args['view']
+
+            if view is None:
+                view = 'view'
+
+            if use_cache and self.cache is not None:
+                key = str((str(resource.identifier),view))
+                result = self.cache.get(key)
+                if result is not None:
+                    r, headers = result
+                    return r, 200, headers
             template_args = dict()
             template_args.update(self.template_imports)
             template_args.update(dict(
@@ -716,11 +746,6 @@ construct {
                 config=self.config,
                 hasattr=hasattr,
                 set=set))
-            if view is None and 'view' in request.args:
-                view = request.args['view']
-
-            if view is None:
-                view = 'view'
 
             types = []
             if 'as' in request.args:
