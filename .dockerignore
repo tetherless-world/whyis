@@ -1,6 +1,6 @@
 /.git/
 /.idea/
-node_modules/
+/static/node_modules/
 package-lock.json
 *.pyc
 __pycache__/
