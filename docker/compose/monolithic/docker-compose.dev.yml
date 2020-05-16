@@ -36,6 +36,6 @@ services:
       - ./../../../whyis:/whyis
       - ./../../../manage.py:/manage.py
       - ./dev-entrypoint.sh:/dev-entrypoint.sh
-    command: /dev-entrypoint.sh
+    command: sh /dev-entrypoint.sh
 
 
