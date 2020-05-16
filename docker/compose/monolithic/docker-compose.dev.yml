@@ -28,13 +28,14 @@ services:
       - "9000:9000"
       - "5000:5000"
     volumes:
-      - ./../../../../../data:/data
+      # - ./../../../../../data:/data
       - ./../../../tests/integration:/tests/integration
       - ./../../../static:/static
       - ./../../../templates:/templates
       - ./../../../default_vocab.ttl:/default_vocab.ttl
       - ./../../../whyis:/whyis
       - ./../../../manage.py:/manage.py
-    command: bash -c "python3 manage.py createuser -e whyis@whyis.com -p whyis -u whyis --roles=admin && python3 manage.py runserver -h 0.0.0.0"
+      - ./dev-entrypoint.sh:/dev-entrypoint.sh
+    command: sh /dev-entrypoint.sh
 
-  
+
