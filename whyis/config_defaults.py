@@ -260,7 +260,6 @@ Config = dict(
             "Object All Values From",
             "Data All Values From",
             #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
-<<<<<<< HEAD
             #"Object Max Cardinality",
             #"Object Min Cardinality",
             #"Object Exact Cardinality",
@@ -794,7 +793,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ),# Still need to check distinctness of object
-        "Object Min Cardinality" : autonomic.Deductor(
+        "Object Min Cardinality" : autonomic.Deductor(# Adds the result, but adds two blank nodes instead of one
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -819,7 +818,7 @@ Config = dict(
                     owl:minCardinality ?cardinalityValue ].
         }
     }''',
-            consequent = "",
+            consequent = "?resource ?objectProperty [ rdf:type owl:Individual ] .",
             explanation = "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."
         ),# Still need to check distinctness of object to determine what to return
         "Object Exact Cardinality" : autonomic.Deductor(
@@ -850,7 +849,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ),# Still need to check distinctness of object -- This is currently only accounting for max. Need to account for min as well
-        "Data Max Cardinality" : autonomic.Deductor(
+        "Data Max Cardinality" : autonomic.Deductor(#shows up in blazegraph but not whyis
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -860,8 +859,7 @@ Config = dict(
     ?class rdfs:subClassOf|owl:equivalentClass
         [ rdf:type owl:Restriction ;
             owl:onProperty ?dataProperty ;
-            owl:maxCardinality ?cardinalityValue ].
-    FILTER(?dataCount > ?cardinalityValue)
+            owl:maxCardinality ?cardinalityValue ] .
     {
         SELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)
         WHERE 
@@ -874,11 +872,12 @@ Config = dict(
                     owl:onProperty ?dataProperty ;
                     owl:maxCardinality ?cardinalityValue ].
         }
-    }''',
+    }
+    FILTER(?dataCount > ?cardinalityValue)''',
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{dataProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ),
-        "Data Min Cardinality" : autonomic.Deductor(
+        "Data Min Cardinality" : autonomic.Deductor(#works
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -890,7 +889,6 @@ Config = dict(
             [ rdf:type owl:Restriction ;
                 owl:onProperty ?dataProperty ;
                 owl:minCardinality ?cardinalityValue ] .
-    FILTER(?dataCount < ?cardinalityValue)
     {
         SELECT DISTINCT (COUNT(DISTINCT ?data) as ?dataCount)
         WHERE 
@@ -904,11 +902,12 @@ Config = dict(
                         owl:onProperty ?dataProperty ;
                         owl:minCardinality ?cardinalityValue ].
         }
-    }''',
-            consequent = "",
+    }
+    FILTER(?dataCount < ?cardinalityValue)''',
+            consequent = "?resource ?dataProperty [ rdf:type rdfs:Datatype ] .",
             explanation = "Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."
         ), # Still need to determine what to return, returning blanknode construction
-        "Data Exact Cardinality" : autonomic.Deductor(
+        "Data Exact Cardinality" : autonomic.Deductor(#shows up in blazegraph but not whyis
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -988,10 +987,10 @@ Config = dict(
         owl:onProperty ?dataProperty ;
         owl:someValuesFrom ?datatype . 
     ?dataProperty rdf:type owl:DatatypeProperty .
-    ?resource rdf:type ?class ;
-        ?dataProperty ?data .''', #check if data is not one of the specified datatypes from the list, something like DATATYPE(?data)!=?datatype
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+    ?resource ?dataProperty ?data .
+  	FILTER(DATATYPE(?data)=?datatype)''', #need to come back and make sure logic is correct on this one
+            consequent = "?resource rdf:type ?class .",
+            explanation = ""#add explanation here
         ),
         "Object Complement Of" : autonomic.Deductor(
             resource = "?resource", 
@@ -1107,7 +1106,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = ""
         ),
-        "Object Qualified Max Cardinality" : autonomic.Deductor(
+        "Object Qualified Max Cardinality" : autonomic.Deductor(#result shows up in blazegraph, but new triple is not added
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -1119,11 +1118,26 @@ Config = dict(
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ; 
             owl:maxQualifiedCardinality ?value ;
-            owl:onClass ?restrictedClass ] .''',
+            owl:onClass ?restrictedClass ] .
+    {
+        SELECT (COUNT(?object) AS ?objectCount) WHERE
+        {
+            ?resource rdf:type ?class ;
+                ?objectProperty ?object .
+            ?object rdf:type ?restrictedClass .
+            ?objectProperty rdf:type owl:ObjectProperty .
+            ?class rdfs:subClassOf|owl:equivalentClass
+                [ rdf:type owl:Restriction ;
+                    owl:onProperty ?objectProperty ; 
+                    owl:maxQualifiedCardinality ?value ;
+                    owl:onClass ?restrictedClass ] .
+        }
+    }
+    FILTER(?objectCount > ?value)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{class}} is constrained with a qualified max cardinality restriction on property {{objectProperty}} to have a max of {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}}, an inconsistency occurs."
         ),
-        "Object Qualified Min Cardinality" : autonomic.Deductor(
+        "Object Qualified Min Cardinality" : autonomic.Deductor(#result shows up in blazegraph, but new triple is not added
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -1135,9 +1149,24 @@ Config = dict(
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ; 
             owl:minQualifiedCardinality ?value ;
-            owl:onClass ?restrictedClass ] .''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            owl:onClass ?restrictedClass ] .
+    {
+	    SELECT (COUNT(?object) as ?objectCount) WHERE 
+        {          
+            ?resource rdf:type ?class ;
+                ?objectProperty ?object .
+            ?object rdf:type ?restrictedClass .
+            ?objectProperty rdf:type owl:ObjectProperty .
+            ?class rdfs:subClassOf|owl:equivalentClass
+                [ rdf:type owl:Restriction ;
+                    owl:onProperty ?objectProperty ; 
+                    owl:minQualifiedCardinality ?value ;
+                    owl:onClass ?restrictedClass ] .
+        }
+    }
+    FILTER(?objectCount < ?value)''',
+            consequent = "?resource ?objectProperty [ rdf:type owl:Individual ] .",
+            explanation = "Since {{class}} is constrained with a qualified min cardinality restriction on property {{objectProperty}} to have a min of {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}} which is less that {{value}}, we can infer the existence of another object."
         ),
         "Object Qualified Exact Cardinality" : autonomic.Deductor(
             resource = "?resource", 
@@ -1151,48 +1180,102 @@ Config = dict(
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ; 
             owl:qualifiedCardinality ?value ;
-            owl:onClass ?restrictedClass ] .''',
+            owl:onClass ?restrictedClass ] .
+    {
+        SELECT (COUNT(?object) AS ?objectCount) WHERE
+        {
+            ?resource rdf:type ?class ;
+                ?objectProperty ?object .
+            ?object rdf:type ?restrictedClass .
+            ?objectProperty rdf:type owl:ObjectProperty .
+            ?class rdfs:subClassOf|owl:equivalentClass
+                [ rdf:type owl:Restriction ;
+                    owl:onProperty ?objectProperty ; 
+                    owl:qualifiedCardinality ?value ;
+                    owl:onClass ?restrictedClass ] .
+        }
+    }
+    FILTER(?objectCount > ?value)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{class}} is constrained with a qualified cardinality restriction on property {{objectProperty}} to have {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}}, an inconsistency occurs."#min not yet accounted for -- which should result in blank node
         ),
-        "Data Qualified Max Cardinality" : autonomic.Deductor(
+        "Data Qualified Max Cardinality" : autonomic.Deductor(#result shows up in blazegraph, but triple is not being added
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
+    ?resource ?datatypeProperty ?value .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
     ?restriction rdf:type owl:Restriction ;
         owl:onProperty ?datatypeProperty ;
-        owl:maxQualifiedCardinality ?value ;
-        owl:onDataRange ?list .
-    ?datatypeProperty rdf:type owl:DatatypeProperty .
-    ?list rdf:rest*/rdf:first ?member .''',
+        owl:maxQualifiedCardinality ?cardinalityValue ;
+        owl:onDataRange ?datatype .
+    {
+        SELECT (COUNT(?value) as ?valueCount) WHERE
+        {
+            ?resource ?datatypeProperty ?value .
+            ?datatypeProperty rdf:type owl:DatatypeProperty .
+            ?restriction rdf:type owl:Restriction ;
+                owl:onProperty ?datatypeProperty ;
+                owl:maxQualifiedCardinality ?cardinalityValue ;
+                owl:onDataRange ?datatype .
+        }
+    }
+    FILTER(DATATYPE(?value) = ?datatype)
+    FILTER(?valueCount > ?cardinalityValue)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{datatypeProperty}} is constrained with a qualified max cardinality restriction on datatype {{datatype}} to have a max of {{cardinalityValue}} values, and {{resource}} has {{valueCount}} values of type {{datatype}} for property {{datatypeProperty}}, an inconsistency occurs."
         ),
-        "Data Qualified Min Cardinality" : autonomic.Deductor(
+        "Data Qualified Min Cardinality" : autonomic.Deductor(#works
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
+    ?resource ?datatypeProperty ?value .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
     ?restriction rdf:type owl:Restriction ;
         owl:onProperty ?datatypeProperty ;
-        owl:minQualifiedCardinality ?value ;
-        owl:onDataRange ?list .
-    ?datatypeProperty rdf:type owl:DatatypeProperty .
-    ?list rdf:rest*/rdf:first ?member .''',
-            consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+        owl:minQualifiedCardinality ?cardinalityValue ;
+        owl:onDataRange ?datatype .
+    {
+        SELECT (COUNT(?value) as ?valueCount) WHERE
+        {
+            ?resource ?datatypeProperty ?value .
+            ?datatypeProperty rdf:type owl:DatatypeProperty .
+            ?restriction rdf:type owl:Restriction ;
+                owl:onProperty ?datatypeProperty ;
+                owl:minQualifiedCardinality ?cardinalityValue ;
+                owl:onDataRange ?datatype .
+        }
+    }
+    FILTER(DATATYPE(?value) = ?datatype)
+    FILTER(?valueCount < ?cardinalityValue)''',
+            consequent = "?resource ?datatypeProperty [ rdf:type rdfs:Datatype ] .",
+            explanation = "Since {{datatypeProperty}} is constrained with a qualified min cardinality restriction on datatype {{datatype}} to have a min of {{cardinalityValue}} values, and {{resource}} has {{valueCount}} values of type {{datatype}} for property {{datatypeProperty}}, we can infer the existence of at least one more additional value."
         ),
-        "Data Qualified Exact Cardinality" : autonomic.Deductor(
+        "Data Qualified Exact Cardinality" : autonomic.Deductor(#result shows up in blazegraph, but triple is not being added
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
+    ?resource ?datatypeProperty ?value .
+    ?datatypeProperty rdf:type owl:DatatypeProperty .
     ?restriction rdf:type owl:Restriction ;
         owl:onProperty ?datatypeProperty ;
-        owl:qualifiedCardinality ?value ;
-        owl:onDataRange ?list .
-    ?datatypeProperty rdf:type owl:DatatypeProperty .
-    ?list rdf:rest*/rdf:first ?member .''',
+        owl:qualifiedCardinality ?cardinalityValue ;
+        owl:onDataRange ?datatype .
+    {
+        SELECT (COUNT(?value) as ?valueCount) WHERE
+        {
+            ?resource ?datatypeProperty ?value .
+            ?datatypeProperty rdf:type owl:DatatypeProperty .
+            ?restriction rdf:type owl:Restriction ;
+                owl:onProperty ?datatypeProperty ;
+                owl:qualifiedCardinality ?cardinalityValue ;
+                owl:onDataRange ?datatype .
+        }
+    }
+    FILTER(DATATYPE(?value) = ?datatype)
+    FILTER(?valueCount > ?cardinalityValue)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = "Since {{datatypeProperty}} is constrained with a qualified cardinality restriction on datatype {{datatype}} to have {{cardinalityValue}} values, and {{resource}} has {{valueCount}} values of type {{datatype}} for property {{datatypeProperty}}, an inconsistency occurs."# currently the same as qualified max. need to incorporate min requirement
         ),
         "Datatype Restriction" : autonomic.Deductor(
             resource = "?resource", 

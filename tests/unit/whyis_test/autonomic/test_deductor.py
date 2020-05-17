@@ -1543,8 +1543,8 @@ ex-kb:Tuple rdf:type ex:Type .
 # -------  Object One Of Membership ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
+        #agent =  config.Config["inferencers"]["All Different Individuals"]
+        #agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Membership"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Integer, RDF.type, ONT.Type), self.app.db)
@@ -1576,8 +1576,8 @@ ex-kb:Tuple rdf:type ex:Type .
 # -------  Object One Of Inconsistency ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
+        #agent =  config.Config["inferencers"]["All Different Individuals"]
+        #agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Inconsistency"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Tuple, RDF.type, OWL.Nothing), self.app.db)
@@ -1783,8 +1783,8 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
 # -------  Object Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
+        #agent =  config.Config["inferencers"]["All Different Individuals"]
+        #agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.SevenDeadlySins, RDF.type, OWL.Nothing), self.app.db)
@@ -1795,10 +1795,9 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Max Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty P.
-#_:x owl:maxQualifiedCardinality n.
-#_:x owl:onClass C.
+sio:hasComponentPart rdf:type owl:ObjectProperty ;
+    rdfs:label "has component part" .
+
 sio:Triangle rdf:type owl:Class ;
     rdfs:subClassOf sio:Polygon ;
     dct:description "A triangle is a polygon composed of three points and three line segments, in which each point is fully connected to another point along through the line segment." ;
@@ -1814,8 +1813,7 @@ sio:DirectedLineSegment rdf:type owl:Class ;
     rdfs:subClassOf sio:LineSegment ;
 #    <rdfs:subClassOf rdf:nodeID="arc703eb253"/>
 #    <rdfs:subClassOf rdf:nodeID="arc703eb254"/>
-    dct:description "A directed line segment is a line segment that is contained by an ordered pair 
-of endpoints (a start point and an endpoint)." ;
+    dct:description "A directed line segment is a line segment that is contained by an ordered pair of endpoints (a start point and an endpoint)." ;
     rdfs:label "directed line segment" .
 
 sio:ArrowedLineSegment rdf:type owl:Class ;
@@ -1831,12 +1829,32 @@ sio:ArrowedLineSegment rdf:type owl:Class ;
             owl:onClass sio:Triangle ] ;
     dct:description "An arrowed line is a directed line segment in which one or both endpoints is tangentially part of a triangle that bisects the line." ;
     rdfs:label "arrowed line segment" .
+
+ex-kb:TripleArrowLineSegment rdf:type sio:ArrowedLineSegment ;
+    rdfs:label "triple arrow line segment" ;
+    sio:hasComponentPart
+        ex-kb:LineSegment ,
+        ex-kb:FirstArrow ,
+        ex-kb:SecondArrow ,
+        ex-kb:ThirdArrow .
+
+ex-kb:FirstArrow rdf:type sio:Triangle ;
+    rdfs:label "first arrow" .
+
+ex-kb:SecondArrow rdf:type sio:Triangle ;
+    rdfs:label "first arrow" .
+
+ex-kb:ThirdArrow rdf:type sio:Triangle ;
+    rdfs:label "first arrow" .
+
+ex-kb:LineSegment rdf:type sio:LineSegment ;
+    rdfs:label "line segment " .
 # -------  Object Qualified Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Max Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.TripleArrowLineSegment, RDF.type, OWL.Nothing), self.app.db)
 
 
     def test_object_min_cardinality(self):
@@ -1873,26 +1891,31 @@ ex:StudyGroup rdf:type owl:Class ;
 ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
     sio:hasMember 
         ex-kb:Steve ,
-        ex-kb:Luis ,
+        #ex-kb:Luis ,
         ex-kb:Ali .
 
 ex-kb:Steve rdf:type sio:Human .
-ex-kb:Luis rdf:type sio:Human .
+#ex-kb:Luis rdf:type sio:Human .
 ex-kb:Ali rdf:type sio:Human .
 
 ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
     owl:distinctMembers
         (ex-kb:Steve 
-        ex-kb:Luis 
+        #ex-kb:Luis 
         ex-kb:Ali ) .
 # -------  Object Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
+        #agent =  config.Config["inferencers"]["All Different Individuals"]
+        #agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Min Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        objects = list(self.app.db.objects(KB.StudyGroupInstance, SIO.hasMember))
+        self.assertEquals(len(objects), 3)
+        #triple = self.app.db.triples((KB.StudyGroupInstance, SIO.hasMember, None))
+        #for s, p, o in triple :
+        #    self.assertIn((KB.StudyGroupInstance, SIO.hasMember, o), self.app.db)
+        # need to come back to this. test passes but still not 100% sure it is working. confirmed it is a false positive
 
 
     def test_object_qualified_min_cardinality(self):
@@ -1901,11 +1924,6 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Min Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty P.
-#_:x owl:minQualifiedCardinality n.
-#_:x owl:onClass C.
-
 sio:Polyline rdf:type owl:Class ;
     rdfs:subClassOf sio:GeometricEntity ;
     rdfs:subClassOf 
@@ -1915,12 +1933,23 @@ sio:Polyline rdf:type owl:Class ;
             owl:onClass sio:LineSegment ] ;
     dct:description "A polyline is a connected sequence of line segments." ;
     rdfs:label "polyline" .
+
+ex-kb:PolylineSegment rdf:type sio:Polyline ;
+    rdfs:label "polyline segment " ;
+    sio:hasComponentPart ex-kb:LineSegmentInstance .
+
+ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
+    rdfs:label "line segment instance" .
 # -------  Object Qualified Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Min Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        objects = list(self.app.db.objects(KB.PolylineSegment, SIO.hasComponentPart))
+        self.assertEquals(len(objects), 2)
+        #triple = self.app.db.triples((KB.PolylineSegment, SIO.hasComponentPart, None))
+        #for s, p, o in triple :
+        #    self.assertIn((KB.PolylineSegment, SIO.hasComponentPart, o), self.app.db)
 
     def test_object_exact_cardinality(self):
         self.dry_run = False
@@ -1966,8 +1995,8 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
+        #agent =  config.Config["inferencers"]["All Different Individuals"]
+        #agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stooges, RDF.type, OWL.Nothing), self.app.db)
@@ -1979,10 +2008,8 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Exact Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty P.
-#_:x owl:qualifiedCardinality n.
-#_:x owl:onClass C.
+sio:hasComponentPart rdf:type owl:ObjectProperty ;
+    rdfs:label "has component part" .
 
 sio:PolygonEdge rdf:type owl:Class ;
     rdfs:subClassOf sio:LineSegment ;
@@ -1997,12 +2024,25 @@ sio:PolygonEdge rdf:type owl:Class ;
             owl:onClass sio:PolygonVertex ] ;
     dct:description "A polygon edge is a line segment joining two polygon vertices." ;
     rdfs:label "polygon edge" .
+
+ex-kb:TripleVertexedPolyEdge rdf:type sio:PolygonEdge ;
+    rdfs:label "triple vertexed polygon edge" ;
+    sio:hasComponentPart ex-kb:VertexOne , ex-kb:VertexTwo , ex-kb:VertexThree .
+
+ex-kb:VertexOne rdf:type sio:PolygonVertex ;
+    rdfs:label "vertex one" .
+
+ex-kb:VertexTwo rdf:type sio:PolygonVertex ;
+    rdfs:label "vertex two" .
+
+ex-kb:VertexThree rdf:type sio:PolygonVertex ;
+    rdfs:label "vertex three" .
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.TripleVertexedPolyEdge, RDF.type, OWL.Nothing), self.app.db)# Not yet accounting for less than the qualified value
 
     def test_data_max_cardinality(self):
         self.dry_run = False
@@ -2037,12 +2077,35 @@ ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 #_:x owl:onProperty R.
 #_:x owl:maxQualifiedCardinality n.
 #_:x owl:onDataRange D.
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:MathematicalEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    rdfs:label "mathematical entity" ;
+    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+
+ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf sio:hasValue ;
+    rdfs:label "has polynomial root" .
+
+ex-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
+    owl:onProperty ex:hasPolynomialRoot ;
+    owl:maxQualifiedCardinality "2"^^xsd:integer ;
+    owl:onDataRange xsd:decimal .
+
+ex-kb:QuadraticPolynomialInstance rdf:type sio:ConceptualEntity ;
+    rdfs:label "quadratic polynomial instance" ;
+    ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
 # -------  Data Qualified Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.QuadraticPolynomialInstance, RDF.type, OWL.Nothing), self.app.db)
 
 
     def test_data_min_cardinality(self):
@@ -2052,23 +2115,31 @@ ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Min Cardinality -------
 # Need to come back to this
-ex:hasDiameterValue rdf:type owl:DatatypeProperty .
+ex:hasDiameterValue rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf sio:hasValue ;
+    rdfs:label "has diameter value" .
 
-ex:ConicalCylinder rdfs:subClassOf
-    [ rdf:type owl:Restriction ;
-        owl:onProperty ex:hasDiameterValue ;
-        owl:minCardinality "2"^^xsd:integer ] .
+ex:ConicalCylinder rdf:type owl:Class ;
+    rdfs:subClassOf
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ex:hasDiameterValue ;
+            owl:minCardinality "2"^^xsd:integer ] ;
+    rdfs:label "conical cylinder" .
 
-ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
-    ex:hasDiameterValue "1"^^xsd:integer .#, "2"^^xsd:integer  .
-# Does not result in inconsistency if the property is used less than twice. (Not sure a blank node is created however.)
+ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
+    ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
+    rdfs:label "coffee container" .
 # -------  Data Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Min Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.John, RDF.type, OWL.Nothing), self.app.db)
-        # need to come back to this
+        objects = list(self.app.db.objects(KB.CoffeeContainer, ONT.hasDiameterValue))
+        self.assertEquals(len(objects), 2)
+        #triple = self.app.db.triples((KB.CoffeeContainer, ONT.hasDiameterValue, None))
+        #for s, p, o in triple :
+        #    self.assertIn((KB.CoffeeContainer, ONT.hasDiameterValue, o), self.app.db)
+        # need to come back to this. test passes but still not 100% sure it is working 
 
     def test_data_qualified_min_cardinality(self):
         self.dry_run = False
@@ -2076,16 +2147,25 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Min Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty R.
-#_:x owl:minQualifiedCardinality n.
-#_:x owl:onDataRange D.
+ex:hasName rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf sio:hasName ;
+    rdfs:label "has name" .
+
+ex-kb:NameRestriction rdf:type owl:Restriction ;
+    owl:onProperty ex:hasName ;
+    owl:minQualifiedCardinality "2"^^xsd:integer ;
+    owl:onDataRange xsd:string .
+
+ex-kb:Jackson rdf:type sio:Human ;
+    rdfs:label "Jackson" ;
+    ex:hasName "Jackson"^^xsd:string .
 # -------  Data Qualified Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Min Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        objects = list(self.app.db.objects(KB.Jackson, ONT.hasName))
+        self.assertEquals(len(objects), 2)
 
     def test_data_exact_cardinality(self):
         self.dry_run = False
@@ -2094,11 +2174,14 @@ ex-kb:CoffeeContainerInstance rdf:type ex:ConicalCylinder ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Exact Cardinality -------
 # Need to come back to this
-ex:hasBirthYear rdf:type owl:DatatypeProperty .
-ex:Person rdfs:subClassOf
-    [ rdf:type owl:Restriction ;
-        owl:onProperty ex:hasBirthYear ;
-        owl:cardinality "1"^^xsd:integer ] . 
+ex:hasBirthYear rdf:type owl:DatatypeProperty ;
+    rdfs:label "has birth year" .
+
+ex:Person rdf:type owl:Class ;
+    rdfs:subClassOf
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ex:hasBirthYear ;
+            owl:cardinality "1"^^xsd:integer ] . 
 
 ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 # -------  Data Exact Cardinality ------->
@@ -2114,16 +2197,24 @@ ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Exact Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty R.
-#_:x owl:qualifiedCardinality n.
-#_:x owl:onDataRange D.
-# -------  Data Qualified Max Cardinality ------->
+ex:uniqueUsername rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf sio:hasValue ;
+    rdfs:label "unique username" .
+
+ex-kb:UsernameRestriction rdf:type owl:Restriction ;
+    owl:onProperty ex:uniqueUsername ;
+    owl:qualifiedCardinality "1"^^xsd:integer ;
+    owl:onDataRange xsd:string .
+
+ex-kb:Steve rdf:type sio:Human ;
+    rdfs:label "Steve" ;
+    ex:uniqueUsername "SteveTheGamer"^^xsd:string , "ScubaSteve508"^^xsd:string .
+# -------  Data Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Steve, RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_complement_of(self):
         self.dry_run = False
@@ -2292,7 +2383,7 @@ sio:Line rdf:type owl:Class ;
         agent.process_graph(self.app.db)
         self.assertIn((SIO.LineSegment, RDFS.subClassOf, SIO.Line), self.app.db)
         self.assertIn((SIO.Ray, RDFS.subClassOf, SIO.Line), self.app.db)
-        self.assertIn((SIO.InfiniteLine, RDFS.subClassOf, SIO.Line), self.app.db)
+        self.assertIn((SIO.InfiniteLine, RDFS.subClassOf, SIO.Line), self.app.db)# Should come back to these.. shouldn't these be equivalent class links rather than subclassof
 
     def test_data_union_of(self):
         self.dry_run = False
@@ -2300,7 +2391,7 @@ sio:Line rdf:type owl:Class ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Union Of ------- 
-# Need to come back to this
+# Need to come back to this.. not sure reasoning logic is correct
 sio:hasValue rdf:type owl:DatatypeProperty ,
                                 owl:FunctionalProperty;
     rdfs:label "has value" ;
@@ -2342,12 +2433,31 @@ sio:MeasurementValue rdf:type owl:Class ;
                     owl:someValuesFrom xsd:integer ]
             ) ] ;
     dct:description "A measurement value is a quantitative description that reflects the magnitude of some attribute." .
+
+ex-kb:DateTimeMeasurement rdf:type owl:Individual ;
+    rdfs:label "date time measurement" ;
+    sio:hasValue "10141990"^^xsd:dateTime .
+
+ex-kb:IntegerMeasurement rdf:type owl:Individual ;
+    rdfs:label "integer measurement" ;
+    sio:hasValue "12"^^xsd:integer .
+
+ex-kb:DoubleMeasurement rdf:type owl:Individual ;
+    rdfs:label "double measurement" ;
+    sio:hasValue "6.34"^^xsd:double .
+
+ex-kb:FloatMeasurement rdf:type owl:Individual ;
+    rdfs:label "float measurement" ;
+    sio:hasValue "3.14"^^xsd:float .
 # -------  Data Union Of -------> 
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Union Of"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.DateTimeMeasurement, RDF.type, SIO.MeasurementValue), self.app.db)
+        self.assertIn((KB.IntegerMeasurement, RDF.type, SIO.MeasurementValue), self.app.db)
+        self.assertIn((KB.DoubleMeasurement, RDF.type, SIO.MeasurementValue), self.app.db)
+        self.assertIn((KB.FloatMeasurement, RDF.type, SIO.MeasurementValue), self.app.db)
 
     def test_disjoint_union(self):
         self.dry_run = False
