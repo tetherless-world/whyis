@@ -695,7 +695,7 @@ Config = dict(
     ?list rdf:rest*/rdf:first ?member .
   	?resource rdf:type ?class .
     {
-    SELECT DISTINCT (COUNT(?concept) as ?conceptCount) WHERE 
+    SELECT DISTINCT (COUNT(DISTINCT ?concept) as ?conceptCount) WHERE 
         {
             ?concept rdf:type owl:Class ;
                 owl:oneOf ?list .
@@ -718,7 +718,7 @@ Config = dict(
     ?resource ?datatypeProperty ?value .
     ?list rdf:rest*/rdf:first ?member .
     {
-        SELECT DISTINCT (COUNT(?datatypeProperty) as ?dataCount) WHERE 
+        SELECT DISTINCT (COUNT( DISTINCT ?datatypeProperty) as ?dataCount) WHERE 
         {
             ?datatypeProperty rdf:type owl:DatatypeProperty ;
             rdfs:range [ rdf:type owl:DataRange ;
@@ -1013,10 +1013,11 @@ Config = dict(
     ?datatype rdf:type rdfs:Datatype ;
         owl:datatypeComplementOf ?complement .
     ?resource ?dataProperty ?value .
-    FILTER(DATATYPE(?value) = ?complement)
-    FILTER(DATATYPE(?value) = ?datatype)''',
+    ?dataProperty rdf:type owl:DatatypeProperty ;
+        rdfs:range ?datatype .
+    FILTER(DATATYPE(?value) = ?complement)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = "Since {{datatype}} is the complement of {{complement}}, and {{resource}} {{dataProperty}} {{value}}, but {{value}} is of type both {{datatype}} and {{complement}}, an inconsistency occurs."
+            explanation = "Since {{datatype}} is the complement of {{complement}}, {{dataProperty}} has range {{datatype}}, and {{resource}} {{dataProperty}} {{value}}, but {{value}} is of type {{complement}}, an inconsistency occurs."
         ),
         "Object Property Complement Of" : autonomic.Deductor(
             resource = "?resource", 
@@ -1046,9 +1047,21 @@ Config = dict(
         "Data Property Complement Of" : autonomic.Deductor(
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            antecedent =  '''''',
+            antecedent =  '''
+    ?class rdf:type owl:Class ;
+        rdfs:subClassOf|owl:equivalentClass
+            [ rdf:type owl:Class ;
+                owl:complementOf 
+                    [ rdf:type owl:Restriction ;
+                        owl:onProperty ?dataProperty ;
+                        owl:someValuesFrom ?datatype ] 
+            ] .
+  	?resource rdf:type ?class ;
+        ?dataProperty ?value .
+  	?dataProperty rdf:type owl:DatatypeProperty .
+    FILTER(DATATYPE(?value)=?datatype)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = ""
+            explanation = ""#Add explanation
         ),
         "Object Intersection Of" : autonomic.Deductor(
             resource = "?resource", 
@@ -1120,7 +1133,7 @@ Config = dict(
             owl:maxQualifiedCardinality ?value ;
             owl:onClass ?restrictedClass ] .
     {
-        SELECT (COUNT(?object) AS ?objectCount) WHERE
+        SELECT (COUNT(DISTINCT ?object) AS ?objectCount) WHERE
         {
             ?resource rdf:type ?class ;
                 ?objectProperty ?object .
@@ -1137,7 +1150,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{class}} is constrained with a qualified max cardinality restriction on property {{objectProperty}} to have a max of {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}}, an inconsistency occurs."
         ),
-        "Object Qualified Min Cardinality" : autonomic.Deductor(#result shows up in blazegraph, but new triple is not added
+        "Object Qualified Min Cardinality" : autonomic.Deductor(#passes
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -1151,7 +1164,7 @@ Config = dict(
             owl:minQualifiedCardinality ?value ;
             owl:onClass ?restrictedClass ] .
     {
-	    SELECT (COUNT(?object) as ?objectCount) WHERE 
+	    SELECT (COUNT(DISTINCT ?object) as ?objectCount) WHERE 
         {          
             ?resource rdf:type ?class ;
                 ?objectProperty ?object .
@@ -1182,7 +1195,7 @@ Config = dict(
             owl:qualifiedCardinality ?value ;
             owl:onClass ?restrictedClass ] .
     {
-        SELECT (COUNT(?object) AS ?objectCount) WHERE
+        SELECT (COUNT(DISTINCT ?object) AS ?objectCount) WHERE
         {
             ?resource rdf:type ?class ;
                 ?objectProperty ?object .
@@ -1210,7 +1223,7 @@ Config = dict(
         owl:maxQualifiedCardinality ?cardinalityValue ;
         owl:onDataRange ?datatype .
     {
-        SELECT (COUNT(?value) as ?valueCount) WHERE
+        SELECT (COUNT(DISTINCT ?value) as ?valueCount) WHERE
         {
             ?resource ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1236,7 +1249,7 @@ Config = dict(
         owl:minQualifiedCardinality ?cardinalityValue ;
         owl:onDataRange ?datatype .
     {
-        SELECT (COUNT(?value) as ?valueCount) WHERE
+        SELECT (COUNT(DISTINCT ?value) as ?valueCount) WHERE
         {
             ?resource ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1262,7 +1275,7 @@ Config = dict(
         owl:qualifiedCardinality ?cardinalityValue ;
         owl:onDataRange ?datatype .
     {
-        SELECT (COUNT(?value) as ?valueCount) WHERE
+        SELECT (COUNT(DISTINCT ?value) as ?valueCount) WHERE
         {
             ?resource ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .

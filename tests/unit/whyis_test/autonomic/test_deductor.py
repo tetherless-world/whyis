@@ -1796,7 +1796,9 @@ ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Max Cardinality -------
 sio:hasComponentPart rdf:type owl:ObjectProperty ;
-    rdfs:label "has component part" .
+    rdfs:subPropertyOf sio:hasDirectPart ;
+    rdfs:label "has component part" ;
+    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
 
 sio:Triangle rdf:type owl:Class ;
     rdfs:subClassOf sio:Polygon ;
@@ -1924,6 +1926,11 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Min Cardinality -------
+sio:hasComponentPart rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf sio:hasDirectPart ;
+    rdfs:label "has component part" ;
+    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
+
 sio:Polyline rdf:type owl:Class ;
     rdfs:subClassOf sio:GeometricEntity ;
     rdfs:subClassOf 
@@ -1933,6 +1940,12 @@ sio:Polyline rdf:type owl:Class ;
             owl:onClass sio:LineSegment ] ;
     dct:description "A polyline is a connected sequence of line segments." ;
     rdfs:label "polyline" .
+
+sio:LineSegment rdf:type owl:Class ;
+    rdfs:subClassOf sio:Line ;
+#    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
+    dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
+    rdfs:label "line segment" .
 
 ex-kb:PolylineSegment rdf:type sio:Polyline ;
     rdfs:label "polyline segment " ;
@@ -2009,7 +2022,9 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Exact Cardinality -------
 sio:hasComponentPart rdf:type owl:ObjectProperty ;
-    rdfs:label "has component part" .
+    rdfs:subPropertyOf sio:hasDirectPart ;
+    rdfs:label "has component part" ;
+    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
 
 sio:PolygonEdge rdf:type owl:Class ;
     rdfs:subClassOf sio:LineSegment ;
@@ -2051,7 +2066,9 @@ ex-kb:VertexThree rdf:type sio:PolygonVertex ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Max Cardinality -------
 # Need to come back to this
-ex:hasAge rdf:type owl:DatatypeProperty .
+ex:hasAge rdf:type owl:DatatypeProperty ;
+    rdfs:label "has age" ;
+    rdfs:subPropertyOf sio:hasValue .
 
 ex:Person rdfs:subClassOf
     [ rdf:type owl:Restriction ;
@@ -2114,7 +2131,6 @@ ex-kb:QuadraticPolynomialInstance rdf:type sio:ConceptualEntity ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Min Cardinality -------
-# Need to come back to this
 ex:hasDiameterValue rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "has diameter value" .
@@ -2136,10 +2152,6 @@ ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
         agent.process_graph(self.app.db)
         objects = list(self.app.db.objects(KB.CoffeeContainer, ONT.hasDiameterValue))
         self.assertEquals(len(objects), 2)
-        #triple = self.app.db.triples((KB.CoffeeContainer, ONT.hasDiameterValue, None))
-        #for s, p, o in triple :
-        #    self.assertIn((KB.CoffeeContainer, ONT.hasDiameterValue, o), self.app.db)
-        # need to come back to this. test passes but still not 100% sure it is working 
 
     def test_data_qualified_min_cardinality(self):
         self.dry_run = False
@@ -2148,7 +2160,7 @@ ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Min Cardinality -------
 ex:hasName rdf:type owl:DatatypeProperty ;
-    rdfs:subPropertyOf sio:hasName ;
+    rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "has name" .
 
 ex-kb:NameRestriction rdf:type owl:Restriction ;
@@ -2175,6 +2187,7 @@ ex-kb:Jackson rdf:type sio:Human ;
 # <-------  Data Exact Cardinality -------
 # Need to come back to this
 ex:hasBirthYear rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "has birth year" .
 
 ex:Person rdf:type owl:Class ;
@@ -2324,14 +2337,24 @@ ex:Percentage rdfs:subClassOf sio:UnitOfMeasurement ;
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Complement Of ------- 
 # Need to come back to this
+
+ex:nonTextValue rdf:type owl:DatatypeProperty ;
+    rdfs:subClassOf sio:hasValue ;
+    rdfs:label "non-text value" ;
+    rdfs:range ex:NotAString .
+
 ex:NotAString rdf:type rdfs:Datatype ; 
     owl:datatypeComplementOf xsd:string .
+
+ex-kb:SamplePhrase rdf:type sio:TextualEntity ;
+    rdfs:label "sample phrase" ;
+    ex:nonTextValue "To be, or not to be?"^^xsd:string .
 # -------  Data Complement Of ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Complement Of"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.SamplePhrase, RDF.type, OWL.Nothing), self.app.db)
 
     def test_data_property_complement_of(self):
         self.dry_run = False
@@ -2339,13 +2362,30 @@ ex:NotAString rdf:type rdfs:Datatype ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Property Complement Of ------- 
-# Need to come back to this
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
+ex:NumericalValue rdf:type owl:Class ;
+    rdfs:label "numerical value" ;
+    rdfs:subClassOf sio:ConceptualEntity ;
+    rdfs:subClassOf
+        [ rdf:type owl:Class ;
+            owl:complementOf 
+                [ rdf:type owl:Restriction ;
+                    owl:onProperty sio:hasValue ;
+                    owl:someValuesFrom xsd:string ] 
+        ] .
+
+ex-kb:Number rdf:type ex:NumericalValue ;
+    sio:hasValue "Fifty"^^xsd:string .
 # -------  Data Property Complement Of ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Property Complement Of"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Number, RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_union_of(self):
         self.dry_run = False
@@ -2534,8 +2574,6 @@ ex:Lobe rdf:type owl:Class ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Intersection Of ------- 
-# _:x rdf:type owl:Class.
-# _:x owl:intersectionOf ( C1 … Cn ).
 sio:Molecule rdf:type owl:Class ;
     rdfs:label "molecule" .
 
@@ -2580,9 +2618,9 @@ ex:FriendlyTalkingDog rdf:type owl:Class ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Data Intersection Of ------- 
-# Need to come back to this
-ex:StringInteger rdf:type rdfs:Datatype ; 
-    owl:intersectionOf ( xsd:string xsd:integer ) .
+# Need to come back to this --> can't assign multiple datatypes to a literal. However, can assign a datatype and a restriction on that datatype
+ex:Zero rdf:type rdfs:Datatype ; 
+    owl:intersectionOf ( xsd:nonNegativeInteger xsd:nonPositiveInteger ) .
 # ------- Data Intersection Of -------> 
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
