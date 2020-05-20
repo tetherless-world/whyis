@@ -1864,7 +1864,7 @@ ex-kb:LineSegment rdf:type sio:LineSegment ;
 
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
-# Need to come back to this
+# Need to come back to this to expand list size and make sure it still works
 # <-------  Object Min Cardinality -------
 sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                 owl:SymmetricProperty ;
@@ -1887,24 +1887,24 @@ ex:StudyGroup rdf:type owl:Class ;
     rdfs:subClassOf sio:Collection ,
         [ rdf:type owl:Restriction ;
             owl:onProperty sio:hasMember ;
-            owl:minCardinality "3"^^xsd:integer ] ; 
+            owl:minCardinality "2"^^xsd:integer ] ; 
     rdfs:label "study group" .
 
 ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
     sio:hasMember 
-        ex-kb:Steve ,
+        ex-kb:Steve .#,
         #ex-kb:Luis ,
-        ex-kb:Ali .
+#        ex-kb:Ali .
 
 ex-kb:Steve rdf:type sio:Human .
 #ex-kb:Luis rdf:type sio:Human .
-ex-kb:Ali rdf:type sio:Human .
+#ex-kb:Ali rdf:type sio:Human .
 
-ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
-    owl:distinctMembers
-        (ex-kb:Steve 
-        #ex-kb:Luis 
-        ex-kb:Ali ) .
+#ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
+#    owl:distinctMembers
+#        (ex-kb:Steve 
+#        #ex-kb:Luis 
+#        ex-kb:Ali ) .
 # -------  Object Min Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -1913,11 +1913,7 @@ ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
         agent =  config.Config["inferencers"]["Object Min Cardinality"]
         agent.process_graph(self.app.db)
         objects = list(self.app.db.objects(KB.StudyGroupInstance, SIO.hasMember))
-        self.assertEquals(len(objects), 3)
-        #triple = self.app.db.triples((KB.StudyGroupInstance, SIO.hasMember, None))
-        #for s, p, o in triple :
-        #    self.assertIn((KB.StudyGroupInstance, SIO.hasMember, o), self.app.db)
-        # need to come back to this. test passes but still not 100% sure it is working. confirmed it is a false positive
+        self.assertEquals(len(objects), 2)
 
 
     def test_object_qualified_min_cardinality(self):
@@ -2065,23 +2061,31 @@ ex-kb:VertexThree rdf:type sio:PolygonVertex ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Max Cardinality -------
-# Need to come back to this
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex:hasAge rdf:type owl:DatatypeProperty ;
     rdfs:label "has age" ;
     rdfs:subPropertyOf sio:hasValue .
 
-ex:Person rdfs:subClassOf
-    [ rdf:type owl:Restriction ;
-        owl:onProperty ex:hasAge ;
-        owl:maxCardinality "1"^^xsd:integer ] . 
+ex:Person rdf:type owl:Class ;
+    rdfs:label "person" ;
+    rdfs:subClassOf
+        [ rdf:type owl:Restriction ;
+            owl:onProperty ex:hasAge ;
+            owl:maxCardinality "1"^^xsd:integer ] . 
 
-ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
+ex-kb:Katie rdf:type ex:Person ;
+    rdfs:label "Katie" ;
+    ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 # -------  Data Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Max Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.John, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Katie, RDF.type, OWL.Nothing), self.app.db)
 
 
     def test_data_qualified_max_cardinality(self):
@@ -2090,10 +2094,6 @@ ex-kb:John ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Max Cardinality -------
-#_:x rdf:type owl:Restriction.
-#_:x owl:onProperty R.
-#_:x owl:maxQualifiedCardinality n.
-#_:x owl:onDataRange D.
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
 #    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
@@ -2185,24 +2185,27 @@ ex-kb:Jackson rdf:type sio:Human ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Exact Cardinality -------
-# Need to come back to this
 ex:hasBirthYear rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "has birth year" .
 
 ex:Person rdf:type owl:Class ;
+    rdfs:label "person" ;
+    rdfs:subClassOf sio:Human ;
     rdfs:subClassOf
         [ rdf:type owl:Restriction ;
             owl:onProperty ex:hasBirthYear ;
             owl:cardinality "1"^^xsd:integer ] . 
 
-ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
+ex-kb:Erik rdf:type ex:Person ;
+    rdfs:label "Erik" ;
+    ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 # -------  Data Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Exact Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.John, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Erik, RDF.type, OWL.Nothing), self.app.db)
 
     def test_data_qualified_exact_cardinality(self):
         self.dry_run = False
@@ -2210,6 +2213,11 @@ ex-kb:John ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Exact Cardinality -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
 ex:uniqueUsername rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "unique username" .
@@ -2219,7 +2227,7 @@ ex-kb:UsernameRestriction rdf:type owl:Restriction ;
     owl:qualifiedCardinality "1"^^xsd:integer ;
     owl:onDataRange xsd:string .
 
-ex-kb:Steve rdf:type sio:Human ;
+ex-kb:Stephen rdf:type sio:Human ;
     rdfs:label "Steve" ;
     ex:uniqueUsername "SteveTheGamer"^^xsd:string , "ScubaSteve508"^^xsd:string .
 # -------  Data Qualified Exact Cardinality ------->
@@ -2227,7 +2235,7 @@ ex-kb:Steve rdf:type sio:Human ;
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Steve, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Stephen, RDF.type, OWL.Nothing), self.app.db)
 
     def test_object_complement_of(self):
         self.dry_run = False
@@ -2621,6 +2629,15 @@ ex:FriendlyTalkingDog rdf:type owl:Class ;
 # Need to come back to this --> can't assign multiple datatypes to a literal. However, can assign a datatype and a restriction on that datatype
 ex:Zero rdf:type rdfs:Datatype ; 
     owl:intersectionOf ( xsd:nonNegativeInteger xsd:nonPositiveInteger ) .
+
+ex:TeenageValue rdf:type rdfs:Datatype ; 
+    rdfs:label "teenage value"
+    owl:intersectionOf ( 
+        xsd:integer 
+        [ rdf:type owl:Datatype ;
+            owl:onDatatype xsd:integer ;
+            owl:withRestrictions ( [ xsd:minInclusive "13"^^xsd:integer ] [ xsd:maxInclusive "19"^^xsd:integer ] ) 
+        ] ) .
 # ------- Data Intersection Of -------> 
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])

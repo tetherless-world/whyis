@@ -793,7 +793,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ),# Still need to check distinctness of object
-        "Object Min Cardinality" : autonomic.Deductor(# Adds the result, but adds two blank nodes instead of one
+        "Object Min Cardinality" : autonomic.Deductor(#Works, but for lists of size greater than 1, additional (unnecessary) blank nodes are added. LIMIT 1 on the result would address this, but it is outside the where query
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -849,7 +849,7 @@ Config = dict(
             consequent = "?resource rdf:type owl:Nothing .",
             explanation = "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
         ),# Still need to check distinctness of object -- This is currently only accounting for max. Need to account for min as well
-        "Data Max Cardinality" : autonomic.Deductor(#shows up in blazegraph but not whyis
+        "Data Max Cardinality" : autonomic.Deductor(#works
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
@@ -907,7 +907,7 @@ Config = dict(
             consequent = "?resource ?dataProperty [ rdf:type rdfs:Datatype ] .",
             explanation = "Since {{dataProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{dataProperty}} for {{resource}}."
         ), # Still need to determine what to return, returning blanknode construction
-        "Data Exact Cardinality" : autonomic.Deductor(#shows up in blazegraph but not whyis
+        "Data Exact Cardinality" : autonomic.Deductor(#works
             resource = "?resource", 
             prefixes = {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
             antecedent =  '''
