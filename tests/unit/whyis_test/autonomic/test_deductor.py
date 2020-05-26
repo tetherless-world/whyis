@@ -1827,8 +1827,8 @@ sio:ArrowedLineSegment rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
             owl:onProperty sio:hasComponentPart ; 
-            owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
-            owl:onClass sio:Triangle ] ;
+            owl:onClass sio:Triangle ;
+            owl:maxQualifiedCardinality "2"^^xsd:nonNegativeInteger ] ;
     dct:description "An arrowed line is a directed line segment in which one or both endpoints is tangentially part of a triangle that bisects the line." ;
     rdfs:label "arrowed line segment" .
 
@@ -1857,7 +1857,6 @@ ex-kb:LineSegment rdf:type sio:LineSegment ;
         agent =  config.Config["inferencers"]["Object Qualified Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.TripleArrowLineSegment, RDF.type, OWL.Nothing), self.app.db)
-
 
     def test_object_min_cardinality(self):
         self.dry_run = False
@@ -1956,9 +1955,6 @@ ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
         agent.process_graph(self.app.db)
         objects = list(self.app.db.objects(KB.PolylineSegment, SIO.hasComponentPart))
         self.assertEquals(len(objects), 2)
-        #triple = self.app.db.triples((KB.PolylineSegment, SIO.hasComponentPart, None))
-        #for s, p, o in triple :
-        #    self.assertIn((KB.PolylineSegment, SIO.hasComponentPart, o), self.app.db)
 
     def test_object_exact_cardinality(self):
         self.dry_run = False
@@ -1983,14 +1979,14 @@ sio:hasMember rdf:type owl:ObjectProperty ,
     rdfs:label "has member" ;
     dct:description "has member is a mereological relation between a collection and an item." .
 
-ex:Trio rdf:type owl:Class ;
+ex:Duo rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
             owl:onProperty sio:hasMember ;
             owl:cardinality "2"^^xsd:integer
         ] .
 
-ex-kb:Stooges rdf:type ex:Trio ;
+ex-kb:Stooges rdf:type ex:Duo ;
     sio:hasMember 
         ex-kb:Larry ,
         ex-kb:Moe ,
@@ -2001,15 +1997,23 @@ ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         ( ex-kb:Larry 
         ex-kb:Moe 
         ex-kb:Curly ) .
+
+ex-kb:BonnieAndClyde rdf:type ex:Duo ;
+    rdfs:label "Bonnie and Clyde" ;
+    sio:hasMember ex-kb:Bonnie .
+
+ex-kb:Bonnie rdf:type sio:Human ;
+    rdfs:label "Bonnie" .
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        #agent =  config.Config["inferencers"]["All Different Individuals"]
-        #agent.process_graph(self.app.db)
-        agent =  config.Config["inferencers"]["Object Exact Cardinality"]
+        agent =  config.Config["inferencers"]["Object Min Cardinality"]
+        agent.process_graph(self.app.db)
+        objects = list(self.app.db.objects(KB.BonnieAndClyde, SIO.hasMember))
+        self.assertEquals(len(objects), 2)
+        agent =  config.Config["inferencers"]["Object Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stooges, RDF.type, OWL.Nothing), self.app.db)
-        # Need to update test to include blank node generation when cardinality is higher than the number of members provided
 
     def test_object_qualified_exact_cardinality(self):
         self.dry_run = False
@@ -2031,13 +2035,13 @@ sio:PolygonEdge rdf:type owl:Class ;
     rdfs:subClassOf 
         [ rdf:type owl:Restriction ;
             owl:onProperty sio:hasComponentPart ; 
-            owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ;
-            owl:onClass sio:PolygonVertex ] ;
+            owl:onClass sio:PolygonVertex ;
+            owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ] ;
     dct:description "A polygon edge is a line segment joining two polygon vertices." ;
     rdfs:label "polygon edge" .
 
-ex-kb:TripleVertexedPolyEdge rdf:type sio:PolygonEdge ;
-    rdfs:label "triple vertexed polygon edge" ;
+ex-kb:TripleVertexPolyEdge rdf:type sio:PolygonEdge ;
+    rdfs:label "triple vertex polygon edge" ;
     sio:hasComponentPart ex-kb:VertexOne , ex-kb:VertexTwo , ex-kb:VertexThree .
 
 ex-kb:VertexOne rdf:type sio:PolygonVertex ;
@@ -2048,12 +2052,20 @@ ex-kb:VertexTwo rdf:type sio:PolygonVertex ;
 
 ex-kb:VertexThree rdf:type sio:PolygonVertex ;
     rdfs:label "vertex three" .
+
+ex-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
+    rdfs:label "triple vertexed polygon edge" ;
+    sio:hasComponentPart ex-kb:VertexOne .
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality"]
+        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.TripleVertexedPolyEdge, RDF.type, OWL.Nothing), self.app.db)# Not yet accounting for less than the qualified value
+        objects = list(self.app.db.objects(KB.SingleVertexPolyEdge, SIO.hasComponentPart))
+        self.assertEquals(len(objects), 2)
+        agent =  config.Config["inferencers"]["Object Qualified Max Cardinality"]
+        agent.process_graph(self.app.db)
+        self.assertIn((KB.TripleVertexPolyEdge, RDF.type, OWL.Nothing), self.app.db)
 
     def test_data_max_cardinality(self):
         self.dry_run = False
@@ -2233,9 +2245,11 @@ ex-kb:Stephen rdf:type sio:Human ;
 # -------  Data Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality"]
+        agent =  config.Config["inferencers"]["Data Qualified Max Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stephen, RDF.type, OWL.Nothing), self.app.db)
+#        agent =  config.Config["inferencers"]["Data Qualified Min Cardinality"]
+#        agent.process_graph(self.app.db)
 
     def test_object_complement_of(self):
         self.dry_run = False
@@ -2620,27 +2634,28 @@ ex:FriendlyTalkingDog rdf:type owl:Class ;
         self.assertIn((KB.ProteinReceptor, RDF.type, SIO.Target), self.app.db)
         self.assertIn((KB.Brian, RDF.type, ONT.FriendlyTalkingDog), self.app.db)
 
-    def test_data_intersection_of(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <------- Data Intersection Of ------- 
-# Need to come back to this --> can't assign multiple datatypes to a literal. However, can assign a datatype and a restriction on that datatype
-ex:Zero rdf:type rdfs:Datatype ; 
-    owl:intersectionOf ( xsd:nonNegativeInteger xsd:nonPositiveInteger ) .
-
-ex:TeenageValue rdf:type rdfs:Datatype ; 
-    rdfs:label "teenage value"
-    owl:intersectionOf ( 
-        xsd:integer 
-        [ rdf:type owl:Datatype ;
-            owl:onDatatype xsd:integer ;
-            owl:withRestrictions ( [ xsd:minInclusive "13"^^xsd:integer ] [ xsd:maxInclusive "19"^^xsd:integer ] ) 
-        ] ) .
-# ------- Data Intersection Of -------> 
-''', format="turtle")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Intersection Of"]
-        agent.process_graph(self.app.db)
-        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
+#    def test_data_intersection_of(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <------- Data Intersection Of ------- 
+## Need to come back to this --> can't assign multiple datatypes to a literal. However, can assign a datatype and a restriction on that datatype.. but what would be constructed?
+#ex:Zero rdf:type rdfs:Datatype ; 
+#    rdfs:label "zero" ;
+#    owl:intersectionOf ( xsd:nonNegativeInteger xsd:nonPositiveInteger ) .
+#
+#ex:TeenageValue rdf:type rdfs:Datatype ; 
+#    rdfs:label "teenage value" ;
+#    owl:intersectionOf ( 
+#        xsd:integer 
+#        [ rdf:type owl:Datatype ;
+#            owl:onDatatype xsd:integer ;
+#            owl:withRestrictions ( [ xsd:minInclusive "13"^^xsd:integer ] [ xsd:maxInclusive "19"^^xsd:integer ] ) 
+#        ] ) .
+## ------- Data Intersection Of -------> 
+#''', format="turtle")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Data Intersection Of"]
+#        agent.process_graph(self.app.db)
+#        self.assertIn((KB.ReplaceMe, RDF.type, OWL.Nothing), self.app.db)
