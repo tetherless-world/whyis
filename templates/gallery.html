@@ -2,8 +2,5 @@
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{g.get_label(this)}}{% endblock %}
 {% block body %}
-{% for instance in this.identifier | include("instances") |fromjson %}
-<h1><a href="{{instance['identifier']}}">{{instance['label']}}</a></h1>
-<p>{{instance['description']}}</p>
-{% endfor %}
+    <viz-gallery instances="{{this.identifier}}" />
 {% endblock %}
