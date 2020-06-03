@@ -375,8 +375,18 @@ WHERE {
             var_map = { v['field']: v for v in variables}
             variables = list(var_map.values())
         results = []
+        allowed_property_types = set([
+        'http://www.w3.org/2002/07/owl#ObjectProperty',
+        'http://www.w3.org/2002/07/owl#DatatypeProperty'
+        ])
         for facet in facets:
             facet['type'] = 'nominal'
+            if facet['propertyType'] not in allowed_property_types:
+                continue
+            if 'predicate' not in facet and 'property' in facet:
+                facet['predicate'] = '<'+facet['property']+'>'
+            if facet['propertyType'] == 'http://www.w3.org/2002/07/owl#ObjectProperty':
+                facet['typeProperty'] = 'a'
             if True:#'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
                 print(query)
