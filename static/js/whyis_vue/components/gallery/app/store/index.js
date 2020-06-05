@@ -55,17 +55,23 @@ const eventCourier = new Vue({
         getAuth(args) {
             if(args){
                 this.authenticated = args;
+                localStorage.setItem('authenticated', JSON.stringify(this.authenticated));
                 return this.$emit('isauthenticated', this.authenticated);
             }
             return this.authenticated = JSON.parse(localStorage.getItem('authenticated'));
         },
         exitApp(){
             this.authenticated = {status: false, role: null}
-            localStorage.setItem('authenticated', JSON.stringify(this.authenticated));
-            return this.$emit('isauthenticated', this.authenticated);
+            this.$emit('isauthenticated', this.authenticated);
+            return window.location = window.location.origin + "/logout"
+
         }, 
         authenticate(args) {
-            return this.getAuth({status: true, role: "user"})
+            const recievedRole = args.role ? "admin" : "user"
+            if(args.user){
+                return this.getAuth({status: true, role: recievedRole})
+            }
+            return false
         },
 
         /** Change themes */

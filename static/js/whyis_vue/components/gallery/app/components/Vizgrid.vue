@@ -50,6 +50,7 @@
         },
         methods: {
             navigate(args) {
+                // return window.location = `${window.location.origin}/about?uri=${args.identifier}`
                 return this.changeRoute("single", args)
             },
             reduceDescription(args) {

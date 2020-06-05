@@ -12,7 +12,7 @@
   import single from './components/Single.vue'
   export default Vue.component('viz-gallery', {
     mixins: [router],
-    props: ["instances"],
+    props: ["instances", "user", "hasrole"],
     data(){
       return {
         route: null,
@@ -25,6 +25,7 @@
       single    
     },
     beforeMount() {
+      ec.authenticate({user: this.user, role: this.hasrole})
       return this.changeRoute('home');
     },
     created() {

@@ -51,7 +51,8 @@ export default {
       return ec.toggleNav()
     },
     login(){
-      ec.$emit('open-filter-box', {open: true, type: "login"});
+      return window.location = window.location.origin + "/login"
+      // ec.$emit('open-filter-box', {open: true, type: "login"});
     }
   },
   created(){
