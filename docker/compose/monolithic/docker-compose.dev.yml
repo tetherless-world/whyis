@@ -29,12 +29,12 @@ services:
       - "5000:5000"
     volumes:
       # - ./../../../../../data:/data
-      - ./../../../tests/integration:/tests/integration
-      - ./../../../static:/static
-      - ./../../../templates:/templates
-      - ./../../../default_vocab.ttl:/default_vocab.ttl
-      - ./../../../whyis:/whyis
-      - ./../../../manage.py:/manage.py
+      - ./../../../tests/integration:/apps/whyis/tests/integration
+      - ./../../../static:/apps/whyis/static
+      - ./../../../templates:/apps/whyis/templates
+      - ./../../../default_vocab.ttl:/apps/whyis/default_vocab.ttl
+      - ./../../../whyis:/apps/whyis/whyis
+      - ./../../../manage.py:/apps/whyis/manage.py
       - ./dev-entrypoint.sh:/dev-entrypoint.sh
     command: sh /dev-entrypoint.sh
 
