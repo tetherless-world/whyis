@@ -21,8 +21,11 @@ function getViewUrl(uri, view) {
   return `${ROOT_URL}about?view=${view}&uri=${uri}`
 }
 
-function goToView(uri, view) {
-  window.location = getViewUrl(uri, view)
+function goToView(uri, view, args) {
+  if(args){
+    return window[args](getViewUrl(uri, view), '_blank')
+  }
+  return window.location = getViewUrl(uri, view)
 }
 
 export { DEFAULT_VIEWS, getCurrentUri, getCurrentView, getViewUrl, goToView }

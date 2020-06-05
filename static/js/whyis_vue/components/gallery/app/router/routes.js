@@ -10,7 +10,6 @@ export const router = {
                 state.appRoutes.pageArgs.unshift(args);
             } else {
                 state.appRoutes.pageArgs.unshift(null);
-                console.log(state.appRoutes.pageArgs)
             }
             return ec.$emit('route-changed', page);
         },

@@ -15,40 +15,52 @@
         <span class="md-list-item-text utility-navfont">Materialsmine</span>
       </md-list-item>
 
-      <div class="utility-space" v-if="authenticated"></div>
+      <div class="utility-space" v-if="authenticated.status"></div>
 
-      <md-toolbar class="md-transparent" md-elevation="0" v-if="authenticated">
+      <md-toolbar class="md-transparent" md-elevation="0" v-if="authenticated.status">
         User Dashboard
       </md-toolbar>
 
       <md-divider v-if="authenticated"></md-divider>
-      <md-list-item class="utility-nav_bottom-margin" v-if="authenticated">
+      <md-list-item class="utility-nav_bottom-margin" v-if="authenticated.status">
         <md-switch v-model="booleans" class="md-primary">Switch Theme</md-switch>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust" v-if="authenticated" v-on:click.prevent="myChartNavigation('Create New')">
+      <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="newChart">
         <md-icon class="utility-navfonticon">add</md-icon>
         <span class="md-list-item-text utility-navfont">Create New</span>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust" v-if="authenticated" v-on:click.prevent="myChartNavigation('My Chart')">
+      <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('My Chart')">
         <md-icon class="utility-navfonticon">insert_chart_outlined</md-icon>
         <span class="md-list-item-text utility-navfont">My Charts</span>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust" v-if="authenticated" v-on:click.prevent="myChartNavigation('Notification')">
+      <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('Notification')">
         <md-icon class="utility-navfonticon">notifications_none</md-icon>
         <span class="md-list-item-text utility-navfont">Notification</span>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust" v-if="authenticated" v-on:click.prevent="myChartNavigation('Settings')">
+      <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('Settings')">
         <md-icon class="utility-navfonticon">settings</md-icon>
         <span class="md-list-item-text utility-navfont">Settings</span>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust" v-if="authenticated" v-on:click.prevent="myChartNavigation('Sign Out')">
+      <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('Sign Out')">
         <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
         <span class="md-list-item-text utility-navfont">Sign Out</span>
+      </md-list-item>
+      <div class="utility-space" v-if="authenticated.status"></div>
+
+      <md-toolbar class="md-transparent" md-elevation="0" v-if="authenticated.role == 'admin'">
+        Administration Dashboard
+      </md-toolbar>
+
+      <md-divider v-if="authenticated.role == 'admin'"></md-divider>
+
+      <md-list-item class="utility-navadjust" v-if="authenticated.role == 'admin'" v-on:click.prevent="">
+        <md-icon class="utility-navfonticon">insights</md-icon>
+        <span class="md-list-item-text utility-navfont">Manage Charts</span>
       </md-list-item>
     </md-list>
   </md-app-drawer>
@@ -58,12 +70,16 @@
 
 import { eventCourier as ec } from '../../store';
 import { router } from '../../router/routes'
+import { goToView } from '../../../../../utilities/views'
 export default {
   name: 'Drawer',
   mixins: [router],
   props:{
     authenticated: {
-      type: Boolean
+      type: Object
+    },
+    globalargs: {
+      type: String
     }
   },
   data() {
@@ -85,10 +101,14 @@ export default {
   methods: {
     myChartNavigation(args){
       if(args == "Sign Out") {
-        ec.getAuth()
+        ec.exitApp()
         return this.changeRoute("home")
       }
       return this.changeRoute("home", args)
+    },
+    newChart(){
+      ec.$emit('togglenavigation', false);
+      return goToView(this.globalargs, "new", "open")
     }
   }
 }

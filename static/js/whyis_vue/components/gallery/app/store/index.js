@@ -12,13 +12,22 @@ const eventCourier = new Vue({
     data:{
         appState: [],
         navOpen: false,
-        authenticated: false,
+        authenticated: {
+            status: false,
+            role: null
+        },
         darkThemeEnabled: false
     },
     watch:{
         appState(newVal, oldVal){
             if(newVal !== oldVal){
                 this.getState();
+            }
+        },
+        authenticated(newVal){
+            if(newVal){
+                localStorage.setItem('authenticated', JSON.stringify(this.authenticated));
+                return this.$emit('isauthenticated', this.authenticated);
             }
         }
     },
@@ -43,9 +52,20 @@ const eventCourier = new Vue({
         },
         
         /** Authentication Handler Methods */
-        getAuth() {
-            this.authenticated = !this.authenticated
+        getAuth(args) {
+            if(args){
+                this.authenticated = args;
+                return this.$emit('isauthenticated', this.authenticated);
+            }
+            return this.authenticated = JSON.parse(localStorage.getItem('authenticated'));
+        },
+        exitApp(){
+            this.authenticated = {status: false, role: null}
+            localStorage.setItem('authenticated', JSON.stringify(this.authenticated));
             return this.$emit('isauthenticated', this.authenticated);
+        }, 
+        authenticate(args) {
+            return this.getAuth({status: true, role: "user"})
         },
 
         /** Change themes */

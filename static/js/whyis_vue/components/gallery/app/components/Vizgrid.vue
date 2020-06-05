@@ -7,7 +7,7 @@
             <span v-else>No result (0.59 seconds)</span>
         </div>
         <div class="viz-content">
-            <md-card class="utility-gridborder" v-for="(result, index) in results" :key="index" @click.native.prevent="navigate(result)">
+            <md-card v-for="(result, index) in results" :key="index" @click.native.prevent="navigate(result)">
                 <md-card-media-cover md-solid >
                     <md-card-media md-ratio="4:3">
                     <img :src="result.thumbnail" :alt="result.label">
@@ -15,7 +15,7 @@
                     <md-card-area class="utility-gridbg">
                         <md-card-header class="utility-show_hide">
                             <span class="md-subheading">
-                                {{ result.label }}
+                                <strong>{{ result.label }}</strong>
                             </span>
                             <span class="md-body-1">{{ reduceDescription(result.description) }}</span>
                         </md-card-header>
@@ -59,11 +59,11 @@
                 arrSplice = arr.reduce((a,b) => `${a} ${b}`, "")
                 return `${arrSplice}...`
             },
-            async loadVisualization () {
+            loadVisualization () {
                 this.loading = true;
                 /** passing view=instances&uri=this.parsedArg */ 
                 const pageUri = getViewUrl(this.globalargs, "instances")
-                this.chart = await Loader(pageUri)
+                this.chart = Loader(pageUri)
             }
         },
         async beforeMount(){

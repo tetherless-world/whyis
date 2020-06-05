@@ -1,6 +1,5 @@
 @import "screens";
 @import "content";
-
 .nav {
     &-title {
         font-size: 1.5rem;
@@ -12,8 +11,27 @@
 }
 
 .utility {
+    &-dialog-box {
+        &_header {
+            background-color: #64b5f6!important;
+            padding: 1rem .5rem !important;
+
+            & > span {
+                padding: 0rem !important;
+            }
+        }
+        &_login {
+            margin: .4rem 0rem;
+            min-width: 28rem;
+            padding: .5rem 1.2rem;
+        }
+    }
+    &-align--right {
+        text-align: right;
+    }
     &-gridbg {
-        background-color: rgba(#000000, 0.7) !important;    
+        background-color: rgba(#000000, 0.7) !important;
+        border: 1px solid #08233c !important;    
     }
     &-gridborder {
         border: 1px solid #08233c !important;
@@ -24,6 +42,21 @@
     &-filter {
         transform: translate(10px, 10px) !important;
         transition: all 95000s ease-out !important;
+    }
+    &-margin {
+        margin: 1rem .2rem;
+        span {
+            display: block;
+            margin-bottom: .4rem;
+        }
+
+        &-big {
+            margin: 3.2rem .2rem .2rem .2rem;
+        }
+
+        &-top {
+            margin-top: .5rem;
+        }
     }
     &-content__result {
         font-size: .8rem;
@@ -184,6 +217,14 @@
         height: 100%;
         background-color: rgba(#ffffff,0.9) !important;
     }
+
+    &-dialog /deep/.md-dialog-container {
+        max-width: 768px;
+    }
+
+    &-autocomplete + strong {
+        margin-top: 36px;
+        display: block;
+        z-index: 1000;
+    }
 }
-
-

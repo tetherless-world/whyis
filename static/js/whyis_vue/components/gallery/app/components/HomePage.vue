@@ -3,9 +3,9 @@
   <div class="page-container">
     <md-app md-waterfall md-mode="overlap">
       <md-app-toolbar :authenticated="authenticated" />
-      <md-app-drawer :authenticated="authenticated" />
+      <md-app-drawer :authenticated="authenticated" :globalargs="globalargs" />
       <md-app-content class="utility-bg utility-bg_border">
-        <viz-grid :globalargs="globalargs" :authenticated="authenticated" />
+        <viz-grid :globalargs="globalargs" :authenticated="authenticated.status" />
       </md-app-content>
     </md-app>
     <md-speed-dial :class="bottomPosition">
@@ -22,7 +22,7 @@
           <md-tooltip class="utility-bckg" md-direction="left"> Filter </md-tooltip>
           <md-icon class="utility-color">search</md-icon>
         </md-button>
-         <md-button class="md-icon-button" v-if="authenticated" @click.prevent="changeRoute('home','Create New')">
+         <md-button class="md-icon-button" v-if="authenticated.status" @click.prevent="newChart">
           <md-tooltip class="utility-bckg" md-direction="left">Create New Chart</md-tooltip>
           <md-icon class="utility-color">add</md-icon>
         </md-button>
@@ -40,6 +40,7 @@
   import Drawer from './header/Drawer'
   import FilterBox from './Filter'
   import vizGrid from './Vizgrid'
+  import { goToView } from '../../../../utilities/views'
   export default {
     name: 'homePage',
     mixins: [router],
@@ -68,8 +69,12 @@
     },
     methods: {
       showFilterBox () {
-        ec.$emit('open-filter-box', true);
+        ec.$emit('open-filter-box', {open: true, type: "filter"});
         return this.filter = true
+      },
+      newChart(){
+        ec.$emit('togglenavigation', false);
+        return goToView(this.globalargs, "new", "open")
       }
     },
     created() {
@@ -78,6 +83,7 @@
       .$on('close-filter-box', (data) => this.filter = data)
       .$on('isauthenticated', (data) => this.authenticated = data)
       .$on("route-args", (data) => this.pageArgs = data)
+      ec.getAuth()
     }
   }
 </script>
