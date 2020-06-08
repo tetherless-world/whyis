@@ -25,7 +25,6 @@
       single    
     },
     beforeMount() {
-      console.log(this.hasrole)
       ec.authenticate({user: this.user, role: this.hasrole})
       return this.changeRoute('home');
     },

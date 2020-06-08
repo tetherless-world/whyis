@@ -7,13 +7,16 @@
     <md-list class="utility-transparentbg">
       <md-list-item class="utility-navadjust" v-on:click.prevent="myChartNavigation('home')">
         <md-icon class="utility-navfonticon">home</md-icon>
-        <span class="md-list-item-text utility-navfont">Facet Browser</span>
+        <span class="md-list-item-text utility-navfont">Home</span>
       </md-list-item>
 
+      <!-- Development in Progress -->
+      <!--
       <md-list-item class="utility-navadjust" v-on:click.prevent="myChartNavigation('materialsmine')">
         <md-icon class="utility-navfonticon">home_work</md-icon>
         <span class="md-list-item-text utility-navfont">Materialsmine</span>
       </md-list-item>
+      -->
 
       <div class="utility-space" v-if="authenticated.status"></div>
 
@@ -22,15 +25,21 @@
       </md-toolbar>
 
       <md-divider v-if="authenticated"></md-divider>
+      
+      <!-- Transfer this into settings -->
+      <!--
       <md-list-item class="utility-nav_bottom-margin" v-if="authenticated.status">
         <md-switch v-model="booleans" class="md-primary">Switch Theme</md-switch>
       </md-list-item>
+      -->
 
       <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="newChart">
         <md-icon class="utility-navfonticon">add</md-icon>
-        <span class="md-list-item-text utility-navfont">Create New</span>
+        <span class="md-list-item-text utility-navfont">Create New {{ resourceType }}</span>
       </md-list-item>
 
+      <!-- Development in Progress -->
+      <!--
       <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('My Chart')">
         <md-icon class="utility-navfonticon">insert_chart_outlined</md-icon>
         <span class="md-list-item-text utility-navfont">My Charts</span>
@@ -45,6 +54,7 @@
         <md-icon class="utility-navfonticon">settings</md-icon>
         <span class="md-list-item-text utility-navfont">Settings</span>
       </md-list-item>
+      -->
 
       <md-list-item class="utility-navadjust" v-if="authenticated.status" v-on:click.prevent="myChartNavigation('Sign Out')">
         <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
@@ -85,7 +95,8 @@ export default {
   data() {
     return {
       booleans: false,  //for switching themes
-      menuVisible: false
+      menuVisible: false,
+      resourceType: null
     }
   },
   watch:{
@@ -97,6 +108,8 @@ export default {
     ec.$on('togglenavigation', (data) => {
       return this.menuVisible = data
     });
+    let resources = window.location.search.split("/")
+    this.resourceType = resources[resources.length-1]
   },
   methods: {
     myChartNavigation(args){
@@ -106,7 +119,7 @@ export default {
           this.changeRoute("home")
           break;
         case "home":
-          window.location = `${window.location.origin}/wi/home`
+          window.location = `${window.location.origin}`
           break;
         case "materialsmine":
           window.location = `${window.location.origin}/nm`

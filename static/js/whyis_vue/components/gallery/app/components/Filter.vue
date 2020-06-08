@@ -39,7 +39,7 @@
             </md-select>
           </md-field>
         </div>
-        <md-autocomplete v-model="selectedText" :md-options="filterby == 'title' ? chartResults.title:chartResults.description" :md-open-on-focus="false">
+        <md-autocomplete v-model="selectedText" :md-options="filterby == 'title' ? chartResults:chartResults" :md-open-on-focus="false">
           <label>Filter Keyword</label>
 
           <template slot="md-autocomplete-item" slot-scope="{ item, term }">
