@@ -67,7 +67,7 @@ const eventCourier = new Vue({
 
         }, 
         authenticate(args) {
-            const recievedRole = args.role ? "admin" : "user"
+            const recievedRole = args.role != 'False' ? "admin" : "user"
             if(args.user){
                 return this.getAuth({status: true, role: recievedRole})
             }

@@ -5,12 +5,12 @@
     </md-toolbar>
     <md-divider></md-divider>
     <md-list class="utility-transparentbg">
-      <md-list-item class="utility-navadjust">
+      <md-list-item class="utility-navadjust" v-on:click.prevent="myChartNavigation('home')">
         <md-icon class="utility-navfonticon">home</md-icon>
         <span class="md-list-item-text utility-navfont">Facet Browser</span>
       </md-list-item>
 
-      <md-list-item class="utility-navadjust">
+      <md-list-item class="utility-navadjust" v-on:click.prevent="myChartNavigation('materialsmine')">
         <md-icon class="utility-navfonticon">home_work</md-icon>
         <span class="md-list-item-text utility-navfont">Materialsmine</span>
       </md-list-item>
@@ -100,11 +100,20 @@ export default {
   },
   methods: {
     myChartNavigation(args){
-      if(args == "Sign Out") {
-        ec.exitApp()
-        return this.changeRoute("home")
+      switch(args) {
+        case "Sign Out":
+          ec.exitApp()
+          this.changeRoute("home")
+          break;
+        case "home":
+          window.location = `${window.location.origin}/wi/home`
+          break;
+        case "materialsmine":
+          window.location = `${window.location.origin}/nm`
+          break;  
+        default:
+          this.changeRoute("home", args)
       }
-      return this.changeRoute("home", args)
     },
     newChart(){
       ec.$emit('togglenavigation', false);
