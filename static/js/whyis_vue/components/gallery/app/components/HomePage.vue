@@ -2,7 +2,7 @@
   <div>
   <div class="page-container">
     <md-app md-waterfall md-mode="overlap">
-      <md-app-toolbar :authenticated="authenticated" />
+      <md-app-toolbar :authenticated="authenticated" :globalargs="globalargs"/>
       <md-app-drawer :authenticated="authenticated" :globalargs="globalargs" />
       <md-app-content class="utility-bg utility-bg_border">
         <viz-grid :globalargs="globalargs" :authenticated="authenticated.status" />
@@ -29,7 +29,7 @@
       </md-speed-dial-content>
     </md-speed-dial>
   </div>
-  <FilterBox />
+  <FilterBox :globalargs="globalargs"/>
   </div>
 </template>
 <style scoped lang="scss" src="../static/css/main.scss"></style>

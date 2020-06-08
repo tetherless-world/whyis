@@ -6,7 +6,7 @@
             <md-icon>menu</md-icon>
           </md-button>
           <span class="md-title nav-title" v-if="otherArgs != null && authenticated.status">Visualization Gallery - {{ otherArgs }}</span>
-          <span class="md-title nav-title" v-else>Visualization Gallery</span>
+          <span class="md-title nav-title" v-else>{{ resourceType }} Gallery</span>
           <div class="md-toolbar-section-end">
             <md-button class="md-icon-button" v-if="authenticated.status">
               <md-avatar>
@@ -34,6 +34,9 @@ export default {
   props:{
     authenticated: {
       type: Object
+    },
+    globalargs: {
+      type: String
     }
   },
   data(){
@@ -43,7 +46,8 @@ export default {
       showSnackbar: false,
       position: 'center',
       duration: 4000,
-      isInfinity: false
+      isInfinity: false,
+      resourceType: null
     }
   },
   methods:{
@@ -59,6 +63,9 @@ export default {
     ec
     .$on("route-args", (data) => this.otherArgs = data)
     .$on('isauthenticated', (data) => this.showSnackbar = data.status);
+
+    let resources = this.globalargs.split("/")
+    this.resourceType = resources[resources.length-1]
   }
 }
 </script>

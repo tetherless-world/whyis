@@ -108,7 +108,7 @@ export default {
     ec.$on('togglenavigation', (data) => {
       return this.menuVisible = data
     });
-    let resources = window.location.search.split("/")
+    let resources = this.globalargs.split("/")
     this.resourceType = resources[resources.length-1]
   },
   methods: {
