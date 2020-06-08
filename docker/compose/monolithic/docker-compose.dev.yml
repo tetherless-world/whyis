@@ -36,6 +36,6 @@ services:
       - ./../../../whyis:/apps/whyis/whyis
       - ./../../../manage.py:/apps/whyis/manage.py
       - ./dev-entrypoint.sh:/dev-entrypoint.sh
-    command: sh /dev-entrypoint.sh
+    command: bash -c "python3 manage.py createuser -e whyis@whyis.com -p whyis -u whyis --roles=admin && python3 manage.py runserver -h 0.0.0.0"
 
 

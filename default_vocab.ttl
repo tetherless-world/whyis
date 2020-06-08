@@ -362,6 +362,13 @@ whyis:hasLabels dc:identifier "labels";
 whyis:hasSummary dc:identifier "summary";
   rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasInstances dc:identifier "instances";
+  rdfs:subPropertyOf whyis:hasView.
+
+  whyis:hasGallery dc:identifier "gallery";
+    rdfs:subPropertyOf whyis:hasView.
+
+
 rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
@@ -387,6 +394,8 @@ owl:Class rdfs:label "Class";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
   whyis:newInstanceView "new_instance_view.html";
+  whyis:hasInstances "instances.json";
+  whyis:hasGallery "gallery.html";
   whyis:hasView "class_view.html".
 
 whyis:hasConstraints dc:identifier "constraints";
