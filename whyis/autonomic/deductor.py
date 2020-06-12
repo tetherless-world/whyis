@@ -13,6 +13,11 @@ from flask import render_template
 from flask import render_template_string
 import logging
 
+#try:
+#    import config.Config as Config
+#except:
+#    from whyis import config_defaults.Config as Config
+
 import sys, traceback
 
 import database
@@ -24,12 +29,13 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 class Deductor(GlobalChangeService):
-    def __init__(self, antecedent, consequent, explanation, resource="?resource", prefixes=None): 
+    def __init__(self, reference, antecedent, consequent, explanation, resource="?resource", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
+        self.reference = reference
         self.antecedent = antecedent
         self.consequent = consequent
         self.explanation = explanation
@@ -57,15 +63,17 @@ class Deductor(GlobalChangeService):
         return context
 
     def process(self, i, o):
-        npub = Nanopublication(store=o.graph.store)
-        triples = self.app.db.query(
-            '''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
-            self.consequent, self.antecedent, self.consequent, self.resource, i.identifier), initNs=self.prefixes)
-        for s, p, o in triples:
-            print("Deductor Adding ", s, p, o)
-            npub.assertion.add((s, p, o))
-        npub.provenance.add((npub.assertion.identifier, prov.value,
-                             rdflib.Literal(flask.render_template_string(self.explanation, **self.get_context(i)))))
+        for profile in self.app.config["active_profiles"] :
+            if self.reference in self.app.config["reasoning_profiles"][profile] :
+                npub = Nanopublication(store=o.graph.store)
+                triples = self.app.db.query(
+                    '''CONSTRUCT {\n%s\n} WHERE {\n%s \nFILTER NOT EXISTS {\n%s\n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
+                    self.consequent, self.antecedent, self.consequent, self.resource, i.identifier), initNs=self.prefixes)
+                for s, p, o in triples:
+                    print("Deductor Adding ", s, p, o)
+                    npub.assertion.add((s, p, o))
+                npub.provenance.add((npub.assertion.identifier, prov.value,
+                                     rdflib.Literal(flask.render_template_string(self.explanation, **self.get_context(i)))))
 
     def __str__(self):
         return "Deductor Instance: " + str(self.__dict__)
