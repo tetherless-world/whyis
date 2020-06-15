@@ -77,9 +77,10 @@ select distinct ?resource where { ?resource a ?type. } values ?type { %s }
         for view in views:
             print ("Caching",i.identifier, view)
             resource = self.app.get_resource(i.identifier)
-            result, response, headers = self.app.render_view(resource, view,
-                                                             use_cache=False)
-            if response == 200:
-                key = str((str(i.identifier),view.value))
-                print(key)
-                self.app.cache.set(key, [result, headers])
+            with self.app.test_request_context('/about', data={'uri': i.identifier, 'view':view}):
+                result, response, headers = self.app.render_view(resource, view,
+                                                                 use_cache=False)
+                if response == 200:
+                    key = str((str(i.identifier),view.value))
+                    print(key)
+                    self.app.cache.set(key, [result, headers])
