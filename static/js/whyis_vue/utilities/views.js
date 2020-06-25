@@ -6,9 +6,7 @@ const DEFAULT_VIEWS = Object.freeze({
 })
 
 function getCurrentUri () {
-  const params = new URLSearchParams(window.location.search)
-  const uri = params.get('uri')
-  return uri
+  return NODE_URI
 }
 
 function getCurrentView () {
