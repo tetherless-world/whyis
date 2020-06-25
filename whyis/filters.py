@@ -385,7 +385,7 @@ WHERE {
                 continue
             if 'predicate' not in facet and 'property' in facet:
                 facet['predicate'] = '<'+facet['property']+'>'
-            if facet['propertyType'] == 'http://www.w3.org/2002/07/owl#ObjectProperty':
+            if 'typeProperty' not in facet and facet['propertyType'] == 'http://www.w3.org/2002/07/owl#ObjectProperty':
                 facet['typeProperty'] = 'a'
             if True:#'valuePredicate' in facet:
                 query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
