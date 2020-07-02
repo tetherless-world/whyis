@@ -44,13 +44,16 @@ def configure(app):
         if key not in entry:
             return None
         resource = None
-        if not isinstance(entry[key],rdflib.URIRef):
+        try:
+            key_uri = rdflib.URIRef(entry[key])
+            key_uri.n3()
+        except Exception:
             entry[label_key] = entry[key]
             return entry
         if fetch:
-            resource = app.get_resource(rdflib.URIRef(entry[key]))
+            resource = app.get_resource(key_uri)
         else:
-            resource = app.Entity(app.db, rdflib.URIRef(entry[key]))
+            resource = app.Entity(app.db, key_uri)
         entry[label_key] = app.get_label(resource.description())
         return entry
 
