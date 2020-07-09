@@ -46,6 +46,15 @@ jobs:
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
             fi
+            tag=`git describe --exact-match`
+            if [ $tag ] ; then
+              docker tag tetherlessworld/whyis:latest "tetherlessworld/whyis:$tag"
+              docker tag tetherlessworld/whyis-deps:latest "tetherlessworld/whyis-deps:$tag"
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              WHYIS_IMAGE_TAG=$tag docker-compose -f docker/compose/monolithic/docker-compose.yml push
+            else
+              echo "No tag detected"
+            fi
   build_and_deploy_split_docker_image:
     working_directory: /apps/whyis
     docker:
@@ -67,13 +76,6 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
-            fi
-            tag=`git describe --exact-match`
-            if [ $tag ] ; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              WHYIS_IMAGE_TAG=$tag docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
-            else
-              echo "No tag detected"
             fi
   install_and_test_outside_docker:
     working_directory: /
