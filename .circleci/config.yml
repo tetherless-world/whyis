@@ -46,7 +46,7 @@ jobs:
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
             fi
-            tag=`git describe --exact-match`
+            tag=`git describe --exact-match` || true
             if [ $tag ] ; then
               docker tag tetherlessworld/whyis:latest "tetherlessworld/whyis:$tag"
               docker tag tetherlessworld/whyis-deps:latest "tetherlessworld/whyis-deps:$tag"
