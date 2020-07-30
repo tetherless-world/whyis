@@ -19,7 +19,7 @@ cookiecutter==1.6.0
 cryptography==2.7
 Cython==0.29.10
 fabric==2.4.0
-git+git://github.com/jimmccusker/depot.git@remove_unidecode#egg=filedepot
+filedepot==0.8.0
 Flask==1.0.3
 #Flask-Admin==1.5.3
 #Flask-BabelEx==0.9.3
