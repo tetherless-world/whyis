@@ -3,7 +3,7 @@
 from flask_script import Command, Option
 
 import flask
-
+import rdflib
 
 class RetireNanopub(Command):
     '''Retire a nanopublication from the knowledge graph.'''
@@ -14,4 +14,4 @@ class RetireNanopub(Command):
         ]
 
     def run(self, nanopub_uri):
-        flask.current_app.nanopub_manager.retire(nanopub_uri)
+        flask.current_app.nanopub_manager.retire(rdflib.URIRef(nanopub_uri))
