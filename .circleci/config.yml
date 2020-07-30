@@ -45,6 +45,13 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
+
+              tag=`git describe --exact-match` || echo "latest commit is not tagged"
+              if [ $tag ] ; then
+                docker tag tetherlessworld/whyis:latest "tetherlessworld/whyis:$tag"
+                docker tag tetherlessworld/whyis-deps:latest "tetherlessworld/whyis-deps:$tag"
+                WHYIS_IMAGE_TAG=$tag docker-compose -f docker/compose/monolithic/docker-compose.yml push
+              fi
             fi
   build_and_deploy_split_docker_image:
     working_directory: /apps/whyis
