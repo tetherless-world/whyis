@@ -371,7 +371,7 @@ Config = dict(
         UNION
     {?p2 owl:propertyDisjointWith ?p1 .}''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = "Since properties {p1} and {p2} are disjoint, {{resource}} having both {{p2}} {{o2}} as well as {{p1}} {{o2}} leads to an inconsistency. "
+            explanation = "Since properties {{p1}} and {{p2}} are disjoint, {{resource}} having both {{p2}} {{o2}} as well as {{p1}} {{o2}} leads to an inconsistency. "
         ),
         "Object Property Asymmetry" : autonomic.Deductor(
             reference = "Object Property Asymmetry",
@@ -664,7 +664,7 @@ Config = dict(
                 owl:someValuesFrom ?value ] .
     FILTER(DATATYPE(?val) != ?value)''',
             consequent = "?resource rdf:type owl:Nothing .",
-            explanation = "{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."
+            explanation = "{{resource}} {{datatypeProperty}} {{val}}, but {{val}} does not have the same datatype {{value}} restricted for {{datatypeProperty}} in {{class}}. Since {{resource}} rdf:type {{class}}, an inconsistency occurs."
         ),#Data some and all values from behave the same as each other..? May need to revisit
         #"Self Restriction" (ObjectHasSelf): 
         "Object Has Self" : autonomic.Deductor(
@@ -693,7 +693,7 @@ Config = dict(
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ;
             owl:hasValue ?object ] .''',
-            consequent = "?resource ?objectProperty?object .",
+            consequent = "?resource ?objectProperty ?object .",
             explanation = "Since {{resource}} is of type {{class}}, which has a value restriction on {{objectProperty}} to have {{object}}, we can infer that {{resource}} {{objectProperty}} {{object}}."
         ),
         "Data Has Value" : autonomic.Deductor(
@@ -1076,7 +1076,7 @@ Config = dict(
     ?resource ?dataProperty ?data .
     FILTER(DATATYPE(?data)=?datatype)''', #need to come back and make sure logic is correct on this one
             consequent = "?resource rdf:type ?class .",
-            explanation = ""#add explanation here
+            explanation = "Since {{class}} has a subclass or equivalent class relationship to the union of {{list}} which has members {{member}}, and {{member}} is a restriction on {{dataProperty}} to have some values from {{datatype}}, we can infer {{resource}} rdf:type {{class}}, since {{resource}} {{dataProperty}} {{data}} and the datatype of {{data}} is {{datatype}}."
         ),
         "Object Complement Of" : autonomic.Deductor(
             reference = "Object Complement Of",
