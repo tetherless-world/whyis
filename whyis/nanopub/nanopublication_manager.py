@@ -47,7 +47,7 @@ class NanopublicationManager(object):
         # the identifier in the nanopub for consistency, and we don't
         # get the identifier until we write the file!
         #fileid = self.depot.create(FileIntent(b'', create_id(), 'application/trig'))
-        
+
         return create_id()
 
     def prepare(self, source_graph):
@@ -106,7 +106,7 @@ class NanopublicationManager(object):
             for s, p, o, g in graph.quads((None, None, old, None)):
                 graph.add((s,p,new,g))
                 graph.remove((s,p,o,g))
-                
+
             #if nanopub.pubinfo.value(nanopub.identifier, frbr.realizationOf) is None:
             #    work = self.prefix[create_id()]
             #    nanopub.pubinfo.add((nanopub.identifier, frbr.realizationOf, work))
@@ -122,26 +122,34 @@ class NanopublicationManager(object):
         self.db.store.nsBindings = {}
         #graphs = []
         derived_query = '''select ?np where {
-  ?np (np:hasAssertion/prov:wasDerivedFrom+/^np:hasAssertion)? ?r.
+  ?r np:hasAssertion ?ra.
+  ?npa prov:wasDerivedFrom* ?ra.
+  ?np np:hasAssertion ?npa.
   ?np a np:Nanopublication.
 ''' + ('' if self.app.config.get('delete_archive_nanopubs',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
+}'''
+        file_query = '''select ?fileid where {
+  ?np np:hasAssertion ?assertion.
+  graph ?assertion {
+    ?resource whyis:hasFileID ?fileid.
+  }
 }'''
         for nanopub_uri in nanopub_uris:
             for np_uri, in self.db.query(derived_query,
                                          initNs={"prov": prov, "np": np, "whyis" : whyis},
                                          initBindings={"r": nanopub_uri}):
-                #graphs.extend([np_uri, assertion, provenance, pubinfo])
-                nanopub = Nanopublication(store=self.db.store, identifier=np_uri)
-                
-                for fileid in nanopub.objects(predicate=whyis.hasFileID):
+                for fileid, in self.db.query(file_query, initNs={"np": np, "whyis" : whyis},
+                                             initBindings={'np': np_uri}):
                     if self.app.file_depot.exists(fileid):
+                        print("Deleting file",fileid, "in", np_uri,
+                              "because retire was called on",nanopub_uri)
                         self.app.file_depot.delete(fileid)
                     elif self.app.nanopub_depot.exists(fileid):
-                        f = self.app.nanopub_depot.delete(fileid)                    
-                self.db.remove((None, None, None, nanopub.assertion.identifier))
-                self.db.remove((None, None, None, nanopub.provenance.identifier))
-                self.db.remove((None, None, None, nanopub.pubinfo.identifier))
-                self.db.remove((None, None, None, nanopub.identifier))
+                        f = self.app.nanopub_depot.delete(fileid)
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasAssertion)))
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasProvenance)))
+                self.db.remove((None, None, None, self.db.value(np_uri, np.hasPublicationInfo)))
+                self.db.remove((None, None, None, np_uri))
         self.db.commit()
         # data = [('c', c.n3()) for c in graphs]
         # session = requests.session()
@@ -188,7 +196,7 @@ class NanopublicationManager(object):
                         np_query = '''select ?np where { ?np np:hasAssertion|np:hasProvenance|np:hasPublicationInfo ?x}'''
                         replacing = [x for x, in self.db.query(np_query, initNs=dict(np=np), initBindings=dict(x=part))]
                         to_retire = to_retire.union(replacing)
-                    
+
                     for revised in np_graph.pubinfo.objects(np_graph.assertion.identifier, prov.wasRevisionOf):
                         for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):
                             np_graph.pubinfo.set((nanopub_uri, prov.invalidatedAtTime, now))
@@ -236,7 +244,7 @@ class NanopublicationManager(object):
 
     def get(self, nanopub_uri, graph=None):
         nanopub_uri = rdflib.URIRef(nanopub_uri)
-        
+
         if graph is None:
             graph = rdflib.ConjunctiveGraph()
 

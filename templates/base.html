@@ -14,19 +14,20 @@
     <!-- Angular Material style sheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/angular-material/angular-material.min.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/angular-bootstrap/ui-bootstrap-csp.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/md-range-slider.css')}}">
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}">
-    
+
     <!-- Optional theme -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
-        
+
     <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-semantic-faceted-search/dist/semantic-faceted-search.css')}}">
 
     <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v3.20.1/css/ol.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/markers.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='js/angular-openlayers-directive/css/openlayers.css')}}">
-        
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/apple-icon-57x57.png') }}">
@@ -49,30 +50,30 @@
     <style>
       /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
       html, body {
-        background-color: #fff;   
-      } 
+        background-color: #fff;
+      }
       .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
       div.container {
       width: 100%;
       margin-left: 0px;
       margin-right: 0px;
       }
-      a:visited { 
+      a:visited {
       color: #887ab7;
       }
     </style>
-    
+
     {% block styles %}{% endblock %}
-    
+
   </head>
 <body>
 {% block body %}
-    <md-toolbar >
+    <md-toolbar class="md-primary" >
       <div class="md-toolbar-tools">
 
         <a href="{{url_for('entity.view',name='')}}">Home</a>
 	<!-- Form for Search -->
-	<form 
+	<form
 	      class="navbar-form"
               style="color:black"
 	      role="search"
@@ -149,7 +150,7 @@
       </div>
       {% include "footer.html" %}
     {% endblock %}
-    
+
     <script>
       LOD_PREFIX = '{{config.lod_prefix}}';
       {% if 'base_rate_probability' in config %}
@@ -172,7 +173,7 @@
       {% endif %}
       ROOT_URL = "{{url_for('entity.view',name='')}}";
     </script>
-    
+
     <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
 
 <!--<script src="{{ url_for('static', filename='js/lib/vega/vega.js')}}"></script>
@@ -188,19 +189,19 @@
 
       <script src="{{ url_for('static', filename='bower_components/d3/d3.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
-    
+
     <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
-    
+
     <!-- Angular Material Dependencies -->
     <script src="{{ url_for('static', filename='bower_components/angular/angular.min.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/angular-animate/angular-animate.min.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/angular-aria/angular-aria.min.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/angular-material/angular-material.min.js')}}"></script>
-    
+
     <!-- Angular Material Fileinput -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.css')}}">
     <script src="{{ url_for('static', filename='bower_components/lf-ng-md-file-input/dist/lf-ng-md-file-input.js')}}"></script>
-    
+
     <script src="{{ url_for('static', filename='bower_components/angular-sanitize/angular-sanitize.min.js')}}"></script>
     <script src="{{ url_for('static', filename='bower_components/angular-messages/angular-messages.min.js')}}"></script>
 
@@ -231,6 +232,7 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/lib/cytoscape-cose-bilkent.js')}}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/lib/jsonLdEditor.js')}}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/md-range-slider.js')}}"></script>
 
     <script>
 </script>

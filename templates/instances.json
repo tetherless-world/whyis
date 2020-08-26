@@ -1,0 +1,9 @@
+{{''' select ?identifier ?thumbnail ?description where {
+    ?identifier a ?type.
+    optional {
+        ?identifier foaf:depiction ?thumbnail.
+    }
+    optional {
+        ?identifier dc:description ?description.
+    }
+}''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label")| tojson }}

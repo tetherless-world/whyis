@@ -24,7 +24,7 @@ CELERYBEAT_CHDIR=$CELERYD_CHDIR
 ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"
 
 # Extra arguments to celeryd
-CELERYD_OPTS="-A wsgi.celery --concurrency=8"
+CELERYD_OPTS="-A wsgi.celery --concurrency=4"
 CELERYBEAT_OPTS="-A wsgi.celery"
 
 # Name of the celery config module.

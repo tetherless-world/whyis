@@ -1,4 +1,4 @@
-amqp==2.5.0
+amqp==2.5.1
 arrow==0.14.2
 asn1crypto==0.24.0
 Babel==2.7.0
@@ -10,6 +10,7 @@ binaryornot==0.4.4
 blinker==1.4
 bsddb3==6.2.6
 celery==4.3.0
+celery_once==3.0.1
 certifi==2019.3.9
 cffi==1.12.3
 chardet==3.0.4
@@ -18,7 +19,7 @@ cookiecutter==1.6.0
 cryptography==2.7
 Cython==0.29.10
 fabric==2.4.0
-filedepot==0.6.0
+filedepot==0.8.0
 Flask==1.0.3
 #Flask-Admin==1.5.3
 #Flask-BabelEx==0.9.3
@@ -62,23 +63,21 @@ python-magic==0.4.15
 python-slugify==3.0.2
 pytidylib==0.3.2
 pytz==2019.1
-#git+git://github.com/RDFLib/rdflib.git#egg=rdflib
-git+git://github.com/gordom6/rdflib.git#egg=rdflib
-git+git://github.com/RDFLib/rdflib-jsonld.git#egg=rdflib-jsonld
+rdflib==5.0.0
+rdflib-jsonld==0.5.0
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 redis==3.3.8
 requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
 scipy==1.2.1
-setlr==0.2.11
+setlr==0.2.14
 six==1.12.0
 soupsieve==1.9.1
 SPARQLWrapper==1.8.4
 speaklater==1.3
 text-unidecode==1.2
 toposort==1.5
-Unidecode==1.0.23
 urllib3==1.25.3
 vine==1.3.0
 virtualenv==16.6.0
@@ -88,3 +87,4 @@ Werkzeug==0.15.3
 whichcraft==0.5.2
 WTForms==2.2.1
 xlrd==1.2.0
+Flask-Caching==1.8.0
