@@ -368,6 +368,8 @@ whyis:hasInstances dc:identifier "instances";
   whyis:hasGallery dc:identifier "gallery";
     rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasDataset dc:identifier "dataset";
+  rdfs:subPropertyOf whyis:hasView.
 
 rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasRelated "related_nodes.json";
@@ -396,7 +398,8 @@ owl:Class rdfs:label "Class";
   whyis:newInstanceView "new_instance_view.html";
   whyis:hasInstances "instances.json";
   whyis:hasGallery "gallery.html";
-  whyis:hasView "class_view.html".
+  whyis:hasView "class_view.html";
+  whyis:hasDataset "dataset_upload.html".
 
 whyis:hasConstraints dc:identifier "constraints";
   rdfs:subPropertyOf whyis:hasView.
@@ -491,3 +494,7 @@ whyis:ChartClass a owl:Class;
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
   whyis:editInstanceView "chart_edit.html".
+
+# whyis:Dataset a owl:Class;
+#     whyis:newInstanceView "dataset_upload.html".
+    
