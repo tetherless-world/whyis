@@ -16,6 +16,10 @@
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
+<<<<<<< HEAD
+=======
+
+>>>>>>> 81ae78c... Base vue update and page refactoring
 
 
 dc:description rdf:type owl:DatatypeProperty ,
