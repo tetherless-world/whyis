@@ -1,0 +1,3 @@
+<template src="./vega-sparql.html"></template>
+<script src="./vega-sparql-script.js"></script>
+<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>

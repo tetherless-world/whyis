@@ -1,0 +1,20 @@
+@mixin respond($breakpoint) {
+    @if $breakpoint == medium-height {
+        @media only screen and (min-height: 68em) {@content};
+    }
+    @if $breakpoint == phone {
+        @media only screen and (min-width: 30.5em) {@content};
+    }
+    @if $breakpoint == tab-port {
+        @media only screen and (min-width: 48em) {@content};
+    }
+    @if $breakpoint == tab-land {
+        @media only screen and (min-width: 64em) {@content};
+    }
+    @if $breakpoint == desktop {
+        @media only screen and (min-width: 75em) {@content};
+    }
+    @if $breakpoint == big-desktop {
+        @media only screen and (min-width: 93.75em) {@content};
+    }
+}

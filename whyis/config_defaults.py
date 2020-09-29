@@ -24,6 +24,11 @@ Config = dict(
     # use TESTING mode?
     TESTING = False,
 
+    #JS CONFIG - VUE JS
+    ##USE CUSTOM REST BACKUP & RESTORE
+    THIRD_PARTY_REST_BACKUP = True,
+    DISABLE_VUE_SPEED_DIAL = False,
+
     # use server x-sendfile?
     USE_X_SENDFILE = False,
 

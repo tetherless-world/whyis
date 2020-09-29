@@ -1,0 +1,303 @@
+@import "variables";
+@import "screens";
+@import "content";
+
+html {
+    font-family: 'Roboto', sans-serif !important;
+}
+.nav {
+    &-title {
+        font-size: 1.5rem;
+    }
+    &-bg {
+        background: url('/static/images/random_network.png') no-repeat bottom center !important; 
+        background-size: "cover" !important;
+    }
+    &-header-intro {
+        display: none;
+        @include respond(tab-land){
+            display: block;
+            margin-right: 1.2rem
+        }
+    }
+}
+
+.utility {
+    &-dialog-box {
+        &_header {
+            background-color: $primary-color-light !important;
+            padding: 1rem .5rem !important;
+
+            & > span {
+                padding: 0rem !important;
+            }
+        }
+        &_login {
+            margin: .4rem 0rem;
+            min-width: 98%;
+            padding: .5rem 1.2rem;
+            @include respond(tab-land) {
+                min-width: 28rem;
+            }
+        }
+    }
+    &-align--right {
+        text-align: right;
+    }
+    &-gridbg {
+        background-color: rgba($primary-black, 0.7) !important;
+        border: 1px solid $primary-color !important;    
+    }
+    &-gridborder {
+        border: 1px solid $primary-color !important;
+    }
+    &-float-icon {
+        background-color: $primary-color !important;
+    }
+    &-filter {
+        transform: translate(10px, 10px) !important;
+        transition: all 95000s ease-out !important;
+    }
+    &-margin {
+        margin: 1rem .2rem;
+        span {
+            display: block;
+            margin-bottom: .4rem;
+        }
+
+        &-big {
+            margin: 3.2rem .2rem .2rem .2rem;
+        }
+
+        &-top {
+            margin-top: .5rem;
+        }
+
+        &-right {
+            margin-right: 1.5rem;
+        }
+
+        &-top-intro {
+            margin-top: 15rem;
+            margin-bottom: 1rem;
+        }
+    }
+    &-content__result {
+        font-size: .8rem;
+        color: lightslategray;
+        margin: 0 0 .5rem 0;
+        padding: .6rem;
+    }
+    &-bckg {
+        background-color: $primary-color !important;
+        font-size: .8rem !important;
+    }
+    &-roverflow {
+        overflow: hidden !important;
+    }
+    &-color {
+        color: $primary-color !important
+    }
+    &-navfont {
+        font-size: 1rem !important;
+    }
+    &-navfonticon {
+        font-size: 2rem !important;
+    }
+    &-gridicon {
+        position: absolute;
+        right: .3rem;
+        z-index: 10000000;
+
+        & > div {
+            display: inline-block;
+
+            & > i {
+                font-size: 1rem !important;
+                cursor: pointer;
+            }
+        }
+        & > div:hover{
+            background-color: $primary-color-light;
+            & > i {
+                color: $primary-color !important;
+            }
+        }
+
+        &-single{
+            position: absolute;
+            right: .05rem;
+            z-index: 10000000;
+            top: .05rem;
+            @include respond(tab-land){
+                top: .2rem;
+                right: .3rem;
+            }
+            
+            & > div {
+                display: inline-block;
+            }
+        }
+    }
+    &-navadjust {
+        color: $primary-color !important;
+        margin-bottom: 1.6rem;
+        cursor: pointer;
+        & > button,
+        & > div {
+            color: $primary-color !important;
+            & > div > i {
+                color: $primary-color !important;
+            }
+        }
+
+        &:hover {
+            background-color: $primary-color !important;
+            & > button,
+            & > div {
+                color: $primary-white !important;
+
+                & > div > i {
+                    color: $primary-white !important;
+                }
+            }
+            
+        }
+    }
+    &-show_hide {
+        & > span.md-body-1 {
+            display: none !important;
+            visibility: hidden !important;
+            transition: all 3s ease-in-out;
+        }
+
+        &:hover {
+            & > span.md-body-1 {
+                display: block !important;
+                visibility: visible !important; 
+            }
+        }
+    }
+    &-transparentbg {
+        background-color: transparent !important;
+    }
+    &-space {
+        height: 2rem;
+        width: 100%;
+    }
+    &-cursor {
+        cursor: pointer;
+    }
+
+    /** Theme Adjustment */
+    &-content__result-dark {
+        font-size: .8rem;
+        color: $primary-white;
+        margin: 0 0 .5rem 0;
+        padding: .6rem;
+    }
+    &-color-dark {
+        color: $primary-black !important
+    }
+    &-float-icon-dark {
+        background-color: #222222 !important;
+        color: $primary-white !important;
+        & > div > div > i {
+            color: $primary-white !important;
+        }
+    }
+    &-gridborder-dark {
+        border: 1px solid $primary-black !important;
+    }
+    &-bg {
+        &-dark {
+            background-color: $primary-black !important;
+            background: $primary-black !important;
+            color: $primary-white !important;
+        }
+
+        &_border {
+            &-dark {
+                border: .1rem solid #385979 !important;
+            }
+        }
+    }
+    &-navadjust-dark {
+        color: $primary-black !important;
+        margin-bottom: 1.6rem;
+        cursor: pointer;
+
+        & > button,
+        & > div {
+            color: $primary-black !important;
+            
+
+            & > div > i {
+                color: $primary-black !important;
+            }
+        }
+
+        &:active
+        &:hover {
+            background-color: $primary-black !important;
+            & > button,
+            & > div {
+                color: $primary-white !important;
+
+                & > div > i {
+                    color: $primary-white !important;
+                }
+            }
+        }
+    }
+}
+
+.md {
+    &-app {
+        font-family: 'Roboto', sans-serif !important;
+        min-height: 99%;
+        overflow: hidden !important;
+    }
+
+    &-switch {
+        display: flex;
+    }
+
+    &-drawer {
+        width: 280px;
+        max-width: calc(100vw - 125px);
+        height: 100%;
+        background-color: rgba($primary-white, 0.9) !important;
+
+        &-div {
+            height: 3.5rem !important; 
+            margin-bottom: 1.2rem !important;
+            
+        }
+    }
+
+    &-dialog /deep/.md-dialog-container {
+        max-width: 90%;
+        height: auto;
+
+        @include respond(tab-land) {
+            max-width: 768px;
+        }
+    }
+
+    &-autocomplete + strong {
+        margin-top: 36px;
+        display: block;
+        z-index: 1000;
+    }
+
+    &-field {
+        max-width: 300px;
+    }
+
+    &-tabs {
+        margin-bottom: 24px;
+    }
+}
+
+/**.yasgui .endpointText {display:none !important;}*/
