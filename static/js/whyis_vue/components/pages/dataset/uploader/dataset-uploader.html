@@ -1,9 +1,10 @@
- <div> 
+<div> 
   <template>
     <md-card style="margin: 40px" >
-      <div style="margin: 20px">
-        <md-steppers>
-          <md-step id="first" md-label="Upload files"> 
+      <md-steppers >
+
+        <md-step id="first" md-label="Upload files" > 
+          <div style="margin: 20px">
             <md-field>
               <label>Upload distributions (multiple allowed)</label>
               <md-file v-model="distributions" multiple />
@@ -13,91 +14,103 @@
               <label>Upload a representative image</label>
               <md-file v-model="rep_image" accept="image/*" />
             </md-field>
-          </md-step>
-          <md-step id="second" md-label="Fill form">
+          </div>
+          <md-button class="md-raised md-primary" @click="setDone('first', 'second')">Next</md-button>
+        </md-step>
+
+
+          <md-step id="second" md-label="Fill out form" >
             <div class="md-layout">
-              <div class="md-headline" style="margin-top: 10px">
-                General Information
-              </div>
-              <md-field>
-                <label>Title</label>
-                <md-input v-model="title"></md-input>
-              </md-field>
-          
-              <div class="md-layout md-gutter">
-                <div class="md-layout-item md-size-15">
-                  <label>Contact Point</label>
+
+              <!---------- General Info fields ---------->
+              <!-- <div width="80%"> -->
+                <div class="md-headline" style="margin-top: 10px">
+                  General Information
                 </div>
-          
-                <div class="md-layout-item md-size-30">
-                  <md-field>
-                    <label>First name</label>
-                    <md-input v-model="cpfirstname"></md-input>
-                  </md-field>
+                <md-field>
+                  <label>Title</label>
+                  <md-input v-model="title"></md-input>
+                </md-field>
+             
+                <div class="md-layout md-gutter">
+                  <div class="md-layout-item md-size-15">
+                    <label>Contact Point</label>
+                  </div>
+            
+                  <div class="md-layout-item md-size-30">
+                    <md-field>
+                      <label>First name</label>
+                      <md-input v-model="cpfirstname"></md-input>
+                    </md-field>
+                  </div>
+            
+                  <div class="md-layout-item md-size-30">
+                    <md-field>
+                      <label>Last name</label>
+                      <md-input v-model="cplastname"></md-input>
+                    </md-field>
+                  </div>
+            
+                  <div class="md-layout-item md-size-25">
+                    <md-field>
+                      <label>Email</label>
+                      <md-input v-model="cpemail"></md-input>
+                    </md-field>
+                  </div>
                 </div>
-          
-                <div class="md-layout-item md-size-30">
-                  <md-field>
-                    <label>Last name</label>
-                    <md-input v-model="cplastname"></md-input>
-                  </md-field>
-                </div>
-          
-                <div class="md-layout-item md-size-25">
-                  <md-field>
-                    <label>Email</label>
-                    <md-input v-model="cpemail"></md-input>
-                  </md-field>
-                </div>
-              </div>
-          
-              <md-field>
-                <label>Text Description</label>
-                <md-textarea v-model="textdescription"></md-textarea>
-              </md-field>
+
+                <md-field>
+                  <label>Text Description</label>
+                  <md-textarea v-model="textdescription"></md-textarea>
+                </md-field>
+              <!-- </div> -->
           
               <md-divider style="border-style: solid" width="100%"></md-divider>
-          
-              <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px">
-                Contributors
-              </div>
-          
-              <table class="table" width="100%">
-                <thead>
-                  <tr>
-                    <td><strong>Organization/Institutions</strong></td>
-                    <td><strong>Author(s)</strong></td>
-                    <td></td>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, index) in contributors" v-bind:key="index">
-                    <td><input type="text" v-model="row['org']" /></td>
-                    <td><input type="text" v-model="row['authors']" /></td>
-                    <td>
-                      <a v-on:click="removeElement(index)" style="cursor: pointer"
-                        >Remove</a
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div>
-                <button
-                  class="button btn-primary"
-                  @click="addOrg"
-                  style="margin-bottom: 10px"
-                >
-                  Add row
-                </button>
-              </div>
-          
+
+
+              <!---------- Contributor fields -------->
+              <!-- <div> -->
+               <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px"> 
+                  Contributors
+                </div>
+            
+                <table class="table" width="100%">
+                  <thead>
+                    <tr>
+                      <td><strong>Organization/Institutions</strong></td>
+                      <td><strong>Author(s)</strong></td>
+                      <td></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in contributors" v-bind:key="index">
+                      <td><input type="text" v-model="row['org']" /></td>
+                      <td><input type="text" v-model="row['authors']" /></td>
+                      <td>
+                        <a v-on:click="removeElement(index)" style="cursor: pointer"
+                          >Remove</a
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div>
+                  <button
+                    class="button btn-primary"
+                    @click="addOrg"
+                    style="margin-bottom: 10px"
+                  >
+                    Add row
+                  </button>
+                </div>
+              <!-- </div> -->
               <md-divider style="border-style: solid" width="100%"></md-divider>
           
-              <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px">
+              <!-- -------- Publication Info fields -------- -->
+               <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px">
                 Publication Information
               </div>
-          
+           
               <div style="width: 100%">
                 <div class="md-layout md-gutter">
                   <div class="md-layout-item md-size-50">
@@ -122,20 +135,23 @@
                     <span class="md-helper-text">Separate multiple DOIs with ','</span>
                   </md-field>
                 </div>
+
+                <md-button class="md-raised md-primary" @click="setDone('second', 'third')">Next</md-button>
           
-                <md-card-actions>
-                  <md-button v-on:click="submitForm" class="md-primary"
-                    >Submit</md-button
-                  >
-                </md-card-actions>
               </div>
             </div>
           </md-step>
+
           <md-step id="third" md-label="Confirm and Submit">
 
+            <md-card-actions>
+              <md-button v-on:click="submitForm" class="md-primary"
+                >Submit</md-button
+              >
+            </md-card-actions>
+
           </md-step>
-        </md-steppers>
-      </div> 
+      </md-steppers>
     </md-card>
   </template>
 </div>  
