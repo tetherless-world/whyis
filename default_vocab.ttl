@@ -15,7 +15,7 @@
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
-
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
 
 
 dc:description rdf:type owl:DatatypeProperty ,
@@ -398,8 +398,7 @@ owl:Class rdfs:label "Class";
   whyis:newInstanceView "new_instance_view.html";
   whyis:hasInstances "instances.json";
   whyis:hasGallery "gallery.html";
-  whyis:hasView "class_view.html";
-  whyis:hasDataset "dataset_upload.html".
+  whyis:hasView "class_view.html".
 
 whyis:hasConstraints dc:identifier "constraints";
   rdfs:subPropertyOf whyis:hasView.
@@ -495,6 +494,10 @@ sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
   whyis:editInstanceView "chart_edit.html".
 
-# whyis:Dataset a owl:Class;
-#     whyis:newInstanceView "dataset_upload.html".
+whyis:DatasetClass a owl:Class;
+    rdfs:subClassOf owl:Class; 
+    whyis:newInstanceView "dataset_upload.html".
+
+dcat:Dataset a whyis:DatasetClass.
+sio:Dataset a whyis:DatasetClass.
     
