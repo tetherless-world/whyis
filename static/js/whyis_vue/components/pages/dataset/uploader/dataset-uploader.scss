@@ -3,7 +3,7 @@
   height: 100%;
   display: flex;
   flex-flow: column;
-
+ 
   .chart-metadata {
     margin-bottom: 20px;
     max-height: 100%;
@@ -22,9 +22,5 @@
       flex-grow: 0.2;
     }
   }
-} 
-
-.md-tab {
-  height: 100%;
-}
+}  
  

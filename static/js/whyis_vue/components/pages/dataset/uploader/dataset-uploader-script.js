@@ -20,6 +20,12 @@ export default Vue.component('dataset-uploader', {
     datepub: null,
     datemod: "",
     dois: [],
+    distributions: [],
+    rep_image: [],
+    active: 'first',
+    first: false,
+    second: false,
+    third: false,
   }),
   methods: {
     addOrg: function () {
@@ -46,6 +52,13 @@ export default Vue.component('dataset-uploader', {
     saveDataset() {
       console.log(this._data);
       saveDataset(this._data).then(() => goToView(this._dataset.uri, "edit"));
-    }
-  }
+    },
+    setDone (id, index) {
+      this[id] = true;
+
+      if (index) {
+        this.active = index;
+      };
+    },
+  },
 });
