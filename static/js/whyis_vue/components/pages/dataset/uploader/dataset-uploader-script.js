@@ -7,8 +7,7 @@ import { goToView } from "utilities/views";
 
 Vue.use(VueMaterial);
 
-export default Vue.component('dataset-uploader', {
-  // el: "#datasetupload", 
+export default Vue.component('dataset-uploader', { 
   name: "TextFields",
   data: () => ({
     title: "",
