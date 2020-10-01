@@ -32,7 +32,7 @@
                     <md-input v-model="title"></md-input>
                   </md-field>
               
-                  <div class="md-layout md-gutter">
+                  <div class="md-layout md-gutter" style="align-items: center;">
                     <div class="md-layout-item md-size-15">
                       <label>Contact Point</label>
                     </div>
@@ -78,18 +78,18 @@
                     <thead>
                       <tr>
                         <td>
-                          <md-subheading>Organization/Institutions</md-subheading>
+                          <div class="md-subheading">Organization/Institution</div>
                         </td>
                         <td>
-                          <md-subheading>Author(s)</md-subheading>
+                          <div class="md-subheading">Author(s) from this Org/Inst </div>
                         </td>
                         <td></td>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="(row, index) in contributors" v-bind:key="index">
-                        <td><input type="text" v-model="row['org']" /></td>
-                        <td><input type="text" v-model="row['authors']" /></td>
+                        <td><input type="text" v-model="row['org']" style="width:90%" /></td>
+                        <td><input type="text" v-model="row['authors']" style="width:90%"/></td>
                         <td>
                           <a v-on:click="removeElement(index)" style="cursor: pointer"
                             >Remove</a
@@ -147,7 +147,7 @@
               </div>
             </md-step>
 
-            <md-step id="third" md-label="Confirm and Submit" :md-done.sync="first">
+            <md-step id="third" md-label="Confirm and Submit" :md-done.sync="third">
 
               <md-card-actions>
                 <md-button v-on:click="submitForm" class="md-primary"
