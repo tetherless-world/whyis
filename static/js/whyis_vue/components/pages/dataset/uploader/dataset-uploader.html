@@ -149,6 +149,30 @@
 
             <md-step id="third" md-label="Confirm and Submit" :md-done.sync="third">
 
+              <div class="md-headline" style="margin: 10px">
+                Form Results
+              </div>
+              <md-content style="width: 100%; margin: 20px">
+                <span>Title: {{ title }}</span>
+                <p>
+                  Contact Point: {{ cpfirstname }} {{ cplastname }} - {{ cpemail }}
+                </p>
+                <p>Text Description: {{ textdescription }}</p>
+                <span>Contributors</span>
+                <div
+                  style="margin-left: 20px"
+                  v-for="(elem, index) in contributors"
+                  v-bind:key="index"
+                >
+                  {{ elem.org }}: {{ elem.authors }}
+                </div>
+                <p>Date Published: {{ datepub }}</p>
+                <p>Date Last Modified: {{ datemod }}</p>
+                <p>DOIs of Related Publications: {{ dois }}</p>
+                <p>Distributions: {{ distributions }}</p>
+                <p>Representative Image: {{ rep_image }}</p>
+              </md-content>
+
               <md-card-actions>
                 <md-button v-on:click="submitForm" class="md-primary"
                   >Submit</md-button
