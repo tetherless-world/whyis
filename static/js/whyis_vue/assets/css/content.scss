@@ -380,17 +380,18 @@
     }
 
     &-intro {
+        min-height: 20rem;
         width: 100%;
-        padding: 1rem 5rem;
-        @include respond(desktop){
+        padding: 1rem 1rem;
+        background-image: linear-gradient(180deg, rgba(#21214b, .9) 0%, rgba($primary-white, .6) 59%, transparent 59%);
+        @include respond(big-desktop){
             min-height: 30rem;
-            background-image: linear-gradient(180deg, rgba(#21214b, .9) 0%, rgba($primary-white, .6) 59%, transparent 59%);
             padding: 2rem 1rem;
         }
 
         &-title {
             font-weight: 400;
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             color: $primary-white;
             text-shadow: #21214b 2px 2px 0px, rgba(0,0,0,.3) 4px 4px 0px;
             letter-spacing: .5rem;
@@ -398,6 +399,10 @@
             &-text {
                 color:#08233c; 
                 font-weight: 700;
+            }
+
+            @include respond(big-desktop){
+                font-size: 3.5rem;
             }
         }
 
@@ -408,7 +413,7 @@
             line-height: 1.5;
             font-size: .8rem;
 
-            @include respond(desktop){
+            @include respond(big-desktop){
                 font-size: 1.25rem;
             }
         }

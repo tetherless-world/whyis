@@ -85,7 +85,6 @@ export default Vue.component('Header', {
         this.snackTip = data.tip
     })
     .$on('isauthenticated', data => this.authenticated = data)
-    this.confirmAuths()
   }
 })
 </script>

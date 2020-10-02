@@ -31,14 +31,16 @@ const EventServices = new Vue({
     },
     methods: {...Fn.controller},
     created(){
+        this.confirmAuth()
         return this.confirmConfig()
     }
 })
 
 
-/** Outside Navigation Click Handler */
+/** Outside Navigation & DialogBox Click Handler */
 document.addEventListener("click", () => {
     EventServices.$data.navOpen = false;
+    EventServices.$emit('close-filter')
 });
 
 export default EventServices;

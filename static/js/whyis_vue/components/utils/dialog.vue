@@ -1,6 +1,6 @@
 <template>
   <div>
-    <md-dialog :md-active.sync="active" style="margin-top: -4rem" :md-click-outside-to-close="false">
+    <md-dialog :md-active.sync="active" style="margin-top: -4rem" :md-click-outside-to-close="true">
       <div class="viz-intro" v-if="dialog.intro">
         <div class="utility-gridicon utility-margin-top"><span class="viz-intro-title">tips &dot;</span></div>
         <intros :screen="introTipScreen" />
@@ -181,7 +181,8 @@
       }
     },
     created() {
-      EventServices.$on('open-filter-box', (data) => {
+      EventServices
+      .$on('open-filter-box', (data) => {
         if(data.type == "filter") {
           this.active = data.open
           return processFloatList()
