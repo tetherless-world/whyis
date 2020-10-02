@@ -31,7 +31,7 @@
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue';
-  import EventServices from '../../../../modules/events/event-services';
+  import { EventServices } from '../../../../modules';
   export default Vue.component('vega-dataset', {
     data() {
       return {
