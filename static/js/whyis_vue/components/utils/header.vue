@@ -17,7 +17,7 @@
               <div style="display:inline-block; padding-top:.5rem"><span class="md-subheading">{{ authenticated.name }}</span></div>
               <md-button class="md-icon-button">
                 <md-avatar>
-                  <img src="/static/js/whyis_vue/components/gallery/app/static/image/default.jpg" alt="Avatar">
+                  <img src="/static/images/default.jpg" alt="Avatar">
                 </md-avatar>
               </md-button>
             </div>
