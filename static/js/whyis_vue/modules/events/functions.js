@@ -41,15 +41,19 @@ const controller = {
     return window.location=args
   },
 
+  checkRestValid(){
+    if(!this.thirdPartyRestBackup) {
+      return false
+    }
+    return true
+  },
+
   checkIfRestValidate(){
     if(!this.authUser){
       const err = new Error('User Authorization Failed!')
       throw err;
     }
-    if(!this.thirdPartyRestBackup) {
-      return false
-    }
-    return true
+    this.checkRestValid()
   },
 
   async restCallFn(formData, URL, METHOD){
@@ -256,7 +260,7 @@ const controller = {
   },
 
   getCurrentUserURI(args){
-    if(this.checkIfRestValidate()){
+    if(this.checkRestValid()){
       if(args){
         let user = args.split("/");
         user = !user[user.length - 1] ? args : user[user.length - 1];

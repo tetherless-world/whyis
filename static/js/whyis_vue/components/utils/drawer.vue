@@ -109,9 +109,12 @@ export default Vue.component('Drawer', {
   },
   methods:{
     navTo(args, uri){
-        EventServices.navTo(args, uri)
+        EventServices
+        .navTo(args, uri)
+        .$emit('togglenavigation', false)
     },
     navDataSet(){
+        EventServices.$emit('togglenavigation', false)
         return window.location = `${window.location.origin}/about?view=new&uri=http:%2F%2Fwww.w3.org%2Fns%2Fdcat%23Dataset`;
     }
   },

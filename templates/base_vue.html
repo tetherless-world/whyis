@@ -82,8 +82,7 @@
     {% if current_user and current_user.identifier %}
     USER = { 
       uri: '{{current_user.identifier}}', 
-      admin: "True",
-      // admin: "{{current_user.has_role('Admin')}}",
+      admin: "{{current_user.has_role('Admin')}}",
       name: "{{current_user.givenName}}",
       email: "{{current_user.email}}"
     };
