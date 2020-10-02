@@ -1,9 +1,9 @@
 import Vue from 'vue'
-import EventServices from '../../../../modules/events/event-services'
+import { EventServices } from '../../../../modules'
 import splitPane from 'vue-splitpane'
 import VJsoneditor from 'v-jsoneditor'
 import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
-import { goToView, getCurrentView } from 'utilities/views'
+import { getCurrentView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
 
 export default Vue.component('vega-editor', {
