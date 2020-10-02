@@ -36,8 +36,7 @@
 <script>
   import Vue from 'vue';
   import vizGrid from '../../../gallery/app/components/Vizgrid';
-  import EventServices from '../../../../modules/events/event-services';
-  // import { getCharts } from '../../../../utilities/vega-chart';
+  import { EventServices } from '../../../../modules';
   export default Vue.component('vega-gallery', {
     data() {
       return {
