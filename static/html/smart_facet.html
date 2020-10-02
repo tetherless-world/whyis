@@ -17,7 +17,7 @@
          input-aria-describedby="facet{{vm.facet.facetId}}Label"
          md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
          md-item-text="item.name" >
-        <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} {{item.unit_label}}</span>
+        <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} <span ng-if="item.unit_label">({{item.unit_label}})</span></span>
       </md-autocomplete>
       <md-chip-template>
         <span>{{ $chip.name }} <span ng-if="$chip.unit_label">({{$chip.unit_label}})</span></span>
