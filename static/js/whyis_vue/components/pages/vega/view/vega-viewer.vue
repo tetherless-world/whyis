@@ -33,7 +33,7 @@
             <div class="" v-else>
               <div class="md-headline viz-u-mgup-sm btn--animated">{{chart.title}}</div>
               <div class="btn--animated">
-                {{ chart.description }}
+                {{ slugify(chart.description) }}
               </div>
               <div class="viz-sample__list btn--animated">
                 <ul>
@@ -65,7 +65,7 @@
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue'
-  import EventServices from '../../../../modules/events/event-services'
+  import { EventServices, Slug } from '../../../../modules'
   import tempFiller from '../../../utils/temporary_filler'
   import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
   import { querySparql } from '../../../../utilities/sparql'
@@ -118,9 +118,9 @@
           return EventServices.$emit("dialoguebox", {status: true, query: true, title: "Chart Query", message: "Copy and rerun query on a sparql endpoint", chart: this.chart.query})
         }
       },
-      // slugify(args){
-      //   return Slug(args)
-      // }
+      slugify(args){
+        return Slug(args)
+      }
     },
     beforeMount(){
       return this.loadVisualization()
