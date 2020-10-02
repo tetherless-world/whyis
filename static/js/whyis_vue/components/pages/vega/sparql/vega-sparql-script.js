@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import EventServices from '../../../../modules/events/event-services'
+import { EventServices } from '../../../../modules'
 
 export default Vue.component('vega-sparql', {
   data() {
