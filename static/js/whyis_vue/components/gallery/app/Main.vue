@@ -1,44 +1,71 @@
 <template>
-  <div class="utility-bg">
-    <component v-bind:is="route" :passedargs="routeArgs" :globalargs="instances"></component>
+  <div>
+    <div v-if="loading">
+      <spinner :loading="loading" :text='loadingText'/>
+    </div>
+    <div v-else>
+      <viz-grid :authenticated="authenticated" :chart-list="charts"/>
+      <md-speed-dial :class="bottomPosition">
+        <md-speed-dial-target class="utility-float-icon">
+          <md-icon>menu</md-icon>
+        </md-speed-dial-target>
+
+        <md-speed-dial-content>
+          <md-button class="md-icon-button" @click="cancelFilter">
+            <md-tooltip class="utility-bckg" md-direction="left"> Cancel Filter </md-tooltip>
+            <md-icon class="utility-color">search_off</md-icon>
+          </md-button>
+          <md-button class="md-icon-button" @click="showFilterBox">
+            <md-tooltip class="utility-bckg" md-direction="left"> Filter </md-tooltip>
+            <md-icon class="utility-color">search</md-icon>
+          </md-button>
+        </md-speed-dial-content>
+      </md-speed-dial>
+    </div>
   </div>
 </template>
-<style scoped lang="scss" src="./static/css/main.scss"></style>
+<style scoped lang="scss" src="../../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue'
-  import { router } from './router/routes'
-  import { eventCourier as ec } from './store'
-  import home from './components/HomePage.vue'
-  import single from './components/Single.vue'
+  import EventServices from '../../../modules/events/event-services'
+  import vizGrid from './components/Vizgrid'
   export default Vue.component('viz-gallery', {
-    mixins: [router],
-    props: ["instances", "user", "hasrole"],
-    data(){
+    props:{
+      instances: {
+        type: String,
+        require: true,
+        default: () => {
+          return "http://semanticscience.org/resource/Chart"
+        }
+      }
+    },
+    data() {
       return {
-        route: null,
-        routeArgs: null
+        filter: false,
+        bottomPosition:'md-bottom-right',
+        speedDials: EventServices.speedDials,
+        authenticated: EventServices.authUser,
+        charts:[],
+        loading: false,
+        loadingText: "loading up..."
       }
     },
     components: {
-      /** The app have two component page. Append new component pages here!!! */
-      home,
-      single    
+      vizGrid,
     },
-    beforeMount() {
-      ec.authenticate({user: this.user, role: this.hasrole})
-      return this.changeRoute('home');
+    methods: {
+      showFilterBox () {
+        // EventServices.$emit('open-filter-box', {open: true, type: "filter"});
+        // return this.filter = true
+      },
+      cancelFilter(){
+        // return EventServices.cancelChartFilter();
+      }
     },
     created() {
-      /** Used this for managing routes internally - Ignore if not needed!!! */
-      ec
-        .$on('route-changed', (data) => {
-          return this.route = data;
-        })
-        .$on('route-args', (data) => {
-          return this.routeArgs = data;
-        })
-    },
+      EventServices
+      .$on('close-filter-box', (data) => this.filter = data)
+      .$on('isauthenticated', (data) => this.authenticated = data)
+    }
   })
 </script>
-
-
