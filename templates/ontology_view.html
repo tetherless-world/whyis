@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
-{% block style %}
+{% block styles %}
 <link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
+<link rel="stylesheet" href="/static/css/resources/primer.css" media="screen" type="text/css"/>    
+<link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>    
+<link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>    
+<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/> 
 {% endblock %}
 {% macro render_class(concept) %}
 <ul>
@@ -21,71 +25,492 @@
 {%- endmacro %}
 
 {% block content %}
-{{ summary_panel(this.description()) }}
-<div class="row">
-  <div class="container-fluid col-md-8" ng-controller="OntologyFacetController as vm">
-    <section md-whiteframe="2" layout="column" style="min-height: 40em; margin-bottom:1em;">
-      <explore flex start="{{this.identifier}}"></explore>
-    </section>
-    <div class="row">
-      <div class="col-md-12">
-        <h1>Ontology Classes</h1>
-        <div ng-if="vm.error">
-          <uib-alert type="danger"><span ng-bind="vm.error"></span></uib-alert>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-3">
-        <!-- Facets are defined here using the configurations defined in the controller -->
-        <seco-text-facet data-options="vm.facets.name"></seco-text-facet>
-        <seco-text-facet data-options="vm.facets.definition"></seco-text-facet>
-        <seco-hierarchy-facet data-options="vm.facets.subclassof"></seco-hierarchy-facet>
-      </div>
-
-      <!-- Results view -->
-      <div class="col-md-9">
-        <img src="/static/images/loading-lg.gif" ng-show="vm.isLoadingResults" />
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Definition</th>
-              <th>Super Class</th>
-              <th>Ontology</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="class in vm.page">
-              <td style="width:21%">
-                <resource-link uri="class.id" label="class.label"></resource-link>
-              </td>
-              <td>
-                <p ng-bind="class.definition"></p>
-              </td>
-              <td><div data-ng-repeat="superclass in class.superclass"><resource-link data-ng-if="superclass.id"  uri="superclass.id" label="superclass.label"></resource-link></div></td>
-              <td><div data-ng-repeat="ontology in class.ontology" ><resource-link data-ng-if="ontology.id" uri="ontology.id" label="ontology.label"></resource-link></div></td>
-            </tr>
-          </tbody>
-        </table>
-        <!-- Pagination -->
-        <uib-pagination
-          class="pagination-sm"
-          max-size="10"
-          boundary-links="true"
-          rotate="false"
-          total-items="vm.totalCount"
-          ng-model="vm.pageNo"
-          ng-disabled="vm.isLoadingResults"
-          ng-change="vm.getPage()">
-        </uib-pagination>
-      </div>
-    </div>
-  </div>
-  <kg-card class="col-md-4" src="'{{this.identifier}}'"></kg-card>
-</div>
 
     <script>
       var ontology = "{{this.description().identifier}}";
     </script>
+{{ summary_panel(this.description()) }}
+
+<div class="row">
+    <kg-card class="col-md-4" src="'{{this.identifier}}'"></kg-card>
+      <div class="col-md-4">
+
+<!--        <dd><a href="http://purl.org/ontology/bibo/">&lt;http://purl.org/ontology/bibo/&gt;</a></dd><dd><a href="http://semanticscience.org/ontology/sio.owl">sio.owl</a></dd><dd><a href="http://www.nanopub.org/nschema">nschema</a></dd>
+-->
+      </div>
+</div>
+
+<!--INTRODUCTION SECTION-->
+    <div id="introduction"><h2 id="intro" class="list">Introduction</h2>
+<span class="markdown">
+This is a place holder text for the introduction. The introduction should briefly describe the ontology, its motivation, state of the art and goals.</span>
+
+<div id="importdeclarations">
+<h3 id="ns" class="list">Imports</h3>
+<div id="ns" align="center">
+<table>
+<caption> <a href="#ns"> Table 1</a>: Imported Ontologies </caption>
+<tbody>
+{% for import in this[ns.owl.imports] %}
+<tr><td><a href="{{import.identifier}}">&lt;{{import.identifier}}&gt;</a></td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Still need to update this -->
+<div id="namespacedeclarations">
+<h3 id="ns" class="list">Namespace declarations</h3>
+<div id="ns" align="center">
+<table>
+<caption> <a href="#ns"> Table 2</a>: Namespaces used in the document </caption>
+<tbody>
+<tr><td><b>owl</b></td><td>&lt;http://www.w3.org/2002/07/owl&gt;</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+<!--OVERVIEW SECTION-->
+    <div id="overview"><h2 id="overv" class="list">Overview</h2>
+<span class="markdown">
+This ontology has the following classes and properties.</span>
+
+<h4>Classes</h4>
+<ul class="hlist">
+{% for row in '''SELECT ?class ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?class a owl:Class .
+    OPTIONAL { ?class skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="class", label_key="label") | sort(attribute="label")%}
+<li>
+<a href="#/{{row['label'].replace(' ','')}}" title={{row['class']}}>{{row['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+<h4>Object Properties</h4><ul class="hlist">
+{% for row in '''SELECT ?property ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?property a owl:ObjectProperty .
+    OPTIONAL { ?property skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+    <li>
+    <a href="#/{{row['label'].replace(' ','')}}" title={{row['property']}}>{{row['label']}}</a>
+    </li>
+{% endfor %}
+</ul>
+<h4>Data Properties</h4>
+<ul class="hlist">
+{% for row in '''SELECT ?property ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?property a owl:DatatypeProperty .
+    OPTIONAL { ?property skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+    <li>
+    <a href="#/{{row['label'].replace(' ','')}}" title={{row['property']}}>{{row['label']}}</a>
+    </li>
+{% endfor %}
+</ul>
+
+<h4>Named Individuals</h4>
+   <ul class="hlist">
+{% for row in '''SELECT ?term ?label 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?term rdf:type ?type;
+        rdfs:label ?label .
+  FILTER(?type != owl:Class)
+  FILTER(?type != owl:Ontology)
+  FILTER(?type != owl:Property)
+  FILTER(?type != owl:Restriction)
+  FILTER(?type != owl:DatatypeProperty)
+  FILTER(?type != owl:ObjectProperty)
+  }
+}''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
+<li>
+<a href="#/{{row['label'].replace(' ','')}}" title={{row['term']}}>{{row['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+</div>
+
+<!--DESCRIPTION SECTION-->
+    <div id="description"><h2 id="desc" class="list">Description </h2>
+<span class="markdown">
+This is a placeholder text for the description of your ontology. The description should include an explanation and a diagram explaining how the classes are related, examples of usage, etc.</span>
+
+</div>
+   
+    <script>
+      var ontology = "{{this.description().identifier}}";
+    </script>
+<!--CROSSREF SECTION-->
+   <div id="crossref"><h2 id="crossreference" class="list">Cross reference for ontology classes, properties and named individuals</h2>
+This section provides details for each class and property defined by the ontology.
+<div id="classes">
+   <h3 id="classes-headline" class="list">Classes</h3>
+   <ul class="hlist">
+    {% for row in '''SELECT ?class ?def 
+    WHERE {
+      GRAPH ?g {
+        ?this a owl:Ontology.
+        ?class a owl:Class .
+        OPTIONAL { ?class skos:definition ?def. }
+      }
+    }''' | query(values={"this": this.identifier}) | iter_labelize(key="class", label_key="label") | sort(attribute="label")%}
+    <li>
+    <a href="#/{{row['label'].replace(' ','')}}" title={{row['class']}}>{{row['label']}}</a>
+    </li>
+    {% endfor %}
+    </ul>
+
+
+{% for row in '''SELECT distinct ?class ?label ?comment ?def
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?class a owl:Class;
+        rdfs:label ?label .
+    OPTIONAL { ?class rdfs:comment ?comment . }
+    OPTIONAL { ?class skos:definition ?def . }
+  }
+}''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
+<div class="entity" id="/{{row['label'].replace(' ','')}}">
+      <h3>{{row['label']}}<sup class="type-c" title="class">c</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#classes">Class ToC</a>
+         </span>
+      </h3>
+      <p>
+         <strong>IRI:</strong><a href="{{row['class']}}">{{row['class']}}</a></p>
+      <div class="comment">
+         <span class="markdown">{{row['comment']}} {{row['def']}}</span>
+      </div>
+      <dl class="description">
+         <dt>has super-classes</dt>
+         <dd>
+        {% for subrow in '''SELECT distinct ?superclass ?superlabel
+            WHERE {
+              GRAPH ?g {
+                ?this a owl:Ontology .
+                ?class rdfs:subClassOf ?superclass. 
+                ?superclass rdfs:label ?superlabel .
+              }
+            }''' | query(values={"this": this.identifier, "class": row['class']}) %}
+            <a href="#/{{subrow['superlabel'].replace(' ','')}}" title="{{subrow['superclass']}}">{{subrow['superlabel']}}</a>
+        {% endfor %}
+         </dd>
+         <dt>has sub-classes</dt>
+         <dd>
+        {% for subrow in '''SELECT distinct ?subclass ?sublabel
+            WHERE {
+              GRAPH ?g {
+                ?this a owl:Ontology .
+                ?subclass rdfs:subClassOf ?class ;
+                     rdfs:label ?sublabel .
+             }
+           }''' | query(values={"this": this.identifier, "class": row['class']}) %}
+            <a href="#/{{subrow['sublabel'].replace(' ','')}}" title="{{subrow['subclass']}}">{{subrow['sublabel']}}</a>
+        {% endfor %}
+         </dd>
+         <dt>is in domain of</dt>
+         <dd>
+        {% for subrow in '''SELECT distinct ?property ?proplabel
+            WHERE {
+              GRAPH ?g {
+                ?this a owl:Ontology .
+                ?property rdfs:domain ?class ;
+                     rdfs:label ?proplabel .
+              }
+            }''' | query(values={"this": this.identifier, "class": row['class']}) %}
+            <a href="#/{{subrow['proplabel'].replace(' ','')}}" title="{{subrow['property']}}">{{subrow['proplabel']}}</a>
+        {% endfor %}
+         </dd>
+         <dt>is in range of</dt>
+         <dd>
+        {% for subrow in '''SELECT distinct ?property ?proplabel
+            WHERE {
+              GRAPH ?g {
+                ?this a owl:Ontology .
+                ?property rdfs:range ?class ;
+                     rdfs:label ?proplabel .
+              }
+            }''' | query(values={"this": this.identifier, "class": row['class']}) %}
+            <a href="#/{{subrow['proplabel'].replace(' ','')}}" title="{{subrow['property']}}">{{subrow['proplabel']}}</a>
+        {% endfor %}
+      </dl>
+</div>
+{% endfor %}
+
+<div id="objectproperties">
+   <h3 id="properties" class="list">Object Properties</h3>
+
+    <ul class="hlist">
+    {% for row in '''SELECT ?property ?def 
+    WHERE {
+      GRAPH ?g {
+        ?this a owl:Ontology.
+        ?property a owl:ObjectProperty .
+        OPTIONAL { ?property skos:definition ?def. }
+      }
+    }''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+        <li>
+        <a href="#/{{row['label'].replace(' ','')}}" title={{row['property']}}>{{row['label']}}</a>
+        </li>
+    {% endfor %}
+    </ul>
+
+{% for row in '''SELECT ?property ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?property a owl:ObjectProperty .
+    OPTIONAL { ?property skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+  <div class="entity" id="{{row['property']}}">
+      <h3>{{row['label']}}<sup class="type-dp" title="object property">op</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#objectproperties">Object Property ToC</a>
+         </span>
+      </h3>
+      <p>
+         <strong>IRI:</strong><a href="{{row['property']}}">{{row['property']}}</a></p>
+      <div class="description">
+         <dl>
+            <dt>has super-properties</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?superprop ?superlabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?property rdfs:subPropertyOf ?superprop . 
+                    ?superprop rdfs:label ?superlabel .
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['superlabel'].replace(' ','')}}" title="{{subrow['superprop']}}">{{subrow['superlabel']}}</a>
+               <sup class="type-op" title="object property">op</sup>
+            {% endfor %}
+            </dd>
+            <dt>has sub-properties</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?subprop ?sublabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?subprop rdfs:subPropertyOf ?property ;
+                        rdfs:label ?sublabel .
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['sublabel'].replace(' ','')}}" title="{{subrow['subprop']}}">{{subrow['sublabel']}}</a>
+               <sup class="type-op" title="object property">op</sup>
+            {% endfor %}
+            </dd>
+
+            <dt>has domain</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?domain ?domainlabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?property rdfs:domain ?domain .
+                     OPTIONAL { ?domain rdfs:label ?domainlabel . }
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['domainlabel'].replace(' ','')}}" title="{{subrow['domain']}}">{{subrow['domainlabel']}}</a>
+               <sup class="type-c" title="c">c</sup>
+            {% endfor %}
+            </dd>
+            <dt>has range</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?range ?rangelabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?property rdfs:range ?range .
+                     OPTIONAL { ?range rdfs:label ?rangelabel . }
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['rangelabel'].replace(' ','')}}" title="{{subrow['range']}}">{{subrow['rangelabel']}}</a>
+               <sup class="type-c" title="c">c</sup>
+            {% endfor %}
+            </dd>
+         </dl>
+      </div>
+   </div>
+{% endfor %}
+</div>
+<div id="dataproperties">
+   <h3 id="dataproperties-headline" class="list">Data Properties</h3>
+<ul class="hlist">
+{% for row in '''SELECT ?property ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?property a owl:DatatypeProperty .
+    OPTIONAL { ?property skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+    <li>
+    <a href="#/{{row['label'].replace(' ','')}}" title={{row['property']}}>{{row['label']}}</a>
+    </li>
+{% endfor %}
+</ul>   
+
+{% for row in '''SELECT ?property ?def 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?property a owl:DatatypeProperty .
+    OPTIONAL { ?property skos:definition ?def. }
+  }
+}''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
+  <div class="entity" id="{{row['property']}}">
+      <h3>{{row['label']}}<sup class="type-dp" title="data property">dp</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>
+         </span>
+      </h3>
+      <p>
+         <strong>IRI:</strong><a href="{{row['property']}}">{{row['property']}}</a></p>
+      <div class="description">
+         <dl>
+            <dt>has super-properties</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?superprop ?superlabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?property rdfs:subPropertyOf ?superprop . 
+                    ?superprop rdfs:label ?superlabel .
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['superlabel'].replace(' ','')}}" title="{{subrow['superprop']}}">{{subrow['superlabel']}}</a>
+               <sup class="type-dp" title="data property">dp</sup>
+            {% endfor %}
+            </dd>
+            <dt>has sub-properties</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?subprop ?sublabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?subprop rdfs:subPropertyOf ?property ;
+                        rdfs:label ?sublabel .
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['sublabel'].replace(' ','')}}" title="{{subrow['subprop']}}">{{subrow['sublabel']}}</a>
+               <sup class="type-dp" title="data property">dp</sup>
+            {% endfor %}
+            </dd>
+            <dt>has domain</dt>
+            <dd>
+            {% for subrow in '''SELECT distinct ?domain ?domainlabel
+                WHERE {
+                  GRAPH ?g {
+                    ?this a owl:Ontology .
+                    ?property rdfs:domain ?domain .
+                     OPTIONAL { ?domain rdfs:label ?domainlabel . }
+                  }
+                }''' | query(values={"this": this.identifier, "property": row['property']}) %}
+                <a href="#/{{subrow['domainlabel'].replace(' ','')}}" title="{{subrow['domain']}}">{{subrow['domainlabel']}}</a>
+               <sup class="type-c" title="c">c</sup>
+            {% endfor %}
+            </dd>
+         </dl>
+      </div>
+   </div>
+{% endfor %}
+
+</div>
+
+<div id="namedindividuals">
+   <h3 id="namedindividuals" class="list">Named Individuals</h3>
+   <ul class="hlist">
+{% for row in '''SELECT ?term ?label 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?term rdf:type ?type;
+        rdfs:label ?label .
+  FILTER(?type != owl:Class)
+  FILTER(?type != owl:Ontology)
+  FILTER(?type != owl:Property)
+  FILTER(?type != owl:Restriction)
+  FILTER(?type != owl:DatatypeProperty)
+  FILTER(?type != owl:ObjectProperty)
+  }
+}''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
+<li>
+<a href="#/{{row['label'].replace(' ','')}}" title={{row['term']}}>{{row['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+{% for row in '''SELECT ?term ?type ?label 
+WHERE {
+  GRAPH ?g {
+    ?this a owl:Ontology.
+    ?term rdf:type ?type;
+        rdfs:label ?label .
+  FILTER(?type != owl:Class)
+  FILTER(?type != owl:Ontology)
+  FILTER(?type != owl:Property)
+  FILTER(?type != owl:Restriction)
+  FILTER(?type != owl:DatatypeProperty)
+  FILTER(?type != owl:ObjectProperty)
+  }
+}''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
+<div class="entity" id="/unit/1-pa">
+      <h3>{{row['label']}}
+            <sup class="type-ni" title="named individual">ni</sup>
+                 <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#namedindividuals">Named Individual ToC</a>
+         </span>
+      </h3>
+      <p>
+         <strong>IRI:</strong> <a href="{{row['term']}}">{{row['term']}}</a></p>
+      <dl class="description">
+         <dt>belongs to</dt>
+         <dd>
+            <a href="{{row['type']}}" title="{{row['type']}}">{{row['type']}}</a>
+         </dd>
+      </dl>
+   </div>
+{% endfor %} 
+</div>
+<div id="legend">
+<h2>Legend <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<div   class="entity">
+<sup class="type-c" title="Classes">c</sup>: Classes <br/>
+<sup class="type-op" title="Object Properties">op</sup>: Object Properties <br/>
+<sup class="type-dp" title="Data Properties">dp</sup>: Data Properties <br/>
+<sup class="type-ni" title="Named Individuals">ni</sup>: Named Individuals
+</div>
+</div>
+</div>
+    
+
+<!--REFERENCES SECTION-->
+  <div id="references">
+<h2 id="ref" class="list">References <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<span class="markdown">
+Add your references here. It is recommended to have them as a list.</span>
+
+</div>
+<div id="acknowledgements">
+<h2 id="ack" class="list">Acknowledgements <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<p>
+The authors would like to thank <a href="http://www.essepuntato.it/">Silvio Peroni</a> for developing <a href="http://www.essepuntato.it/lode">LODE</a>, a Live OWL Documentation Environment, which is used for representing the Cross Referencing Section of this document and <a href="https://w3id.org/people/dgarijo">Daniel Garijo</a> for developing <a href="https://github.com/dgarijo/Widoco">Widoco</a>, the program used to create the template used in this documentation.</p>
+</div>
 {% endblock %}
