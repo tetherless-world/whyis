@@ -2,6 +2,7 @@
  * The functions below are used by the event services module
  * 1. "confirmAuth": Checks if user is authenticated
  * 2. "toggleNav"
+ * current_user.has_role('Admin')
  */
 
 
@@ -11,13 +12,12 @@ import { getCharts } from '../../utilities/vega-chart';
 /** NEEDED FOR NANOMINE */
 const LOCAL_DEV_SERVER = 'http://localhost:8000/nmr/chart';
 const SERVER = `${ROOT_URL}nmr/chart`;
-const URL = LOCAL_DEV_SERVER;
+const URL = SERVER;
 
 const controller = {
   confirmAuth(){
     if(Object.keys(USER).length){
-      this.authUser = {...USER};
-      this.authUser.email = 'testuser'
+      this.authUser = {...USER, user: this.getCurrentUserURI(USER.uri)};
       this.$emit('snacks', {status: true});
       return this.$emit('isauthenticated', this.authUser);
     }
@@ -29,15 +29,14 @@ const controller = {
   },
 
   confirmConfig(){
-    const { mongoBackup, speedDialIcon } = CONFIGS
+    const { mongoBackup, speedDialIcon } = CONFIGS;
     this.thirdPartyRestBackup = mongoBackup == "True" ? true : false;
     this.speedDials = speedDialIcon == "True" ? true : false;
   },
 
   navTo(args, uri){
     if(uri){
-      return window.location = `${window.location.origin}/about?view=${args}&uri=http:%2F%2Fsemanticscience.org%2Fresource%2FChart`
-      // return window.location = `${window.location.origin}/wi/about?view=${args}&uri=http:%2F%2Fsemanticscience.org%2Fresource%2FChart`
+      return window.location = `${window.location.origin}/about?view=${args}&uri=http:%2F%2Fsemanticscience.org%2Fresource%2FChart`;
     }
     return window.location=args
   },
@@ -90,7 +89,6 @@ const controller = {
   async loadCharts(){
     let result;
     result = await getCharts()
-    console.log('whyischartloader', result)
     if(result.length){
       result = result.map((el) => {
         el.backup = el
@@ -138,14 +136,14 @@ const controller = {
       const prevChartID = !prevID ? 'null' : prevID;
       const eStatus = !enabled ? false : true;
       const restored = !prevID ? false : true;
-      const formData = {name: name, chart: args, creator: this.authUser.email, prevChartID: prevChartID, tag:tags, enabled:eStatus, restored:restored}
+      const formData = {name: name, chart: args, creator: this.authUser.user, prevChartID: prevChartID, tag:tags, enabled:eStatus, restored:restored}
       return this.restCallFn(formData, `${URL}/postcharts`, 'POST')
     }
   },
 
   async deleteAChart(chart) {
     if(this.checkIfRestValidate()){
-      const result = await this.restCallFn({name: chart._id, creator: this.authUser.email}, `${URL}/deletecharts`, 'DELETE')
+      const result = await this.restCallFn({name: chart._id, creator: this.authUser.user}, `${URL}/deletecharts`, 'DELETE')
       if(result){
         this.chartListings.find((el, index) => {
           if(el == chart){
@@ -167,7 +165,7 @@ const controller = {
 
   async resetChart() {
     if(this.checkIfRestValidate()){
-      const result = await this.restCallFn({creator: this.authUser.email}, `${URL}/resetcharts`, 'POST')
+      const result = await this.restCallFn({creator: this.authUser.user}, `${URL}/resetcharts`, 'POST')
       if(result){
         await this.fetchAllCharts();
         return this.$emit('snacks', {status:true, message: 'Chart Reset Completed'});
@@ -178,7 +176,7 @@ const controller = {
 
   async getUserBkmk (){
     if(this.checkIfRestValidate()){
-      const result = await this.restCallFn({creator: this.authUser.email}, `${URL}/retrievechartbkmks`, 'POST')
+      const result = await this.restCallFn({creator: this.authUser.user}, `${URL}/retrievechartbkmks`, 'POST')
       if(result){
         if(result.charts.length > 0){
           localStorage.setItem('chartbkmk', JSON.stringify(result.charts));
@@ -191,7 +189,7 @@ const controller = {
 
   async createChartBookMark(args, exist) {
     if(this.checkIfRestValidate()){
-      const result = await this.restCallFn({bkmk:args, status:exist, creator: this.authUser.email}, `${URL}/postchartbkmks`, 'POST')
+      const result = await this.restCallFn({bkmk:args, status:exist, creator: this.authUser.user}, `${URL}/postchartbkmks`, 'POST')
       if(result){
         localStorage.removeItem('chartbkmk');
         this.getUserBkmk()
@@ -245,15 +243,31 @@ const controller = {
     if(this.checkIfRestValidate()){
       /** TODO: Filter chartlistings and check if user/admin */
       if(args){
+        const user = !this.authUser.user ? null : this.authUser.user
         const uri = args.split("/");
-        const name = uri[uri.length - 1] ;
-        this.$emit("allowChartEdit", true)
+        const name = uri[uri.length - 1];
+        this.chartListings.filter(el => {
+          if(el.name == name && el.creator == user){
+            this.$emit("allowChartEdit", true)
+          }
+        })
       }
+    }
+  },
+
+  getCurrentUserURI(args){
+    if(this.checkIfRestValidate()){
+      if(args){
+        let user = args.split("/");
+        user = !user[user.length - 1] ? args : user[user.length - 1];
+        user = user == 'whyis' ? 'testuser' : user;
+        return user
+      }
+    } else {
+      return args
     }
   }
 }
-
-
 
 export {
   controller
