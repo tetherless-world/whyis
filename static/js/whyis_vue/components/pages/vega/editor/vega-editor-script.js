@@ -1,20 +1,23 @@
 import Vue from 'vue'
+import { EventServices } from '../../../../modules'
 import splitPane from 'vue-splitpane'
-
 import VJsoneditor from 'v-jsoneditor'
-
 import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
-import { goToView } from 'utilities/views'
+import { getCurrentView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
 
-
 export default Vue.component('vega-editor', {
-  components: {
-    splitPane,
-    VJsoneditor
-  },
-  data () {
+  props:['instances'],
+  data() {
     return {
+      loading: false,
+      showAllTabBtn: false,
+      showAllTabs: {display: 'none'},
+      paneResize: 18,
+      bottomPosition:'md-bottom-right',
+      previewPane: true,
+      authenticated: EventServices.authUser,
+      restoredChartId: null,
       chart: {
         baseSpec: null,
         query: null,
@@ -26,26 +29,66 @@ export default Vue.component('vega-editor', {
       specJsonEditorOpts: {
         mode: 'code',
         mainMenuBar: false
-      }
+      },
+      actionType: 'Save Chart'
     }
   },
   computed: {
     spec () {
       const spec = buildSparqlSpec(this.chart.baseSpec, this.results)
-      console.log('spec changed', spec)
       return spec
     }
   },
-  created () {
-    this.loadChart()
+  components: {
+    splitPane,
+    VJsoneditor
   },
   methods: {
+    navBack(){
+      return EventServices.navTo('view', true)
+    },
+    resize(e){
+      if(e <= 26){
+        this.showAllTabBtn = true;
+      } else {
+        this.showAllTabBtn = false;
+      }
+    },
+    showTabNavigation(){
+      this.paneResize = 50;
+      this.showAllTabBtn = false;
+      return this.paneResize = 18;
+    },
+    async tabNavigation(e){
+      const sparql = document.getElementById('sparqlc')
+      const vega = document.getElementById('vegac')
+      const save = document.getElementById('savec')
+      const tabs = await document.querySelectorAll('.viz-editor-tabs-item')
+      if(tabs.length){
+        tabs.forEach(el => el.classList.remove('tabselected'))
+      }
+      e.srcElement.classList.add('tabselected')
+      if(e.srcElement.id == 'vegaE'){
+        sparql.classList.remove('viz-editor-show')
+        save.classList.remove('viz-editor-show')
+        vega.classList.add('viz-editor-show')
+      } else if(e.srcElement.id == 'saveE') {
+        sparql.classList.remove('viz-editor-show')
+        vega.classList.remove('viz-editor-show')
+        save.classList.add('viz-editor-show')
+      } else {
+        save.classList.remove('viz-editor-show')
+        vega.classList.remove('viz-editor-show')
+        sparql.classList.add('viz-editor-show')
+      }
+    },
     getSparqlData () {
-      querySparql(this.chart.query)
+      const vm = this;
+      querySparql(vm.chart.query)
         .then(this.onQuerySuccess)
+        .then(() => this.loading = false)
     },
     onQuerySuccess (results) {
-      console.log('got results', results)
       this.results = results
     },
     onSpecJsonError () {
@@ -58,8 +101,6 @@ export default Vue.component('vega-editor', {
       const fr = new FileReader()
       fr.addEventListener('load', () => {
         this.chart.depiction = fr.result
-        // document.getElementById('page')
-        //   .appendChild(jQuery.parseHTML(`<img src="${fr.result}">`)[0])
       })
       fr.readAsDataURL(blob)
     },
@@ -76,10 +117,73 @@ export default Vue.component('vega-editor', {
           this.getSparqlData()
         })
     },
-    saveChart () {
-      console.log(this.chart)
-      saveChart(this.chart)
-        .then(() => goToView(this.chart.uri, 'edit'))
+    async reloadRestored(args){
+      const currChart = EventServices.tempChart;
+      if(currChart && currChart.chart){
+        await ec.appState.filter(el => {
+          if(el._id == currChart.chart._id) {
+            el.restored = true;
+          }
+        })
+      }
+      const text = args == 'Editing' ? 'Edited' : 'Restored'
+      EventServices.$emit('snacks', {status:true, message: `Chart ${text} Successfully`});
+      //RELOAD RESTORE USED IN SETTINGS TO RE FILTER CHART LIST
+      EventServices.$emit('reloadrestored', true)
+      return EventServices.navTo('view', true);
+    },
+    async saveChart () {
+      const vm = this;
+      try {
+        saveChart(this.chart)
+        .then(async() => {
+          if(vm.actionType == 'Restore' || vm.actionType == 'Editing'){
+            const res = await EventServices.createBackUp(vm.chart, vm.restoredChartId, true, this.selectedTags);
+            if(res.mssg){
+              return vm.reloadRestored(vm.actionType);
+            }
+            return;
+          } else {
+            await EventServices.createBackUp(this.chart, null, true, this.selectedTags);
+            EventServices.$emit('snacks', {status:true, message: 'Chart Saved Successfully'});
+            return EventServices.navTo('view', true);
+          }
+        })
+      } catch(err){
+        //TODO USE THE APP DIALOGUE BOX INSTEAD OF ALERT BOX
+        return alert(err)
+      }
+    },
+    postChartBk(){
+      let recievedChart = EventServices.tempChart;
+      if(!recievedChart){
+        return;
+      } else {
+        this.chart.baseSpec = recievedChart.chart.backup.baseSpec
+        this.chart.query = recievedChart.chart.backup.query
+        this.chart.title = recievedChart.chart.backup.title
+        this.chart.description = recievedChart.chart.backup.description
+        this.restoredChartId = recievedChart.chart.name
+      }
+    },
+    defineAction(){
+      const thisView = getCurrentView();
+      if(thisView == 'restore'){
+        this.actionType = 'Restore';
+      } else if (thisView == 'edit'){
+        this.actionType = 'Editing';
+      } else {
+        this.actionType = 'Save Chart';
+      }
+    },
+  },
+  created () {
+    if(EventServices.authUser == undefined){
+      return EventServices.navTo('view', true)
     }
+    this.loading = true;
+    this.defineAction();
+    this.postChartBk();
+    this.loadChart();
   }
 })

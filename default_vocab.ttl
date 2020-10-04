@@ -15,6 +15,7 @@
 @prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
 
 
 
@@ -491,3 +492,10 @@ whyis:ChartClass a owl:Class;
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
   whyis:editInstanceView "chart_edit.html".
+
+whyis:DatasetClass a owl:Class;
+  rdfs:subClassOf owl:Class;
+  whyis:newInstanceView "dataset_new.html".
+
+dcat:Dataset a whyis:DatasetClass;
+  whyis:editInstanceView "dataset_edit.html".
