@@ -125,7 +125,7 @@ export default (str) => {
         })
     });
     return str
-        .replace(/[^\w!@#$%&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, "") // remove invalid chars
+        .replace(/[^\w!@#$%&*()_+\-=\[\]{};':"\\|,.<>\/? ]/g, "") // remove invalid chars
         .replace(/\s+/g, " ") // collapse whitespace and replace by -
         .replace(/-+/g, "-") // collapse dashes
         .replace(/^-+/, "") // trim - from start of text
