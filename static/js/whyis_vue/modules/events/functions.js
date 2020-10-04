@@ -1,7 +1,12 @@
 /**
  * The functions below are used by the event services module
  * 1. "confirmAuth": Checks if user is authenticated
- * 2. "toggleNav"
+ * 2. "toggleNav": Used for drawer nav toggling
+ * 3. "confirmConfig": Parse third part rest config to WHYIS
+ * 4. "navTo": Recieve an argument and return to specified location
+ * 5. "checkRestValid": Initial Validation of restful config
+ * 6. "checkIfRestValidate": Validate user, and rest config before sending req to REST
+ * 7. "restCallFn": This function sends all req to REST
  * current_user.has_role('Admin')
  */
 

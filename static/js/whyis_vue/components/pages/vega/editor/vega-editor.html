@@ -1,5 +1,5 @@
 <div>
-  <div style="background-color: rgba(0,0,0,.2); border-radius:3px; height:96%; z-index:1000; position:absolute; width:98%" v-if="loading">
+  <div class="viz-dark-loading" v-if="loading">
     <spinner :loading="loading" />
   </div>
   <split-pane :min-percent='paneResize' v-on:resize="resize" :default-percent='50' split="vertical">
