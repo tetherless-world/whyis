@@ -41,7 +41,7 @@
 </template>
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
-    import EventServices from '../../../../modules/events/event-services'
+    import { EventServices, Slug } from '../../../../modules'
     import pagination from './Pagination'
     export default {
         name: "viz-grid",
@@ -100,11 +100,12 @@
                 return window.location = args.backup.uri
             },
             reduceDescription(args) {
-                let arr, arrSplice
+                let arr, arrSplice, res
                 arr = args.split(" ")
                 arr.splice(15)
                 arrSplice = arr.reduce((a,b) => `${a} ${b}`, "")
-                return `${arrSplice}...`
+                res = Slug(arrSplice)
+                return `${res}...`
             },
             bookmark(args, exist){
                 return EventServices.createChartBookMark(args, exist);
