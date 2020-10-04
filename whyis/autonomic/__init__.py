@@ -10,5 +10,5 @@ from whyis.namespace import *
 from .ontology_importer import OntologyImporter
 from .service import Service
 from .setl_maker import SETLMaker
+from .cache_updater import CacheUpdater
 from .update_change_service import UpdateChangeService
-

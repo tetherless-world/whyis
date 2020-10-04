@@ -17,7 +17,7 @@
          input-aria-describedby="facet{{vm.facet.facetId}}Label"
          md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
          md-item-text="item.name" >
-        <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} {{item.unit_label}}</span>
+        <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} <span ng-if="item.unit_label">({{item.unit_label}})</span></span>
       </md-autocomplete>
       <md-chip-template>
         <span>{{ $chip.name }} <span ng-if="$chip.unit_label">({{$chip.unit_label}})</span></span>
@@ -30,6 +30,15 @@
                           lower-value="value.lower" upper-value="value.upper"
                           min="value.min" max="value.max" >
             </range-slider>
+            <div ng-repeat="indep_value in value.indep_vals">
+                <div ng-if="indep_value.type != 'nominal' && indep_value.min !== undefined">
+                    <label>{{indep_value.name}}: {{indep_value.lower | number}} - {{indep_value.upper | number}}</label>
+                    <range-slider step="(indep_value.max-value.min)/100"
+                                  lower-value="indep_value.lower" upper-value="indep_value.upper"
+                                  min="indep_value.min" max="indep_value.max" >
+                    </range-slider>
+                </div>
+            </div>
         </div>
     </div>
   </div>

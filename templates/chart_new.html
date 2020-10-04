@@ -1,0 +1,11 @@
+{% extends "base_vue.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}Create a new chart{% endblock %}
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+
+<vega-editor instances="{{this.identifier}}"></vega-editor>
+
+{% endblock %}
