@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>    
 <link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/> 
 {% endblock %}
+
 {% macro render_class(concept) %}
 <ul>
   {% for s in sort_by(concept.subjects(ns.RDFS.subClassOf), ns.RDFS.label) %}
@@ -29,49 +30,62 @@
     <script>
       var ontology = "{{this.description().identifier}}";
     </script>
-{{ summary_panel(this.description()) }}
 
-<div class="row">
-    <kg-card class="col-md-4" src="'{{this.identifier}}'"></kg-card>
-      <div class="col-md-4">
-
-<!--        <dd><a href="http://purl.org/ontology/bibo/">&lt;http://purl.org/ontology/bibo/&gt;</a></dd><dd><a href="http://semanticscience.org/ontology/sio.owl">sio.owl</a></dd><dd><a href="http://www.nanopub.org/nschema">nschema</a></dd>
--->
-      </div>
+<!--TABLE OF CONTENTS-->
+<div id="toc">
+<p class="toc_title"><h2>Contents</h2></p>
+<ul class="toc_list">
+  <li><a href="#introduction">1 Introduction</a></li>
+  <li><a href="#overview">2 Overview</a></li>
+  <li><a href="#description">3 Description</a></li>
+  <li><a href="#crossref">4 Cross reference for ontology classes, properties and named individuals
+</a></li>
+  <ul>
+    <li><a href="#classes">4.1 Classes</a></li>
+    <li><a href="#objectproperties">4.2 Object Properties</a></li>
+    <li><a href="#dataproperties">4.3 Data Properties</a></li>
+    <li><a href="#namedindividuals">4.4 Named Individuals</a></li>
+  </ul>
+<li><a href="#references">5 References</a></li>
+<li><a href="#acknowledgements">6 Acknowledgements</a></li>
+</ul>
 </div>
 
 <!--INTRODUCTION SECTION-->
-    <div id="introduction"><h2 id="intro" class="list">Introduction</h2>
+<div id="introduction"><h2 id="intro" class="list">Introduction</h2>
 <span class="markdown">
-This is a place holder text for the introduction. The introduction should briefly describe the ontology, its motivation, state of the art and goals.</span>
+{{summary_panel(this.description())}}</span>
 
-<div id="importdeclarations">
-<h3 id="ns" class="list">Imports</h3>
-<div id="ns" align="center">
-<table>
-<caption> <a href="#ns"> Table 1</a>: Imported Ontologies </caption>
-<tbody>
-{% for import in this[ns.owl.imports] %}
-<tr><td><a href="{{import.identifier}}">&lt;{{import.identifier}}&gt;</a></td></tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-</div>
-</div>
 
-<!-- Still need to update this -->
-<div id="namespacedeclarations">
-<h3 id="ns" class="list">Namespace declarations</h3>
-<div id="ns" align="center">
-<table>
-<caption> <a href="#ns"> Table 2</a>: Namespaces used in the document </caption>
-<tbody>
-<tr><td><b>owl</b></td><td>&lt;http://www.w3.org/2002/07/owl&gt;</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+<!--    {% if this[ns.owl.imports] %} -->
+    <div id="importdeclarations">
+    <h3 id="im" class="list">Imports</h3>
+        <div id="im" align="center">
+        <table>
+        <caption> <a href="#im"> Table 1</a>: Imported Ontologies </caption>
+        <tbody>
+        {% for import in this[ns.owl.imports] %}
+        <tr><td><a href="{{import.identifier}}">&lt;{{import.identifier}}&gt;</a></td></tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </div>
+    </div>
+<!--    {% endif %} -->
+
+    <!-- Still need to update this -->
+    <div id="namespacedeclarations">
+    <h3 id="ns" class="list">Namespace declarations</h3>
+        <div id="ns" align="center">
+        <table>
+        <caption> <a href="#ns"> Table 2</a>: Namespaces used in the document </caption>
+        <tbody>
+        <tr><td><b>owl</b></td><td>&lt;http://www.w3.org/2002/07/owl&gt;</td></tr>
+        </tbody>
+        </table>
+        </div>
+    </div>
+
 </div>
 
 
@@ -150,14 +164,18 @@ WHERE {
 
 <!--DESCRIPTION SECTION-->
     <div id="description"><h2 id="desc" class="list">Description </h2>
-<span class="markdown">
-This is a placeholder text for the description of your ontology. The description should include an explanation and a diagram explaining how the classes are related, examples of usage, etc.</span>
+
+<div class="row">
+    <kg-card class="col-md-4" src="'{{this.identifier}}'"></kg-card>
+      <div class="col-md-4">
+
+<!--        <dd><a href="http://purl.org/ontology/bibo/">&lt;http://purl.org/ontology/bibo/&gt;</a></dd><dd><a href="http://semanticscience.org/ontology/sio.owl">sio.owl</a></dd><dd><a href="http://www.nanopub.org/nschema">nschema</a></dd>
+-->
+      </div>
+</div>
 
 </div>
-   
-    <script>
-      var ontology = "{{this.description().identifier}}";
-    </script>
+
 <!--CROSSREF SECTION-->
    <div id="crossref"><h2 id="crossreference" class="list">Cross reference for ontology classes, properties and named individuals</h2>
 This section provides details for each class and property defined by the ontology.
@@ -173,7 +191,7 @@ This section provides details for each class and property defined by the ontolog
       }
     }''' | query(values={"this": this.identifier}) | iter_labelize(key="class", label_key="label") | sort(attribute="label")%}
     <li>
-    <a href="#/{{row['label'].replace(' ','')}}" title={{row['class']}}>{{row['label']}}</a>
+      <a href="#/{{row['label'].replace(' ','')}}" title={{row['class']}}>{{row['label']}}</a>
     </li>
     {% endfor %}
     </ul>
@@ -194,8 +212,9 @@ WHERE {
          <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#classes">Class ToC</a>
          </span>
       </h3>
-      <p>
-         <strong>IRI:</strong><a href="{{row['class']}}">{{row['class']}}</a></p>
+      
+      <p><strong>IRI:</strong> <a href="{{row['class']}}">{{row['class']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=row['class'])}}" title={{row['class']}}>{{row['label']}}</a></p>
       <div class="comment">
          <span class="markdown">{{row['comment']}} {{row['def']}}</span>
       </div>
@@ -286,8 +305,9 @@ WHERE {
          <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#objectproperties">Object Property ToC</a>
          </span>
       </h3>
-      <p>
-         <strong>IRI:</strong><a href="{{row['property']}}">{{row['property']}}</a></p>
+       
+      <p><strong>IRI:</strong><a href="{{row['property']}}">{{row['property']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=row['property'])}}" title={{row['property']}}>{{row['label']}}</a></p>
       <div class="description">
          <dl>
             <dt>has super-properties</dt>
@@ -382,8 +402,8 @@ WHERE {
          <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>
          </span>
       </h3>
-      <p>
-         <strong>IRI:</strong><a href="{{row['property']}}">{{row['property']}}</a></p>
+      <p><strong>IRI:</strong> <a href="{{row['property']}}">{{row['property']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=row['property'])}}" title={{row['property']}}>{{row['label']}}</a></p>
       <div class="description">
          <dl>
             <dt>has super-properties</dt>
@@ -472,7 +492,7 @@ WHERE {
   FILTER(?type != owl:ObjectProperty)
   }
 }''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
-<div class="entity" id="/unit/1-pa">
+<div class="entity" id="">
       <h3>{{row['label']}}
             <sup class="type-ni" title="named individual">ni</sup>
                  <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#namedindividuals">Named Individual ToC</a>
@@ -480,6 +500,7 @@ WHERE {
       </h3>
       <p>
          <strong>IRI:</strong> <a href="{{row['term']}}">{{row['term']}}</a></p>
+
       <dl class="description">
          <dt>belongs to</dt>
          <dd>
@@ -511,6 +532,6 @@ Add your references here. It is recommended to have them as a list.</span>
 <div id="acknowledgements">
 <h2 id="ack" class="list">Acknowledgements <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
 <p>
-The authors would like to thank <a href="http://www.essepuntato.it/">Silvio Peroni</a> for developing <a href="http://www.essepuntato.it/lode">LODE</a>, a Live OWL Documentation Environment, which is used for representing the Cross Referencing Section of this document and <a href="https://w3id.org/people/dgarijo">Daniel Garijo</a> for developing <a href="https://github.com/dgarijo/Widoco">Widoco</a>, the program used to create the template used in this documentation.</p>
+The authors would like to acknowledge <a href="https://w3id.org/people/dgarijo">Daniel Garijo</a> for developing <a href="https://github.com/dgarijo/Widoco">Widoco</a>, a program used for creating documentation templates, which was leveraged when designing this Whyis template.</p>
 </div>
 {% endblock %}
