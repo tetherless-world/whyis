@@ -56,7 +56,7 @@
                   </li>
                 </ul>
               </div>
-              <a @click.prevent="navBack(true)" class="btn btn_medium btn--primary viz-u-display__desktop btn--animated" v-if="!vizOfTheDay">View Gallery</a>
+              <a @click.prevent="navBack(true)" class="btn btn_medium btn--primary viz-u-display__desktop btn--animated" v-if="vizOfTheDay">View Gallery</a>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@
       <div class="loading-dialog" style="margin: auto" v-else>
         <div class="viz-u-display__desktop" style="margin-bottom: 2rem"></div>
         <vega-lite :spec="spec" class="btn--animated"/>
-        <a @click.prevent="navBack" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph">View Gallery</a>
+        <a @click.prevent="navBack" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph" v-if="vizOfTheDay">View Gallery</a>
       </div>
     </div>
   </div>
