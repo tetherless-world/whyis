@@ -36,6 +36,7 @@ const EventServices = new Vue({
     },
     methods: {...Fn.controller},
     created(){
+        this.$on('vodd', data => this.vizOfTheDay = data);
         this.confirmConfig()
         return this.confirmAuth()
     }
