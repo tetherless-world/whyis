@@ -144,6 +144,7 @@ export default Vue.component('vega-editor', {
             }
             return;
           } else {
+            console.log('sent to createbackup')
             await EventServices.createBackUp(this.chart, null, true, this.selectedTags);
             EventServices.$emit('snacks', {status:true, message: 'Chart Saved Successfully'});
             return EventServices.navTo('view', true);
