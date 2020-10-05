@@ -16,7 +16,7 @@ import { getCharts } from '../../utilities/vega-chart';
 
 /** NEEDED FOR NANOMINE */
 const LOCAL_DEV_SERVER = 'http://localhost:8000/nmr/chart';
-const SERVER = `${ROOT_URL}nmr/chart`;
+const SERVER = `${window.location.origin}/nmr/chart`;
 const URL = SERVER;
 
 const controller = {
@@ -37,6 +37,7 @@ const controller = {
     const { mongoBackup, speedDialIcon } = CONFIGS;
     this.thirdPartyRestBackup = mongoBackup == "True" ? true : false;
     this.speedDials = speedDialIcon == "True" ? true : false;
+    console.log('configs:', this.thirdPartyRestBackup, this.speedDials)
   },
 
   navTo(args, uri){
@@ -48,8 +49,10 @@ const controller = {
 
   checkRestValid(){
     if(!this.thirdPartyRestBackup) {
+      console.log('failed third party check')
       return false
     }
+    console.log('passed third party check')
     return true
   },
 
@@ -58,7 +61,8 @@ const controller = {
       const err = new Error('User Authorization Failed!')
       throw err;
     }
-    this.checkRestValid()
+    console.log('passed auth user')
+    return this.checkRestValid()
   },
 
   async restCallFn(formData, URL, METHOD){
@@ -75,8 +79,10 @@ const controller = {
       })
       if(result.status == 201) {
         result = await result.json()
+        console.log(result)
         return result
       }
+      console.log('returned rest but status not equal 201')
       return undefined
     } catch(err){
       throw err;
@@ -139,6 +145,7 @@ const controller = {
   },
 
   async createBackUp(args, prevID, enabled, tags){
+    console.log('enter create backup')
     if(this.checkIfRestValidate()){
       const uri = args && args.uri ? args.uri.split("/"): null;
       const name = uri != null ? uri[uri.length - 1] : null;
@@ -146,8 +153,10 @@ const controller = {
       const eStatus = !enabled ? false : true;
       const restored = !prevID ? false : true;
       const formData = {name: name, chart: args, creator: this.authUser.user, prevChartID: prevChartID, tag:tags, enabled:eStatus, restored:restored}
+      console.log('formData:', formData)
       return this.restCallFn(formData, `${URL}/postcharts`, 'POST')
     }
+    console.log('failed rest validate....')
   },
 
   async deleteAChart(chart) {
@@ -267,12 +276,15 @@ const controller = {
   getCurrentUserURI(args){
     if(this.checkRestValid()){
       if(args){
+        console.log('args', args)
         let user = args.split("/");
         user = !user[user.length - 1] ? args : user[user.length - 1];
         user = user == 'whyis' ? 'testuser' : user;
+        console.log(user)
         return user
       }
     } else {
+      console.log('failed to split user')
       return args
     }
   }
