@@ -1,70 +1,94 @@
 <div>
-  <split-pane :min-percent='20' :default-percent='66' split="vertical">
+  <div class="viz-dark-loading" v-if="loading">
+    <spinner :loading="loading" />
+  </div>
+  <split-pane :min-percent='paneResize' v-on:resize="resize" :default-percent='50' split="vertical">
     <template slot="paneL">
-      <split-pane :default-percent="50" split="vertical">
-        <template slot="paneL">
-          <md-card>
-            <md-card-header>
-              <div class="md-title">SPARQL Query</div>
-            </md-card-header>
-            <md-card-content>
-              <yasqe v-if="chart.query"
-                     v-model="chart.query"
-                     v-on:query-success="onQuerySuccess">
-              </yasqe>
-            </md-card-content>
-          </md-card>
-        </template>
-        <template slot="paneR">
-          <md-card>
-            <md-card-header>
-              <div class="md-title">Vega Specification</div>
-            </md-card-header>
-            <md-card-content id="vega-spec-editor">
-              <v-jsoneditor v-if="chart.baseSpec"
-                            v-model="chart.baseSpec"
-                            :options="specJsonEditorOpts"
-                            :error="onSpecJsonError">
-              </v-jsoneditor>
-            </md-card-content>
-          </md-card>
-        </template>
-      </split-pane>
+      <div class="">
+        <div class="viz-editor-tabs" @click="showTabNavigation">
+          <div class="viz-editor-tabs-item" id="showtabs" :style="!showAllTabBtn ? showAllTabs : false">
+            <span class="material-icons">
+              double_arrow
+            </span>
+          </div>
+          <div class="viz-editor-tabs-item tabselected" id="sparql" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
+            Sparql
+            <md-tooltip md-direction="bottom">Enter Query</md-tooltip>
+          </div>
+          <div class="viz-editor-tabs-item" id="vegaE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
+            Vega
+            <md-tooltip md-direction="bottom">Enter Vega Specs</md-tooltip>
+          </div>
+          <div class="viz-editor-tabs-item" id="saveE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
+            {{actionType}}
+            <md-tooltip md-direction="bottom">{{actionType}}</md-tooltip>
+          </div>
+        </div>
+        <div class="viz-editor viz-editor-show" id="sparqlc">
+          <yasqe v-if="chart.query"
+            v-model="chart.query"
+            v-on:query-success="onQuerySuccess">
+          </yasqe>
+        </div>
+        <div class="viz-editor" id="vegac">
+          <div id="vega-spec-editor" style="height:100%">
+            <v-jsoneditor v-if="chart.baseSpec"
+              v-model="chart.baseSpec"
+              :options="specJsonEditorOpts"
+              :error="onSpecJsonError" style="height: 98%">
+            </v-jsoneditor>
+          </div>
+        </div>
+        <div class="viz-editor" id="savec">
+          <form class="title-form" @submit.prevent="saveChart">
+            <div style="display: block; flex: 1">
+              <md-field class="chart-title-field viz-u-maxwidth">
+                <label for="chart-title">Title</label>
+                <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
+              </md-field>
+            </div>
+            <div style="display: block;">
+              <md-field class="chart-description-field viz-u-maxwidth">
+                <label for="chart-description">Description</label>
+                <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
+              </md-field>
+            </div>
+            <div style="display: block;">
+              <button type="submit" class="btn btn--primary">{{ actionType }} <md-icon style="color:#32CD32">check</md-icon></button>
+            </div>
+          </form>
+        </div>
+      </div>
     </template>
     <template slot="paneR">
-      <split-pane :default-percent="30" split="horizontal">
-        <template slot="paneL">
-          <form class="md-layout title-form" @submit.prevent="saveChart">
-            <md-card class="chart-metadata">
-              <md-card-content>
-                <div class="title-bar">
-                  <md-field class="chart-title-field">
-                    <label for="chart-title">Title</label>
-                    <md-input name="chart-title" id="chart-title" v-model="chart.title"/>
-                  </md-field>
-                  <md-button type="submit" class="save-button md-primary">Save</md-button>
-                </div>
-                <md-field class="chart-description-field">
-                  <label for="chart-description">Description</label>
-                  <md-textarea name="chart-description" id="chart-description" v-model="chart.description"/>
-                </md-field>
-              </md-card-content>
-            </md-card>
-          </form>
-        </template>
-        <template slot="paneR">
-          <md-tabs>
-            <md-tab md-label="Chart">
-              <div class="vega-container">
-                <vega-lite :spec="spec" @new-vega-view="onNewVegaView"/>
-              </div>
-            </md-tab>
-            <md-tab md-label="Table">
-              <yasr v-bind:results="results"></yasr>
-            </md-tab>
-          </md-tabs>
-        </template>
-      </split-pane>
+      Preview
+      <div>
+        <div style="text-align: right;">
+          <a @click.prevent="previewPane=true"  class="viz-editor-tabs-item" :class="{tabselected:previewPane}">
+            Chart
+            <md-tooltip md-direction="bottom">Chart Preview</md-tooltip>
+          </a>
+          <a @click.prevent="previewPane=false" class="viz-editor-tabs-item" :class="{tabselected:previewPane == false}">
+            Table
+            <md-tooltip md-direction="bottom">Table Preview</md-tooltip>
+          </a>
+        </div>
+        <div class="vega-container" v-if="previewPane">
+          <keep-alive>
+            <vega-lite :spec="spec" @new-vega-view="onNewVegaView" style="height: 98%"/>
+          </keep-alive>
+        </div>
+        <div style="overflow: scroll;" v-else>
+          <keep-alive>
+            <yasr v-bind:results="results"></yasr>
+          </keep-alive>
+        </div>
+      </div>
     </template>
   </split-pane>
+  <md-speed-dial :class="bottomPosition" >
+    <md-speed-dial-target class="utility-float-icon" @click.native.prevent="navBack">
+      <md-icon>arrow_back</md-icon>
+    </md-speed-dial-target>
+  </md-speed-dial>
 </div>

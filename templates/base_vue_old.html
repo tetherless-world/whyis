@@ -37,10 +37,25 @@
 
 <link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
 
-<link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
-<link href='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.min.css' rel='stylesheet' type='text/css'/>
-<link href='//cdn.jsdelivr.net/yasr/2.10.8/yasr.min.css' rel='stylesheet' type='text/css'/>
-<link href='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.css' rel='stylesheet' type='text/css'/>
+    <style>
+      /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
+      html, body {
+        background-color: #fff;
+      }
+      .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+      div.container {
+      width: 100%;
+      margin-left: 0px;
+      margin-right: 0px;
+      }
+      a:visited {
+      color: #887ab7;
+      }
+    </style>
+
+    <link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
+    <link href='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.min.css' rel='stylesheet' type='text/css'/>
+    <link href='//cdn.jsdelivr.net/yasr/2.10.8/yasr.min.css' rel='stylesheet' type='text/css'/>
     {% block styles %}
     {% endblock %}
 
@@ -48,67 +63,84 @@
 <body>
   <div id="page">
 {% block body %}
-    <div class="utility-bg">
-      <div class="page-container">
-        <md-app md-waterfall md-mode="overlap">
-          <md-app-toolbar 
-            site_name= "{{config['site_name']}}" 
-            page_title = "{{title()}}"
-            register-nav = "{{url_for('security.register')}}" 
-            login-nav="{{url_for('security.login')}}">
-          </md-app-toolbar>
-          <md-app-drawer logout-nav="{{url_for('security.logout')}}" login-nav="{{url_for('security.login')}}"></md-app-drawer>
-          {% block pageheader %}
-          {% endblock %}
-          <md-app-content class="utility-bg utility-bg_border">
-            {% block content %}
-            {% endblock %}
-          </md-app-content>
-        </md-app>
+    <div class="page-container">
+            <md-toolbar class="md-primary">
+                <div class="md-toolbar-row">
+                    <div class="md-toolbar-section-start">
+                        <md-button href="{{url_for('entity.view',name='')}}">Home</md-button>
+                        <span class="md-title" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small></span>
+                    </div>
+                    <!-- Form for Search -->
+                    <form md-layout="box"
+                            style="color:black"
+                          role="search"
+                          action="{{url_for('entity.view',name='search')}}"
+                          method="get"
+                          name="search">
+                          <search-autocomplete ></search-autocomplete>
+                    </form><!-- /search form -->
+
+                    <div class="md-toolbar-section-end">
+                        {% block nav %}
+                        {% endblock %}
+                        {% include "nav.html" %}
+                        <h3>
+                            {% if not current_user or current_user.is_anonymous %}
+                            <md-button href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
+                            <md-button href="{{url_for('security.register')}}" aria-label="Register" title="">Register</md-button>
+                            {% else %}
+                            <md-menu md-size="medium" md-align-trigger>
+                                <md-button md-menu-trigger >Welcome, {{current_user.givenName}} <span class="caret"></span></md-button>
+                                <md-menu-content>
+                                    <md-menu-item><a href="{{url_for('security.logout')}}">Log out</a></md-menu-item>
+                                    <md-menu-item><a href="{{url_for('security.change_password')}}">Change password</a></md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </md-toolbar>
+    {% block pageheader %}
+    <div >
+      <div class="page-header" layout="row">
       </div>
-      <dialog-box/>
+      {% endblock %}
+      <div>
+        {% block content %}
+        {% endblock %}
+      </div>
     </div>
+  </div>
     {% endblock %}
 
   </div>
 
-  <script>
-    LOD_PREFIX = '{{config.lod_prefix}}';
-    {% if 'base_rate_probability' in config %}
-    BASE_RATE = {{config['base_rate_probability']}};
-    {% else %}
-    BASE_RATE = 0.5;
-    {% endif %}
-    {% if current_user and current_user.identifier %}
-    USER = { 
-      uri: '{{current_user.identifier}}', 
-      admin: "{{current_user.has_role('Admin')}}",
-      name: "{{current_user.givenName}}",
-      email: "{{current_user.email}}"
-    };
-    {% else %}
-    USER = { }
-    {% endif %}
-    {% if this is defined %}
-    NODE_URI = "{{this.identifier | safe}}";
-    ATTRIBUTES = {{ this | include('attributes') | safe }};
-    DESCRIPTION = {{this.description().graph | serialize(format="json-ld") | safe}};
-    NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
-    if (NODE.length > 0)  NODE = NODE[0];
-    else NODE = {"@id" : NODE_URI};
-    {% endif %}
-    ROOT_URL = "{{url_for('entity.view',name='')}}";
-    LINKS = {
-      registerNav: "{{url_for('security.register')}}",
-      changePasswordNav: "{{url_for('security.change_password')}}"
-    }
-    CONFIGS = {
-      mongoBackup: "{{config.THIRD_PARTY_REST_BACKUP}}",
-      speedDialIcon: "{{config.DISABLE_VUE_SPEED_DIAL}}"
-    }
-  </script>
+    <script>
+      LOD_PREFIX = '{{config.lod_prefix}}';
+      {% if 'base_rate_probability' in config %}
+      BASE_RATE = {{config['base_rate_probability']}};
+      {% else %}
+      BASE_RATE = 0.5;
+      {% endif %}
+      {% if current_user and current_user.identifier %}
+      USER = { uri: '{{current_user.identifier}}', admin: '{{current_user.has_role('Admin')}}' };
+      {% else %}
+      USER = { }
+      {% endif %}
+      {% if this is defined %}
+      NODE_URI = "{{this.identifier | safe}}";
+      ATTRIBUTES = {{ this | include('attributes') | safe }};
+      DESCRIPTION = {{this.description().graph | serialize(format="json-ld") | safe}};
+      NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
+      if (NODE.length > 0)  NODE = NODE[0];
+      else NODE = {"@id" : NODE_URI};
+      {% endif %}
+      ROOT_URL = "{{url_for('entity.view',name='')}}";
+    </script>
 
     <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
+
     <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
 
     <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
@@ -120,7 +152,7 @@
     <!-- TODO see if we can use the non-bundled versions -->
     <script src='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.bundled.min.js'></script>
     <script src='//cdn.jsdelivr.net/yasr/2.10.8/yasr.bundled.min.js'></script>
-    <script src='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.js'></script>
+
     <script src="{{ url_for('static', filename='js/whyis_vue_bundle.js')}}"></script>
 
 

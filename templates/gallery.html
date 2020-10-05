@@ -1,6 +1,6 @@
 {% extends "base_vue.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{g.get_label(this)}}{% endblock %}
-{% block body %}
-    <viz-gallery instances="{{this.identifier}}" hasrole="{{current_user.has_role('Admin')}}" user="{{current_user.identifier}}" />
+{% block content %}
+    <viz-gallery instances="{{this.identifier}}"></viz-gallery>
 {% endblock %}

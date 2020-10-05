@@ -14,6 +14,10 @@ export default Vue.component('yasqe', {
         endpoint: {
             type: String,
             default: () => "/sparql"
+        },
+        showBtns: {
+            type: Boolean,
+            default: false
         }
     },
     mounted () {
@@ -21,7 +25,7 @@ export default Vue.component('yasqe', {
         this.yasqe = window.YASQE(this.$el, {
             persistent: null,
             sparql: {
-                showQueryButton: true,
+                showQueryButton: !this.showBtns,
                 endpoint: this.endpoint,
                 requestMethod: "POST",
                 callbacks: {
