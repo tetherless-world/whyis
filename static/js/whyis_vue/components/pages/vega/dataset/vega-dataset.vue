@@ -5,6 +5,7 @@
     </div>
     <div v-else>
      <div class=""></div>
+      <dataset-uploader></dataset-uploader>
       <md-speed-dial :class="bottomPosition" v-if="speedDials">
         <md-speed-dial-target class="utility-float-icon">
           <md-icon>menu</md-icon>

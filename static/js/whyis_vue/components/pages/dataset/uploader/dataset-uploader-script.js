@@ -61,28 +61,32 @@ export default Vue.component('dataset-uploader', {
       this.dataset.refby = doisseparated.map((x) => "https://dx.doi.org/" + x);
     },
     setContributors: function (index) {
-      var contr = this.contributors[index]["org"]; //TODO
-      this.dataset.contributor[index] = {
-        "@type": "organization",
+      var contr = this.contributors[index]["org"];
+      if (contr !== ""){
+        this.dataset.contributor.push({
+          "@type": "organization",
         name: contr,
+        })
       };
     },
     setAuthors: function (org, name) {
-      if (org === ""){
-        this.dataset.author.push({
-          "@type": "person",
-          name: name,
-        })
-      } else {
-      this.dataset.author.push({
-        "@type": "person",
-        name: name,
-        onbehalfof: {
-          "@type": "organization",
-          name: org,
-        },
-      })
-      };
+      if (name !==""){
+        if (org === ""){
+          this.dataset.author.push({
+            "@type": "person",
+            name: name,
+          })
+        } else {
+          this.dataset.author.push({
+            "@type": "person",
+            name: name,
+            onbehalfof: {
+              "@type": "organization",
+              name: org,
+            },
+          })
+        };
+      } 
     },
     submitForm: function () {
       for (var index in this.contributors) {

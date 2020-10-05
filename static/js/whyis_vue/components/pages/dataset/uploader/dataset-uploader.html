@@ -5,12 +5,12 @@
 
           <md-step id="first" md-label="Upload files" :md-done.sync="first"> 
             <div style="margin: 20px">
-              <md-field>
+              <md-field style="max-width: none;">
                 <label>Upload distributions (multiple allowed)</label>
                 <md-file v-model="distribution" multiple />
               </md-field>
     
-              <md-field>
+              <md-field style="max-width: none;">
                 <label>Upload a representative image</label>
                 <md-file v-model="rep_image" accept="image/*" />
               </md-field>
@@ -31,7 +31,7 @@
                   <div class="md-headline" style="margin-top: 10px">
                     General Information
                   </div>
-                  <md-field>
+                  <md-field style="max-width: 100%;"> 
                     <label>Title</label>
                     <md-input v-model="dataset.title"></md-input>
                   </md-field>
@@ -63,7 +63,7 @@
                     </div>
                   </div>
 
-                  <md-field>
+                  <md-field style="max-width: 100%;">
                     <label>Text Description</label>
                     <md-textarea v-model="dataset.description"></md-textarea>
                   </md-field>
@@ -96,7 +96,7 @@
                           <input type="text" v-model="row['org']" style="width:90%" />
                         </td>
                         <td>
-                          <input type="text" v-model="row['authors']" style="width:90%"/>
+                          <input type="text" v-model="row['authors']" style="width:90%" placeholder="First Last, separate multiple w/ comma"/>
                         </td>
                         <td>
                           <a v-on:click="removeElement(contrInd)" style="cursor: pointer"
@@ -146,7 +146,7 @@
               
                     <div>
                       <label>DOI(s) of Related Publication(s)</label> 
-                      <md-field>
+                      <md-field style="max-width: none;">
                         <md-input 
                           v-model="dois" 
                           v-on:input="editDois"
