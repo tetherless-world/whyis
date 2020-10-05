@@ -7,25 +7,41 @@ import { goToView } from "utilities/views";
 
 Vue.use(VueMaterial);
 
-export default Vue.component('dataset-uploader', { 
-  name: "TextFields",
-  data: () => ({
-    title: "",
-    cpfirstname: "",
-    cplastname: "",
-    cpemail: "",
-    textdescription: "",
-    contributors: [],
-    datepub: null,
-    datemod: "",
-    dois: [],
-    distributions: [],
-    rep_image: [],
-    active: 'first',
-    first: false,
-    second: false,
-    third: false,
-  }),
+export default Vue.component('dataset-uploader', {  
+  data() {
+    return {
+      dataset: {
+        title: "",
+        description: "",
+        contactpoint: {
+          "@type": "individual",
+          cpfirstname: "",
+          cplastname: "",
+          cpemail: "",
+        },
+        contributor: [],
+        author: [],
+        datepub: {
+          "@type": "date",
+          "@value": "",
+        },
+        datemod: {
+          "@type": "date",
+          "@value": "",
+        },
+        refby: [],
+      },
+
+      dois: "",
+      contributors: [],
+      distribution: [],
+      rep_image: [],
+      active: "first",
+      first: false,
+      second: false,
+      third: false,
+    };
+  },
   methods: {
     addOrg: function () {
       var elem = document.createElement("tr");
@@ -34,11 +50,49 @@ export default Vue.component('dataset-uploader', {
         authors: "",
       });
     },
+    dateFormat(value, event) {
+      return moment(value).format("YYYY-MM-DD");
+    },
     removeElement: function (index) {
       this.contributors.splice(index, 1);
     },
+    editDois: function () {
+      var doisseparated = this.dois.split(/[ ,]+/);
+      this.dataset.refby = doisseparated.map((x) => "https://dx.doi.org/" + x);
+    },
+    setContributors: function (index) {
+      var contr = this.contributors[index]["org"]; //TODO
+      this.dataset.contributor[index] = {
+        "@type": "organization",
+        name: contr,
+      };
+    },
+    setAuthors: function (org, name) {
+      if (org === ""){
+        this.dataset.author.push({
+          "@type": "person",
+          name: name,
+        })
+      } else {
+      this.dataset.author.push({
+        "@type": "person",
+        name: name,
+        onbehalfof: {
+          "@type": "organization",
+          name: org,
+        },
+      })
+      };
+    },
     submitForm: function () {
-      console.log(JSON.stringify(this._data));
+      for (var index in this.contributors) {
+        this.setContributors(index);
+        var org = this.contributors[index]["org"];
+        const auths = this.contributors[index]["authors"].split(",");
+        auths.forEach((x) => this.setAuthors(org, x));
+      }
+      console.log(JSON.stringify(this.dataset));
+      saveDataset(this.dataset);
     }, 
     loadDataset() {
       let getDatasetPromise;
@@ -48,10 +102,10 @@ export default Vue.component('dataset-uploader', {
         this.getSparqlData();
       });
     },
-    saveDataset() {
-      console.log(this._data);
-      saveDataset(this._data).then(() => goToView(this._dataset.uri, "edit"));
-    },
+    // saveDataset() {
+    //   console.log(this._data);
+    //   saveDataset(this._data).then(() => goToView(this._dataset.uri, "edit"));
+    // },
     setDone (id, index) {
       this[id] = true;
 
