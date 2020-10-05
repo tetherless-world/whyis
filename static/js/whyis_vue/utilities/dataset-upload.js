@@ -2,12 +2,40 @@
 import { listNanopubs, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
 import { goToView } from 'utilities/views'
 
-const defaultSpec = { 
-  //not sure what to put here for datasets
+const defaultContext= { 
+  "dcat": "http://w3.org/ns/dcat#",
+  "dct": "http://purl.org/dc/terms/",
+  "vcard": "http://www.w3.org/2006/vcard/ns#",
+  "foaf": "http://xmlns.com/foaf/0.1/",
+  
+  "title": "dct:title",
+  "description": "dct:description",
+  
+  "contactpoint": "dcat:contactpoint", 
+  "cpemail": "vcard:email",
+  "cpfirstname": "vcard:given-name",
+  "cplastname": "vcard:family-name",
+  "individual": "vcard:individual",
+  
+  "name": "foaf:name",
+  "contributor": "dct:contributor",         
+  "organization": "foaf:Organization",
+  "author": "dct:creator", 
+  "person": "foaf:Person",
+  "lastname":"foaf:lastname",
+  "firstname":"foaf:firstname",
+  "onbehalfof":"http://www.w3.org/ns/prov#actedOnBehalfOf",
+
+  "datepub": "dct:issued",
+  "datemod": "dct:modified",
+  
+  "refby":"dct:isReferencedBy",
+  "repimage":"foaf:depiction",
+  "distribution": "dcat:distribution"
 }
 
 const defaultDataset = {
-  baseSpec: defaultSpec,
+  "@context": defaultContext,
   title: 'Example Dataset',
   description: 'An example dataset.'
 }
@@ -19,33 +47,47 @@ const datasetType = 'http://www.w3.org/ns/dcat#Dataset'
 const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
 const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
 
+const dcat = "http://w3.org/ns/dcat#"
+const dct = "http://purl.org/dc/terms/"
+const vcard = "http://www.w3.org/2006/vcard/ns#"
+const foaf = "http://xmlns.com/foaf/0.1/"
+
 const datasetFieldUris = {
-  baseSpec: 'http://semanticscience.org/resource/hasValue',
-  query: 'http://schema.org/query',
-  title: 'http://www.w3.org/ns/dcat#/title',
-  contactPoint: 'http://www.w3.org/ns/dcat#/title',
-  author: 'http://purl.org/dc/terms/creator',
-  organization: 'http://purl.org/dc/terms/contributor',
-  description: 'http://purl.org/dc/terms/description',
-  dateModified: 'http://purl.org/dc/terms/modified',
-}
+  baseSpec: 'http://semanticscience.org/resource/hasValue', 
+  title: `${dcat}title`,
+  description: `${dct}description`, 
 
+  contactpoint: `${dcat}contactpoint`,
+  cpemail: `${vcard}email`,
+  cpfirstname: `${vcard}given-name`,
+  cplastname: `${vcard}family-name`,
+  individual: `${vcard}individual`,
 
-const datasetPrefix = 'ds'
-const datasetLen = 16
+  author: `${dct}creator`,
+  name: `${foaf}:name`,
+  contributor: `${dct}:contributor`,         
+  organization: `${foaf}:Organization`, 
+  person: `${foaf}:Person`, 
+  onbehalfof:"http://www.w3.org/ns/prov#actedOnBehalfOf",
+
+  datepub: `${dct}issued`,
+  datemod: `${dct}modified`,
+  date: 'https://www.w3.org/2001/XMLSchema#date',
+
+  refby: `${dct}isReferencedBy`,
+} 
+const datasetPrefix = 'ds' 
 
 function generateDatasetId () {
-  const intArr = new Uint8Array(datasetLen / 2)
-  window.crypto.getRandomValues(intArr)
-  const datasetId = Array.from(intArr, (dec) => ('0' + dec.toString(16)).substr(-2)).join('')
-
+  const datasetId = Date.now();  
   return `${lodPrefix}/${datasetPrefix}/${datasetId}`
 }
 
 function buildDatasetLd (dataset) {
   dataset = Object.assign({}, dataset)
-  dataset.baseSpec = JSON.stringify(dataset.baseSpec)
+  dataset.context = JSON.stringify(dataset.context)
   const datasetLd =  {
+    // '@context': defaultContext,
     '@id': dataset.uri,
     '@type': [datasetType],
     [foafDepictionUri]: {
@@ -56,8 +98,35 @@ function buildDatasetLd (dataset) {
 
   Object.entries(dataset)
     .filter(([field, value]) => datasetFieldUris[field])
-    .forEach(([field, value]) => datasetLd[datasetFieldUris[field]] = [{ '@value': value }])
+    .forEach(([field, value]) => {  
+      var ldValues = {};
+      if ((value!=="")&&(value!==null)){ 
+        ldValues = recursiveFieldSetter([field, value]);
+        datasetLd[datasetFieldUris[field]] = [ldValues];
+      }
+    })
   return datasetLd
+}
+
+function recursiveFieldSetter ([field, value]) { 
+  var fieldDict = {} 
+  for (var val in value) {  
+    if (Array.isArray(value)){
+      fieldDict[val] = recursiveFieldSetter([field, value[val]])
+    } 
+    else if ((val === '@type') || (val === '@value')){ 
+      fieldDict[val] = value[val];
+      if (datasetFieldUris.hasOwnProperty(value[val])){
+        fieldDict[val] = datasetFieldUris[value[val]];
+      }
+    }
+    else if (datasetFieldUris.hasOwnProperty(val)){ 
+      fieldDict[datasetFieldUris[val]] = recursiveFieldSetter([datasetFieldUris[val], value[val]]);
+    } else {
+      fieldDict['@value'] = value;
+    }
+  }
+  return fieldDict
 }
 
 function getDefaultDataset () {
@@ -71,13 +140,15 @@ function saveDataset (dataset) {
   } else {
     dataset.uri = generateDatasetId()
   }
+  console.log(dataset.uri);
   const datasetLd = buildDatasetLd(dataset)
+  console.log(datasetLd);
   return deletePromise
-    .then(() => postNewNanopub(datasetLd))
+    .then(() => console.log('Reached the end'))
+    // .then(() => postNewNanopub(datasetLd))
 }
 
-function deleteDataset (datasetUri) {
-  console.log('Deleting dataset', datasetUri)
+function deleteDataset (datasetUri) { 
   return listNanopubs(datasetUri)
     .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
 }

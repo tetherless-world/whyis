@@ -7,7 +7,7 @@
             <div style="margin: 20px">
               <md-field>
                 <label>Upload distributions (multiple allowed)</label>
-                <md-file v-model="distributions" multiple />
+                <md-file v-model="distribution" multiple />
               </md-field>
     
               <md-field>
@@ -15,11 +15,15 @@
                 <md-file v-model="rep_image" accept="image/*" />
               </md-field>
             </div>
-            <md-button class="md-raised md-primary" @click="setDone('first', 'second')">Next</md-button>
+            <md-button 
+              class="md-raised md-primary" 
+              @click="setDone('first', 'second')">
+              Next
+            </md-button>
           </md-step>
 
 
-            <md-step id="second" md-label="Fill out form" :md-done.sync="second">
+            <md-step id="second" md-label="Provide additional info" :md-done.sync="second">
               <div class="md-layout">
 
                 <!---------- General Info fields ---------->
@@ -29,7 +33,7 @@
                   </div>
                   <md-field>
                     <label>Title</label>
-                    <md-input v-model="title"></md-input>
+                    <md-input v-model="dataset.title"></md-input>
                   </md-field>
               
                   <div class="md-layout md-gutter" style="align-items: center;">
@@ -40,28 +44,28 @@
                     <div class="md-layout-item md-size-30">
                       <md-field>
                         <label>First name</label>
-                        <md-input v-model="cpfirstname"></md-input>
+                        <md-input v-model="dataset.contactpoint.cpfirstname"></md-input>
                       </md-field>
                     </div>
               
                     <div class="md-layout-item md-size-30">
                       <md-field>
                         <label>Last name</label>
-                        <md-input v-model="cplastname"></md-input>
+                        <md-input v-model="dataset.contactpoint.cplastname"></md-input>
                       </md-field>
                     </div>
               
                     <div class="md-layout-item md-size-25">
                       <md-field>
                         <label>Email</label>
-                        <md-input v-model="cpemail"></md-input>
+                        <md-input v-model="dataset.contactpoint.cpemail"></md-input>
                       </md-field>
                     </div>
                   </div>
 
                   <md-field>
                     <label>Text Description</label>
-                    <md-textarea v-model="textdescription"></md-textarea>
+                    <md-textarea v-model="dataset.description"></md-textarea>
                   </md-field>
                 </md-content>
             
@@ -87,11 +91,15 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(row, index) in contributors" v-bind:key="index">
-                        <td><input type="text" v-model="row['org']" style="width:90%" /></td>
-                        <td><input type="text" v-model="row['authors']" style="width:90%"/></td>
+                      <tr v-for="(row, contrInd) in contributors" v-bind:key="contrInd">
+                        <td width="40%">
+                          <input type="text" v-model="row['org']" style="width:90%" />
+                        </td>
                         <td>
-                          <a v-on:click="removeElement(index)" style="cursor: pointer"
+                          <input type="text" v-model="row['authors']" style="width:90%"/>
+                        </td>
+                        <td>
+                          <a v-on:click="removeElement(contrInd)" style="cursor: pointer"
                             >Remove</a
                           >
                         </td>
@@ -122,25 +130,32 @@
                       <div class="md-layout-item md-size-50">
                         <label>Date Published</label>
                         <md-field>
-                          <md-input v-model="datepub" type="date"></md-input>
+                          <md-input v-model="dataset.datepub['@value']" type="date"
+                          :formatter="dateFormat"></md-input>
                         </md-field>
                       </div>
               
                       <div class="md-layout-item md-size-50">
                         <label>Date Last Modified</label>
                         <md-field>
-                          <md-input v-model="datemod" type="date"></md-input>
+                          <md-input v-model="dataset.datemod['@value']" type="date" 
+                          :formatter="dateFormat"></md-input>
                         </md-field>
                       </div>
                     </div>
               
                     <div>
+                      <label>DOI(s) of Related Publication(s)</label> 
                       <md-field>
-                        <label>DOI(s) of Related Publication(s)</label>
-                        <md-input v-model="dois"></md-input>
-                        <span class="md-helper-text">Separate multiple DOIs with ','</span>
+                        <md-input 
+                          v-model="dois" 
+                          v-on:input="editDois"
+                          placeholder="E.g.: 10.1000/182"
+                        ></md-input>
+                        <span class="md-helper-text">Separate multiple DOIs with a comma or space</span>
                       </md-field>
                     </div> 
+                    
                   </div>
                 </md-content>
                 <md-button class="md-raised md-primary" @click="setDone('second', 'third')">Next</md-button>
@@ -153,11 +168,13 @@
                 Form Results
               </div>
               <md-content style="width: 100%; margin: 20px">
-                <span>Title: {{ title }}</span>
+                <span>Title: {{ dataset.title }}</span>
                 <p>
-                  Contact Point: {{ cpfirstname }} {{ cplastname }} - {{ cpemail }}
+                  Contact Point: {{ dataset.contactpoint.cpfirstname }} 
+                  {{ dataset.contactpoint.cplastname }} - 
+                  {{ dataset.contactpoint.cpemail }}
                 </p>
-                <p>Text Description: {{ textdescription }}</p>
+                <p>Text Description: {{ dataset.description }}</p>
                 <span>Contributors</span>
                 <div
                   style="margin-left: 20px"
@@ -166,10 +183,17 @@
                 >
                   {{ elem.org }}: {{ elem.authors }}
                 </div>
-                <p>Date Published: {{ datepub }}</p>
-                <p>Date Last Modified: {{ datemod }}</p>
-                <p>DOIs of Related Publications: {{ dois }}</p>
-                <p>Distributions: {{ distributions }}</p>
+                <p>Date Published: {{ dataset.datepub['@value'] }}</p>
+                <p>Date Last Modified: {{ dataset.datemod['@value'] }}</p>
+                <span> Related publications </span>
+                <div
+                  style="margin-left: 20px"
+                  v-for="(ref, doiInd) in dataset.refby"
+                  v-bind:key="doiInd"
+                >
+                  {{ dataset.refby[doiInd] }}
+                </div>
+                <p>Distribution(s): {{ distribution }}</p>
                 <p>Representative Image: {{ rep_image }}</p>
               </md-content>
 
