@@ -13,6 +13,7 @@
 
 import { getViewUrl } from '../../utilities/views';
 import { getCharts } from '../../utilities/vega-chart';
+import { listNanopubs, deleteNanopub } from '../../utilities/nanopub';
 
 /** NEEDED FOR NANOMINE */
 const LOCAL_DEV_SERVER = 'http://localhost:8000/nmr/chart';
@@ -97,13 +98,20 @@ const controller = {
 
   async loadCharts(){
     let result;
+    const res = []
     result = await getCharts()
-    if(result.length){
-      result = result.map((el) => {
-        el.backup = el
-        return el
+    if(result.length > 0){
+      result.forEach(el => {
+        res.push({
+          backup: el, 
+          creator:'testuser',
+          bookmarked : [ ],
+          tags : [ ],
+          restored : true,
+          enabled : true,
+        })
       })
-      return this.chartListings = result
+      return this.chartListings = res
     }
   },
 

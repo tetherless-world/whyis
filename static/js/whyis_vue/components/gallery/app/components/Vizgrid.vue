@@ -121,7 +121,7 @@
                     let viz = result[0];
                     if("backup" in viz){
                         this.loading = false
-                        return window.location = viz.backup.uri
+                        // return window.location = viz.backup.uri
                     }
                 }
                 return this.loading = false
