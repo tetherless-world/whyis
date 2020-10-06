@@ -109,9 +109,8 @@ export default Vue.component('Drawer', {
   },
   methods:{
     navTo(args, uri){
-        EventServices
-        .navTo(args, uri)
-        .$emit('togglenavigation', false)
+      EventServices.navTo(args, uri)
+      return EventServices.$emit('togglenavigation', false)
     },
     navDataSet(){
         EventServices.$emit('togglenavigation', false)
@@ -121,9 +120,11 @@ export default Vue.component('Drawer', {
   created() {
     EventServices
     .$on('isauthenticated', (data) => {
-       if(data.email && data.uri) this.authenticated = data
+      if(data.email && data.uri){
+        this.authenticated = data
+      } 
     })
-    .$on('togglenavigation', (data) => this.menuVisible = data);
+    .$on('togglenavigation', data => this.menuVisible = data);
   }
 })
 </script>
