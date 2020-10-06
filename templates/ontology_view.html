@@ -300,7 +300,7 @@ WHERE {
     OPTIONAL { ?property skos:definition ?def. }
   }
 }''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
-  <div class="entity" id="{{row['property']}}">
+  <div class="entity" id="/{{row['label'].replace(' ','')}}">
       <h3>{{row['label']}}<sup class="type-dp" title="object property">op</sup>
          <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#objectproperties">Object Property ToC</a>
          </span>
@@ -397,7 +397,7 @@ WHERE {
     OPTIONAL { ?property skos:definition ?def. }
   }
 }''' | query(values={"this": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label")%}
-  <div class="entity" id="{{row['property']}}">
+  <div class="entity" id="/{{row['label'].replace(' ','')}}">
       <h3>{{row['label']}}<sup class="type-dp" title="data property">dp</sup>
          <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>
          </span>
@@ -492,7 +492,7 @@ WHERE {
   FILTER(?type != owl:ObjectProperty)
   }
 }''' | query(values={"this": this.identifier}) | sort(attribute="label")%}
-<div class="entity" id="">
+<div class="entity" id="/{{row['label'].replace(' ','')}}">
       <h3>{{row['label']}}
             <sup class="type-ni" title="named individual">ni</sup>
                  <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#namedindividuals">Named Individual ToC</a>
