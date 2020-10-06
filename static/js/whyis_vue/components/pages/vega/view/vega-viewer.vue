@@ -92,7 +92,7 @@
         args: null,
         authenticated: EventServices.authUser,
         allowEdit: false,
-        vizOfTheDay: EventServices.vizOfTheDay
+        vizOfTheDay: false
       }
     },
     components: {
@@ -146,7 +146,7 @@
       EventServices
       .$on('isauthenticated', (data) => this.authenticated = data)
       .$on('allowChartEdit', (data) => this.allowEdit = data)
-      .$on('vizofdd', (data) => this.vizOfTheDay = data)
+      return this.vizOfTheDay = EventServices.getVizOfTheDayStatus()
     }
   })
 </script>
