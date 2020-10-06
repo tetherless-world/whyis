@@ -26,11 +26,6 @@ const EventServices = new Vue({
                 }
                 this.$emit('isauthenticated', this.authUser);
             }
-        },
-        vizOfTheDay(newValue){
-            if(newValue){
-                this.$emit('vizofdd', newValue)
-            }
         }
     },
     methods: {...Fn.controller},
