@@ -466,6 +466,13 @@ whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
 whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "edit".
 
+whyis:restoreInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "restore".
+
+whyis:manageInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "manage".
+
+
 <https://www.iana.org/assignments/media-types/text/csv>
   whyis:bipartiteView "bipartite_graph.svg".
 
@@ -485,9 +492,11 @@ whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
   dc:identifier "attributes".
 
 whyis:ChartClass a owl:Class;
-    rdfs:subClassOf owl:Class;
-    whyis:hasView "chart_gallery.html";
-    whyis:newInstanceView "chart_new.html".
+  rdfs:subClassOf owl:Class;
+  whyis:hasView "chart_gallery.html";
+  whyis:newInstanceView "chart_new.html";
+  whyis:manageInstanceView "chart_manage.html";
+  whyis:restoreInstanceView "chart_restore.html".
 
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
