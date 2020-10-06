@@ -12,7 +12,6 @@ const EventServices = new Vue({
         filterExist: false,
         currentPage: 1,
         settingsPage: 1,
-        vizOfTheDay: true,
     },
     watch:{
         chartListings(newVal, oldVal){
@@ -36,7 +35,7 @@ const EventServices = new Vue({
     },
     methods: {...Fn.controller},
     created(){
-        this.$on('vodd', data => this.vizOfTheDay = data);
+        this.toggleVizOfTheDay()
         this.confirmConfig()
         return this.confirmAuth()
     }

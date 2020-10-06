@@ -113,7 +113,7 @@
       },
       navBack(args){
         if(args) {
-          EventServices.$emit('vodd', false)
+          EventServices.toggleVizOfTheDay(args)
         }
         return EventServices.navTo('view', true)
       },
