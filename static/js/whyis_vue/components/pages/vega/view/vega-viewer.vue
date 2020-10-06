@@ -146,7 +146,6 @@
       EventServices
       .$on('isauthenticated', (data) => this.authenticated = data)
       .$on('allowChartEdit', (data) => this.allowEdit = data)
-      return this.vizOfTheDay = EventServices.getVizOfTheDayStatus()
     }
   })
 </script>

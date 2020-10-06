@@ -58,8 +58,8 @@
         </md-list-item>
       </div>
 
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin == 'False'" @click="navTo(logoutNav)">
+      <div class="md-drawer-div" v-if="authenticated.admin == 'False'">
+        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
           <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
           <span class="md-list-item-text utility-navfont">Sign Out</span>
         </md-list-item>
@@ -71,14 +71,20 @@
       </md-toolbar>
 
       <md-divider v-if="authenticated.admin"></md-divider>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin == 'True'">
+       <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust" @click="navTo('manage', true)">
+          <md-icon class="utility-navfonticon">restore</md-icon>
+          <span class="md-list-item-text utility-navfont">Restore Chart</span>
+        </md-list-item>
+      </div>
+      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust">
           <md-icon class="utility-navfonticon">insights</md-icon>
           <span class="md-list-item-text utility-navfont">Admin Dashboard</span>
         </md-list-item>
       </div>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin=='True'" @click="navTo(logoutNav)">
+      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
           <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
           <span class="md-list-item-text utility-navfont">Sign Out</span>
         </md-list-item>
