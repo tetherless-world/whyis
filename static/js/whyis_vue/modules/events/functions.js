@@ -282,10 +282,11 @@ const controller = {
     const n = d.getDay();
     const vodd = await this.getVizOfTheDayStatus()
     if(!vodd || vodd.date != n){
+      return localStorage.setItem('vodd', JSON.stringify({status: true, date: n}));
+    } else {
       if(args){
         return localStorage.setItem('vodd', JSON.stringify({status: false, date: n}));
       }
-      return localStorage.setItem('vodd', JSON.stringify({status: true, date: n}));
     }
   },
   
