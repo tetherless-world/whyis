@@ -3,23 +3,29 @@
       <md-card style="margin: 40px" >
         <md-steppers :md-active-step.sync="active" md-linear>
 
-          <md-step id="first" md-label="Upload files" :md-done.sync="first"> 
+          <md-step id="first" md-label="Upload files" :md-done.sync="first">  
+
             <div style="margin: 20px">
-              <md-field style="max-width: none;">
+              <md-field style="max-width: none;"> 
                 <label>Upload distributions (multiple allowed)</label>
-                <md-file v-model="distribution" multiple />
+                <md-file v-model="distr_upload" multiple @change="distrChange($event.target.name, $event.target.files)"/>
+                <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
               </md-field>
+
     
               <md-field style="max-width: none;">
                 <label>Upload a representative image</label>
-                <md-file v-model="rep_image" accept="image/*" />
+                <md-file v-model="rep_image" accept="image/*" @change="saveRepImg($event.target.name, $event.target.files)"/>
+                <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
               </md-field>
+
             </div>
             <md-button 
               class="md-raised md-primary" 
               @click="setDone('first', 'second')">
               Next
             </md-button>
+
           </md-step>
 
 
@@ -91,7 +97,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(row, contrInd) in contributors" v-bind:key="contrInd">
+                      <tr v-for="(row, index) in contributors" v-bind:key="index + 'contr'">
                         <td width="40%">
                           <input type="text" v-model="row['org']" style="width:90%" />
                         </td>
@@ -99,7 +105,7 @@
                           <input type="text" v-model="row['authors']" style="width:90%" placeholder="First Last, separate multiple w/ comma"/>
                         </td>
                         <td>
-                          <a v-on:click="removeElement(contrInd)" style="cursor: pointer"
+                          <a v-on:click="removeElement(index)" style="cursor: pointer"
                             >Remove</a
                           >
                         </td>
@@ -158,7 +164,7 @@
                     
                   </div>
                 </md-content>
-                <md-button class="md-raised md-primary" @click="setDone('second', 'third')">Next</md-button>
+                <md-button class="md-raised md-primary" @click="setDone('second', 'third'); handleContrAuth()">Next</md-button>
               </div>
             </md-step>
 
@@ -179,7 +185,7 @@
                 <div
                   style="margin-left: 20px"
                   v-for="(elem, index) in contributors"
-                  v-bind:key="index"
+                  v-bind:key="index + 'resContr'"
                 >
                   {{ elem.org }}: {{ elem.authors }}
                 </div>
@@ -188,12 +194,12 @@
                 <span> Related publications </span>
                 <div
                   style="margin-left: 20px"
-                  v-for="(ref, doiInd) in dataset.refby"
-                  v-bind:key="doiInd"
+                  v-for="(ref, index) in dataset.refby"
+                  v-bind:key="index+'doi'"
                 >
-                  {{ dataset.refby[doiInd] }}
+                  {{ dataset.refby[index] }}
                 </div>
-                <p>Distribution(s): {{ distribution }}</p>
+                <p>Distribution(s): {{ distr_upload }}</p>
                 <p>Representative Image: {{ rep_image }}</p>
               </md-content>
 

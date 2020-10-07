@@ -44,7 +44,7 @@ const defaultDataset = {
 const datasetType = 'http://www.w3.org/ns/dcat#Dataset'
 //const datasetType = 'http://semanticscience.org/resource/Dataset'
 
-const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
+// const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
 const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
 
 const dcat = "http://w3.org/ns/dcat#"
@@ -75,13 +75,23 @@ const datasetFieldUris = {
   date: 'https://www.w3.org/2001/XMLSchema#date',
 
   refby: `${dct}isReferencedBy`,
-} 
-const datasetPrefix = 'ds' 
 
-function generateDatasetId () {
-  const datasetId = Date.now();  
+  distribution: `${dcat}:distribution`,
+  depiction: `${foaf}:depiction`,
+} 
+const datasetPrefix = 'dataset' 
+
+function generateDatasetId (guuid) {
+  var datasetId;
+  if (arguments.length === 0) { 
+    const { v4: uuidv4 } = require('uuid');
+    datasetId = uuidv4();
+  } else {
+    datasetId = guuid;
+  }
+  // const datasetId = Date.now();  
   return `${lodPrefix}/${datasetPrefix}/${datasetId}`
-}
+} 
 
 function buildDatasetLd (dataset) {
   dataset = Object.assign({}, dataset)
@@ -90,10 +100,10 @@ function buildDatasetLd (dataset) {
     // '@context': defaultContext,
     '@id': dataset.uri,
     '@type': [datasetType],
-    [foafDepictionUri]: {
-      '@id': `${dataset.uri}_depiction`,
-      [hasContentUri]: dataset.depiction
-    }
+    // [foafDepictionUri]: {
+    //   '@id': `${dataset.uri}_depiction`,
+    //   [hasContentUri]: dataset.depiction
+    // }
   }
 
   Object.entries(dataset)
@@ -133,19 +143,25 @@ function getDefaultDataset () {
   return Object.assign({}, defaultDataset)
 }
 
-function saveDataset (dataset) {
+async function saveDataset (dataset, guuid) {
   let deletePromise = Promise.resolve()
   if (dataset.uri) {
     deletePromise = deleteDataset(dataset.uri)
-  } else {
+  } else if (arguments.length === 1){
     dataset.uri = generateDatasetId()
+  } else {
+    dataset.uri = generateDatasetId(guuid)
   }
   console.log(dataset.uri);
   const datasetLd = buildDatasetLd(dataset)
   console.log(datasetLd);
-  return deletePromise
-    .then(() => console.log('Reached the end'))
-    // .then(() => postNewNanopub(datasetLd))
+  await deletePromise
+  try{
+    return postNewNanopub(datasetLd, defaultContext)
+  } catch(err){
+    return alert(err)
+  }
+  
 }
 
 function deleteDataset (datasetUri) { 
