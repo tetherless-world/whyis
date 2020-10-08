@@ -1,0 +1,265 @@
+<div>
+<template>
+    <div>
+      <div v-if="loading">
+        <spinner :loading="loading" :text='loadingText'/>
+      </div>
+      <div v-else>
+       <div class=""></div>
+        <!--------->
+        <md-card style="margin: 40px" >
+            <md-steppers :md-active-step.sync="active" md-linear>
+    
+              <md-step id="first" md-label="Upload files" :md-done.sync="first">  
+    
+                <div style="margin: 20px">
+                  <md-field style="max-width: none;"> 
+                    <label>Upload distributions (multiple allowed)</label>
+                    <md-file v-model="distr_upload" :name="uploadFieldName" multiple @change="distrChange($event.target.name, $event.target.files)"/>
+                    <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
+                  </md-field>
+                  <div v-if="distrStatus === 3">
+                    <div
+                      style="margin-left: 60px"
+                      v-for="(ref, index) in dataset.distribution"
+                      v-bind:key="index+'distrs'"
+                    >
+                    <!-- {{distr_upload[index]}} -->
+                    {{ dataset.distribution[index] }}
+                    </div>
+                  </div>
+    
+        
+                  <md-field style="max-width: none;">
+                    <label>Upload a representative image</label>
+                    <md-file 
+                      id="repImgUploader" v-model="rep_image" accept="image/*" 
+                      @change="saveRepImg($event.target.name, $event.target.files); previewFile()"/>
+                    <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
+                  </md-field>
+                  <div id="depictWrapper" style="margin-left: 40px; visibility: hidden;">
+                    <figure>
+                      <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
+                      <figcaption>{{ dataset.depiction.name }}</figcaption>
+                    </figure> 
+                    <button type="button" class="close">x</button>
+                  </div>
+    
+                </div>
+                <md-button 
+                  class="md-raised md-primary" 
+                  @click="setDone('first', 'second')">
+                  Next
+                </md-button>
+    
+              </md-step>
+    
+    
+                <md-step id="second" md-label="Provide additional info" :md-done.sync="second">
+                  <div class="md-layout">
+    
+                    <!---------- General Info fields ---------->
+                    <md-content style="width: 100%; margin: 20px">
+                      <div class="md-headline" style="margin-top: 10px">
+                        General Information
+                      </div>
+                      <md-field style="max-width: 100%;"> 
+                        <label>Title</label>
+                        <md-input v-model="dataset.title"></md-input>
+                      </md-field>
+                  
+                      <div class="md-layout md-gutter" style="align-items: center;">
+                        <div class="md-layout-item md-size-15">
+                          <label>Contact Point</label>
+                        </div>
+                  
+                        <div class="md-layout-item md-size-30">
+                          <md-field>
+                            <label>First name</label>
+                            <md-input v-model="dataset.contactpoint.cpfirstname"></md-input>
+                          </md-field>
+                        </div>
+                  
+                        <div class="md-layout-item md-size-30">
+                          <md-field>
+                            <label>Last name</label>
+                            <md-input v-model="dataset.contactpoint.cplastname"></md-input>
+                          </md-field>
+                        </div>
+                  
+                        <div class="md-layout-item md-size-25">
+                          <md-field>
+                            <label>Email</label>
+                            <md-input v-model="dataset.contactpoint.cpemail"></md-input>
+                          </md-field>
+                        </div>
+                      </div>
+    
+                      <md-field style="max-width: 100%;">
+                        <label>Text Description</label>
+                        <md-textarea v-model="dataset.description"></md-textarea>
+                      </md-field>
+                    </md-content>
+                
+                    <md-divider style="border-style: solid" width="100%"></md-divider>
+    
+    
+                    <!---------- Contributor fields -------->
+                    <md-content style="width: 100%; margin: 20px">
+                      <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px"> 
+                        Contributors
+                      </div>
+                  
+                      <table class="table" width="100%">
+                        <thead>
+                          <tr>
+                            <td>
+                              <div class="md-subheading">Organization/Institution</div>
+                            </td>
+                            <td>
+                              <div class="md-subheading">Author(s) from this Org/Inst </div>
+                            </td>
+                            <td></td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(row, index) in contributors" v-bind:key="index + 'contr'">
+                            <td width="40%">
+                              <input type="text" v-model="row['org']" style="width:90%" />
+                            </td>
+                            <td>
+                              <input type="text" v-model="row['authors']" style="width:90%" placeholder="First Last, separate multiple w/ comma"/>
+                            </td>
+                            <td>
+                              <a v-on:click="removeElement(index)" style="cursor: pointer"
+                                >Remove</a
+                              >
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div>
+                        <button
+                          class="button btn-primary"
+                          @click="addOrg"
+                          style="margin: 10px"
+                        >
+                          Add row
+                        </button>
+                      </div>
+                    </md-content>
+    
+                    <md-divider style="border-style: solid" width="100%"></md-divider>
+                
+                    <!-- -------- Publication Info fields -------- -->
+                    <md-content style="width: 100%; margin: 20px">
+                      <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px">
+                        Publication Information
+                      </div>
+                  
+                      <div style="width: 100%">
+                        <div class="md-layout md-gutter">
+                          <div class="md-layout-item md-size-50">
+                            <label>Date Published</label>
+                            <md-field>
+                              <md-input v-model="dataset.datepub['@value']" type="date"
+                              :formatter="dateFormat"></md-input>
+                            </md-field>
+                          </div>
+                  
+                          <div class="md-layout-item md-size-50">
+                            <label>Date Last Modified</label>
+                            <md-field>
+                              <md-input v-model="dataset.datemod['@value']" type="date" 
+                              :formatter="dateFormat"></md-input>
+                            </md-field>
+                          </div>
+                        </div>
+                  
+                        <div>
+                          <label>DOI(s) of Related Publication(s)</label> 
+                          <md-field style="max-width: none;">
+                            <md-input 
+                              v-model="dois" 
+                              v-on:input="editDois"
+                              placeholder="E.g.: 10.1000/182"
+                            ></md-input>
+                            <span class="md-helper-text">Separate multiple DOIs with a comma or space</span>
+                          </md-field>
+                        </div> 
+                        
+                      </div>
+                    </md-content>
+                    <md-button class="md-raised md-primary" @click="setDone('second', 'third'); handleContrAuth()">Next</md-button>
+                  </div>
+                </md-step>
+    
+                <md-step id="third" md-label="Confirm and Submit" :md-done.sync="third">
+    
+                  <div class="md-headline" style="margin: 10px">
+                    Form Results
+                  </div>
+                  <md-content style="width: 100%; margin: 20px">
+                    <span>Title: {{ dataset.title }}</span>
+                    <p>
+                      Contact Point: {{ dataset.contactpoint.cpfirstname }} 
+                      {{ dataset.contactpoint.cplastname }} - 
+                      {{ dataset.contactpoint.cpemail }}
+                    </p>
+                    <p>Text Description: {{ dataset.description }}</p>
+                    <span>Contributors</span>
+                    <div
+                      style="margin-left: 20px"
+                      v-for="(elem, index) in contributors"
+                      v-bind:key="index + 'resContr'"
+                    >
+                      {{ elem.org }}: {{ elem.authors }}
+                    </div>
+                    <p>Date Published: {{ dataset.datepub['@value'] }}</p>
+                    <p>Date Last Modified: {{ dataset.datemod['@value'] }}</p>
+                    <span> Related publications </span>
+                    <div
+                      style="margin-left: 20px"
+                      v-for="(ref, index) in dataset.refby"
+                      v-bind:key="index+'doi'"
+                    >
+                      {{ dataset.refby[index] }}
+                    </div>
+                    <p>Distribution(s): {{ distr_upload }}</p>
+                    <p>Representative Image: {{ rep_image }}</p>
+                  </md-content>
+    
+                  <md-card-actions>
+                    <md-button v-on:click="submitForm" class="md-primary"
+                      >Submit</md-button
+                    >
+                  </md-card-actions>
+    
+                </md-step>
+            </md-steppers>
+          </md-card>
+        <!--------->
+        <md-speed-dial :class="bottomPosition" v-if="speedDials">
+          <md-speed-dial-target class="utility-float-icon">
+            <md-icon>menu</md-icon>
+          </md-speed-dial-target>
+  
+          <md-speed-dial-content>
+            <md-button class="md-icon-button" @click.prevent="cancelFilter">
+              <md-tooltip class="utility-bckg" md-direction="left"> Cancel Filter </md-tooltip>
+              <md-icon class="utility-color">search_off</md-icon>
+            </md-button>
+            <md-button class="md-icon-button" @click="null">
+              <md-tooltip class="utility-bckg" md-direction="left"> Filter </md-tooltip>
+              <md-icon class="utility-color">search</md-icon>
+            </md-button>
+            <md-button class="md-icon-button" v-if="authenticated !== undefined" @click.prevent="null">
+              <md-tooltip class="utility-bckg" md-direction="left">Create New Chart</md-tooltip>
+              <md-icon class="utility-color">add</md-icon>
+            </md-button>
+          </md-speed-dial-content>
+        </md-speed-dial>
+      </div>
+    </div>
+  </template>
+</div>

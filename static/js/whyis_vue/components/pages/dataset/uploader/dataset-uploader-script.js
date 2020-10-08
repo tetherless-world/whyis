@@ -4,8 +4,8 @@ import "vue-material/dist/vue-material.min.css";
 import "vue-material/dist/theme/default.css";
 import { getDefaultDataset, saveDataset } from "utilities/dataset-upload"; //Change this
 import { goToView } from "utilities/views";
-import * as axios from 'axios'
-import { lodPrefix } from 'utilities/nanopub'
+import axios from 'axios';
+import { lodPrefix } from 'utilities/nanopub'; 
 
 Vue.use(VueMaterial);
 
@@ -35,10 +35,14 @@ export default Vue.component('dataset-uploader', {
           "@type": "date",
           "@value": "",
         },
-        refby: [],
-
-        distribution: [],
-        depiction: []
+        refby: [], 
+        distribution:{
+          accessURL: null,
+        },
+        depiction: {
+          name: '',
+          accessURL: null,
+        }
       },
 
       generatedUUID: datasetId,
@@ -61,6 +65,7 @@ export default Vue.component('dataset-uploader', {
       distrStatus: null,
       depictStatus: null,
       isInvalid: false,
+      uploadFieldName: 'distributions'
     };
   },
   computed: {
@@ -92,6 +97,21 @@ export default Vue.component('dataset-uploader', {
     },
   },
   methods: {
+
+    loadDataset () {
+      console.log("loading")
+      let getDatasetPromise
+      if (this.pageView === 'new') {
+        getDatasetPromise = Promise.resolve(getDefaultDataset())
+      } else {
+        getDatasetPromise = loadDataset(this.pageUri)
+      }
+      getDatasetPromise
+        .then(dataset => {
+          this.dataset = datset;
+        })
+    },
+
     addOrg: function () {
       var elem = document.createElement("tr");
       this.contributors.push({
@@ -148,27 +168,20 @@ export default Vue.component('dataset-uploader', {
         };
       } 
     },
-    submitForm: function () {
-      try { 
-        saveDataset(this.dataset, this.generatedUUID)
-      } catch(err) { 
-        this.uploadError = err.response;
-        this.distrStatus = STATUS_FAILED;
-      }
-      // .then(() => goToView(this.dataset.uri, "edit"));
-    },   
 
     distrChange(fieldName, fileList) {
       // handle file changes
-      const distrData = new FormData(); 
+      let distrData = new FormData(); 
 
-      if (!fileList.length) {return this.distrStatus = STATUS_INITIAL};
+      if (!fileList.length) {return this.distrStatus = STATUS_INITIAL}; 
 
       // append the files to FormData
       Array
         .from(Array(fileList.length).keys())
         .map(x => {
-          distrData.append(fieldName, fileList[x], fileList[x].name);
+          distrData.append(fileList[x].name, fileList[x]);
+          console.log("field Name: ")
+          console.log(fieldName)
         });
 
       // save it
@@ -176,7 +189,8 @@ export default Vue.component('dataset-uploader', {
     }, 
 
     saveDistribution(distrData) {
-      const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`
+      // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`
+      const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
       this.distrStatus = STATUS_SAVING; 
       var data = {
           'file': distrData,
@@ -185,8 +199,9 @@ export default Vue.component('dataset-uploader', {
       }
       return axios.post(uri, data=data)
       .then(x => {
-        this.dataset.distribution = [].concat(x);
+        this.dataset.distribution.accessURL = uri;
         this.distrStatus = STATUS_SUCCESS;
+        console.log('success')
       })
       .catch(err => {
         console.log(data)
@@ -196,26 +211,57 @@ export default Vue.component('dataset-uploader', {
     }, 
 
     saveRepImg(fieldName, fileList) {
-      const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`
+      // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction
+      const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
       this.depictStatus = STATUS_SAVING; 
-      if (!fileList.length){return this.depictStatus = STATUS_INITIAL}
+      if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
+
+      let formdata = new FormData();
+      formdata.append('depiction', fileList[0]) 
 
       var data = {
-          'file': fileList[0],
-          'upload_type': 'http://purl.org/net/provenance/ns#File',
-          'content_type': 'multipart/form-data'
+        'file': formdata,
+        'upload_type': 'http://purl.org/net/provenance/ns#File',
+        'content_type': 'multipart/form-data'
       }
-      return axios.post(uri, data=data)
-      .then(x => { 
-        this.dataset.depiction = uri;
+
+      const request = {
+        method: 'post',
+        url: uri, 
+        data: data,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+
+      return axios(request)
+      .then(x => {  
+        this.dataset.depiction.accessURL = uri;
+        this.dataset.depiction.name=fileList[0].name;
         this.depictStatus = STATUS_SUCCESS;
       })
       .catch(err => { 
-        console.log(data)
         this.uploadError = err.response;
         this.depictStatus = STATUS_FAILED;
-      });
+      }); 
+      
     }, 
+
+    previewFile() { 
+      const preview = document.querySelector('#depictImg');
+      const wrapper = document.querySelector('#depictWrapper')
+      const file = document.querySelector('#repImgUploader').files[0]; 
+      const reader = new FileReader();
+    
+      reader.addEventListener("load", function () { 
+        wrapper.style.visibility = "visible";
+        preview.src = reader.result;
+      }, false);
+    
+      if (file) {  
+        reader.readAsDataURL(file);
+      }
+    },
 
     setDone (id, index) {
       this[id] = true;
@@ -225,5 +271,27 @@ export default Vue.component('dataset-uploader', {
         this.active = index;
       };
     },
+
+    submitForm: function () {
+      try { 
+        saveDataset(this.dataset, this.generatedUUID) 
+        // console.log(this.dataset)
+        .then(() => goToView(this.dataset.uri, "view"));
+      } catch(err) { 
+        this.uploadError = err.response;
+        this.distrStatus = STATUS_FAILED;
+      }
+    },   
+
+    mounted () {
+      console.log("Reached created()")
+      if(EventServices.authUser == undefined){
+        return EventServices.navTo('view', true)
+      }
+      
+      this.loading = true;
+      this.loadChart();
+    }
+
   },
 });
