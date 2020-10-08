@@ -500,10 +500,4 @@ whyis:DatasetClass a owl:Class;
 
 dcat:Dataset a whyis:DatasetClass;
   whyis:editInstanceView "dataset_edit.html".
-
-
-# whyis:newInstanceView "dataset_upload.html".
-
-# dcat:Dataset a whyis:DatasetClass.
-# sio:Dataset a whyis:DatasetClass.
     

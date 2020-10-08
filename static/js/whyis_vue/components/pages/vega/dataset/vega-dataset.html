@@ -18,7 +18,7 @@
                     <md-file v-model="distr_upload" :name="uploadFieldName" multiple @change="distrChange($event.target.name, $event.target.files)"/>
                     <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
                   </md-field>
-                  <div v-if="distrStatus === 3">
+                  <div v-if="distrStatus === 2">
                     <div
                       style="margin-left: 60px"
                       v-for="(ref, index) in dataset.distribution"
@@ -42,7 +42,7 @@
                       <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
                       <figcaption>{{ dataset.depiction.name }}</figcaption>
                     </figure> 
-                    <button type="button" class="close">x</button>
+                    <!-- <button style="margin-left: 40px;" type="button" class="close" @click="removeImage()">Remove image</button> -->
                   </div>
     
                 </div>

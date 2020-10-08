@@ -170,8 +170,8 @@ methods: {
       }, 
   
       saveDistribution(distrData) {
-        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`
-        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
+        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`;
+        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
         this.distrStatus = STATUS_SAVING; 
         var data = {
             'file': distrData,
@@ -190,8 +190,8 @@ methods: {
       }, 
   
       saveRepImg(fieldName, fileList) {
-        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction
-        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
+        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
+        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
         this.depictStatus = STATUS_SAVING; 
         if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
   
@@ -225,6 +225,31 @@ methods: {
         }); 
         
       }, 
+
+      removeImage(){
+        // ---- TODO: find a way to delete 
+        const preview = document.querySelector('#depictImg');
+        const wrapper = document.querySelector('#depictWrapper');
+        // const uri = `http://192.168.33.10:5000//dataset/${this.generatedUUID}/depiction`;
+        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
+
+        return axios.delete(uri,{
+          headers:{'Content-Type': 'multipart/form-data'}
+         })
+        .then(x => {   
+          preview.src = "";
+          wrapper.style.visibility = "visible"; 
+          this.rep_image = '';
+          this.dataset.depiction.accessURL = null;
+          this.dataset.depiction.name="";
+          this.depictStatus = STATUS_INITIAL;
+        })
+        .catch(err => { 
+          this.uploadError = err.response;
+          this.depictStatus = STATUS_FAILED;
+        }); 
+
+      },
   
       previewFile() { 
         const preview = document.querySelector('#depictImg');
@@ -276,13 +301,8 @@ methods: {
     cancelFilter(){
     return EventServices.cancelChartFilter();
     }
-},
-// mounted(){
-//     this.loading = false,
-//     setTimeout(() => {
-//         this.loading = false
-//     }, 2000)
-// },
+}, 
+
 created() { 
     if(EventServices.authUser == undefined){
         return EventServices.navTo('view', true)
