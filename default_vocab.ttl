@@ -499,9 +499,9 @@ sio:Chart a whyis:ChartClass;
   whyis:editInstanceView "chart_edit.html".
 
 whyis:DatasetClass a owl:Class;
-    rdfs:subClassOf owl:Class; 
-    whyis:newInstanceView "dataset_upload.html".
+  rdfs:subClassOf owl:Class;
+  whyis:newInstanceView "dataset_new.html".
 
-dcat:Dataset a whyis:DatasetClass.
-sio:Dataset a whyis:DatasetClass.
+dcat:Dataset a whyis:DatasetClass;
+  whyis:editInstanceView "dataset_edit.html".
     
