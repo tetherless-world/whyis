@@ -1,1 +1,1 @@
-import './vega-dataset'
+import './vega-dataset';

@@ -1,5 +1,5 @@
 
-import { listNanopubs, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
+import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
 import { goToView } from 'utilities/views'
 
 const defaultContext= { 
@@ -35,9 +35,32 @@ const defaultContext= {
 }
 
 const defaultDataset = {
-  "@context": defaultContext,
-  title: 'Example Dataset',
-  description: 'An example dataset.'
+  title: "",
+  description: "Replace this with a detailed description of the dataset",
+  contactpoint: {
+    "@type": "individual",
+    cpfirstname: "",
+    cplastname: "",
+    cpemail: "",
+  },
+  contributor: [],
+  author: [],
+  datepub: {
+    "@type": "date",
+    "@value": "",
+  },
+  datemod: {
+    "@type": "date",
+    "@value": "",
+  },
+  refby: [], 
+  distribution:{
+    accessURL: null,
+  },
+  depiction: {
+    name: '',
+    accessURL: null,
+  }
 }
 
 
@@ -65,7 +88,7 @@ const datasetFieldUris = {
 
   author: `${dct}creator`,
   name: `${foaf}:name`,
-  contributor: `${dct}:contributor`,         
+  contributor: `${dct}contributor`,         
   organization: `${foaf}:Organization`, 
   person: `${foaf}:Person`, 
   onbehalfof:"http://www.w3.org/ns/prov#actedOnBehalfOf",
@@ -78,6 +101,7 @@ const datasetFieldUris = {
 
   distribution: `${dcat}:distribution`,
   depiction: `${foaf}:depiction`,
+  accessURL: `${dcat}:accessURL`,
 } 
 const datasetPrefix = 'dataset' 
 
@@ -139,9 +163,59 @@ function recursiveFieldSetter ([field, value]) {
   return fieldDict
 }
 
-function getDefaultDataset () {
+function getDefaultDataset () { 
   return Object.assign({}, defaultDataset)
 }
+
+
+function loadChartFromNanopub(nanopubUri, datasetUri) {
+  return describeNanopub(nanopubUri)
+    .then((describeData) => {
+      const assertion_id = `${nanopubUri}_assertion`
+      for (let graph of describeData) {
+        if (graph['@id'] === assertion_id) {
+          for (let resource of graph['@graph']) {
+            if (resource['@id'] === datasetUri) {
+              return extractChart(resource)
+            }
+          }
+        }
+      }
+    })
+}
+
+function loadDataset (datasetUri) {
+  return listNanopubs(datasetUri)
+    .then(nanopubs => {
+      if (nanopubs.length > 0) {
+        const nanopubUri = nanopubs[0].np
+        return loadChartFromNanopub(nanopubUri, datasetUri)
+      }
+    })
+}
+
+
+function extractChart (chartLd) {
+  const chart = Object.assign({}, defaultDataset)
+
+  Object.entries(defaultDataset)
+    .forEach(([field]) => {
+      // let value = "";
+      let uri = datasetFieldUris[field];
+      var val = chartLd[uri];
+      console.log(val)
+      if ((uri in chartLd) && (typeof val !== `undefined`) ){
+        console.log(val[0])
+        if (typeof val[0]['@value'] !== `undefined`){
+          chart[field] = chartLd[uri][0]['@value']
+        }  
+      }
+      // chart[field] = value
+    })
+    
+  return chart
+}
+
 
 async function saveDataset (dataset, guuid) {
   let deletePromise = Promise.resolve()
@@ -151,10 +225,8 @@ async function saveDataset (dataset, guuid) {
     dataset.uri = generateDatasetId()
   } else {
     dataset.uri = generateDatasetId(guuid)
-  }
-  console.log(dataset.uri);
-  const datasetLd = buildDatasetLd(dataset)
-  console.log(datasetLd);
+  } 
+  const datasetLd = buildDatasetLd(dataset) 
   await deletePromise
   try{
     return postNewNanopub(datasetLd, defaultContext)
@@ -169,4 +241,4 @@ function deleteDataset (datasetUri) {
     .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
 }
 
-export { getDefaultDataset, saveDataset }
+export { getDefaultDataset, loadDataset, saveDataset }

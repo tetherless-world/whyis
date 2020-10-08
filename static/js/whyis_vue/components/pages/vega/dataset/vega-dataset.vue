@@ -1,3 +1,7 @@
+<template src="./vega-dataset.html"></template>
+<script src="./vega-dataset-script.js"></script>
+
+<!--
 <template>
   <div>
     <div v-if="loading">
@@ -57,7 +61,7 @@
       }
     },
     mounted(){
-        this.loading = true,
+        this.loading = false,
         setTimeout(() => {
             this.loading = false
         }, 2000)
@@ -69,3 +73,4 @@
     }
   })
 </script>
+-->

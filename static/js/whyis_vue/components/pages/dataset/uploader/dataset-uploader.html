@@ -8,16 +8,35 @@
             <div style="margin: 20px">
               <md-field style="max-width: none;"> 
                 <label>Upload distributions (multiple allowed)</label>
-                <md-file v-model="distr_upload" multiple @change="distrChange($event.target.name, $event.target.files)"/>
+                <md-file v-model="distr_upload" :name="uploadFieldName" multiple @change="distrChange($event.target.name, $event.target.files)"/>
                 <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
               </md-field>
+              <div v-if="distrStatus === 3">
+                <div
+                  style="margin-left: 60px"
+                  v-for="(ref, index) in dataset.distribution"
+                  v-bind:key="index+'distrs'"
+                >
+                <!-- {{distr_upload[index]}} -->
+                {{ dataset.distribution[index] }}
+                </div>
+              </div>
 
     
               <md-field style="max-width: none;">
                 <label>Upload a representative image</label>
-                <md-file v-model="rep_image" accept="image/*" @change="saveRepImg($event.target.name, $event.target.files)"/>
+                <md-file 
+                  id="repImgUploader" v-model="rep_image" accept="image/*" 
+                  @change="saveRepImg($event.target.name, $event.target.files); previewFile()"/>
                 <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
               </md-field>
+              <div id="depictWrapper" style="margin-left: 40px; visibility: hidden;">
+                <figure>
+                  <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
+                  <figcaption>{{ dataset.depiction.name }}</figcaption>
+                </figure> 
+                <button type="button" class="close">x</button>
+              </div>
 
             </div>
             <md-button 
