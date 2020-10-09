@@ -4,8 +4,7 @@ import VueMaterial from "vue-material";
 import "vue-material/dist/vue-material.min.css";
 import "vue-material/dist/theme/default.css";
 import { getDefaultDataset, loadDataset, saveDataset } from "utilities/dataset-upload";
-import { goToView } from "utilities/views";
-import axios from 'axios';
+import { goToView } from "utilities/views"; 
 import { lodPrefix } from 'utilities/nanopub'; 
 
 Vue.use(VueMaterial);
@@ -20,55 +19,59 @@ export default Vue.component('vega-dataset', {
 data() {
     return {
         dataset: { 
-            title: "",
-            description: "",
-            contactpoint: {
-              "@type": "individual",
-              cpfirstname: "",
-              cplastname: "",
-              cpemail: "",
-            },
-            contributor: [],
-            author: [],
-            datepub: {
-              "@type": "date",
-              "@value": "",
-            },
-            datemod: {
-              "@type": "date",
-              "@value": "",
-            },
-            refby: [], 
-            distribution:{
-              accessURL: null,
-            },
-            depiction: {
-              name: '',
-              accessURL: null,
-            }
+          title: "",
+          description: "",
+          contactpoint: {
+            "@type": "individual",
+            cpfirstname: "",
+            cplastname: "",
+            cpemail: "",
           },
-    
-          generatedUUID: datasetId,
-    
-          dois: "",
-          contributors: [],
-          distr_upload: [],
-          rep_image: [],
-    
-          // Stepper data
-          active: "first",
-          first: false,
-          second: false,
-          third: false,
-    
-          //handle uploads
-          uploadedFiles: [],
-          uploadError: null,
-          currentStatus: null,
-          distrStatus: null,
-          depictStatus: null,
-          isInvalid: false,
-          uploadFieldName: 'distributions',
+          contributor: [],
+          author: [],
+          datepub: {
+            "@type": "date",
+            "@value": "",
+          },
+          datemod: {
+            "@type": "date",
+            "@value": "",
+          },
+          refby: [], 
+          distribution:{
+            accessURL: null,
+          },
+          depiction: {
+            name: '',
+            accessURL: null,
+          }
+        },
+  
+        generatedUUID: datasetId,
+  
+        dois: "",
+        contributors: [],
+        distr_upload: [],
+        rep_image: [],
+  
+        // Stepper data
+        active: "first",
+        first: false,
+        second: false,
+        third: false,
+  
+        //handle uploads
+        uploadedFiles: [],
+        uploadedImg: [],
+        uploadError: null,
+        currentStatus: null,
+        distrStatus: STATUS_INITIAL,
+        depictStatus: STATUS_INITIAL,
+        isInvalidUpload: false,
+        isInvalidForm: false,
+        uploadFieldName: 'distributions',
+
+
         filter: false,
         bottomPosition:'md-bottom-right',
         speedDials: EventServices.speedDials,
@@ -151,9 +154,36 @@ methods: {
           };
         } 
       },
+
+      handleDistrUpload(files) { 
+        let uploadedFiles = files;  
+        /*
+          Adds the uploaded file to the files array
+        */
+        for( var i = 0; i < uploadedFiles.length; i++ ){
+          var curFile = uploadedFiles[i]; 
+          if ( this.uploadedFiles.some(file => file.name === curFile.name) ){
+            alert(`${curFile.name} has already been uploaded`)
+          } else {
+            this.isInvalidUpload = false;
+            this.uploadedFiles.push( curFile );
+          }
+        } 
+      }, 
+
+      handleImgUpload(files) {   
+        this.uploadedImg = files; 
+      }, 
+
+      removeFile( key ){
+        this.uploadedFiles.splice( key, 1 );
+        const uploader = document.querySelector('#distrFiles'); 
+        this.distr_upload = [];  
+        uploader.value = "";  
+      },
   
-      distrChange(fieldName, fileList) {
-        // handle file changes
+      async saveDistribution() {
+        let fileList = this.uploadedFiles;
         let distrData = new FormData(); 
   
         if (!fileList.length) {return this.distrStatus = STATUS_INITIAL}; 
@@ -164,22 +194,28 @@ methods: {
           .map(x => {
             distrData.append(fileList[x].name, fileList[x]); 
           });
-  
-        // save it
-        this.saveDistribution(distrData);
-      }, 
-  
-      saveDistribution(distrData) {
-        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`;
-        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
+
+        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`;
+        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
         this.distrStatus = STATUS_SAVING; 
+        
         var data = {
             'file': distrData,
-            'upload_type': 'http://www.w3.org/ns/dcat#Dataset', 
-            'content_type': 'multipart/form-data'
+            'upload_type': 'http://www.w3.org/ns/dcat#Dataset',  
         }
-        return axios.post(uri, data=data)
+
+        await fetch(uri, {
+          method: 'POST',
+          body: data, 
+          headers: {
+             Accept: 'application/json',
+             'Content-Type': 'multipart/form-data',
+             'upload_type':   'http://www.w3.org/ns/dcat#Dataset',
+          }
+        })
+        // return axios.post(uri, data=data)
         .then(x => {
+          // console.log(uri)
           this.dataset.distribution.accessURL = uri;
           this.distrStatus = STATUS_SUCCESS; 
         })
@@ -189,9 +225,10 @@ methods: {
         });
       }, 
   
-      saveRepImg(fieldName, fileList) {
-        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
-        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
+      async saveRepImg() {
+        const fileList = this.uploadedImg; 
+        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
+        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
         this.depictStatus = STATUS_SAVING; 
         if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
   
@@ -203,18 +240,17 @@ methods: {
           'upload_type': 'http://purl.org/net/provenance/ns#File',
           'content_type': 'multipart/form-data'
         }
-  
-        const request = {
-          method: 'post',
-          url: uri, 
-          data: data,
+        
+        await fetch(uri, {
+          method: 'POST',
+          body: data, 
           headers: {
-            'Content-Type': 'multipart/form-data'
+             Accept: 'application/json',
+             'Content-Type': 'multipart/form-data',
+             'upload_type':   'http://purl.org/net/provenance/ns#File',
           }
-        }
-  
-        return axios(request)
-        .then(x => {  
+        })
+        .then(x => {   
           this.dataset.depiction.accessURL = uri;
           this.dataset.depiction.name=fileList[0].name;
           this.depictStatus = STATUS_SUCCESS;
@@ -226,29 +262,12 @@ methods: {
         
       }, 
 
-      removeImage(){
-        // ---- TODO: find a way to delete 
-        const preview = document.querySelector('#depictImg');
-        const wrapper = document.querySelector('#depictWrapper');
-        // const uri = `http://192.168.33.10:5000//dataset/${this.generatedUUID}/depiction`;
-        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
-
-        return axios.delete(uri,{
-          headers:{'Content-Type': 'multipart/form-data'}
-         })
-        .then(x => {   
-          preview.src = "";
-          wrapper.style.visibility = "visible"; 
-          this.rep_image = '';
-          this.dataset.depiction.accessURL = null;
-          this.dataset.depiction.name="";
-          this.depictStatus = STATUS_INITIAL;
-        })
-        .catch(err => { 
-          this.uploadError = err.response;
-          this.depictStatus = STATUS_FAILED;
-        }); 
-
+      removeImage(){ 
+        document.querySelector('#repImgUploader').value = "";
+        document.querySelector('#depictImg').src=""; 
+        this.rep_image = [];  
+        this.uploadedImg = [];
+        document.querySelector('#depictWrapper').style.visibility = "hidden"; 
       },
   
       previewFile() { 
@@ -259,12 +278,49 @@ methods: {
       
         reader.addEventListener("load", function () { 
           wrapper.style.visibility = "visible";
-          preview.src = reader.result;
+          preview.src = reader.result; 
         }, false);
       
         if (file) {  
           reader.readAsDataURL(file);
         }
+      },
+
+      checkFirstPage(){ 
+        // Check for at least one distribution
+        if (!this.uploadedFiles.length){
+          this.isInvalidUpload = true;
+        } else { 
+          this.saveRepImg(); 
+          this.saveDistribution(); 
+          this.setDone('first', 'second');
+        }
+      },
+
+      checkSecondPage(){
+        // Check the required fields
+        const titleBool = (this.dataset.title === "");
+        const cpfirstnameBool = (this.dataset.contactpoint.cpfirstname === "");
+        const cplastnameBool = (this.dataset.contactpoint.cplastname === "");
+        const cpemailBool = (this.dataset.contactpoint.cpemail === "");
+        const descriptionBool = (this.dataset.description === "");
+
+        // Prevent form submission if required fields are empty
+        if (titleBool || cpfirstnameBool || cplastnameBool || cpemailBool || descriptionBool){
+          this.isInvalidForm = true;
+        } if (!this.validEmail(this.dataset.contactpoint.cpemail)) { 
+          this.dataset.contactpoint.cpemail = '';
+          this.isInvalidForm = true;
+        } else { 
+          this.isInvalidForm = false;
+          this.setDone('second', 'third'); 
+          this.handleContrAuth();
+        }
+      },
+
+      validEmail (email) {
+        var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
       },
   
       setDone (id, index) {
@@ -304,13 +360,13 @@ methods: {
 }, 
 
 created() { 
-    if(EventServices.authUser == undefined){
-        return EventServices.navTo('view', true)
-    } 
-    this.loading = true;
-    this.loadDataset();
-    EventServices
-    .$on('close-filter-box', (data) => this.filter = data)
-    .$on('isauthenticated', (data) => this.authenticated = data)
+  this.loading = true;
+  if(EventServices.authUser == undefined){
+      return this.loading=false;
+  } 
+  this.loadDataset();
+  EventServices
+  .$on('close-filter-box', (data) => this.filter = data)
+  .$on('isauthenticated', (data) => this.authenticated = data)
 }
 })
