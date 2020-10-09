@@ -115,7 +115,15 @@
             },
             async loadAllCharts(){
                 this.loading = true
-                await EventServices.fetchAllCharts()
+                const vvodd = await EventServices.getVizOfTheDayStatus()
+                const result = await EventServices.fetchAllCharts()
+                if(result.length > 0 && vvodd.status == true){
+                    let viz = result[0];
+                    if("backup" in viz){
+                        this.loading = false
+                        // return window.location = viz.backup.uri
+                    }
+                }
                 return this.loading = false
             }
         },

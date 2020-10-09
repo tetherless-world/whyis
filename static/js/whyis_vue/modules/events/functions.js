@@ -13,10 +13,11 @@
 
 import { getViewUrl } from '../../utilities/views';
 import { getCharts } from '../../utilities/vega-chart';
+import { listNanopubs, deleteNanopub } from '../../utilities/nanopub';
 
 /** NEEDED FOR NANOMINE */
 const LOCAL_DEV_SERVER = 'http://localhost:8000/nmr/chart';
-const SERVER = `${ROOT_URL}nmr/chart`;
+const SERVER = `${window.location.origin}/nmr/chart`;
 const URL = SERVER;
 
 const controller = {
@@ -58,7 +59,7 @@ const controller = {
       const err = new Error('User Authorization Failed!')
       throw err;
     }
-    this.checkRestValid()
+    return this.checkRestValid()
   },
 
   async restCallFn(formData, URL, METHOD){
@@ -97,13 +98,20 @@ const controller = {
 
   async loadCharts(){
     let result;
+    const res = []
     result = await getCharts()
-    if(result.length){
-      result = result.map((el) => {
-        el.backup = el
-        return el
+    if(result.length > 0){
+      result.forEach(el => {
+        res.push({
+          backup: el, 
+          creator:'testuser',
+          bookmarked : [ ],
+          tags : [ ],
+          restored : true,
+          enabled : true,
+        })
       })
-      return this.chartListings = result
+      return this.chartListings = res
     }
   },
 
@@ -275,6 +283,24 @@ const controller = {
     } else {
       return args
     }
+  },
+
+  async toggleVizOfTheDay(args){
+    const d = new Date();
+    const n = d.getDay();
+    const vodd = await this.getVizOfTheDayStatus()
+    if(!vodd || vodd.date != n){
+      return localStorage.setItem('vodd', JSON.stringify({status: true, date: n}));
+    } else {
+      if(args){
+        return localStorage.setItem('vodd', JSON.stringify({status: false, date: n}));
+      }
+    }
+  },
+  
+  async getVizOfTheDayStatus(){
+    const status = await JSON.parse(localStorage.getItem('vodd'));
+    return status
   }
 }
 

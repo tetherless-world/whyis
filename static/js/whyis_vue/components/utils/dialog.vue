@@ -41,7 +41,7 @@
             </div>
             <div class="utility-align--right utility-margin-top" v-else-if="dialog.delete || dialog.diag">
               <a @click.prevent="cancelDel" class="btn-text btn-text--default">Close</a> &nbsp; &nbsp;
-              <a @click.prevent="deleteAChart" class="btn-text btn-text--default" v-if="!dialog.btn">{{dialog.title}}</a>
+              <a @click.prevent="dialogAction" class="btn-text btn-text--default" v-if="!dialog.btn">{{dialog.title}}</a>
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@
         this.dialog = { status: false}
         EventServices.$emit('close-filter-box', this.active)
       },
-      deleteAChart(){
+      dialogAction(){
         this.active = !this.active
         if(this.dialog.delete){
           EventServices.deleteAChart(this.dialog.chart)
