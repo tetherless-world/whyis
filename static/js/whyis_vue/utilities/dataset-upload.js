@@ -36,7 +36,7 @@ const defaultContext= {
 
 const defaultDataset = {
   title: "",
-  description: "Replace this with a detailed description of the dataset",
+  description: "",
   contactpoint: {
     "@type": "individual",
     cpfirstname: "",

@@ -4,58 +4,62 @@
       <div v-if="loading">
         <spinner :loading="loading" :text='loadingText'/>
       </div>
+      <div v-else-if="!authenticated">
+        <div>Error: user must be logged in to access this page.</div>
+      </div>
       <div v-else>
        <div class=""></div>
         <!--------->
-        <md-card style="margin: 40px" >
+        <md-card style="margin: 10px" >
             <md-steppers :md-active-step.sync="active" md-linear>
     
               <md-step id="first" md-label="Upload files" :md-done.sync="first">  
-    
-                <div style="margin: 20px">
-                  <md-field style="max-width: none;"> 
-                    <label>Upload distributions (multiple allowed)</label>
-                    <md-file v-model="distr_upload" :name="uploadFieldName" multiple @change="distrChange($event.target.name, $event.target.files)"/>
-                    <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
-                  </md-field>
-                  <div v-if="distrStatus === 2">
-                    <div
-                      style="margin-left: 60px"
-                      v-for="(ref, index) in dataset.distribution"
-                      v-bind:key="index+'distrs'"
-                    >
-                    <!-- {{distr_upload[index]}} -->
-                    {{ dataset.distribution[index] }}
+                <form class="modal-content" action="" method="post" enctype="multipart/form-data">
+                  <div style="margin: 20px">
+                    <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
+                      <label>Upload distributions (multiple allowed)</label>
+                      <md-file v-model="distr_upload" id="distrFiles" multiple required isInvalidValue=false
+                        v-on:change="handleDistrUpload($event.target.files)"/> 
+                      <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
+                      <span class="md-error" style="margin-left:40px">At least one distribution is required</span>
+                    </md-field>
+                    <div class="large-12 medium-12 small-12 cell" style="margin:20px">
+                      <div v-for="(file, key) in uploadedFiles" class="file-listing">
+                        <div class="md-layout" style="margin-left:10px; align-items: center;">
+                          <div class="md-layout-item">{{ file.name }}  </div>
+                          <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                        </div>
+                      </div>
+                    </div>  
+          
+                    <md-field style="max-width: none;">
+                      <label>Upload a representative image</label>
+                      <md-file 
+                        id="repImgUploader" v-model="rep_image" accept="image/*" 
+                        v-on:change="handleImgUpload($event.target.files); previewFile()"/>
+                      <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
+                    </md-field>
+                    <div id="depictWrapper" style="margin-left: 40px; visibility: hidden;">
+                      <figure>
+                        <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
+                        <figcaption>{{ dataset.depiction.name }}</figcaption>
+                      </figure> 
+                      <md-button style="margin-left: 40px;" type="button" class="close md-raised" @click="removeImage()">Remove image</md-button>
                     </div>
+      
                   </div>
-    
-        
-                  <md-field style="max-width: none;">
-                    <label>Upload a representative image</label>
-                    <md-file 
-                      id="repImgUploader" v-model="rep_image" accept="image/*" 
-                      @change="saveRepImg($event.target.name, $event.target.files); previewFile()"/>
-                    <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
-                  </md-field>
-                  <div id="depictWrapper" style="margin-left: 40px; visibility: hidden;">
-                    <figure>
-                      <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
-                      <figcaption>{{ dataset.depiction.name }}</figcaption>
-                    </figure> 
-                    <!-- <button style="margin-left: 40px;" type="button" class="close" @click="removeImage()">Remove image</button> -->
-                  </div>
-    
-                </div>
-                <md-button 
-                  class="md-raised md-primary" 
-                  @click="setDone('first', 'second')">
-                  Next
-                </md-button>
-    
-              </md-step>
+                  <md-button 
+                    class="md-raised md-primary" 
+                    @click="checkFirstPage()">
+                    Upload and continue
+                  </md-button>
+                </form>
+
+                </md-step>
     
     
                 <md-step id="second" md-label="Provide additional info" :md-done.sync="second">
+                
                   <div class="md-layout">
     
                     <!---------- General Info fields ---------->
@@ -63,9 +67,10 @@
                       <div class="md-headline" style="margin-top: 10px">
                         General Information
                       </div>
-                      <md-field style="max-width: 100%;"> 
+                      <md-field style="max-width: 100%;" :class="{ 'md-invalid': (isInvalidForm && (dataset.title === ''))}"> 
                         <label>Title</label>
-                        <md-input v-model="dataset.title"></md-input>
+                        <md-input v-model="dataset.title" required></md-input>
+                        <span class="md-error">Title required</span>
                       </md-field>
                   
                       <div class="md-layout md-gutter" style="align-items: center;">
@@ -74,30 +79,34 @@
                         </div>
                   
                         <div class="md-layout-item md-size-30">
-                          <md-field>
+                          <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cpfirstname === ''))}">
                             <label>First name</label>
-                            <md-input v-model="dataset.contactpoint.cpfirstname"></md-input>
+                            <md-input v-model="dataset.contactpoint.cpfirstname" required></md-input>
+                            <span class="md-error">Contact point required</span>
                           </md-field>
                         </div>
                   
                         <div class="md-layout-item md-size-30">
-                          <md-field>
+                          <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cplastname === ''))}">
                             <label>Last name</label>
-                            <md-input v-model="dataset.contactpoint.cplastname"></md-input>
+                            <md-input v-model="dataset.contactpoint.cplastname" required></md-input>
+                            <span class="md-error">Contact point required</span>
                           </md-field>
                         </div>
                   
                         <div class="md-layout-item md-size-25">
-                          <md-field>
+                          <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cpemail === ''))}">
                             <label>Email</label>
-                            <md-input v-model="dataset.contactpoint.cpemail"></md-input>
+                            <md-input v-model="dataset.contactpoint.cpemail" required></md-input>
+                            <span class="md-error">Valid email required</span>
                           </md-field>
                         </div>
                       </div>
     
-                      <md-field style="max-width: 100%;">
+                      <md-field style="max-width: 100%;" :class="{ 'md-invalid': (isInvalidForm && (dataset.description === ''))}">
                         <label>Text Description</label>
-                        <md-textarea v-model="dataset.description"></md-textarea>
+                        <md-textarea v-model="dataset.description" required></md-textarea>
+                        <span class="md-error">Description required</span>
                       </md-field>
                     </md-content>
                 
@@ -190,8 +199,8 @@
                         
                       </div>
                     </md-content>
-                    <md-button class="md-raised md-primary" @click="setDone('second', 'third'); handleContrAuth()">Next</md-button>
-                  </div>
+                    <md-button class="md-raised md-primary" @click="checkSecondPage">Next</md-button>
+                  </div> 
                 </md-step>
     
                 <md-step id="third" md-label="Confirm and Submit" :md-done.sync="third">
