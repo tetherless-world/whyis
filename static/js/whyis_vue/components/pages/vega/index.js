@@ -1,5 +1,6 @@
+import './dataset'
 import './editor'
 import './gallery'
-import './view'
-import './dataset'
+import './restore_chart'
 import './sparql'
+import './view'
