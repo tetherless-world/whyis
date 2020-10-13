@@ -757,14 +757,17 @@ construct {
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
-            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
+            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c ?content_type where {
     values (?c ?priority ?id) { %s }
     ?c rdfs:subClassOf* ?mid.
     ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
     ?viewProperty rdfs:subPropertyOf* whyis:hasView.
     ?viewProperty dc:identifier ?id.
-} group by ?c ?class order by ?rank
+    optional {
+        ?viewProperty dc:format ?content_type
+    }
+} group by ?c ?class ?content_type order by ?rank
 ''' % type_string
 
             #print view_query
@@ -776,7 +779,9 @@ construct {
             extension = views[0]['view'].value.split(".")[-1]
             if extension in DATA_EXTENSIONS:
                 headers['Content-Type'] = DATA_EXTENSIONS[extension]
-
+            print(views[0]['view'], views[0]['content_type'])
+            if views[0]['content_type'] is not None:
+                    headers['Content-Type'] = views[0]['content_type']
 
             # default view (list of nanopubs)
             # if available, replace with class view
