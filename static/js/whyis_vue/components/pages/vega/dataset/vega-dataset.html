@@ -108,6 +108,7 @@
                         <md-textarea v-model="dataset.description" required></md-textarea>
                         <span class="md-error">Description required</span>
                       </md-field>
+ 
                     </md-content>
                 
                     <md-divider style="border-style: solid" width="100%"></md-divider>
@@ -119,42 +120,86 @@
                         Contributors
                       </div>
                   
-                      <table class="table" width="100%">
-                        <thead>
-                          <tr>
-                            <td>
-                              <div class="md-subheading">Organization/Institution</div>
-                            </td>
-                            <td>
-                              <div class="md-subheading">Author(s) from this Org/Inst </div>
-                            </td>
-                            <td></td>
-                          </tr>
-                        </thead>
+                      <table class="table" width="100%"> 
                         <tbody>
-                          <tr v-for="(row, index) in contributors" v-bind:key="index + 'contr'">
-                            <td width="40%">
-                              <input type="text" v-model="row['org']" style="width:90%" />
-                            </td>
-                            <td>
-                              <input type="text" v-model="row['authors']" style="width:90%" placeholder="First Last, separate multiple w/ comma"/>
-                            </td>
-                            <td>
-                              <a v-on:click="removeElement(index)" style="cursor: pointer"
-                                >Remove</a
-                              >
-                            </td>
+                          <tr v-for="(row, index) in contributors" v-bind:key="index + 'contr'"> 
+                          <td style="width:100%"> 
+                            <tr  style="width:100%">
+                              <td style="width:50%"> 
+                                <md-autocomplete 
+                                  style="max-width: 90%;" 
+                                  v-model="row['org']" 
+                                  :md-options="autocomplete.availableInstitutions" 
+                                  :md-open-on-focus="false"
+                                  @md-changed="resolveEntityInstitution"
+                                >
+                                  <label>Organization</label>
+                      
+                                  <template style="max-width: 90%;" slot="md-autocomplete-item" slot-scope="{ item, term }">
+                                    <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
+                                  </template>
+                      
+                                  <template style="max-width: 90%;" slot="md-autocomplete-empty" slot-scope="{ term }">
+                                    <p>No organizations matching "{{ term }}" were found.</p>
+                                    <a v-on:click="showNewInstitution" style="cursor: pointer">Create new</a> 
+                                  </template>
+                                </md-autocomplete>
+                              </td>
+                              <td style="width:20px"></td>
+                              <td style="width:50%">
+                                <md-autocomplete 
+                                  style="max-width: 90%;" 
+                                  v-model="selectedAuthor[index]" 
+                                  :md-options="autocomplete.availableAuthors" 
+                                  :md-open-on-focus="false" 
+                                  @md-changed="resolveEntityAuthor"
+                                  @md-selected="selectAuthor(index)" 
+                                >
+                                  <label>Authors from this Institution</label>
+                      
+                                  <template style="max-width: 90%;" slot="md-autocomplete-item" slot-scope="{ item, term }">
+                                    <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
+                                  </template>
+                      
+                                  <template style="max-width: 90%;" slot="md-autocomplete-empty" slot-scope="{ term }">
+                                    <p>No authors matching "{{ term }}" were found.</p>
+                                    <a v-on:click="showNewAuthor" style="cursor: pointer">Create new</a>
+                                  </template>
+                                </md-autocomplete>
+                              </td>
+                              <td>
+                                <a v-on:click="removeElement(index)" style="cursor: pointer"
+                                  >Remove</a
+                                >
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td></td>
+                              <td></td>
+                              <td> 
+                                <md-chip 
+                                  v-for="(auth, ind) in row['authors']" 
+                                  v-bind:key="ind + 'authors'" 
+                                  class="md-primary">{{auth}}
+                                  <button @click="removeAuthor(ind, index)">x</button>
+                                </md-chip> 
+                              </td>
+                              <td></td>
+                            </tr> 
+
+                          </td> 
                           </tr>
                         </tbody>
                       </table>
                       <div>
-                        <button
-                          class="button btn-primary"
-                          @click="addOrg"
+                        <md-button
+                          class="md-raised"
+                          @click="addOrg()"
                           style="margin: 10px"
                         >
                           Add row
-                        </button>
+                        </md-button>
                       </div>
                     </md-content>
     
@@ -198,8 +243,9 @@
                         </div> 
                         
                       </div>
-                    </md-content>
+                    </md-content> 
                     <md-button class="md-raised md-primary" @click="checkSecondPage">Next</md-button>
+                    <span v-if="isInvalidForm" class="md-error" style="color:red">Check for errors in required fields</span>
                   </div> 
                 </md-step>
     
@@ -222,11 +268,17 @@
                       v-for="(elem, index) in contributors"
                       v-bind:key="index + 'resContr'"
                     >
-                      {{ elem.org }}: {{ elem.authors }}
+                      {{ elem.org }}: 
+                      <div 
+                        style="margin-left:20px"
+                        v-for="(auth, index) in elem.authors" 
+                        v-bind:key="index + 'resAuth'"> 
+                        - {{ auth }}
+                      </div> 
                     </div>
                     <p>Date Published: {{ dataset.datepub['@value'] }}</p>
                     <p>Date Last Modified: {{ dataset.datemod['@value'] }}</p>
-                    <span> Related publications </span>
+                    <p> Related publications </p>
                     <div
                       style="margin-left: 20px"
                       v-for="(ref, index) in dataset.refby"
@@ -234,7 +286,13 @@
                     >
                       {{ dataset.refby[index] }}
                     </div>
-                    <p>Distribution(s): {{ distr_upload }}</p>
+                    <p style="margin-top:10px">Distribution(s):</p> 
+                    <div 
+                      v-for="(file, key) in uploadedFiles" 
+                      v-bind:key="file+'confirm'" 
+                      style="margin-left:20px;"> 
+                      {{ file.name }} 
+                    </div>
                     <p>Representative Image: {{ rep_image }}</p>
                   </md-content>
     
