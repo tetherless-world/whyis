@@ -2,6 +2,7 @@
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
 import { goToView } from 'utilities/views'
 
+// TODO: Check whether this is necessary
 const defaultContext= { 
   "dcat": "http://w3.org/ns/dcat#",
   "dct": "http://purl.org/dc/terms/",
@@ -64,8 +65,7 @@ const defaultDataset = {
 }
 
 
-const datasetType = 'http://www.w3.org/ns/dcat#Dataset'
-//const datasetType = 'http://semanticscience.org/resource/Dataset'
+const datasetType = 'http://www.w3.org/ns/dcat#Dataset' 
 
 // const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
 const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
@@ -77,7 +77,7 @@ const foaf = "http://xmlns.com/foaf/0.1/"
 
 const datasetFieldUris = {
   baseSpec: 'http://semanticscience.org/resource/hasValue', 
-  title: `${dcat}title`,
+  title: `${dct}title`,
   description: `${dct}description`, 
 
   contactpoint: `${dcat}contactpoint`,
@@ -103,8 +103,10 @@ const datasetFieldUris = {
   depiction: `${foaf}:depiction`,
   accessURL: `${dcat}:accessURL`,
 } 
+
 const datasetPrefix = 'dataset' 
 
+// Generate a randum uuid, or use current if exists
 function generateDatasetId (guuid) {
   var datasetId;
   if (arguments.length === 0) { 
@@ -114,7 +116,7 @@ function generateDatasetId (guuid) {
     datasetId = guuid;
   }
   // const datasetId = Date.now();  
-  return `${lodPrefix}/${datasetPrefix}/${datasetId}`
+  return `${window.location.origin}/${datasetPrefix}/${datasetId}`
 } 
 
 function buildDatasetLd (dataset) {
@@ -142,6 +144,7 @@ function buildDatasetLd (dataset) {
   return datasetLd
 }
 
+// Helper for assigning values into JSON-LD format
 function recursiveFieldSetter ([field, value]) { 
   var fieldDict = {} 
   for (var val in value) {  
@@ -163,12 +166,13 @@ function recursiveFieldSetter ([field, value]) {
   return fieldDict
 }
 
+// Blank dataset
 function getDefaultDataset () { 
   return Object.assign({}, defaultDataset)
 }
 
-
-function loadChartFromNanopub(nanopubUri, datasetUri) {
+// Load for editing
+function loadDatasetFromNanopub(nanopubUri, datasetUri) {
   return describeNanopub(nanopubUri)
     .then((describeData) => {
       const assertion_id = `${nanopubUri}_assertion`
@@ -176,7 +180,7 @@ function loadChartFromNanopub(nanopubUri, datasetUri) {
         if (graph['@id'] === assertion_id) {
           for (let resource of graph['@graph']) {
             if (resource['@id'] === datasetUri) {
-              return extractChart(resource)
+              return extractDataset(resource)
             }
           }
         }
@@ -184,36 +188,38 @@ function loadChartFromNanopub(nanopubUri, datasetUri) {
     })
 }
 
+// Load for editing
 function loadDataset (datasetUri) {
   return listNanopubs(datasetUri)
     .then(nanopubs => {
       if (nanopubs.length > 0) {
         const nanopubUri = nanopubs[0].np
-        return loadChartFromNanopub(nanopubUri, datasetUri)
+        return loadDatasetFromNanopub(nanopubUri, datasetUri)
       }
     })
 }
 
-
-function extractChart (chartLd) {
-  const chart = Object.assign({}, defaultDataset)
+// Extract information from dataset in JSONLD format
+// TODO: re-write to assign all values in correct format
+function extractDataset (datasetLd) {
+  const dataset = Object.assign({}, defaultDataset)
 
   Object.entries(defaultDataset)
     .forEach(([field]) => {
       // let value = "";
       let uri = datasetFieldUris[field];
-      var val = chartLd[uri];
+      var val = datasetLd[uri];
       console.log(val)
-      if ((uri in chartLd) && (typeof val !== `undefined`) ){
+      if ((uri in datasetLd) && (typeof val !== `undefined`) ){
         console.log(val[0])
         if (typeof val[0]['@value'] !== `undefined`){
-          chart[field] = chartLd[uri][0]['@value']
+          dataset[field] = datasetLd[uri][0]['@value']
         }  
       }
-      // chart[field] = value
+      // dataset[field] = value
     })
     
-  return chart
+  return dataset
 }
 
 
@@ -238,7 +244,28 @@ async function saveDataset (dataset, guuid) {
 
 function deleteDataset (datasetUri) { 
   return listNanopubs(datasetUri)
-    .then(nanopubs => Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np))))
+    .then(nanopubs => {
+      console.log("in delete")
+      console.log(nanopub.np)
+      Promise.all(nanopubs.map(nanopub => deleteNanopub(nanopub.np)))
+    }
+    )
 }
 
-export { getDefaultDataset, loadDataset, saveDataset }
+
+// Reformat the auto-complete menu
+let run;
+
+const processAutocompleteMenu = () => {
+    run = setInterval(() => {
+        const floatList = document.getElementsByClassName("md-menu-content-bottom-start")
+        if(floatList.length >= 1) {
+            floatList[0].setAttribute("style", "z-index:1000 !important; width: 80%; max-width: 80%; position: absolute; top: 644px; left:50%; transform:translateX(-50%); will-change: top, left;")
+            return status = true
+        }
+    }, 40)
+
+    return run
+}
+
+export { getDefaultDataset, loadDataset, saveDataset, deleteDataset, processAutocompleteMenu}

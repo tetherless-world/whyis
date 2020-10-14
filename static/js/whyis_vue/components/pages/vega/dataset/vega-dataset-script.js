@@ -3,9 +3,11 @@ import { EventServices } from '../../../../modules';
 import VueMaterial from "vue-material";
 import "vue-material/dist/vue-material.min.css";
 import "vue-material/dist/theme/default.css";
-import { getDefaultDataset, loadDataset, saveDataset } from "utilities/dataset-upload";
+import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, processAutocompleteMenu} from "utilities/dataset-upload";
 import { goToView } from "utilities/views"; 
-import { lodPrefix } from 'utilities/nanopub'; 
+// import { resolveEntity } from '../../../../../whyis'
+import { lodPrefix } from 'utilities/nanopub';  
+import axios from 'axios';
 
 Vue.use(VueMaterial);
 
@@ -70,14 +72,32 @@ data() {
         isInvalidUpload: false,
         isInvalidForm: false,
         uploadFieldName: 'distributions',
+ 
 
-
+        selectedText: '',
         filter: false,
         bottomPosition:'md-bottom-right',
         speedDials: EventServices.speedDials,
         authenticated: EventServices.authUser,
+        autocomplete: {
+          availableInstitutions: [],
+          availableAuthors: [],
+          // availableInstitutions: EventServices.institutions,
+          // availableAuthors: EventServices.authors, 
+        },
         loading: false,
-        loadingText: "Loading Existing Datasets"
+        loadingText: "Loading Existing Datasets",
+
+      /// search
+      query: null,
+      selectedAuthor: [],
+      items: [],
+      testChips: [],
+      // item: {
+      //   label: '',
+      //   types: [],
+      // },
+      // searchText: '',
     }
 },
 methods: {
@@ -98,11 +118,11 @@ methods: {
           })
       },
   
-      addOrg: function () {
+      addOrg () {
         var elem = document.createElement("tr");
         this.contributors.push({
           org: "",
-          authors: "",
+          authors: [],
         });
       },
       dateFormat(value, event) {
@@ -122,8 +142,7 @@ methods: {
         for (var index in this.contributors) {
           this.setContributors(index);
           var org = this.contributors[index]["org"];
-          const auths = this.contributors[index]["authors"].split(",");
-          auths.forEach((x) => this.setAuthors(org, x));
+          this.contributors[index]["authors"].forEach((x) => this.setAuthors(org, x));
         }
       },
       setContributors: function (index) {
@@ -154,6 +173,17 @@ methods: {
           };
         } 
       },
+      selectAuthor (index) { 
+        if ((this.selectedAuthor[index] !== null)&& (this.selectedAuthor[index] !== "")){
+          this.contributors[index]['authors'].push(this.selectedAuthor[index]);
+        }
+        console.log(this.contributors)
+      },
+      removeAuthor (ind, index){
+        this.contributors[index]['authors'].splice(ind, 1)
+        this.selectedAuthor[index] = "";
+        console.log(this.contributors)
+      },
 
       handleDistrUpload(files) { 
         let uploadedFiles = files;  
@@ -172,7 +202,7 @@ methods: {
       }, 
 
       handleImgUpload(files) {   
-        this.uploadedImg = files; 
+        this.uploadedImg = files;  
       }, 
 
       removeFile( key ){
@@ -195,8 +225,8 @@ methods: {
             distrData.append(fileList[x].name, fileList[x]); 
           });
 
-        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`;
-        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
+        const uri = `${window.location.origin}/dataset/${this.generatedUUID}/distributions`;
+        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
         this.distrStatus = STATUS_SAVING; 
         
         var data = {
@@ -227,8 +257,8 @@ methods: {
   
       async saveRepImg() {
         const fileList = this.uploadedImg; 
-        // const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
-        const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
+        const uri = `${window.location.origin}/dataset/${this.generatedUUID}/depiction`; 
+        // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
         this.depictStatus = STATUS_SAVING; 
         if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
   
@@ -287,14 +317,14 @@ methods: {
       },
 
       checkFirstPage(){ 
-        // Check for at least one distribution
-        if (!this.uploadedFiles.length){
-          this.isInvalidUpload = true;
-        } else { 
+        // // Check for at least one distribution
+        // if (!this.uploadedFiles.length){
+        //   this.isInvalidUpload = true;
+        // } else { 
           this.saveRepImg(); 
           this.saveDistribution(); 
           this.setDone('first', 'second');
-        }
+        // }
       },
 
       checkSecondPage(){
@@ -333,6 +363,7 @@ methods: {
       },
   
       submitForm: function () {
+        // console.log(this.dataset)
         try { 
           saveDataset(this.dataset, this.generatedUUID) 
           // console.log(this.dataset)
@@ -342,14 +373,41 @@ methods: {
           this.distrStatus = STATUS_FAILED;
         }
       },   
+
+      processAutocompleteMenu () {
+        return processAutocompleteMenu();
+      }, 
   
+      resolveEntityAuthor (query) {
+        this.items = axios.get('/',{params:{view:'resolve',term:query+"*", type: "http://xmlns.com/foaf/0.1/Person"},
+                             responseType:'json' })
+            .then(function(response) {
+              console.log(response.data)
+                return response.data;
+            });
+      },
+      resolveEntityInstitution (query) {
+        this.items = axios.get('/',{params:{view:'resolve',term:query+"*", type:"http://xmlns.com/foaf/0.1/Organization"},
+                             responseType:'json' })
+            .then(function(response) {
+              console.log(response.data)
+                return response.data;
+            });
+      },
+      // selectedAuthorChange(item) {
+      //   console.log(`selected item ${item}`)
+      //     // window.location.href = '/'+'about?uri='+window.encodeURIComponent(item.node);
+      // }, 
 
 
 
-
-    showFilterBox () {
-    EventServices.$emit('open-filter-box', {open: true, type: "filter"});
-    return this.filter = true
+    showNewInstitution () {
+      EventServices.$emit('open-new-instance', {status: true, title:"Add new institution", type: "institution"});
+      return
+    },
+    showNewAuthor () {
+      EventServices.$emit('open-new-instance', {status: true, title:"Add new author", type: "author"});
+      return
     },
     newChart(){
     return EventServices.navTo("new", true)
@@ -366,7 +424,8 @@ created() {
   } 
   this.loadDataset();
   EventServices
-  .$on('close-filter-box', (data) => this.filter = data)
   .$on('isauthenticated', (data) => this.authenticated = data)
+  .$on('institutionsupdated', (data) => this.availableInstitutions = data)
+  .$on('authorsupdated', (data) => this.availableAuthors = data)
 }
 })
