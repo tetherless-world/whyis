@@ -104,20 +104,19 @@ export default Vue.component('vega-editor', {
       })
       fr.readAsDataURL(blob)
     },
-    loadChart () {
+    async loadChart () {
       let getChartPromise;
       if (this.pageView === 'new') {
         getChartPromise = Promise.resolve(getDefaultChart())
-      } else {
+      } else if(this.pageView === 'restore'){ 
+	      await this.postChartBk()
+	      return this.getSparqlData()
+      }else {
         getChartPromise = loadChart(this.pageUri)
       }
       getChartPromise
-        .then(async(chart) => {
-          if(this.actionType == 'Restore'){
-            await this.postChartBk()
-          } else {
-            this.chart = chart
-          }
+        .then(chart => {
+          this.chart = chart
           return this.getSparqlData()
         })
     },
@@ -161,7 +160,6 @@ export default Vue.component('vega-editor', {
     async postChartBk(){
       if (typeof(Storage) !== "undefined") {
         let recievedChart = await JSON.parse(sessionStorage.getItem("chart"));
-        console.log(recievedChart.backup.baseSpec)
         if(!recievedChart){
           return;
         } else {
