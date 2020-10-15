@@ -58,8 +58,8 @@
         </md-list-item>
       </div>
 
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin == 'False'" @click="navTo(logoutNav)">
+      <div class="md-drawer-div" v-if="authenticated.admin == 'False'">
+        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
           <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
           <span class="md-list-item-text utility-navfont">Sign Out</span>
         </md-list-item>
@@ -71,14 +71,20 @@
       </md-toolbar>
 
       <md-divider v-if="authenticated.admin"></md-divider>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin == 'True'">
+       <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust" @click="navTo('manage', true)">
+          <md-icon class="utility-navfonticon">restore</md-icon>
+          <span class="md-list-item-text utility-navfont">Restore Chart</span>
+        </md-list-item>
+      </div>
+      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust">
           <md-icon class="utility-navfonticon">insights</md-icon>
           <span class="md-list-item-text utility-navfont">Admin Dashboard</span>
         </md-list-item>
       </div>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" v-if="authenticated.admin=='True'" @click="navTo(logoutNav)">
+      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
+        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
           <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
           <span class="md-list-item-text utility-navfont">Sign Out</span>
         </md-list-item>
@@ -109,9 +115,8 @@ export default Vue.component('Drawer', {
   },
   methods:{
     navTo(args, uri){
-        EventServices
-        .navTo(args, uri)
-        .$emit('togglenavigation', false)
+      EventServices.navTo(args, uri)
+      return EventServices.$emit('togglenavigation', false)
     },
     navDataSet(){
         EventServices.$emit('togglenavigation', false)
@@ -121,9 +126,11 @@ export default Vue.component('Drawer', {
   created() {
     EventServices
     .$on('isauthenticated', (data) => {
-       if(data.email && data.uri) this.authenticated = data
+      if(data.email && data.uri){
+        this.authenticated = data
+      } 
     })
-    .$on('togglenavigation', (data) => this.menuVisible = data);
+    .$on('togglenavigation', data => this.menuVisible = data);
   }
 })
 </script>

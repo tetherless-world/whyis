@@ -2,6 +2,12 @@
   <div>
     <div class="utility-content__result">
       <div class="utility-gridicon-single" v-if="!loading">
+        <div v-if="!vizOfTheDay">
+          <md-button class="md-icon-button" @click.native.prevent="navBack">
+            <md-tooltip class="utility-bckg" md-direction="bottom"> Go Back </md-tooltip>
+            <md-icon>arrow_back</md-icon>
+          </md-button>
+        </div>
         <div>
           <md-button class="md-icon-button" @click.native.prevent="shareChart"> 
             <md-tooltip class="utility-bckg" md-direction="top"> Share Chart </md-tooltip>
@@ -25,8 +31,12 @@
     <div class="viz-3-col viz-u-mgup-sm">
       <div class="loading-dialog__justify">
         <div class="viz-sample">
-          <div class="viz-sample__header viz-u-mgbottom">
+          <div class="viz-sample__header viz-u-mgbottom" v-if="vizOfTheDay">
             <md-icon style="font-size: 2rem !important; color: gray !important">bar_chart</md-icon> Viz of the day
+          </div>
+          <div class="viz-u-mgbottom-big viz-u-display__desktop" v-else> </div>
+          <div class="viz-sample__header viz-u-mgbottom" v-if="!vizOfTheDay">
+            Chart Information
           </div>
           <div class="viz-sample__content">
             <temp-filler class="viz-sample__loading viz-sample__loading_anim" v-if="loading" />
@@ -46,7 +56,7 @@
                   </li>
                 </ul>
               </div>
-              <a @click.prevent="navBack" class="btn btn_medium btn--primary viz-u-display__desktop btn--animated">View Gallery</a>
+              <a @click.prevent="navBack(true)" class="btn btn_medium btn--primary viz-u-display__desktop btn--animated" v-if="vizOfTheDay">View Gallery</a>
             </div>
           </div>
         </div>
@@ -57,7 +67,7 @@
       <div class="loading-dialog" style="margin: auto" v-else>
         <div class="viz-u-display__desktop" style="margin-bottom: 2rem"></div>
         <vega-lite :spec="spec" class="btn--animated"/>
-        <a @click.prevent="navBack" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph">View Gallery</a>
+        <a @click.prevent="navBack(true)" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph" v-if="vizOfTheDay">View Gallery</a>
       </div>
     </div>
   </div>
@@ -82,6 +92,7 @@
         args: null,
         authenticated: EventServices.authUser,
         allowEdit: false,
+        vizOfTheDay: false
       }
     },
     components: {
@@ -100,8 +111,10 @@
           })
           .finally(() => this.loading = false)
       },
-      navBack(){
-        EventServices.vizOfTheDay = false
+      navBack(args){
+        if(args) {
+          EventServices.toggleVizOfTheDay(args)
+        }
         return EventServices.navTo('view', true)
       },
       shareChart() {

@@ -104,17 +104,20 @@ export default Vue.component('vega-editor', {
       })
       fr.readAsDataURL(blob)
     },
-    loadChart () {
-      let getChartPromise
+    async loadChart () {
+      let getChartPromise;
       if (this.pageView === 'new') {
         getChartPromise = Promise.resolve(getDefaultChart())
-      } else {
+      } else if(this.pageView === 'restore'){ 
+	      await this.postChartBk()
+	      return this.getSparqlData()
+      }else {
         getChartPromise = loadChart(this.pageUri)
       }
       getChartPromise
         .then(chart => {
           this.chart = chart
-          this.getSparqlData()
+          return this.getSparqlData()
         })
     },
     async reloadRestored(args){
@@ -154,16 +157,20 @@ export default Vue.component('vega-editor', {
         return alert(err)
       }
     },
-    postChartBk(){
-      let recievedChart = EventServices.tempChart;
-      if(!recievedChart){
-        return;
+    async postChartBk(){
+      if (typeof(Storage) !== "undefined") {
+        let recievedChart = await JSON.parse(sessionStorage.getItem("chart"));
+        if(!recievedChart){
+          return;
+        } else {
+          this.chart.baseSpec = recievedChart.backup.baseSpec
+          this.chart.query = recievedChart.backup.query
+          this.chart.title = recievedChart.backup.title
+          this.chart.description = recievedChart.backup.description
+          this.restoredChartId = recievedChart.name
+        }
       } else {
-        this.chart.baseSpec = recievedChart.chart.backup.baseSpec
-        this.chart.query = recievedChart.chart.backup.query
-        this.chart.title = recievedChart.chart.backup.title
-        this.chart.description = recievedChart.chart.backup.description
-        this.restoredChartId = recievedChart.chart.name
+        EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'});
       }
     },
     defineAction(){
@@ -177,13 +184,12 @@ export default Vue.component('vega-editor', {
       }
     },
   },
-  created () {
+  async created () {
     if(EventServices.authUser == undefined){
       return EventServices.navTo('view', true)
     }
     this.loading = true;
-    this.defineAction();
-    this.postChartBk();
+    await this.defineAction();
     this.loadChart();
   }
 })
