@@ -18,8 +18,7 @@
          md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
          md-item-text="item.name" >
          <md-item-template>
-          <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i" ng-if="item.unit_label">{{ item.name }} ({{item.unit_label}})</span>   
-          <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i" ng-if="!item.unit_label">{{ item.name }}</span>
+          <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} {{item.unit_label ? ("(" + item.unit_label + ")") : ""}}</span>
          </md-item-template>
       </md-autocomplete>
       <md-chip-template>
