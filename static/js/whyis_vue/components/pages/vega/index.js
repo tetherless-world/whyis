@@ -1,4 +1,3 @@
-import './dataset'
 import './editor'
 import './gallery'
 import './restore_chart'
