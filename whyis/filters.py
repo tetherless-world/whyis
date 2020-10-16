@@ -449,51 +449,47 @@ WHERE {
                 result['value'] = result['value'].n3()
         return results
 
-    instance_data_template = env.from_string('''
-SELECT DISTINCT
+    instance_data_template = env.from_string('''SELECT DISTINCT
 ?id
-{% for variable in variables %}
+{%- for variable in variables %}
 ?{{variable['field']}}
-{% for indep_variable in variable['indep_vals'] %}
+{%- for indep_variable in variable['indep_vals'] %}
 ?{{indep_variable['field']}}
-{% endfor %}
-{% endfor %}
+{%- endfor %}
+{%- endfor %}
 WHERE {
-  {
-    select ?id where {
-      {% for constraint in constraints %}{{constraint}}{% endfor %}
-    }
-  }
-    {% for variable in variables %}
-    {% if variable.selectionType == 'Show' %}optional { {% endif %}
-    {% if 'valuePredicate' in variable %}
-      ?id {{variable['predicate']}} ?{{variable['field']}}_instance.
+    ?id rdf:type {{this.identifier.n3()}}.
+    {%- for variable in variables %}
+    {%- if variable.selectionType == 'Show' %}
+    optional {
+    {%- endif %}
+    {%- if 'valuePredicate' in variable %}
+      ?id {{variable['predicate']}} ?{{variable['field']}}_.
 
-      ?{{variable['field']}}_instance {{variable['typeProperty']}} {{variable['value']}};
+      ?{{variable['field']}}_ {{variable['typeProperty']}} {{variable['value']}};
         {{variable['valuePredicate']}} ?{{variable['field']}};
-        {% if 'unit' in variable %}
+        {%- if 'unit' in variable %}
           {{variable['unitPredicate']}} <{{variable['unit']}}>;
-        {% endif %}
+        {%- endif %}
       .
 
-        {% for indep_variable in variable['indep_vals'] %}
+    {%- for indep_variable in variable['indep_vals'] %}
         optional {
-          ?{{variable['field']}}_instance {{variable['independentVariables']}} [
+          ?{{variable['field']}}_ {{variable['independentVariables']}} [
             {{variable['typeProperty']}} <{{indep_variable['value']}}>;
             {{variable['valuePredicate']}} ?{{indep_variable['field']}};
-            {% if 'unit' in indep_variable %}
+            {%- if 'unit' in indep_variable %}
               {{variable['unitPredicate']}} <{{indep_variable['unit']}}>;
-            {% endif %}
+            {%- endif %}
           ].
         }
-        {% endfor %}
-    {% else %}
-      {{variable['specifier'].replace('?value', '?uri_'+variable['field'])}}
-      ?uri_{{variable['field']}} rdfs:label ?{{variable['field']}}.
-    {% endif %}
-    {% if variable.selectionType == 'Show' %}} {% endif %}
-  {% endfor %}
-
+        {%- endfor %}
+    {%- else %}
+      {{variable['specifier'].replace('?value', '?'+variable['field']+"_")}}
+      ?{{variable['field']}}_ rdfs:label ?{{variable['field']}}.
+    {%- endif %}
+    {%- if variable.selectionType == 'Show' %}} {% endif %}
+  {%- endfor %}
 }''')
     @app.template_filter('instance_data')
     def instance_data(this, variables, constraints):

@@ -46,6 +46,13 @@
                      data-ng-click="updateResults(null, cons)">
             Update
           </md-button>
+          <md-button ng-show="view=='chart'"  class=" md-mini md-primary"
+                     aria-label="Save Chart"
+                     title="Save Chart to knowledge graph"
+                     data-ng-click="showSaveChart($event)">
+              Save Chart
+          </md-button>
+
           <md-progress-circular ng-show="vm.isLoadingResults" md-diameter="20px"></md-progress-circular>
       </md-subheader>
       <vega-controller spec="vizConfig" facet-values="facetValues" ng-show="view=='chart'" ></vega-controller>

@@ -392,7 +392,7 @@ owl:Class rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasFacets "class_facets.json";
   whyis:hasFacetValues "facet_values.json";
-  whyis:hasInstanceData "class_instance_data.json";
+  whyis:hasInstanceData "class_instance_data.rq";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
   whyis:newInstanceView "new_instance_view.html";
@@ -410,6 +410,7 @@ whyis:hasFacetValues dc:identifier "facet_values";
   rdfs:subPropertyOf whyis:hasView.
 
 whyis:hasInstanceData dc:identifier "instance_data";
+  dc:format "application/sparql-query";
   rdfs:subPropertyOf whyis:hasView.
 
 
@@ -478,6 +479,7 @@ whyis:manageInstanceView rdfs:subPropertyOf whyis:hasView;
   whyis:bipartiteView "bipartite_graph.svg".
 
 whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
+  dc:format "image/svg+xml";
   dc:identifier "bipartite".
 
 whyis:resolveView rdfs:subPropertyOf whyis:hasView;
