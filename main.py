@@ -257,7 +257,7 @@ class App(Empty):
     _nanopub_depot = None
     @property
     def nanopub_depot(self):
-        if self._nanopub_depot is None:
+        if self._nanopub_depot is None and 'nanopub_archive' in self.config:
             if DepotManager.get('nanopublications') is None:
                 DepotManager.configure('nanopublications', self.config['nanopub_archive'])
             self._nanopub_depot = DepotManager.get('nanopublications')
