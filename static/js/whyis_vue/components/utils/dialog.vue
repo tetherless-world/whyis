@@ -15,6 +15,7 @@
       <div v-else>
         <div class="utility-dialog-box_header" >
           <md-dialog-title v-if="dialog.status">{{ dialog.title }}</md-dialog-title>
+          <md-dialog-title v-else-if="makeNew.status">{{ loginRequestSent? "Login" : makeNew.title }}</md-dialog-title>
           <md-dialog-title v-else>{{ loginRequestSent? "Login" : "Filter Chart" }}</md-dialog-title>
         </div>
 
@@ -42,6 +43,43 @@
             <div class="utility-align--right utility-margin-top" v-else-if="dialog.delete || dialog.diag">
               <a @click.prevent="cancelDel" class="btn-text btn-text--default">Close</a> &nbsp; &nbsp;
               <a @click.prevent="dialogAction" class="btn-text btn-text--default" v-if="!dialog.btn">{{dialog.title}}</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="utility-dialog-box_login" v-else-if="makeNew.status">
+          <md-field v-if="makeNew.type === 'organization'">
+              <label>Name of Organization</label>
+              <md-input v-model="organization.name"></md-input>
+          </md-field>
+
+          <div v-else-if="makeNew.type === 'author'" class="md-layout md-gutter" style="align-items: center;">  
+              <div class="md-layout-item md-size-30">
+                <md-field>
+                  <label>First name</label>
+                  <md-input v-model="author.firstname"></md-input> 
+                </md-field>
+              </div> 
+              <div class="md-layout-item md-size-30">
+                <md-field>
+                  <label>Last name</label>
+                  <md-input v-model="author.lastname"></md-input> 
+                </md-field>
+              </div> 
+              <div class="md-layout-item md-size-25">
+                <md-field>
+                  <label>OrcID</label>
+                  <md-input v-model="author.orcid"></md-input> 
+                </md-field>
+              </div> 
+          </div>
+          
+          <div class="utility-margin-big viz-2-col">
+            <div class="utility-align--right utility-margin-top"> 
+            </div>
+            <div class="utility-align--right utility-margin-top">
+              <a @click.prevent="onCancel" class="btn-text btn-text--default"> &larr; Exit</a> &nbsp; &nbsp;
+              <a @click.prevent="onSubmitNew" class="btn-text btn-text--default">Submit &rarr; </a>
             </div>
           </div>
         </div>
@@ -90,6 +128,7 @@
   import EventServices from '../../modules/events/event-services'
   import { processFloatList, resetProcessFloatList } from '../../utilities/dialog-box-adjust'
   import { goToView } from '../../utilities/views'
+  import { saveAgent } from '../../utilities/new-foaf-agent'
   export default Vue.component('dialogBox', {
     data () {
       return {
@@ -109,6 +148,20 @@
         },
         dialog:{
           status: false
+        },
+        makeNew:{
+          status: false
+        },
+        agent: "",
+        organization:{
+          type: "Organization",
+          name: "", 
+        },
+        author:{
+          type: "Person",
+          firstname: "",
+          lastname:"",
+          orcid: null,
         }
       }
     },
@@ -149,6 +202,17 @@
         this.loginRequestSent = false
         EventServices.$emit('close-filter-box', this.active)
         return EventServices.filterChart(this.filterby, this.selectedText)
+      },
+      onSubmitNew(){
+        this.active = !this.active
+        this.loginRequestSent = false
+        if (this.agent === "author"){
+          saveAgent(this.author) 
+        } else if (this.agent === "organization"){
+          saveAgent(this.organization)
+        }
+        EventServices.$emit('close-filter-box', this.active)
+        return
       },
       onCancel() {
         this.active = !this.active
@@ -205,6 +269,10 @@
           this.active = data.status
           this.dialog = data
         }
+      }).$on('open-new-instance', (data) => {
+        this.active = data.status
+        this.agent = data.type
+        this.makeNew = data
       })
     }
   })

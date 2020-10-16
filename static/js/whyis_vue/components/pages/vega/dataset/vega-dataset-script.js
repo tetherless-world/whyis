@@ -292,7 +292,7 @@ methods: {
           }
         })
         .then(x => {   
-          // this.dataset.depiction.accessURL = baseUrl;
+          this.dataset.depiction.accessURL = baseUrl;
           this.dataset.depiction['@id'] = uri;
           this.dataset.depiction.name=fileList[0].name;
           this.depictStatus = STATUS_SUCCESS;
@@ -317,16 +317,28 @@ methods: {
         const wrapper = document.querySelector('#depictWrapper')
         const file = document.querySelector('#repImgUploader').files[0]; 
         const reader = new FileReader();
+        const dataset = this.dataset;
       
         reader.addEventListener("load", function () { 
           wrapper.style.visibility = "visible";
           preview.src = reader.result; 
+          dataset.depiction.hasContent = reader.result;
         }, false);
       
         if (file) {  
           reader.readAsDataURL(file);
         }
       },
+
+      // async imgToUrl() {
+      //   let blob = await fetch("https://example.com/image.png").then(r => r.blob());
+      //   let dataUrl = await new Promise(resolve => {
+      //     let reader = new FileReader();
+      //     reader.onload = () => resolve(reader.result);
+      //     reader.readAsDataURL(blob);
+      //   });
+      //   // now do something with `dataUrl`
+      // },
 
       checkFirstPage(){ 
         // // Check for at least one distribution
