@@ -2,7 +2,7 @@
 <md-card ng-if="entity" flex>
   <md-card-header ng-if="compact">
     <md-card-avatar ng-if="entity.thumbnail">
-      <img ng-src="{{entity.thumbnail}}" class="md-avatar" alt="{{entity.label}}" />
+      <img ng-src="{{entity.thumbnail}} | kglink " class="md-avatar" alt="{{entity.label}}" />
     </md-card-avatar>
     <md-card-header-text>
       <span class="md-title"><a ng-href="{{entity['@id'] | kglink : 'view' }}" ng-bind="entity.label"/></span>
@@ -10,7 +10,7 @@
       </div>
     </md-card-header-text>
   </md-card-header>
-  <img ng-hide="compact" ng-if="entity.thumbnail" ng-src="{{entity.thumbnail}}" class="md-card-image"></img>
+  <img ng-hide="compact" ng-if="entity.thumbnail" ng-src="{{entity.thumbnail | kglink}}" class="md-card-image"></img>
   <md-card-title ng-hide="compact" >
     <md-card-title-text>
       <span class="md-headline" ng-bind="entity.label"></span>
@@ -25,7 +25,7 @@
         <span data-ng-repeat="type in entity.type" ><a ng-href="{{type['@id'] | kglink : 'view' }}" ng-bind="type.label"/><span ng-hide="$last">, </span></span>
       </span>
       <a aria-label="Show All Types"
-               ng-style="{ 'font-size': '1em', height: '1em'}"               
+               ng-style="{ 'font-size': '1em', height: '1em'}"
                  title="Show All Types" class="size-16" style="line-height: 1rem" flex="initial" ng-hide="compact || showAllTypes"  data-ng-click="showAllTypes = true">(more)</a>
     </div>
     <p ng-repeat="desc in entity.description" ng-if="!compact || $first">
