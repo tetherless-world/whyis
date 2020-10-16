@@ -22,7 +22,7 @@ from whyis.html_mime_types import HTML_MIME_TYPES
 def view(name=None, format=None, view=None):
     current_app.db.store.nsBindings = {}
     entity, content_type = current_app.get_entity_uri(name, format)
-    
+
     resource = current_app.get_resource(entity)
 
     # 'view' is the default view
@@ -30,14 +30,14 @@ def view(name=None, format=None, view=None):
     if fileid is not None and 'view' not in request.args:
         fileid = fileid.value
         f = None
-        if current_app.nanopub_depot.exists(fileid):
+        if current_app.nanopub_depot is not None and current_app.nanopub_depot.exists(fileid):
             f = current_app.nanopub_depot.get(fileid)
         elif current_app.file_depot.exists(fileid):
             f = current_app.file_depot.get(fileid)
         if f is not None:
             fsa = FileServeApp(f, current_app.config["file_archive"].get("cache_max_age",3600*24*7))
             return fsa
-            
+
     if content_type is None:
         content_type = request.headers['Accept'] if 'Accept' in request.headers else 'text/turtle'
     #print entity
