@@ -47,11 +47,11 @@ function makeNanopubId() {
 
 function getNanopubSkeleton () {
   //doot
-  const npId = `${LOD_PREFIX}/${makeNanopubId()}`
+  const npId = `${lodPrefix}/pub/${makeNanopubId()}` //make sure this change doesn't break other things
   return {
     "@context": {
-      "@vocab": LOD_PREFIX+'/',
-      "@base": LOD_PREFIX+'/',
+      "@vocab": lodPrefix+'/',
+      "@base": lodPrefix+'/',
       "np" : "http://www.nanopub.org/nschema#",
     },
     "@id": npId,
@@ -95,6 +95,8 @@ function postNewNanopub (pubData, context) {
       'Content-Type': 'application/ld+json'
     }
   }
+  // var result = JSON.stringify(request)
+  console.log(request)
   return axios(request)
 }
 

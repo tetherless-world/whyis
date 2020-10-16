@@ -1,6 +1,6 @@
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
-import { goToView } from 'utilities/views'
+import { goToView } from 'utilities/views' 
 
 // TODO: Check whether this is necessary
 const defaultContext= { 
@@ -67,9 +67,6 @@ const defaultDataset = {
 
 const datasetType = 'http://www.w3.org/ns/dcat#Dataset' 
 
-// const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
-const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
-
 const dcat = "http://w3.org/ns/dcat#"
 const dct = "http://purl.org/dc/terms/"
 const vcard = "http://www.w3.org/2006/vcard/ns#"
@@ -87,10 +84,10 @@ const datasetFieldUris = {
   individual: `${vcard}individual`,
 
   author: `${dct}creator`,
-  name: `${foaf}:name`,
+  name: `${foaf}name`,
   contributor: `${dct}contributor`,         
-  organization: `${foaf}:Organization`, 
-  person: `${foaf}:Person`, 
+  organization: `${foaf}Organization`, 
+  person: `${foaf}Person`, 
   onbehalfof:"http://www.w3.org/ns/prov#actedOnBehalfOf",
 
   datepub: `${dct}issued`,
@@ -99,9 +96,10 @@ const datasetFieldUris = {
 
   refby: `${dct}isReferencedBy`,
 
-  distribution: `${dcat}:distribution`,
-  depiction: `${foaf}:depiction`,
-  accessURL: `${dcat}:accessURL`,
+  distribution: `${dcat}distribution`,
+  depiction: `${foaf}depiction`,
+  hasContent: 'http://vocab.rpi.edu/whyis/hasContent',
+  accessURL: `${dcat}accessURL`,
 } 
 
 const datasetPrefix = 'dataset' 
@@ -116,7 +114,7 @@ function generateDatasetId (guuid) {
     datasetId = guuid;
   }
   // const datasetId = Date.now();  
-  return `${window.location.origin}/${datasetPrefix}/${datasetId}`
+  return `${lodPrefix}/${datasetPrefix}/${datasetId}`
 } 
 
 function buildDatasetLd (dataset) {
@@ -151,7 +149,7 @@ function recursiveFieldSetter ([field, value]) {
     if (Array.isArray(value)){
       fieldDict[val] = recursiveFieldSetter([field, value[val]])
     } 
-    else if ((val === '@type') || (val === '@value')){ 
+    else if ((val === '@type') || (val === '@value') || (val === '@id')){ 
       fieldDict[val] = value[val];
       if (datasetFieldUris.hasOwnProperty(value[val])){
         fieldDict[val] = datasetFieldUris[value[val]];
@@ -235,7 +233,7 @@ async function saveDataset (dataset, guuid) {
   const datasetLd = buildDatasetLd(dataset) 
   await deletePromise
   try{
-    return postNewNanopub(datasetLd, defaultContext)
+    return postNewNanopub(datasetLd)
   } catch(err){
     return alert(err)
   }

@@ -24,7 +24,10 @@
                       <span class="md-error" style="margin-left:40px">At least one distribution is required</span>
                     </md-field>
                     <div class="large-12 medium-12 small-12 cell" style="margin:20px">
-                      <div v-for="(file, key) in uploadedFiles" class="file-listing">
+                      <div 
+                        v-for="(file, key) in uploadedFiles" 
+                        v-bind:key="key + 'listing'"
+                        class="file-listing">
                         <div class="md-layout" style="margin-left:10px; align-items: center;">
                           <div class="md-layout-item">{{ file.name }}  </div>
                           <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
@@ -289,7 +292,7 @@
                     <p style="margin-top:10px">Distribution(s):</p> 
                     <div 
                       v-for="(file, key) in uploadedFiles" 
-                      v-bind:key="file+'confirm'" 
+                      v-bind:key="key+'confirm'" 
                       style="margin-left:20px;"> 
                       {{ file.name }} 
                     </div>
