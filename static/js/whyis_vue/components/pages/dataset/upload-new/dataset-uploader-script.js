@@ -17,7 +17,7 @@ const datasetId = uuidv4();
 
 
 
-export default Vue.component('vega-dataset', {
+export default Vue.component('dataset-uploader', {
 data() {
     return {
         dataset: { 
