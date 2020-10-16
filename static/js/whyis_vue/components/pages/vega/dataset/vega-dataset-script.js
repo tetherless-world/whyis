@@ -42,10 +42,14 @@ data() {
           refby: [], 
           distribution:{
             accessURL: null,
+            '@id': null,
+            hasContent: null,
           },
           depiction: {
             name: '',
             accessURL: null,
+            '@id': null,
+            hasContent: null,
           }
         },
   
@@ -77,7 +81,8 @@ data() {
         selectedText: '',
         filter: false,
         bottomPosition:'md-bottom-right',
-        speedDials: EventServices.speedDials,
+        speedDials: false,
+        // speedDials: EventServices.speedDials,
         authenticated: EventServices.authUser,
         autocomplete: {
           availableInstitutions: [],
@@ -104,7 +109,7 @@ methods: {
 
 
     loadDataset () {
-        // console.log("loading")
+        console.log(this.speedDials)
         let getDatasetPromise
         if (this.pageView === 'new') {
           getDatasetPromise = Promise.resolve(getDefaultDataset())
@@ -225,27 +230,31 @@ methods: {
             distrData.append(fileList[x].name, fileList[x]); 
           });
 
-        const uri = `${window.location.origin}/dataset/${this.generatedUUID}/distributions`;
+        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/distributions`;
+        const baseUrl = `${window.location.origin}/about?uri=${uri}`
         // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/distributions`
         this.distrStatus = STATUS_SAVING; 
         
         var data = {
+            '@id': uri,
             'file': distrData,
             'upload_type': 'http://www.w3.org/ns/dcat#Dataset',  
+            'content_type': 'multipart/form-data'
         }
 
-        await fetch(uri, {
+        await fetch(baseUrl, {
           method: 'POST',
           body: data, 
           headers: {
              Accept: 'application/json',
              'Content-Type': 'multipart/form-data',
-             'upload_type':   'http://www.w3.org/ns/dcat#Dataset',
+             'upload_type': 'http://www.w3.org/ns/dcat#Dataset',
           }
         })
         // return axios.post(uri, data=data)
         .then(x => {
-          // console.log(uri)
+          console.log(baseUrl) 
+          this.dataset.distribution['@id'] = uri;
           this.dataset.distribution.accessURL = uri;
           this.distrStatus = STATUS_SUCCESS; 
         })
@@ -257,7 +266,8 @@ methods: {
   
       async saveRepImg() {
         const fileList = this.uploadedImg; 
-        const uri = `${window.location.origin}/dataset/${this.generatedUUID}/depiction`; 
+        const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
+        const baseUrl = `${window.location.origin}/about?uri=${uri}`
         // const uri = `http://192.168.33.10:5000/dataset/${this.generatedUUID}/depiction`;
         this.depictStatus = STATUS_SAVING; 
         if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
@@ -266,12 +276,13 @@ methods: {
         formdata.append('depiction', fileList[0]) 
   
         var data = {
+          '@id': uri,
           'file': formdata,
           'upload_type': 'http://purl.org/net/provenance/ns#File',
           'content_type': 'multipart/form-data'
         }
         
-        await fetch(uri, {
+        await fetch(baseUrl, {
           method: 'POST',
           body: data, 
           headers: {
@@ -281,7 +292,8 @@ methods: {
           }
         })
         .then(x => {   
-          this.dataset.depiction.accessURL = uri;
+          // this.dataset.depiction.accessURL = baseUrl;
+          this.dataset.depiction['@id'] = uri;
           this.dataset.depiction.name=fileList[0].name;
           this.depictStatus = STATUS_SUCCESS;
         })
