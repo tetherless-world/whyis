@@ -11,10 +11,13 @@
            <div class=""></div>
             <!--------->
             <md-card style="margin: 10px" >
+                <form class="modal-content" action="" method="post" 
+                  enctype="multipart/form-data" 
+                  upload_type="http://www.w3.org/ns/dcat#Dataset">
                 <md-steppers :md-active-step.sync="active" md-linear>
         
                   <md-step id="first" md-label="Upload files" :md-done.sync="first">  
-                    <form class="modal-content" action="" method="post" enctype="multipart/form-data">
+                    <!-- <form class="modal-content" action="" method="post" enctype="multipart/form-data" upload_type="http://www.w3.org/ns/dcat#Dataset"> -->
                       <div style="margin: 20px">
                         <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
                           <label>Upload distributions (multiple allowed)</label>
@@ -56,7 +59,7 @@
                         @click="checkFirstPage()">
                         Upload and continue
                       </md-button>
-                    </form>
+                    <!-- </form> -->
     
                     </md-step>
         
@@ -307,6 +310,7 @@
         
                     </md-step>
                 </md-steppers>
+                </form>
               </md-card>
             <!--------->
             <md-speed-dial :class="bottomPosition" v-if="speedDials">
