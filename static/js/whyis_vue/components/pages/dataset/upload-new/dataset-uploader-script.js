@@ -84,10 +84,10 @@ data() {
         // speedDials: EventServices.speedDials,
         authenticated: EventServices.authUser,
         autocomplete: {
-          availableInstitutions: [],
-          availableAuthors: [],
-          // availableInstitutions: EventServices.institutions,
-          // availableAuthors: EventServices.authors, 
+          // availableInstitutions: [],
+          // availableAuthors: [],
+          availableInstitutions: EventServices.institutions,
+          availableAuthors: EventServices.authors, 
         },
         loading: false,
         loadingText: "Loading Existing Datasets",
@@ -323,14 +323,14 @@ methods: {
     },
 
     checkFirstPage(){ 
-      // // Check for at least one distribution
-      // if (!this.uploadedFiles.length){
-      //   this.isInvalidUpload = true;
-      // } else { 
+      // Check for at least one distribution
+      if (!this.uploadedFiles.length){
+        this.isInvalidUpload = true;
+      } else { 
         this.saveRepImg(); 
         this.saveDistribution(); 
         this.setDone('first', 'second');
-      // }
+      }
     },
 
     checkSecondPage(){
