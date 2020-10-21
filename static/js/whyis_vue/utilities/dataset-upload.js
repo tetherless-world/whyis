@@ -96,7 +96,7 @@ const datasetFieldUris = {
 
   refby: `${dct}isReferencedBy`,
 
-  distribution: `${dcat}distribution`,
+  // distribution: `${dcat}distribution`,
   depiction: `${foaf}depiction`,
   hasContent: 'http://vocab.rpi.edu/whyis/hasContent',
   accessURL: `${dcat}accessURL`,
@@ -112,8 +112,7 @@ function generateDatasetId (guuid) {
     datasetId = uuidv4();
   } else {
     datasetId = guuid;
-  }
-  // const datasetId = Date.now();  
+  } 
   return `${lodPrefix}/${datasetPrefix}/${datasetId}`
 } 
 
@@ -123,18 +122,17 @@ function buildDatasetLd (dataset) {
   const datasetLd =  {
     // '@context': defaultContext,
     '@id': dataset.uri,
-    '@type': [datasetType],
-    // [foafDepictionUri]: {
-    //   '@id': `${dataset.uri}_depiction`,
-    //   [hasContentUri]: dataset.depiction
-    // }
+    '@type': [datasetType], 
   }
 
   Object.entries(dataset)
+    // filter out the ones that aren't in our allowed fields
     .filter(([field, value]) => datasetFieldUris[field])
     .forEach(([field, value]) => {  
+      // make a new dictionary
       var ldValues = {};
-      if ((value!=="")&&(value!==null)){ 
+      // If the field has a value 
+      if (!isEmpty(value)){
         ldValues = recursiveFieldSetter([field, value]);
         datasetLd[datasetFieldUris[field]] = [ldValues];
       }
@@ -142,22 +140,55 @@ function buildDatasetLd (dataset) {
   return datasetLd
 }
 
+// Recursively check if a value is empty
+function isEmpty(value) {
+  // Base case
+  if ((value==="")||(value===null)||(value===[])||(value==="undefined")){ 
+    return true
+  } else if (Array.isArray(value)) {
+    // Is empty if array has length 0
+    let arrayEmpty = (value.length === 0);
+    for (var val in value) {
+      // if any entry in the array is empty, it's empty
+      arrayEmpty = arrayEmpty || isEmpty(value[val]);
+    } 
+    return arrayEmpty;
+  } else if (typeof(value) === 'object') {
+    let objEmpty = false;
+    for (var property in value) {
+      // if any attribute of the object is empty, it's empty
+      objEmpty = objEmpty || isEmpty(value[property]);
+    }
+    return objEmpty
+  }
+  return false
+}
+
 // Helper for assigning values into JSON-LD format
 function recursiveFieldSetter ([field, value]) { 
-  var fieldDict = {} 
-  for (var val in value) {  
+  var fieldDict = {}  
+  // Fields may have multiple values, so loop through all
+  for (var val in value) {   
+    // If the value is also an array, recur through the value
     if (Array.isArray(value)){
       fieldDict[val] = recursiveFieldSetter([field, value[val]])
-    } 
+    }  
+    // type, value and id aren't in datasetFieldURIs dictionary
+    // but they are valid keys, so set the value to their value
     else if ((val === '@type') || (val === '@value') || (val === '@id')){ 
       fieldDict[val] = value[val];
+      // but if the value of val is an allowed field, use the field's value
+      // e.g., type = organization, and organization -> foaf:Organization
       if (datasetFieldUris.hasOwnProperty(value[val])){
         fieldDict[val] = datasetFieldUris[value[val]];
       }
-    }
+    } 
+    // Recursive case (val is an allowed field)
     else if (datasetFieldUris.hasOwnProperty(val)){ 
       fieldDict[datasetFieldUris[val]] = recursiveFieldSetter([datasetFieldUris[val], value[val]]);
-    } else {
+    }  
+    // Base case
+    else {
       fieldDict['@value'] = value;
     }
   }
