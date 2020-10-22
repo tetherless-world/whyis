@@ -9,7 +9,6 @@ from markupsafe import Markup
 from slugify import slugify
 from urllib import parse
 
-
 # def geomean(nums):
 #    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
@@ -180,7 +179,8 @@ def configure(app):
 ?source
 ?link
 ?target
-(group_concat(distinct ?link_type; separator=" ") as ?link_types)
+?link_type
+#(group_concat(distinct ?link_type; separator=" ") as ?link_types)
 ?np
 ?probability
 #(max(?tfidf) as ?tfidf)
@@ -221,7 +221,7 @@ where {
       #bind (?frequency * ?idf as ?tfidf)
       #bind (?tfidf/(1+?tfidf) as ?probability)
     }
-} group by ?source ?target ?link ?np ?prob_np ?probability''' % select
+} group by ?source ?target ?link ?link_type ?np ?prob_np ?probability''' % select
 
     @app.template_filter('mergeLinks')
     def mergeLink(edges):
@@ -260,7 +260,7 @@ where {
         for edge in edges:
 #            edge['source_types'] = [x for x in edge.get('source_types','').split(' ') if len(x) > 0]
 #            edge['target_types'] = [x for x in edge.get('target_types','').split(' ') if len(x) > 0]
-            edge['link_types'] = [x for x in edge.get('link_types','').split(' ') if len(x) > 0]
+            edge['link_types'] = [x for x in edge.get('link_type','').split(' ') if len(x) > 0]
             edge['articles'] = [x for x in edge.get('articles','').split(' ') if len(x) > 0]
             byLink[(edge['source'],edge['link'],edge['target'])].append(edge)
         result = list(map(merge, list(byLink.values())))
@@ -302,6 +302,8 @@ where {
         results = mergeLink(results)
         results = sorted(mergeLinkTypes(results), key=lambda x: x['probability'], reverse=True)
         for r in results:
+            if 'link_type' in r:
+                labelize(r, 'link_type', 'link_label')
             r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
             # resource = # return value of the next line is never used
             app.get_resource(rdflib.URIRef(r['link']))
