@@ -514,5 +514,5 @@ whyis:DatasetClass a owl:Class;
   whyis:newInstanceView "dataset_new.html".
 
 dcat:Dataset a whyis:DatasetClass;
+  whyis:hasView "dataset_view.html";
   whyis:editInstanceView "dataset_edit.html".
-    
