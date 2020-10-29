@@ -1,0 +1,24 @@
+                        <!---- ORIGINAL VERSION--->
+                        <md-autocomplete
+                            v-model="selectedAuthor" 
+                            :md-options="autocomplete.availableAuthors" 
+                            :md-open-on-focus="false" 
+                            @md-changed="resolveEntityAuthor"
+                            @md-selected="selectedAuthorChange"
+                          >
+                            <label>Search for Author</label>
+                
+                            <template style="width: 90% !important; left: 1px !important;" slot="md-autocomplete-item" slot-scope="{ item, term }">
+                              <!-- <md-highlight-text :md-term="term">{{ item }}</md-highlight-text> -->
+                              <label style="white-space: pre-wrap" md-term="term" md-fuzzy-search="true">{{item.label}}</label>
+                              <!-- <span v-if="item.label != item.preflabel">(preferred: {{item.preflabel}})</span> -->
+                              <!-- <span v-if="item.types.length > 0">
+                                (<span v-for="t in item.types">{{t.label}}</span><span ng-if="!$last">, </span>)
+                              </span> -->
+                            </template>
+                        
+                            <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
+                              <p>No authors matching "{{ term }}" were found.</p>
+                              <a v-on:click="showNewAuthor" style="cursor: pointer">Create new</a>
+                            </template>
+                          </md-autocomplete>
