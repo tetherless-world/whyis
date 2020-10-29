@@ -17,8 +17,13 @@
                 <md-steppers :md-active-step.sync="active" md-linear>
         
                   <md-step id="first" md-label="Upload files" :md-done.sync="first">  
-                    <!-- <form class="modal-content" action="" method="post" enctype="multipart/form-data" upload_type="http://www.w3.org/ns/dcat#Dataset"> -->
-                      <div style="margin: 20px">
+                     <div style="margin: 20px">
+
+                      <md-field style="max-width: 100%;"> 
+                        <label>DOI of related publication (e.g., 10.1000/000)</label>
+                        <md-input v-model="doi"></md-input>
+                      </md-field>
+        
                         <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
                           <label>Upload distributions (multiple allowed)</label>
                           <md-file v-model="distr_upload" id="distrFiles" multiple required isInvalidValue=false
@@ -39,7 +44,7 @@
                         </div>  
               
                         <md-field style="max-width: none;">
-                          <label>Upload a representative image</label>
+                          <label>Upload a representative image to use as thumbnail</label>
                           <md-file 
                             id="repImgUploader" v-model="rep_image" accept="image/*" 
                             v-on:change="handleImgUpload($event.target.files); previewFile()"/>
@@ -52,14 +57,12 @@
                           </figure> 
                           <md-button style="margin-left: 40px;" type="button" class="close md-raised" @click="removeImage()">Remove image</md-button>
                         </div>
-          
                       </div>
                       <md-button 
                         class="md-raised md-primary" 
                         @click="checkFirstPage()">
                         Upload and continue
-                      </md-button>
-                    <!-- </form> -->
+                      </md-button> 
     
                     </md-step>
         
@@ -78,13 +81,20 @@
                             <md-input v-model="dataset.title" required></md-input>
                             <span class="md-error">Title required</span>
                           </md-field>
-                      
-                          <div class="md-layout md-gutter" style="align-items: center;">
-                            <div class="md-layout-item md-size-15">
-                              <label>Contact Point</label>
+
+
+                          <div class="md-subheading" style="margin-top: 40px;">Contact Point</div> 
+                          <div class="md-layout md-gutter" style="align-items: center;">  
+
+                            <div class="md-layout-item md-size-25">
+                              <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint['@id']=== null))}">
+                                <label>ORCID Identifier</label>
+                                <md-input v-model="dataset.contactpoint['@id']" required></md-input>
+                                <span class="md-error">ORCID iD required</span>
+                              </md-field>
                             </div>
                       
-                            <div class="md-layout-item md-size-30">
+                            <div class="md-layout-item md-size-25">
                               <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cpfirstname === ''))}">
                                 <label>First name</label>
                                 <md-input v-model="dataset.contactpoint.cpfirstname" required></md-input>
@@ -92,7 +102,7 @@
                               </md-field>
                             </div>
                       
-                            <div class="md-layout-item md-size-30">
+                            <div class="md-layout-item md-size-25">
                               <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cplastname === ''))}">
                                 <label>Last name</label>
                                 <md-input v-model="dataset.contactpoint.cplastname" required></md-input>
@@ -107,6 +117,11 @@
                                 <span class="md-error">Valid email required</span>
                               </md-field>
                             </div>
+                          </div> 
+
+                          <div style="margin-bottom: 40px; text-align: center;">
+                            Don't have an ORCID iD?
+                            <a href="https://orcid.org/" target="_blank">Create one here</a>
                           </div>
         
                           <md-field style="max-width: 100%;" :class="{ 'md-invalid': (isInvalidForm && (dataset.description === ''))}">
@@ -125,8 +140,77 @@
                           <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px"> 
                             Contributors
                           </div>
+
+                          <div v-if="authorFirst"> 
+
+                            <md-autocomplete
+                            v-model="selectedAuthor" 
+                            :md-options="autocomplete.availableAuthors" 
+                            :md-open-on-focus="false" 
+                            @md-changed="resolveEntityAuthor"
+                            @md-selected="selectedAuthorChange"
+                          >
+                            <label>Search for Author</label>
+                
+                            <template style="width: 90% !important; left: 1px !important;" slot="md-autocomplete-item" slot-scope="{ item, term }">
+                              <!-- <md-highlight-text :md-term="term">{{ item }}</md-highlight-text> -->
+                              <label style="white-space: pre-wrap" md-term="term" md-fuzzy-search="true">{{item.label}}</label>
+                              <!-- <span v-if="item.label != item.preflabel">(preferred: {{item.preflabel}})</span> -->
+                              <!-- <span v-if="item.types.length > 0">
+                                (<span v-for="t in item.types">{{t.label}}</span><span ng-if="!$last">, </span>)
+                              </span> -->
+                            </template>
+                        
+                            <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
+                              <p>No authors matching "{{ term }}" were found.</p>
+                              <a v-on:click="showNewAuthor" style="cursor: pointer">Create new</a>
+                            </template>
+                          </md-autocomplete>
+
+                          <table class="table" width="100%" style="border-collapse: collapse;">
+                            <tbody>
+                              <tr > 
+                              <td style="width:100%">  
+                                <tr v-for="(row, index) in contributors2" 
+                                  v-bind:key="index + 'contr2'" 
+                                  style="border-top: 0.5pt lightgray solid"
+                                >
+                                  <td style="width:50%">
+                                    {{contributors2[index]['name']}}
+                                  </td>
+                                  <td style="width:50%">
+                                    <md-autocomplete 
+                                      style="max-width: 90%;" 
+                                      v-model="row['onbehalfof']['name']" 
+                                      :md-options="autocomplete.availableInstitutions" 
+                                      :md-open-on-focus="false"
+                                      @md-changed="resolveEntityInstitution"
+                                    >
+                                      <label>Organization</label>
+                          
+                                      <template style="max-width: 90%;" slot="md-autocomplete-item" slot-scope="{ item, term }">
+                                        <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
+                                      </template>
+                          
+                                      <template style="max-width: 90%;" slot="md-autocomplete-empty" slot-scope="{ term }">
+                                        <p>No organizations matching "{{ term }}" were found.</p>
+                                        <a v-on:click="showNewInstitution" style="cursor: pointer">Create new</a> 
+                                      </template>
+                                    </md-autocomplete>
+
+                                  </td>
+                                  <td>
+                                    <a v-on:click="removeElement2(index)" style="cursor: pointer" >Remove</a> 
+                                  </td>
+                                </tr>
+                              </td> 
+                              </tr>
+                            </tbody>
+
+                          </table> 
+                        </div>
                       
-                          <table class="table" width="100%"> 
+                          <table class="table" width="100%" v-else> 
                             <tbody>
                               <tr v-for="(row, index) in contributors" v-bind:key="index + 'contr'"> 
                               <td style="width:100%"> 
@@ -198,7 +282,8 @@
                               </tr>
                             </tbody>
                           </table>
-                          <div>
+
+                          <div v-if="!authorFirst"> 
                             <md-button
                               class="md-raised"
                               @click="addOrg()"
@@ -235,8 +320,9 @@
                                 </md-field>
                               </div>
                             </div>
-                      
-                            <div>
+                            
+                            <!--------Now on first page-------->
+                            <!-- <div>
                               <label>DOI(s) of Related Publication(s)</label> 
                               <md-field style="max-width: none;">
                                 <md-input 
@@ -246,7 +332,7 @@
                                 ></md-input>
                                 <span class="md-helper-text">Separate multiple DOIs with a comma or space</span>
                               </md-field>
-                            </div> 
+                            </div>  -->
                             
                           </div>
                         </md-content> 
@@ -270,6 +356,16 @@
                         <p>Text Description: {{ dataset.description }}</p>
                         <span>Contributors</span>
                         <div
+                          v-if="authorFirst"
+                          style="margin-left: 20px"
+                          v-for="(elem, index) in contributors2"
+                          v-bind:key="index + 'resContr2'"
+                        >
+                          <span>{{elem.name}}</span>
+                          <template v-if="elem.onbehalfof.name !== 'N/A'"> - {{elem.onbehalfof.name}}</template>
+                        </div> 
+                        <div
+                          v-if="!authorFirst"
                           style="margin-left: 20px"
                           v-for="(elem, index) in contributors"
                           v-bind:key="index + 'resContr'"
@@ -285,13 +381,16 @@
                         <p>Date Published: {{ dataset.datepub['@value'] }}</p>
                         <p>Date Last Modified: {{ dataset.datemod['@value'] }}</p>
                         <p> Related publications </p>
-                        <div
+                        <div style="margin-left: 20px">
+                          {{ dataset.refby }}
+                        </div>
+                        <!-- <div
                           style="margin-left: 20px"
                           v-for="(ref, index) in dataset.refby"
                           v-bind:key="index+'doi'"
                         >
                           {{ dataset.refby[index] }}
-                        </div>
+                        </div> -->
                         <p style="margin-top:10px">Distribution(s):</p> 
                         <div 
                           v-for="(file, key) in uploadedFiles" 

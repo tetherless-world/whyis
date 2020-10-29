@@ -53,25 +53,31 @@
               <md-input v-model="organization.name"></md-input>
           </md-field>
 
-          <div v-else-if="makeNew.type === 'author'" class="md-layout md-gutter" style="align-items: center;">  
-              <div class="md-layout-item md-size-30">
+          <div v-else-if="makeNew.type === 'author'" >
+            <div class="md-layout md-gutter" style="align-items: center; justify-content:center">  
+              <div class="md-layout-item md-size-50">
                 <md-field>
-                  <label>First name</label>
-                  <md-input v-model="author.firstname"></md-input> 
+                  <label>Name</label>
+                  <md-input v-model="author.name" required=""></md-input> 
                 </md-field>
               </div> 
-              <div class="md-layout-item md-size-30">
+              <!-- <div class="md-layout-item md-size-30">
                 <md-field>
                   <label>Last name</label>
-                  <md-input v-model="author.lastname"></md-input> 
+                  <md-input v-model="author.lastname" required></md-input> 
                 </md-field>
-              </div> 
-              <div class="md-layout-item md-size-25">
+              </div>  -->
+              <div class="md-layout-item md-size-50">
                 <md-field>
-                  <label>OrcID</label>
-                  <md-input v-model="author.orcid"></md-input> 
+                  <label>ORCID Identifier</label>
+                  <md-input v-model="author['@id']" style="max-width: 100%" required></md-input> 
                 </md-field>
               </div> 
+            </div>
+            <div style="margin-bottom: 40px; text-align: center;">
+              Don't have an ORCID iD?
+              <a href="https://orcid.org/" target="_blank">Create one here</a>
+            </div>
           </div>
           
           <div class="utility-margin-big viz-2-col">
@@ -159,9 +165,10 @@
         },
         author:{
           type: "Person",
-          firstname: "",
-          lastname:"",
-          orcid: null,
+          // firstname: "",
+          // lastname:"",
+          name: "",
+          '@id': null,
         }
       }
     },
@@ -212,6 +219,9 @@
           saveAgent(this.organization)
         }
         EventServices.$emit('close-filter-box', this.active)
+          // // reset this.author
+          // this.author.name = "";
+          // this.author['@id'] = null;
         return
       },
       onCancel() {

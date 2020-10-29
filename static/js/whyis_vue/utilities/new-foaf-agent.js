@@ -1,5 +1,6 @@
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub' 
+import EventServices from '../modules/events/event-services'
 
 const defaultContext= { 
     "dcat": "http://w3.org/ns/dcat#",
@@ -32,6 +33,7 @@ const defaultOrganization = {
 const defaultAuthor = {
     "@id": null,
     "@type": "http://xmlns.com/foaf/0.1/Person",
+    name:"",
     lastname: "",
     firstname: "",
 }
@@ -39,12 +41,12 @@ const defaultAuthor = {
 const foaf = "http://xmlns.com/foaf/0.1/"
 
 const agentFieldUris = {
-    name: `${foaf}:name`,  
-    organization: `${foaf}:Organization`, 
-    person: `${foaf}:Person`, 
-    onbehalfof:"http://www.w3.org/ns/prov#actedOnBehalfOf",
-    lastname: `${foaf}:lastname`,
-    firstname: `${foaf}:firstname`,
+    name: `${foaf}name`,  
+    organization: `${foaf}Organization`, 
+    person: `${foaf}Person`, 
+    onbehalfof: "http://www.w3.org/ns/prov#actedOnBehalfOf",
+    lastname: `${foaf}lastname`,
+    firstname: `${foaf}firstname`,
 } 
  
 const organizationPrefix = 'organization' 
@@ -68,7 +70,9 @@ function generateURI (agent, orcid) {
   } else {
     var agentId = orcid;
   }
-  return `${window.location.origin}/${agent.type}/${agent.lastname}${agent.firstname}/${agentId}`
+  const name = agent.name.replace(/\s+/g, '');
+  // return `${lodPrefix}/${agent.type}/${agent.lastname}${agent.firstname}/${agentId}`
+  return `${lodPrefix}/${agent.type}/${name}/${agentId}`
 }
 
 function buildLd (agent) {
@@ -82,18 +86,9 @@ function buildLd (agent) {
 
   Object.entries(agent)
     .filter(([field, value]) => agentFieldUris[field])
-    .forEach(([field, value]) => agentLd[agentFieldUris[field]] = [{ '@value': value }])
+    .forEach(([field, value]) => agentLd[agentFieldUris[field]] = [{ '@value': value }]);
 
-  // Object.entries(agent)
-  //   .filter(([field, value]) => agentFieldUris[field])
-    
-  //   .forEach(([field, value]) => {  
-  //     var ldValues = {};
-  //     if ((value!=="")&&(value!==null)){ 
-  //       ldValues = recursiveFieldSetter([field, value]);
-  //       agentLd[agentFieldUris[field]] = [ldValues];
-  //     }
-  //   })
+  console.log(agentLd) 
   return agentLd
 }
 
@@ -128,69 +123,23 @@ function getDefaultAgent (type) {
     }
 }
 
-
-// function loadChartFromNanopub(nanopubUri, datasetUri) {
-//   return describeNanopub(nanopubUri)
-//     .then((describeData) => {
-//       const assertion_id = `${nanopubUri}_assertion`
-//       for (let graph of describeData) {
-//         if (graph['@id'] === assertion_id) {
-//           for (let resource of graph['@graph']) {
-//             if (resource['@id'] === datasetUri) {
-//               return extractChart(resource)
-//             }
-//           }
-//         }
-//       }
-//     })
-// }
-
-// function loadDataset (datasetUri) {
-//   return listNanopubs(datasetUri)
-//     .then(nanopubs => {
-//       if (nanopubs.length > 0) {
-//         const nanopubUri = nanopubs[0].np
-//         return loadChartFromNanopub(nanopubUri, datasetUri)
-//       }
-//     })
-// }
-
-
-// function extractChart (chartLd) {
-//   const chart = Object.assign({}, defaultDataset)
-
-//   Object.entries(defaultDataset)
-//     .forEach(([field]) => {
-//       // let value = "";
-//       let uri = agentFieldUris[field];
-//       var val = chartLd[uri];
-//       console.log(val)
-//       if ((uri in chartLd) && (typeof val !== `undefined`) ){
-//         console.log(val[0])
-//         if (typeof val[0]['@value'] !== `undefined`){
-//           chart[field] = chartLd[uri][0]['@value']
-//         }  
-//       }
-//       // chart[field] = value
-//     })
-    
-//   return chart
-// }
-
-
 async function saveAgent (agent) {
-  let deletePromise = Promise.resolve()
-  if (agent.orcid) {
-    deletePromise = deleteAgent(agent.orcid)
-    agent.uri = generateURI(agent, agent.orcid) 
-  } else {
-    agent.uri = generateURI(agent)
-  } 
+  // let deletePromise = Promise.resolve()
+  // if (agent.orcid) {
+  //   deletePromise = deleteAgent(agent.orcid)
+  //   agent.uri = generateURI(agent, agent.orcid) 
+  // } else {
+    agent.uri = generateURI(agent, agent['@id'])
+  // } 
+// }
+  // } 
   const agentLd = buildLd(agent) 
-  await deletePromise
+  // await deletePromise
   try{
     console.log(agent.uri)
+    agent['@id'] = agent.uri;
     return postNewNanopub(agentLd, defaultContext)
+    .then(EventServices.author = agent)
   } catch(err){
     return alert(err)
   }

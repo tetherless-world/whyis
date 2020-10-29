@@ -19,84 +19,93 @@ const datasetId = uuidv4();
 export default Vue.component('dataset-uploader', {
 data() {
     return {
-        dataset: { 
-          title: "",
-          description: "",
-          contactpoint: {
-            "@type": "individual",
-            cpfirstname: "",
-            cplastname: "",
-            cpemail: "",
-          },
-          contributor: [],
-          author: [],
-          datepub: {
-            "@type": "date",
-            "@value": "",
-          },
-          datemod: {
-            "@type": "date",
-            "@value": "",
-          },
-          refby: [], 
-          // distribution:{
-          //   accessURL: null,
-          //   '@id': null,
-          //   hasContent: null,
-          // },
-          depiction: {
-            name: '',
-            accessURL: null,
-            '@id': null,
-            hasContent: null,
-          }
+      dataset: { 
+        title: "",
+        description: "",
+        contactpoint: {
+          "@type": "individual",
+          "@id": null,
+          name: "",
+          cpfirstname: "",
+          cplastname: "",
+          cpemail: "",
         },
-  
-        generatedUUID: datasetId,
-  
-        dois: "",
-        contributors: [],
-        distr_upload: [],
-        rep_image: [],
-  
-        // Stepper data
-        active: "first",
-        first: false,
-        second: false,
-        third: false,
-  
-        //handle uploads
-        uploadedFiles: [],
-        uploadedImg: [],
-        uploadError: null,
-        currentStatus: null,
-        distrStatus: STATUS_INITIAL,
-        depictStatus: STATUS_INITIAL,
-        isInvalidUpload: false,
-        isInvalidForm: false,
-        uploadFieldName: 'distributions',
- 
+        contributor: [],
+        author: [],
+        datepub: {
+          "@type": "date",
+          "@value": "",
+        },
+        datemod: {
+          "@type": "date",
+          "@value": "",
+        },
+        refby: [], 
+        // distribution:{
+        //   accessURL: null,
+        //   '@id': null,
+        //   hasContent: null,
+        // },
+        depiction: {
+          name: '',
+          accessURL: null,
+          '@id': null,
+          hasContent: null,
+        }
+      },
 
-        selectedText: '',
-        filter: false,
-        bottomPosition:'md-bottom-right',
-        speedDials: false,
-        // speedDials: EventServices.speedDials,
-        authenticated: EventServices.authUser,
-        autocomplete: {
-          // availableInstitutions: [],
-          // availableAuthors: [],
-          availableInstitutions: EventServices.institutions,
-          availableAuthors: EventServices.authors, 
-        },
-        loading: false,
-        loadingText: "Loading Existing Datasets",
+      generatedUUID: datasetId,
+
+      //TODO: remove dois
+      doi: "",
+      dois: "",
+      contributors: [],
+      contributors2: [],
+      distr_upload: [],
+      rep_image: [],
+
+      // Stepper data
+      active: "first",
+      first: false,
+      second: false,
+      third: false,
+
+      //handle uploads
+      uploadedFiles: [],
+      uploadedImg: [],
+      uploadError: null,
+      currentStatus: null,
+      distrStatus: STATUS_INITIAL,
+      depictStatus: STATUS_INITIAL,
+      isInvalidUpload: false,
+      isInvalidForm: false,
+      uploadFieldName: 'distributions',
+
+
+      selectedText: '',
+      filter: false,
+      bottomPosition:'md-bottom-right',
+      speedDials: false,
+      // speedDials: EventServices.speedDials,
+      authenticated: EventServices.authUser,
+      autocomplete: {
+        availableInstitutions: [],
+        availableAuthors: [],
+        // availableInstitutions: EventServices.institutions,
+        // availableAuthors: EventServices.authors, 
+      },
+      loading: false,
+      loadingText: "Loading Existing Datasets",
 
       /// search
       query: null,
       selectedAuthor: [],
       items: [],
       testChips: [],
+
+      // TODO: Switch author and org
+      authorFirst: true,
+      selectedOrg: [],
     }
 },
 methods: {
@@ -130,9 +139,15 @@ methods: {
     removeElement: function (index) {
       this.contributors.splice(index, 1);
     },
+    //TODO
+    removeElement2: function (index) {
+      this.contributors2.splice(index, 1);
+    },
+    //TODO for doi autofill: replaced multiple with only one
     editDois: function () {
-      var doisseparated = this.dois.split(/[ ,]+/);
-      this.dataset.refby = doisseparated.map((x) => "https://dx.doi.org/" + x);
+      this.dataset.refby = "https://dx.doi.org/" + this.doi;
+      // var doisseparated = this.dois.split(/[ ,]+/);
+      // this.dataset.refby = doisseparated.map((x) => "https://dx.doi.org/" + x);
     },
 
     /* 
@@ -148,12 +163,16 @@ methods: {
         this.contributors[index]["authors"].forEach((x) => this.setAuthors(org, x));
       }
     },
+    handleContrAuth2: function(){
+      this.dataset.author = this.contributors2
+      this.dataset.contributor = []
+    },
     setContributors: function (index) {
       var contr = this.contributors[index]["org"];
       if (contr !== ""){
         this.dataset.contributor.push({
           "@type": "organization",
-        name: contr,
+          name: contr,
         })
       };
     },
@@ -180,12 +199,24 @@ methods: {
       if ((this.selectedAuthor[index] !== null)&& (this.selectedAuthor[index] !== "")){
         this.contributors[index]['authors'].push(this.selectedAuthor[index]);
       }
-      console.log(this.contributors)
+      this.selectedAuthor = [];
+      // console.log(this.contributors)
     },
     removeAuthor (ind, index){
       this.contributors[index]['authors'].splice(ind, 1)
       this.selectedAuthor[index] = "";
-      console.log(this.contributors)
+      // console.log(this.contributors)
+    },
+    //TODO: 
+    selectOrganization (index){
+      if ((this.selectedOrg[index] !== null)&& (this.selectedOrg[index] !== "")){
+        this.contributors[index]['onbehalfof'].push( 
+          {
+            "@type": "organization",
+            name: this.selectedOrg[index],
+          },
+        );
+      }
     },
 
     /*
@@ -322,35 +353,44 @@ methods: {
       }
     },
 
-    checkFirstPage(){ 
+    async checkFirstPage(){ 
       // Check for at least one distribution
-      if (!this.uploadedFiles.length){
-        this.isInvalidUpload = true;
-      } else { 
+      // if (!this.uploadedFiles.length){
+      //   this.isInvalidUpload = true;
+      // } else { 
         this.saveRepImg(); 
         this.saveDistribution(); 
-        this.setDone('first', 'second');
-      }
+
+        const result = await this.getDOI()
+        .then(this.setDone('first', 'second'));
+      // }
     },
 
     checkSecondPage(){
       // Check the required fields
       const titleBool = (this.dataset.title === "");
+      const cpidBool = (this.dataset.contactpoint['@id'] === null);
       const cpfirstnameBool = (this.dataset.contactpoint.cpfirstname === "");
       const cplastnameBool = (this.dataset.contactpoint.cplastname === "");
       const cpemailBool = (this.dataset.contactpoint.cpemail === "");
       const descriptionBool = (this.dataset.description === "");
 
       // Prevent form submission if required fields are empty
-      if (titleBool || cpfirstnameBool || cplastnameBool || cpemailBool || descriptionBool){
+      if (titleBool || cpidBool || cpfirstnameBool || cplastnameBool || cpemailBool || descriptionBool){
         this.isInvalidForm = true;
       } if (!this.validEmail(this.dataset.contactpoint.cpemail)) { 
         this.dataset.contactpoint.cpemail = '';
         this.isInvalidForm = true;
       } else { 
         this.isInvalidForm = false;
+        this.dataset.contactpoint.name = this.dataset.contactpoint.cpfirstname.concat(" ", this.dataset.contactpoint.cplastname);
         this.setDone('second', 'third'); 
-        this.handleContrAuth();
+        if(this.authorFirst){
+          this.handleContrAuth2();
+        } else{
+          this.handleContrAuth();
+        }
+        this.editDois();
       }
     },
 
@@ -378,40 +418,152 @@ methods: {
       }
     },   
 
-    processAutocompleteMenu () {
-      return processAutocompleteMenu();
-    }, 
+    // processAutocompleteMenu () {
+    //   return processAutocompleteMenu();
+    // }, 
 
     // Auto-complete methods for author and institution
     resolveEntityAuthor (query) {
-      this.items = axios.get('/',{params:{view:'resolve',term:query+"*", type: "http://xmlns.com/foaf/0.1/Person"},
-                            responseType:'json' })
+      this.autocomplete.availableAuthors = axios.get('/',
+        {params:{view:'resolve',term:query+"*", type: "http://xmlns.com/foaf/0.1/Person"}, responseType:'json' })
           .then(function(response) {
-            console.log(response.data)
-              return response.data;
+            console.log(response.data);
+            return response.data;
           });
     },
     resolveEntityInstitution (query) {
-      this.items = axios.get('/',{params:{view:'resolve',term:query+"*", type:"http://xmlns.com/foaf/0.1/Organization"},
-                            responseType:'json' })
+      this.autocomplete.availableInstitutions = axios.get('/',
+      {params:{view:'resolve',term:query+"*", type:"http://xmlns.com/foaf/0.1/Organization"}, responseType:'json' })
           .then(function(response) {
-            console.log(response.data)
-              return response.data;
+            console.log(response.data);
+            return response.data;
           });
     },
-    // selectedAuthorChange(item) {
-    //   console.log(`selected item ${item}`)
-    //     // window.location.href = '/'+'about?uri='+window.encodeURIComponent(item.node);
-    // }, 
+    selectedAuthorChange(item) {
+      var elem = document.createElement("tr");
+      var name;
+      if (item.label){
+        name = item.label;
+      }
+      else{
+        name = item.name;
+      }
+      this.contributors2.push({
+        '@id': item.node, 
+        "@type": "person",
+        "name": name,
+        onbehalfof: {
+          "@type": "organization",
+          "name": "N/A"
+        },
+      });
+      console.log(this.contributors2)
+    }, 
 
+    //TODO
+    addAuthor (agent) {
+      var elem = document.createElement("tr");
+
+      // if (arguments.length === 1) {
+      //   this.contributors2.push(agent);
+      // } else {
+        this.contributors2.push({
+          '@id': agent['@id'], 
+          "@type": "person",
+          "name": agent.name,
+          // "firstname": "",
+          // "lastname": "",
+          onbehalfof: {
+            "@type": "organization",
+            "name": "N/A"
+          },
+        }); 
+      // }
+      
+      console.log(this.contributors2)
+    },
+
+    async getDOI() {
+      // Don't do anything if no doi has been entered
+      if (this.doi === ""){
+        return
+      }
+      //Otherwise... 
+      const datasetTitle = this.dataset.title;
+      const res = await axios.get(`http://dx.doi.org/${this.doi}`, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      .then(async response => {
+        console.log(response.data); 
+        this.dataset.title = response.data.title;
+        if (response.data.abstract){
+          this.dataset.description = response.data.abstract;
+        }
+        var dateiss = response.data.issued;
+        if (dateiss){
+          if (dateiss['date-parts']){
+            var dateissstring = dateiss['date-parts'].toString();
+            this.dataset.datepub['@value'] = await this.checkDateFormat(dateissstring);
+          }
+        }
+        var datecreated = response.data.created;
+        if (datecreated){
+          if (datecreated['date-parts']){
+            var datecreatedstring = datecreated['date-parts'].toString();
+            this.dataset.datemod['@value'] = await this.checkDateFormat(datecreatedstring);
+          }
+        }
+        //// TODO : Fix this
+        // if (response.data.author){
+        //   response.data.author.forEach(element => {
+        //     this.getAuthorFromDOI(element);
+        //   });
+        // }
+      })
+      .catch(err => { 
+        throw err;
+      }); 
+    }, 
+
+    async checkDateFormat (date) {
+      date = date.replace(/,/g, "-");
+      const incDateRegExp = /^[0-9]{4}\-[0-9]{1}\-[0-9]{2}?$/;
+      if(incDateRegExp.test(date)){
+        date = date.substring(0, 5) + '0' + date.substring(5)
+      }
+      return date
+    },
+
+    getAuthorFromDOI(author){
+      var newAuthor = {
+        '@id': null,
+        name: "",
+        onbehalfof: null,
+      }
+      if (author.ORCID){
+        newAuthor['@id'] = author.ORCID;
+      }
+      if (author.family && author.given){
+        newAuthor.name = author.given + " " + author.family;
+        this.contributors2.push(newAuthor)
+      } else if (author.name){
+        newAuthor.name = author.name;
+        this.contributors2.push(newAuthor)
+      }
+    },
 
     // Create dialog boxes
     showNewInstitution () {
-      EventServices.$emit('open-new-instance', {status: true, title:"Add new institution", type: "institution"});
+      EventServices
+      .$emit('open-new-instance', {status: true, title:"Add new institution", type: "institution"})
       return
     },
     showNewAuthor () {
-      EventServices.$emit('open-new-instance', {status: true, title:"Add new author", type: "author"});
+      EventServices
+      .$emit('open-new-instance', {status: true, title:"Add new author", type: "author"})
+      .$on('authorSelected', (data) => this.addAuthor(data) );
       return
     },
 
@@ -433,7 +585,7 @@ created() {
   this.loadDataset();
   EventServices
   .$on('isauthenticated', (data) => this.authenticated = data)
-  .$on('institutionsupdated', (data) => this.availableInstitutions = data)
-  .$on('authorsupdated', (data) => this.availableAuthors = data)
+  // .$on('institutionsupdated', (data) => this.availableInstitutions = data)
+  // .$on('authorsupdated', (data) => this.availableAuthors = data)
 }
 })
