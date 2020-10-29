@@ -40,6 +40,8 @@ const defaultDataset = {
   description: "",
   contactpoint: {
     "@type": "individual",
+    "@id": null,
+    name:"",
     cpfirstname: "",
     cplastname: "",
     cpemail: "",
@@ -131,6 +133,7 @@ function buildDatasetLd (dataset) {
     .forEach(([field, value]) => {  
       // make a new dictionary
       var ldValues = {};
+      console.log(field)
       // If the field has a value 
       if (!isEmpty(value)){
         ldValues = recursiveFieldSetter([field, value]);
@@ -166,33 +169,44 @@ function isEmpty(value) {
 
 // Helper for assigning values into JSON-LD format
 function recursiveFieldSetter ([field, value]) { 
-  var fieldDict = {}  
-  // Fields may have multiple values, so loop through all
-  for (var val in value) {   
-    // If the value is also an array, recur through the value
-    if (Array.isArray(value)){
-      fieldDict[val] = recursiveFieldSetter([field, value[val]])
-    }  
-    // type, value and id aren't in datasetFieldURIs dictionary
-    // but they are valid keys, so set the value to their value
-    else if ((val === '@type') || (val === '@value') || (val === '@id')){ 
-      fieldDict[val] = value[val];
-      // but if the value of val is an allowed field, use the field's value
-      // e.g., type = organization, and organization -> foaf:Organization
-      if (datasetFieldUris.hasOwnProperty(value[val])){
-        fieldDict[val] = datasetFieldUris[value[val]];
-      }
-    } 
-    // Recursive case (val is an allowed field)
-    else if (datasetFieldUris.hasOwnProperty(val)){ 
-      fieldDict[datasetFieldUris[val]] = recursiveFieldSetter([datasetFieldUris[val], value[val]]);
-    }  
-    // Base case
-    else {
-      fieldDict['@value'] = value;
+
+  // If the value is also an array, recur through the value
+  if (Array.isArray(value)){
+    var fieldArray = []
+    for (var val in value) {
+      console.log(val)
+      console.log(value[val])
+      fieldArray.push( recursiveFieldSetter([field, value[val]]) );
     }
+    return fieldArray
+  }  
+  else{
+    var fieldDict = {}  
+    // Fields may have multiple values, so loop through all
+    for (var val in value) {   
+      
+      // type, value and id aren't in datasetFieldURIs dictionary
+      // but they are valid keys, so set the value to their value
+      if ((val === '@type') || (val === '@value') || (val === '@id')){ 
+        fieldDict[val] = value[val];
+        // but if the value of val is an allowed field, use the field's value
+        // e.g., type = organization, and organization -> foaf:Organization
+        if (datasetFieldUris.hasOwnProperty(value[val])){
+          fieldDict[val] = datasetFieldUris[value[val]];
+        }
+      } 
+      // Recursive case (val is an allowed field)
+      else if (datasetFieldUris.hasOwnProperty(val)){ 
+        fieldDict[datasetFieldUris[val]] = recursiveFieldSetter([datasetFieldUris[val], value[val]]);
+      }  
+      // Base case
+      else {
+        fieldDict['@value'] = value;
+      }
+    }
+    return fieldDict
+
   }
-  return fieldDict
 }
 
 // Blank dataset
@@ -289,7 +303,7 @@ const processAutocompleteMenu = () => {
     run = setInterval(() => {
         const floatList = document.getElementsByClassName("md-menu-content-bottom-start")
         if(floatList.length >= 1) {
-            floatList[0].setAttribute("style", "z-index:1000 !important; width: 80%; max-width: 80%; position: absolute; top: 644px; left:50%; transform:translateX(-50%); will-change: top, left;")
+            floatList[0].setAttribute("style", "z-index:1000 !important; width: 80%; max-width: 80%; position: absolute; left:50%; transform:translateX(-50%); will-change: top, left;")
             return status = true
         }
     }, 40)
