@@ -177,7 +177,8 @@
                                   style="border-top: 0.5pt lightgray solid"
                                 >
                                   <td style="width:50%">
-                                    {{contributors2[index]['name']}}
+                                    <!-- {{contributors2[index]['name']}} -->
+                                    {{contributors2}}
                                   </td>
                                   <td style="width:50%">
                                     <md-autocomplete 
@@ -322,19 +323,6 @@
                               </div>
                             </div>
                             
-                            <!--------Now on first page-------->
-                            <!-- <div>
-                              <label>DOI(s) of Related Publication(s)</label> 
-                              <md-field style="max-width: none;">
-                                <md-input 
-                                  v-model="dois" 
-                                  v-on:input="editDois"
-                                  placeholder="E.g.: 10.1000/182"
-                                ></md-input>
-                                <span class="md-helper-text">Separate multiple DOIs with a comma or space</span>
-                              </md-field>
-                            </div>  -->
-                            
                           </div>
                         </md-content> 
                         <md-button class="md-raised md-primary" @click="checkSecondPage">Next</md-button>
@@ -363,7 +351,7 @@
                           v-bind:key="index + 'resContr2'"
                         >
                           <span>{{elem.name}}</span>
-                          <template v-if="elem.onbehalfof.name !== 'N/A'"> - {{elem.onbehalfof.name}}</template>
+                          <template v-if="(elem.onbehalfof !== null)&&(elem.onbehalfof.name !== 'N/A')"> - {{elem.onbehalfof.name}}</template>
                         </div> 
                         <div
                           v-if="!authorFirst"
@@ -412,27 +400,6 @@
                 </md-steppers>
                 </form>
               </md-card>
-            <!--------->
-            <md-speed-dial :class="bottomPosition" v-if="speedDials">
-              <md-speed-dial-target class="utility-float-icon">
-                <md-icon>menu</md-icon>
-              </md-speed-dial-target>
-      
-              <md-speed-dial-content>
-                <md-button class="md-icon-button" @click.prevent="cancelFilter">
-                  <md-tooltip class="utility-bckg" md-direction="left"> Cancel Filter </md-tooltip>
-                  <md-icon class="utility-color">search_off</md-icon>
-                </md-button>
-                <md-button class="md-icon-button" @click="null">
-                  <md-tooltip class="utility-bckg" md-direction="left"> Filter </md-tooltip>
-                  <md-icon class="utility-color">search</md-icon>
-                </md-button>
-                <md-button class="md-icon-button" v-if="authenticated !== undefined" @click.prevent="null">
-                  <md-tooltip class="utility-bckg" md-direction="left">Create New Chart</md-tooltip>
-                  <md-icon class="utility-color">add</md-icon>
-                </md-button>
-              </md-speed-dial-content>
-            </md-speed-dial>
           </div>
         </div>
       </template>
