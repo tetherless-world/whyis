@@ -58,11 +58,22 @@
                           <md-button style="margin-left: 40px;" type="button" class="close md-raised" @click="removeImage()">Remove image</md-button>
                         </div>
                       </div>
-                      <md-button 
-                        class="md-raised md-primary" 
-                        @click="checkFirstPage()">
-                        Upload and continue
-                      </md-button> 
+                      <div class="md-layout" style="align-items: center;">
+                        <div class="md-layout-item">
+                          <md-button 
+                            class="md-raised md-primary" 
+                            @click="checkFirstPage()">
+                            Upload and continue
+                          </md-button> 
+                        </div>
+                        <div class="md-layout-item" v-if="doiLoading">
+                          <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+                        </div>
+                        <div class="md-layout-item">
+                        </div>
+                        <div class="md-layout-item">
+                        </div>
+                      </div>
     
                     </md-step>
         
@@ -176,11 +187,13 @@
                                   v-bind:key="index + 'contr2'" 
                                   style="border-top: 0.5pt lightgray solid"
                                 >
-                                  <td style="width:50%">
-                                    <!-- {{contributors2[index]['name']}} -->
-                                    {{contributors2}}
+                                  <td style="width:40%">
+                                    {{contributors2[index]['name']}}
                                   </td>
-                                  <td style="width:50%">
+                                  <td style="width:30%">
+                                    {{contributors2[index]['@id']}}
+                                  </td>
+                                  <td style="width:30%">
                                     <md-autocomplete 
                                       style="max-width: 90%;" 
                                       v-model="row['onbehalfof']['name']" 
