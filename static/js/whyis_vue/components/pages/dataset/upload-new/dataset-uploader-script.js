@@ -573,6 +573,21 @@ methods: {
     },
     cancelFilter(){
     return EventServices.cancelChartFilter();
+    },
+    setListStyle(param){
+      if(param){
+        if(runSetStyle){
+          return clearInterval(runSetStyle);
+        }
+      }
+      runSetStyle = setInterval(() => {
+        const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+        if(itemListContainer.length >= 1) {
+          itemListContainer[0].setAttribute("style", "width: 90%; max-width: 90%; position: absolute; top: 841px; left: 95px; will-change: top, left;")
+          return status = true
+        }
+      }, 20)
+      return runSetStyle
     }
 }, 
 
