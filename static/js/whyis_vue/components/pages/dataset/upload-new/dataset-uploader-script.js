@@ -55,6 +55,7 @@ data() {
       generatedUUID: datasetId,
 
       doi: "",
+      doiLoading: false,
       contributors: [],
       contributors2: [],
       distr_upload: [],
@@ -335,16 +336,21 @@ methods: {
     },
 
     async checkFirstPage(){ 
+      this.doiLoading = true;
       // Check for at least one distribution
       // if (!this.uploadedFiles.length){
       //   this.isInvalidUpload = true;
       // } else { 
         this.saveRepImg(); 
         this.saveDistribution(); 
-
-        const result = await this.getDOI()
-        const usedResult = await this.useDOI(result)
-        .then(this.setDone('first', 'second'));
+        
+        if (this.doi === ""){
+          this.doiLoading = false;
+          this.setDone('first', 'second');
+        }
+        else {
+          const result = await this.getDOI();
+        }
       // }
     },
 
@@ -376,13 +382,13 @@ methods: {
       }
     },
 
-        // Handle steppers
-        setDone (id, index) {
-          this[id] = true; 
-          if (index) {
-            this.active = index;
-          };
-        },
+    // Handle steppers
+    setDone (id, index) {
+      this[id] = true; 
+      if (index) {
+        this.active = index;
+      };
+    },
     
 
     // Use regex for valid email format
@@ -473,12 +479,19 @@ methods: {
         headers: {
           'Accept': 'application/json',
         }
-      })
+      });
+      const result = await this.useDOI(response)
       .then(response => {
         console.log(response.data); 
-        return response.data;
+
+        this.doiLoading = false;
+        this.setDone('first', 'second');
       })
       .catch(err => { 
+        console.log(response.data); 
+
+        this.doiLoading = false;
+        this.setDone('first', 'second');
         throw err;
       }); 
     }, 
@@ -525,7 +538,7 @@ methods: {
         name: "",
         onbehalfof: {
           "@type": "organization",
-          name: org,
+          name: "N/A",
         },
       }
       if (author.ORCID){
@@ -577,8 +590,6 @@ methods: {
       return runSetStyle
     }
 }, 
-
-//TODO: Make sure this comment stays with merge fix
 
 created() { 
   this.loading = true;
