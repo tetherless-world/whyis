@@ -1,6 +1,5 @@
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
-import { goToView } from 'utilities/views' 
 
 // TODO: Check whether this is necessary
 const defaultContext= { 

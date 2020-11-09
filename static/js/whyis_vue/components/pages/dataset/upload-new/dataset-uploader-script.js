@@ -1,8 +1,6 @@
 import Vue from 'vue';
 import { EventServices } from '../../../../modules';
 import VueMaterial from "vue-material";
-import "vue-material/dist/vue-material.min.css";
-import "vue-material/dist/theme/default.css";
 import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, processAutocompleteMenu} from "utilities/dataset-upload";
 import { goToView } from "utilities/views"; 
 // import { resolveEntity } from '../../../../../whyis'
@@ -56,9 +54,7 @@ data() {
 
       generatedUUID: datasetId,
 
-      //TODO: remove dois
       doi: "",
-      dois: "",
       contributors: [],
       contributors2: [],
       distr_upload: [],
@@ -74,25 +70,15 @@ data() {
       uploadedFiles: [],
       uploadedImg: [],
       uploadError: null,
-      currentStatus: null,
       distrStatus: STATUS_INITIAL,
       depictStatus: STATUS_INITIAL,
       isInvalidUpload: false,
       isInvalidForm: false,
-      uploadFieldName: 'distributions',
 
-
-      selectedText: '',
-      filter: false,
-      bottomPosition:'md-bottom-right',
-      speedDials: false,
-      // speedDials: EventServices.speedDials,
       authenticated: EventServices.authUser,
       autocomplete: {
         availableInstitutions: [],
         availableAuthors: [],
-        // availableInstitutions: EventServices.institutions,
-        // availableAuthors: EventServices.authors, 
       },
       loading: false,
       loadingText: "Loading Existing Datasets",
@@ -100,8 +86,6 @@ data() {
       /// search
       query: null,
       selectedAuthor: [],
-      items: [],
-      testChips: [],
 
       // TODO: Switch author and org
       authorFirst: true,
@@ -112,7 +96,6 @@ methods: {
 
 
     loadDataset () {
-        console.log(this.speedDials)
         let getDatasetPromise
         if (this.pageView === 'new') {
           getDatasetPromise = Promise.resolve(getDefaultDataset())
@@ -125,7 +108,7 @@ methods: {
             this.loading = false;
           })
       },
-  
+    // TODO: get rid of this once we know we're doing author
     addOrg () {
       var elem = document.createElement("tr");
       this.contributors.push({
@@ -146,8 +129,6 @@ methods: {
     //TODO for doi autofill: replaced multiple with only one
     editDois: function () {
       this.dataset.refby = "https://dx.doi.org/" + this.doi;
-      // var doisseparated = this.dois.split(/[ ,]+/);
-      // this.dataset.refby = doisseparated.map((x) => "https://dx.doi.org/" + x);
     },
 
     /* 
@@ -362,6 +343,7 @@ methods: {
         this.saveDistribution(); 
 
         const result = await this.getDOI()
+        const usedResult = await this.useDOI(result)
         .then(this.setDone('first', 'second'));
       // }
     },
@@ -394,19 +376,21 @@ methods: {
       }
     },
 
+        // Handle steppers
+        setDone (id, index) {
+          this[id] = true; 
+          if (index) {
+            this.active = index;
+          };
+        },
+    
+
     // Use regex for valid email format
     validEmail (email) {
       var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
     },
 
-    // Handle steppers
-    setDone (id, index) {
-      this[id] = true; 
-      if (index) {
-        this.active = index;
-      };
-    },
 
     submitForm: function () {
       try { 
@@ -416,11 +400,7 @@ methods: {
         this.uploadError = err.response;
         this.distrStatus = STATUS_FAILED;
       }
-    },   
-
-    // processAutocompleteMenu () {
-    //   return processAutocompleteMenu();
-    // }, 
+    },  
 
     // Auto-complete methods for author and institution
     resolveEntityAuthor (query) {
@@ -489,43 +469,46 @@ methods: {
         return
       }
       //Otherwise... 
-      const datasetTitle = this.dataset.title;
-      const res = await axios.get(`http://dx.doi.org/${this.doi}`, {
+      const response = await axios.get(`http://dx.doi.org/${this.doi}`, {
         headers: {
           'Accept': 'application/json',
         }
       })
-      .then(async response => {
+      .then(response => {
         console.log(response.data); 
-        this.dataset.title = response.data.title;
-        if (response.data.abstract){
-          this.dataset.description = response.data.abstract;
-        }
-        var dateiss = response.data.issued;
-        if (dateiss){
-          if (dateiss['date-parts']){
-            var dateissstring = dateiss['date-parts'].toString();
-            this.dataset.datepub['@value'] = await this.checkDateFormat(dateissstring);
-          }
-        }
-        var datecreated = response.data.created;
-        if (datecreated){
-          if (datecreated['date-parts']){
-            var datecreatedstring = datecreated['date-parts'].toString();
-            this.dataset.datemod['@value'] = await this.checkDateFormat(datecreatedstring);
-          }
-        }
-        //// TODO : Fix this
-        // if (response.data.author){
-        //   response.data.author.forEach(element => {
-        //     this.getAuthorFromDOI(element);
-        //   });
-        // }
+        return response.data;
       })
       .catch(err => { 
         throw err;
       }); 
     }, 
+
+    async useDOI (response){
+      this.dataset.title = response.data.title;
+      if (response.data.abstract){
+        this.dataset.description = response.data.abstract;
+      }
+      var dateiss = response.data.issued;
+      if (dateiss){
+        if (dateiss['date-parts']){
+          var dateissstring = dateiss['date-parts'].toString();
+          this.dataset.datepub['@value'] = await this.checkDateFormat(dateissstring);
+        }
+      }
+      var datecreated = response.data.created;
+      if (datecreated){
+        if (datecreated['date-parts']){
+          var datecreatedstring = datecreated['date-parts'].toString();
+          this.dataset.datemod['@value'] = await this.checkDateFormat(datecreatedstring);
+        }
+      }
+      //// TODO : Fix this
+      if (response.data.author){
+        response.data.author.forEach(element => {
+          this.getAuthorFromDOI(element);
+        });
+      }
+    },
 
     async checkDateFormat (date) {
       date = date.replace(/,/g, "-");
@@ -540,7 +523,10 @@ methods: {
       var newAuthor = {
         '@id': null,
         name: "",
-        onbehalfof: null,
+        onbehalfof: {
+          "@type": "organization",
+          name: org,
+        },
       }
       if (author.ORCID){
         newAuthor['@id'] = author.ORCID;
@@ -552,6 +538,7 @@ methods: {
         newAuthor.name = author.name;
         this.contributors2.push(newAuthor)
       }
+      console.log(this.contributors2)
     },
 
     // Create dialog boxes
@@ -590,6 +577,8 @@ methods: {
       return runSetStyle
     }
 }, 
+
+//TODO: Make sure this comment stays with merge fix
 
 created() { 
   this.loading = true;
