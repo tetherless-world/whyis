@@ -80,7 +80,7 @@ class LinkedData(Importer):
         print(u)
         r = requests.get(u, headers=self.headers, allow_redirects=True)
         g = rdflib.Dataset()
-        local = g.graph(rdflib.URIRef("urn:default_assertion"))
+        local = g.graph(rdflib.BNode())
         local.parse(data=r.text, format=self.format)
         # print self.postprocess_update
         if self.postprocess_update is not None:
