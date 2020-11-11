@@ -9,4 +9,4 @@
     minus { ?target a sio:Term.}
     filter (!sameTerm(?source, ?target) && isIRI(?target))
 
-''' | probit(source=this.identifier) | tojson }}
+''' | probit(source=this.identifier) | tojson | safe}}
