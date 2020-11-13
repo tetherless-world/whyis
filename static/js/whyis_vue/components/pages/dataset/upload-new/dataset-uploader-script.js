@@ -56,6 +56,7 @@ data() {
 
       doi: "",
       doiLoading: false,
+      cpID: null,
       contributors: [],
       contributors2: [],
       distr_upload: [],
@@ -357,7 +358,7 @@ methods: {
     checkSecondPage(){
       // Check the required fields
       const titleBool = (this.dataset.title === "");
-      const cpidBool = (this.dataset.contactpoint['@id'] === null);
+      const cpidBool = (this.cpID === null);
       const cpfirstnameBool = (this.dataset.contactpoint.cpfirstname === "");
       const cplastnameBool = (this.dataset.contactpoint.cplastname === "");
       const cpemailBool = (this.dataset.contactpoint.cpemail === "");
@@ -371,6 +372,7 @@ methods: {
         this.isInvalidForm = true;
       } else { 
         this.isInvalidForm = false;
+        this.dataset.contactpoint['@id'] = `http://orcid.org/${this.cpID}`;
         this.dataset.contactpoint.name = this.dataset.contactpoint.cpfirstname.concat(" ", this.dataset.contactpoint.cplastname);
         this.setDone('second', 'third'); 
         if(this.authorFirst){
@@ -409,17 +411,17 @@ methods: {
     },  
 
     // Auto-complete methods for author and institution
-    resolveEntityAuthor (query) {
-      this.autocomplete.availableAuthors = axios.get('/',
-        {params:{view:'resolve',term:query+"*", type: "http://xmlns.com/foaf/0.1/Person"}, responseType:'json' })
+    resolveEntityAuthor (query) { 
+      this.autocomplete.availableAuthors = axios.get(
+        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Person`)
           .then(function(response) {
             console.log(response.data);
             return response.data;
           });
     },
     resolveEntityInstitution (query) {
-      this.autocomplete.availableInstitutions = axios.get('/',
-      {params:{view:'resolve',term:query+"*", type:"http://xmlns.com/foaf/0.1/Organization"}, responseType:'json' })
+      this.autocomplete.availableInstitutions = axios.get(
+        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Organization`)
           .then(function(response) {
             console.log(response.data);
             return response.data;
@@ -443,6 +445,7 @@ methods: {
           "name": "N/A"
         },
       });
+      this.selectedAuthor = "";
       console.log(this.contributors2)
     }, 
 
@@ -474,62 +477,76 @@ methods: {
       if (this.doi === ""){
         return
       }
-      //Otherwise... 
-      const response = await axios.get(`http://dx.doi.org/${this.doi}`, {
+
+      const response = await axios.get(`/doi/${this.doi}?view=describe`, {
         headers: {
           'Accept': 'application/json',
         }
       });
-      const result = await this.useDOI(response)
-      .then(response => {
-        console.log(response.data); 
-
+      const result = await this.useDescribedDoi(response, this.doi)
+      .then(response => { 
         this.doiLoading = false;
         this.setDone('first', 'second');
       })
-      .catch(err => { 
-        console.log(response.data); 
-
+      .catch(err => {  
         this.doiLoading = false;
         this.setDone('first', 'second');
         throw err;
       }); 
     }, 
 
-    async useDOI (response){
-      this.dataset.title = response.data.title;
-      if (response.data.abstract){
-        this.dataset.description = response.data.abstract;
-      }
-      var dateiss = response.data.issued;
-      if (dateiss){
-        if (dateiss['date-parts']){
-          var dateissstring = dateiss['date-parts'].toString();
-          this.dataset.datepub['@value'] = await this.checkDateFormat(dateissstring);
-        }
-      }
-      var datecreated = response.data.created;
-      if (datecreated){
-        if (datecreated['date-parts']){
-          var datecreatedstring = datecreated['date-parts'].toString();
-          this.dataset.datemod['@value'] = await this.checkDateFormat(datecreatedstring);
-        }
-      }
-      //// TODO : Fix this
-      if (response.data.author){
-        response.data.author.forEach(element => {
-          this.getAuthorFromDOI(element);
-        });
+    async useDescribedDoi (response, doi){
+      const doiData = response.data['@graph'];
+      for (var index in doiData){
+        let entry = doiData[index]
+        // console.log(entry)
+        if (entry['@id'] == `http://dx.doi.org/${doi}`){
+          if ('dc:title' in entry){
+            this.dataset.title = entry['dc:title']
+          }
+          if ('dc:date' in entry){
+            this.dataset.datemod = entry['dc:date'];
+            this.dataset.datepub = entry['dc:date']
+          }
+          if ('dc:creator' in entry){
+            for (var author in entry['dc:creator']){
+              this.getAuthorDescribed(entry['dc:creator'][author]['@id'])
+            }
+          }
+        }      
       }
     },
 
-    async checkDateFormat (date) {
-      date = date.replace(/,/g, "-");
-      const incDateRegExp = /^[0-9]{4}\-[0-9]{1}\-[0-9]{2}?$/;
-      if(incDateRegExp.test(date)){
-        date = date.substring(0, 5) + '0' + date.substring(5)
-      }
-      return date
+    async getAuthorDescribed(authorId){ 
+      let uri = `/about?uri=${authorId}&view=describe`;
+      const response = await axios.get(`/about?uri=${authorId}&view=describe`, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => { 
+        var newAuthor = {
+          '@id': response.data['@id'],
+          "@type": "person",
+          name: response.data['foaf:name'],
+          onbehalfof: {
+            "@type": "organization",
+            name: "N/A",
+          },
+          specializationOf: {
+          }
+        }
+        if ('owl:sameAs' in response.data){
+          newAuthor['specializationOf']['@id'] = response.data['owl:sameAs']['@id'];
+        }
+        console.log(response.data)
+        this.contributors2.push(newAuthor)
+        console.log(this.contributors2)
+      })
+      .catch(err => { 
+        throw err;
+      }); 
+      
     },
 
     getAuthorFromDOI(author){
@@ -575,6 +592,7 @@ methods: {
     return EventServices.cancelChartFilter();
     },
     setListStyle(param){
+      var runSetStyle;
       if(param){
         if(runSetStyle){
           return clearInterval(runSetStyle);

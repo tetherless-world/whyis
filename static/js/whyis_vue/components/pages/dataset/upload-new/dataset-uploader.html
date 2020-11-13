@@ -100,7 +100,7 @@
                             <div class="md-layout-item md-size-25">
                               <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint['@id']=== null))}">
                                 <label>ORCID Identifier</label>
-                                <md-input v-model="dataset.contactpoint['@id']" required></md-input>
+                                <md-input v-model="cpID" required></md-input>
                                 <span class="md-error">ORCID iD required</span>
                               </md-field>
                             </div>
@@ -152,10 +152,7 @@
                             Contributors
                           </div>
 
-                          <div v-if="authorFirst"> 
-                          <!------TOLU: Here is where the autocomplete field starts.
-                                This is the made up version from the Vue Material documentation, 
-                                the real version is in md-autocomplete.html ----->
+                          <div v-if="authorFirst">  
                             <md-autocomplete
                               style="min-width: 100%;"
                               v-model="selectedAuthor" 
