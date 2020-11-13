@@ -128,7 +128,7 @@ methods: {
     removeElement2: function (index) {
       this.contributors2.splice(index, 1);
     },
-    //TODO for doi autofill: replaced multiple with only one
+    
     editDois: function () {
       this.dataset.refby = "https://dx.doi.org/" + this.doi;
     },
@@ -183,12 +183,10 @@ methods: {
         this.contributors[index]['authors'].push(this.selectedAuthor[index]);
       }
       this.selectedAuthor = [];
-      // console.log(this.contributors)
     },
     removeAuthor (ind, index){
       this.contributors[index]['authors'].splice(ind, 1)
       this.selectedAuthor[index] = "";
-      // console.log(this.contributors)
     },
     //TODO: 
     selectOrganization (index){
@@ -392,14 +390,13 @@ methods: {
       };
     },
     
-
     // Use regex for valid email format
     validEmail (email) {
       var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
     },
 
-
+    // Submit and post as nanopublication
     submitForm: function () {
       try { 
         saveDataset(this.dataset, this.generatedUUID) 
@@ -478,6 +475,7 @@ methods: {
         return
       }
 
+      // Otherwise use the describe view
       const response = await axios.get(`/doi/${this.doi}?view=describe`, {
         headers: {
           'Accept': 'application/json',
@@ -495,11 +493,11 @@ methods: {
       }); 
     }, 
 
+    // Fill the form with available data from doi
     async useDescribedDoi (response, doi){
       const doiData = response.data['@graph'];
       for (var index in doiData){
         let entry = doiData[index]
-        // console.log(entry)
         if (entry['@id'] == `http://dx.doi.org/${doi}`){
           if ('dc:title' in entry){
             this.dataset.title = entry['dc:title']
@@ -510,7 +508,7 @@ methods: {
           }
           if ('dc:creator' in entry){
             for (var author in entry['dc:creator']){
-              this.getAuthorDescribed(entry['dc:creator'][author]['@id'])
+              await this.getAuthorDescribed(entry['dc:creator'][author]['@id'])
             }
           }
         }      
@@ -518,28 +516,34 @@ methods: {
     },
 
     async getAuthorDescribed(authorId){ 
-      let uri = `/about?uri=${authorId}&view=describe`;
+      // Use describe view on listed authors
       const response = await axios.get(`/about?uri=${authorId}&view=describe`, {
         headers: {
           'Accept': 'application/json',
         }
       })
       .then(response => { 
+        let doiAuth = response.data
+        if ('@graph' in response.data){
+          for (var entry in response.data['@graph']){
+            if (response.data['@graph'][entry]['@id'] === authorId){
+              doiAuth = response.data['@graph'][entry]
+            }
+          }
+        }
         var newAuthor = {
-          '@id': response.data['@id'],
+          '@id': doiAuth['@id'],
           "@type": "person",
-          name: response.data['foaf:name'],
+          name: doiAuth['foaf:name'],
           onbehalfof: {
             "@type": "organization",
             name: "N/A",
           },
-          specializationOf: {
-          }
         }
         if ('owl:sameAs' in response.data){
+          newAuthor['specializationOf'] = {};
           newAuthor['specializationOf']['@id'] = response.data['owl:sameAs']['@id'];
         }
-        console.log(response.data)
         this.contributors2.push(newAuthor)
         console.log(this.contributors2)
       })
@@ -547,28 +551,6 @@ methods: {
         throw err;
       }); 
       
-    },
-
-    getAuthorFromDOI(author){
-      var newAuthor = {
-        '@id': null,
-        name: "",
-        onbehalfof: {
-          "@type": "organization",
-          name: "N/A",
-        },
-      }
-      if (author.ORCID){
-        newAuthor['@id'] = author.ORCID;
-      }
-      if (author.family && author.given){
-        newAuthor.name = author.given + " " + author.family;
-        this.contributors2.push(newAuthor)
-      } else if (author.name){
-        newAuthor.name = author.name;
-        this.contributors2.push(newAuthor)
-      }
-      console.log(this.contributors2)
     },
 
     // Create dialog boxes
@@ -584,13 +566,7 @@ methods: {
       return
     },
 
-    // Unused, relates to speed dials
-    newChart(){
-    return EventServices.navTo("new", true)
-    },
-    cancelFilter(){
-    return EventServices.cancelChartFilter();
-    },
+    // Modify styling of menu to override bad width
     setListStyle(param){
       var runSetStyle;
       if(param){
