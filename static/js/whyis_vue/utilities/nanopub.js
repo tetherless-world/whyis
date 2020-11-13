@@ -95,8 +95,7 @@ function postNewNanopub (pubData, context) {
       'Content-Type': 'application/ld+json'
     }
   }
-  // var result = JSON.stringify(request)
-  console.log(request)
+  // console.log(request)
   return axios(request)
 }
 

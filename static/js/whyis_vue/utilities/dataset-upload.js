@@ -90,6 +90,7 @@ const datasetFieldUris = {
   organization: `${foaf}Organization`, 
   person: `${foaf}Person`, 
   onbehalfof:"http://www.w3.org/ns/prov#actedOnBehalfOf",
+  specializationOf:"http://www.w3.org/ns/prov#specializationOf",
 
   datepub: `${dct}issued`,
   datemod: `${dct}modified`,
