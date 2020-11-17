@@ -56,6 +56,7 @@ data() {
 
       doi: "",
       doiLoading: false,
+      cpID: null,
       contributors: [],
       contributors2: [],
       distr_upload: [],
@@ -127,7 +128,7 @@ methods: {
     removeElement2: function (index) {
       this.contributors2.splice(index, 1);
     },
-    //TODO for doi autofill: replaced multiple with only one
+    
     editDois: function () {
       this.dataset.refby = "https://dx.doi.org/" + this.doi;
     },
@@ -182,12 +183,10 @@ methods: {
         this.contributors[index]['authors'].push(this.selectedAuthor[index]);
       }
       this.selectedAuthor = [];
-      // console.log(this.contributors)
     },
     removeAuthor (ind, index){
       this.contributors[index]['authors'].splice(ind, 1)
       this.selectedAuthor[index] = "";
-      // console.log(this.contributors)
     },
     //TODO: 
     selectOrganization (index){
@@ -357,7 +356,7 @@ methods: {
     checkSecondPage(){
       // Check the required fields
       const titleBool = (this.dataset.title === "");
-      const cpidBool = (this.dataset.contactpoint['@id'] === null);
+      const cpidBool = (this.cpID === null);
       const cpfirstnameBool = (this.dataset.contactpoint.cpfirstname === "");
       const cplastnameBool = (this.dataset.contactpoint.cplastname === "");
       const cpemailBool = (this.dataset.contactpoint.cpemail === "");
@@ -371,6 +370,7 @@ methods: {
         this.isInvalidForm = true;
       } else { 
         this.isInvalidForm = false;
+        this.dataset.contactpoint['@id'] = `http://orcid.org/${this.cpID}`;
         this.dataset.contactpoint.name = this.dataset.contactpoint.cpfirstname.concat(" ", this.dataset.contactpoint.cplastname);
         this.setDone('second', 'third'); 
         if(this.authorFirst){
@@ -390,14 +390,13 @@ methods: {
       };
     },
     
-
     // Use regex for valid email format
     validEmail (email) {
       var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
     },
 
-
+    // Submit and post as nanopublication
     submitForm: function () {
       try { 
         saveDataset(this.dataset, this.generatedUUID) 
@@ -409,17 +408,17 @@ methods: {
     },  
 
     // Auto-complete methods for author and institution
-    resolveEntityAuthor (query) {
-      this.autocomplete.availableAuthors = axios.get('/',
-        {params:{view:'resolve',term:query+"*", type: "http://xmlns.com/foaf/0.1/Person"}, responseType:'json' })
+    resolveEntityAuthor (query) { 
+      this.autocomplete.availableAuthors = axios.get(
+        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Person`)
           .then(function(response) {
             console.log(response.data);
             return response.data;
           });
     },
     resolveEntityInstitution (query) {
-      this.autocomplete.availableInstitutions = axios.get('/',
-      {params:{view:'resolve',term:query+"*", type:"http://xmlns.com/foaf/0.1/Organization"}, responseType:'json' })
+      this.autocomplete.availableInstitutions = axios.get(
+        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Organization`)
           .then(function(response) {
             console.log(response.data);
             return response.data;
@@ -443,6 +442,7 @@ methods: {
           "name": "N/A"
         },
       });
+      this.selectedAuthor = "";
       console.log(this.contributors2)
     }, 
 
@@ -474,84 +474,83 @@ methods: {
       if (this.doi === ""){
         return
       }
-      //Otherwise... 
-      const response = await axios.get(`http://dx.doi.org/${this.doi}`, {
+
+      // Otherwise use the describe view
+      const response = await axios.get(`/doi/${this.doi}?view=describe`, {
         headers: {
           'Accept': 'application/json',
         }
       });
-      const result = await this.useDOI(response)
-      .then(response => {
-        console.log(response.data); 
-
+      const result = await this.useDescribedDoi(response, this.doi)
+      .then(response => { 
         this.doiLoading = false;
         this.setDone('first', 'second');
       })
-      .catch(err => { 
-        console.log(response.data); 
-
+      .catch(err => {  
         this.doiLoading = false;
         this.setDone('first', 'second');
         throw err;
       }); 
     }, 
 
-    async useDOI (response){
-      this.dataset.title = response.data.title;
-      if (response.data.abstract){
-        this.dataset.description = response.data.abstract;
-      }
-      var dateiss = response.data.issued;
-      if (dateiss){
-        if (dateiss['date-parts']){
-          var dateissstring = dateiss['date-parts'].toString();
-          this.dataset.datepub['@value'] = await this.checkDateFormat(dateissstring);
-        }
-      }
-      var datecreated = response.data.created;
-      if (datecreated){
-        if (datecreated['date-parts']){
-          var datecreatedstring = datecreated['date-parts'].toString();
-          this.dataset.datemod['@value'] = await this.checkDateFormat(datecreatedstring);
-        }
-      }
-      //// TODO : Fix this
-      if (response.data.author){
-        response.data.author.forEach(element => {
-          this.getAuthorFromDOI(element);
-        });
+    // Fill the form with available data from doi
+    async useDescribedDoi (response, doi){
+      const doiData = response.data['@graph'];
+      for (var index in doiData){
+        let entry = doiData[index]
+        if (entry['@id'] == `http://dx.doi.org/${doi}`){
+          if ('dc:title' in entry){
+            this.dataset.title = entry['dc:title']
+          }
+          if ('dc:date' in entry){
+            this.dataset.datemod = entry['dc:date'];
+            this.dataset.datepub = entry['dc:date']
+          }
+          if ('dc:creator' in entry){
+            for (var author in entry['dc:creator']){
+              await this.getAuthorDescribed(entry['dc:creator'][author]['@id'])
+            }
+          }
+        }      
       }
     },
 
-    async checkDateFormat (date) {
-      date = date.replace(/,/g, "-");
-      const incDateRegExp = /^[0-9]{4}\-[0-9]{1}\-[0-9]{2}?$/;
-      if(incDateRegExp.test(date)){
-        date = date.substring(0, 5) + '0' + date.substring(5)
-      }
-      return date
-    },
-
-    getAuthorFromDOI(author){
-      var newAuthor = {
-        '@id': null,
-        name: "",
-        onbehalfof: {
-          "@type": "organization",
-          name: "N/A",
-        },
-      }
-      if (author.ORCID){
-        newAuthor['@id'] = author.ORCID;
-      }
-      if (author.family && author.given){
-        newAuthor.name = author.given + " " + author.family;
+    async getAuthorDescribed(authorId){ 
+      // Use describe view on listed authors
+      const response = await axios.get(`/about?uri=${authorId}&view=describe`, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => { 
+        let doiAuth = response.data
+        if ('@graph' in response.data){
+          for (var entry in response.data['@graph']){
+            if (response.data['@graph'][entry]['@id'] === authorId){
+              doiAuth = response.data['@graph'][entry]
+            }
+          }
+        }
+        var newAuthor = {
+          '@id': doiAuth['@id'],
+          "@type": "person",
+          name: doiAuth['foaf:name'],
+          onbehalfof: {
+            "@type": "organization",
+            name: "N/A",
+          },
+        }
+        if ('owl:sameAs' in response.data){
+          newAuthor['specializationOf'] = {};
+          newAuthor['specializationOf']['@id'] = response.data['owl:sameAs']['@id'];
+        }
         this.contributors2.push(newAuthor)
-      } else if (author.name){
-        newAuthor.name = author.name;
-        this.contributors2.push(newAuthor)
-      }
-      console.log(this.contributors2)
+        console.log(this.contributors2)
+      })
+      .catch(err => { 
+        throw err;
+      }); 
+      
     },
 
     // Create dialog boxes
@@ -567,14 +566,9 @@ methods: {
       return
     },
 
-    // Unused, relates to speed dials
-    newChart(){
-    return EventServices.navTo("new", true)
-    },
-    cancelFilter(){
-    return EventServices.cancelChartFilter();
-    },
+    // Modify styling of menu to override bad width
     setListStyle(param){
+      var runSetStyle;
       if(param){
         if(runSetStyle){
           return clearInterval(runSetStyle);
