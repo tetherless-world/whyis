@@ -118,7 +118,7 @@ Config = dict(
             url = 'http://dx.doi.org/%s',
             headers={'Accept':'text/turtle'},
             format='turtle',
-            postprocess_update= '''insert {
+            postprocess_update= ['''insert {
                 graph ?g {
                     ?pub a <http://purl.org/ontology/bibo/AcademicArticle>.
                 }
@@ -126,8 +126,72 @@ Config = dict(
                 graph ?g {
                     ?pub <http://purl.org/ontology/bibo/doi> ?doi.
                 }
+            }''',
+            '''delete {
+              ?author <http://www.w3.org/2002/07/owl#sameAs> ?orcid.
+            } insert {
+                graph ?g {
+                    ?author <http://www.w3.org/ns/prov#specializationOf> ?orcid.
+                }
+            } where {
+                graph ?g {
+                    ?author a <http://xmlns.com/foaf/0.1/Person>;
+                      <http://www.w3.org/2002/07/owl#sameAs> ?orcid.
+                }
             }
+            ''']
+        ),
+        importer.LinkedData(
+            prefix = LOD_PREFIX+'/orcid/',
+            url = 'http://orcid.org/%s',
+            headers={'Accept':'application/ld+json'},
+            format='json-ld',
+            replace=[
+                ('\\"http:\\/\\/schema\\.org\\",', '{"@vocab" : "http://schema.org/"},'),
+                ('https://doi.org/', 'http://dx.doi.org/'),
+                ('https://', 'http://'),
+            ],
+            postprocess_update= ['''delete {
+              ?org ?p ?o.
+              ?s ?p ?org.
+            } insert {
+                graph ?g {
+                    ?s ?p ?o.
+                }
+            } where {
+                graph ?g {
+                    {
+                    ?org a <http://schema.org/Organization>;
+                      <http://schema.org/identifier> [
+                          a <http://schema.org/PropertyValue>;
+                          <http://schema.org/propertyID> ?propertyID;
+                          <http://schema.org/value> ?idValue;
+                      ].
+                      ?org ?p ?o.
+                      bind(IRI(concat("%s/organization/", str(?propertyID),"/",str(?idValue))) as ?s)
+                    } union {
+                    ?org a <http://schema.org/Organization>;
+                      <http://schema.org/identifier> [
+                          a <http://schema.org/PropertyValue>;
+                          <http://schema.org/propertyID> ?propertyID;
+                          <http://schema.org/value> ?idValue;
+                      ].
+                      ?s ?p ?org.
+                      bind(IRI(concat("%s/organization/", str(?propertyID),"/",str(?idValue))) as ?o)
+                    }
+                }
+            }'''  % (LOD_PREFIX, LOD_PREFIX) ,
             '''
+            insert {
+                graph ?g {
+                    ?s <http://schema.org/name> ?name.
+                }
+            } where {
+                graph ?g {
+                    ?s <http://schema.org/alternateName> ?name.
+                }
+            }
+            ''']
         ),
         importer.LinkedData(
             prefix = LOD_PREFIX+'/dbpedia/',

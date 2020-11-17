@@ -547,9 +547,12 @@ construct {
                 if len(labels) == 0:
                     name = [x.value for x in [resource_entity.value(self.NS.foaf.givenName),
                                               resource_entity.value(self.NS.foaf.familyName)] if x is not None]
-                    if len(name) > 0:
-                        label = ' '.join(name)
-                        return label
+                    if len(labels) == 0:
+                        name = [x.value for x in [resource_entity.value(self.NS.schema.givenName),
+                                                  resource_entity.value(self.NS.schema.familyName)] if x is not None]
+                        if len(name) > 0:
+                            label = ' '.join(name)
+                            return label
             try:
                 label = self.db.qname(uri).split(":")[1].replace("_"," ")
                 return ' '.join(camel_case_split(label)).title()
