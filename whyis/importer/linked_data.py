@@ -25,7 +25,8 @@ from .local_file_adapter import LocalFileAdapter
 class LinkedData(Importer):
     def __init__(self, prefix, url, headers=None, access_url=None,
                  format=None, modified_headers=None, postprocess_update=None,
-                 postprocess=None, min_modified=0, import_once=False):
+                 postprocess=None, min_modified=0, import_once=False,
+                 replace=[]):
         self.prefix = prefix
         self.url = url
         self.detect_url = url.split("%s")[0]
@@ -34,6 +35,7 @@ class LinkedData(Importer):
         self.format = format
         self.min_modified = min_modified
         self.import_once = import_once
+        self.replace = replace
         if access_url is not None:
             self.access_url = access_url
         else:
@@ -81,11 +83,19 @@ class LinkedData(Importer):
         r = requests.get(u, headers=self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.BNode())
-        local.parse(data=r.text, format=self.format)
+        text = r.text
+        for pattern, repl in self.replace:
+            text = re.sub(pattern, repl, text)
+        print(text)
+        local.parse(data=text, format=self.format)
         # print self.postprocess_update
         if self.postprocess_update is not None:
-            # print "update postprocess query."
-            g.update(self.postprocess_update)
+            commands = self.postprocess_update
+            if isinstance(commands, str):
+                commands = [commands]
+            for command in commands:
+                # print "update postprocess query."
+                g.update(command)
         if self.postprocess is not None:
             print("postprocessing", entity_name)
             p = self.postprocess
