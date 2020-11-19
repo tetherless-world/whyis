@@ -9,19 +9,25 @@
           </md-button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="shareChart"> 
+          <md-button class="md-icon-button" @click.native.prevent="shareChart">
             <md-tooltip class="utility-bckg" md-direction="top"> Share Chart </md-tooltip>
             <md-icon>share</md-icon>
           </md-button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="chartQuery"> 
+          <md-button class="md-icon-button" @click.native.prevent="chartQuery">
             <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Query </md-tooltip>
             <md-icon>preview</md-icon>
           </md-button>
         </div>
+        <div>
+          <md-button class="md-icon-button" @click.native.prevent="specViewer.show = true">
+            <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Spec </md-tooltip>
+            <md-icon>integration_instructions</md-icon>
+          </md-button>
+        </div>
         <div v-if="allowEdit">
-          <md-button class="md-icon-button" @click.native.prevent="editChart"> 
+          <md-button class="md-icon-button" @click.native.prevent="editChart">
             <md-tooltip class="utility-bckg" md-direction="top"> Edit Chart </md-tooltip>
             <md-icon>edit</md-icon>
           </md-button>
@@ -69,12 +75,43 @@
         <vega-lite :spec="spec" class="btn--animated"/>
         <a @click.prevent="navBack(true)" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph" v-if="vizOfTheDay">View Gallery</a>
       </div>
+      <md-dialog :md-active.sync="specViewer.show" class="chart-spec">
+        <md-dialog-title>Chart Vega Spec</md-dialog-title>
+        <md-content class="vega-spec-container">
+          <v-jsoneditor
+            v-model="specViewerSpec"
+            :options="specViewer.jsonEditorOpts"
+          >
+          </v-jsoneditor>
+        </md-content>
+        <div class="vega-spec-controls">
+          <md-checkbox v-model="specViewer.includeData">Include data in spec</md-checkbox>
+        </div>
+        <md-dialog-actions>
+          <md-button class="md-primary" @click="specViewer.show = false">Close</md-button>
+        </md-dialog-actions>
+      </md-dialog>
     </div>
   </div>
 </template>
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style scoped lang="scss">
+  .vega-spec-container {
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 600px;
+    max-height: 100%;
+    width: 724px;
+    max-width: 100%;
+  }
+  .vega-spec-controls {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+</style>
 <script>
   import Vue from 'vue'
+  import VJsoneditor from 'v-jsoneditor'
   import { EventServices, Slug } from '../../../../modules'
   import tempFiller from '../../../utils/temporary_filler'
   import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
@@ -92,11 +129,26 @@
         args: null,
         authenticated: EventServices.authUser,
         allowEdit: false,
-        vizOfTheDay: false
+        vizOfTheDay: false,
+        specViewer: {
+          show: false,
+          includeData: false,
+          jsonEditorOpts: {
+            mode: 'code',
+            mainMenuBar: false,
+            onEditable: () => false,
+          },
+        }
       }
     },
     components: {
-      tempFiller
+      tempFiller,
+      VJsoneditor,
+    },
+    computed: {
+      specViewerSpec () {
+        return this.specViewer.includeData ? this.spec : this.chart && this.chart.baseSpec
+      }
     },
     methods: {
       loadVisualization () {
@@ -118,9 +170,9 @@
         return EventServices.navTo('view', true)
       },
       shareChart() {
-        return EventServices.$emit("dialoguebox", {status: true, share: true, 
-        title: "Share Chart", 
-        message: "Copy the chart link above to share this chart", 
+        return EventServices.$emit("dialoguebox", {status: true, share: true,
+        title: "Share Chart",
+        message: "Copy the chart link above to share this chart",
         chart: this.chart.uri})
       },
       editChart(){
