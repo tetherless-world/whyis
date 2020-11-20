@@ -1,5 +1,7 @@
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub' 
+import axios from 'axios';
+
 import EventServices from '../modules/events/event-services'
 
 const defaultContext= { 
@@ -124,25 +126,51 @@ function getDefaultAgent (type) {
 }
 
 async function saveAgent (agent) {
+  const regUnhyphenated = /^\d{16}$/
+  const unhyphenated = regUnhyphenated.test(agent['@id']);
+  if (unhyphenated){
+    agent['@id'] = agent['@id'].replace(/^\(?([0-9]{4})\)?([0-9]{4})?([0-9]{4})?([0-9]{4})$/, "$1-$2-$3-$4")
+  }
+  const regHyphenated = /^\(?([0-9]{4})\)?[-]?([0-9]{4})[-]?([0-9]{4})[-]?([0-9]{4})$/;
+  const validOrcid = regHyphenated.test(agent['@id']);
+
+  // Get the data for this ORCID id through Whyis using view=describe
+  if (validOrcid){
+    const response = await axios.get(`/orcid/${agent['@id']}?view=describe`, {
+      headers: {
+        'Accept': 'application/ld+json',
+      }
+    })
+    .then(response => { 
+      let orcidAuth = response.data;
+      return orcidAuth
+      // console.log(orcidAuth);
+    })
+    .catch(err => { 
+      throw err;
+    }); 
+  }
+
+
   // let deletePromise = Promise.resolve()
   // if (agent.orcid) {
   //   deletePromise = deleteAgent(agent.orcid)
   //   agent.uri = generateURI(agent, agent.orcid) 
   // } else {
-    agent.uri = generateURI(agent, agent['@id'])
+    // agent.uri = generateURI(agent, agent['@id'])
   // } 
 // }
   // } 
-  const agentLd = buildLd(agent) 
-  // await deletePromise
-  try{
-    console.log(agent.uri)
-    agent['@id'] = agent.uri;
-    return postNewNanopub(agentLd, defaultContext)
-    .then(EventServices.author = agent)
-  } catch(err){
-    return alert(err)
-  }
+  // const agentLd = buildLd(agent) 
+  // // await deletePromise
+  // try{
+  //   console.log(agent.uri)
+  //   agent['@id'] = agent.uri;
+  //   return postNewNanopub(agentLd, defaultContext)
+  //   .then(EventServices.author = agent)
+  // } catch(err){
+  //   return alert(err)
+  // }
   
 }
 

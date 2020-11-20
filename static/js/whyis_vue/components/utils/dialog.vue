@@ -214,7 +214,8 @@
         this.active = !this.active
         this.loginRequestSent = false
         if (this.agent === "author"){
-          saveAgent(this.author) 
+          const author = saveAgent(this.author) 
+          console.log(author)
         } else if (this.agent === "organization"){
           saveAgent(this.organization)
         }
