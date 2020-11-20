@@ -56,9 +56,9 @@ data() {
 
       doi: "",
       doiLoading: false,
-      cpID: null,
+      cpID: "",
+      cpIDError: false,
       contributors: [],
-      contributors2: [],
       distr_upload: [],
       rep_image: [],
 
@@ -90,7 +90,6 @@ data() {
       selectedAuthor: [],
 
       // TODO: Switch author and org
-      authorFirst: true,
       selectedOrg: [],
     }
 },
@@ -110,94 +109,26 @@ methods: {
             this.loading = false;
           })
       },
-    // TODO: get rid of this once we know we're doing author
-    addOrg () {
-      var elem = document.createElement("tr");
-      this.contributors.push({
-        org: "",
-        authors: [],
-      });
-    },
+
     dateFormat(value, event) {
       return moment(value).format("YYYY-MM-DD");
     },
     removeElement: function (index) {
       this.contributors.splice(index, 1);
     },
-    //TODO
-    removeElement2: function (index) {
-      this.contributors2.splice(index, 1);
-    },
     
     editDois: function () {
-      this.dataset.refby = "https://dx.doi.org/" + this.doi;
+      if (this.doi !== ""){
+        this.dataset.refby = "https://dx.doi.org/" + this.doi;
+      }
     },
 
     /* 
       Contributor and author handling: User facing 
     */
-    handleContrAuth: function () {
-      //Ensure the fields are cleared to avoid duplication
-      this.dataset.contributor = [];
-      this.dataset.author = [];
-      for (var index in this.contributors) {
-        this.setContributors(index);
-        var org = this.contributors[index]["org"];
-        this.contributors[index]["authors"].forEach((x) => this.setAuthors(org, x));
-      }
-    },
-    handleContrAuth2: function(){
-      this.dataset.author = this.contributors2
+    handleContrAuth: function(){
+      this.dataset.author = this.contributors
       this.dataset.contributor = []
-    },
-    setContributors: function (index) {
-      var contr = this.contributors[index]["org"];
-      if (contr !== ""){
-        this.dataset.contributor.push({
-          "@type": "organization",
-          name: contr,
-        })
-      };
-    },
-    setAuthors: function (org, name) {
-      if (name !==""){
-        if (org === ""){
-          this.dataset.author.push({
-            "@type": "person",
-            name: name,
-          })
-        } else {
-          this.dataset.author.push({
-            "@type": "person",
-            name: name,
-            onbehalfof: {
-              "@type": "organization",
-              name: org,
-            },
-          })
-        };
-      } 
-    },
-    selectAuthor (index) { 
-      if ((this.selectedAuthor[index] !== null)&& (this.selectedAuthor[index] !== "")){
-        this.contributors[index]['authors'].push(this.selectedAuthor[index]);
-      }
-      this.selectedAuthor = [];
-    },
-    removeAuthor (ind, index){
-      this.contributors[index]['authors'].splice(ind, 1)
-      this.selectedAuthor[index] = "";
-    },
-    //TODO: 
-    selectOrganization (index){
-      if ((this.selectedOrg[index] !== null)&& (this.selectedOrg[index] !== "")){
-        this.contributors[index]['onbehalfof'].push( 
-          {
-            "@type": "organization",
-            name: this.selectedOrg[index],
-          },
-        );
-      }
     },
 
     /*
@@ -337,9 +268,9 @@ methods: {
     async checkFirstPage(){ 
       this.doiLoading = true;
       // Check for at least one distribution
-      // if (!this.uploadedFiles.length){
-      //   this.isInvalidUpload = true;
-      // } else { 
+      if (!this.uploadedFiles.length){
+        this.isInvalidUpload = true;
+      } else { 
         this.saveRepImg(); 
         this.saveDistribution(); 
         
@@ -350,7 +281,7 @@ methods: {
         else {
           const result = await this.getDOI();
         }
-      // }
+      }
     },
 
     checkSecondPage(){
@@ -373,11 +304,7 @@ methods: {
         this.dataset.contactpoint['@id'] = `http://orcid.org/${this.cpID}`;
         this.dataset.contactpoint.name = this.dataset.contactpoint.cpfirstname.concat(" ", this.dataset.contactpoint.cplastname);
         this.setDone('second', 'third'); 
-        if(this.authorFirst){
-          this.handleContrAuth2();
-        } else{
-          this.handleContrAuth();
-        }
+        this.handleContrAuth();
         this.editDois();
       }
     },
@@ -409,12 +336,21 @@ methods: {
 
     // Auto-complete methods for author and institution
     resolveEntityAuthor (query) { 
-      this.autocomplete.availableAuthors = axios.get(
-        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Person`)
-          .then(function(response) {
-            console.log(response.data);
-            return response.data;
-          });
+      // Until the resolver allows for OR operator, must run two gets to capture both person types
+      axios.all([
+        axios.get(
+          `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Person`),
+        axios.get(
+          `/?term=${query}*&view=resolve&type=http://schema.org/Person`)
+      ])
+      .then(axios.spread((foafRes, schemaRes) => {
+        // Merge the results and sort by score descending
+        this.autocomplete.availableAuthors = foafRes.data.concat(schemaRes.data)
+        .sort((a, b) => (a.score < b.score) ? 1 : -1);
+      }))
+      .catch((err) => {
+        throw(err)
+      });
     },
     resolveEntityInstitution (query) {
       this.autocomplete.availableInstitutions = axios.get(
@@ -433,7 +369,7 @@ methods: {
       else{
         name = item.name;
       }
-      this.contributors2.push({
+      this.contributors.push({
         '@id': item.node, 
         "@type": "person",
         "name": name,
@@ -443,17 +379,17 @@ methods: {
         },
       });
       this.selectedAuthor = "";
-      console.log(this.contributors2)
+      console.log(this.contributors)
     }, 
 
-    //TODO
+    //TODO: decide how to deal with not having organizations available
     addAuthor (agent) {
       var elem = document.createElement("tr");
 
       // if (arguments.length === 1) {
-      //   this.contributors2.push(agent);
+      //   this.contributors.push(agent);
       // } else {
-        this.contributors2.push({
+        this.contributors.push({
           '@id': agent['@id'], 
           "@type": "person",
           "name": agent.name,
@@ -466,7 +402,7 @@ methods: {
         }); 
       // }
       
-      console.log(this.contributors2)
+      console.log(this.contributors)
     },
 
     async getDOI() {
@@ -540,17 +476,90 @@ methods: {
             name: "N/A",
           },
         }
-        if ('owl:sameAs' in response.data){
+        if ('owl:sameAs' in doiAuth){
           newAuthor['specializationOf'] = {};
-          newAuthor['specializationOf']['@id'] = response.data['owl:sameAs']['@id'];
+          newAuthor['specializationOf']['@id'] = doiAuth['owl:sameAs']['@id'];
         }
-        this.contributors2.push(newAuthor)
-        console.log(this.contributors2)
+        this.contributors.push(newAuthor)
+        console.log(this.contributors)
+        return newAuthor;
       })
       .catch(err => { 
         throw err;
       }); 
-      
+    },
+
+    async getAuthorOrcid(authorOrcidUri){
+      authorOrcid = authorOrcidUri.substring(authorOrcidUri.lastIndexOf("/") + 1, authorOrcidUri.length);;
+      const response = await axios.get(`${authorOrcid}`, {
+        headers: {
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => { 
+        console.log(response.data)
+      })
+      .catch(err => { 
+        throw err;
+      }); 
+    },
+
+    async lookupOrcid(){
+      this.cpIDError = false;
+      // Check for valid ORCID id format
+      const regUnhyphenated = /^\d{16}$/
+      const unhyphenated = regUnhyphenated.test(this.cpID);
+      if (unhyphenated){
+        this.cpID = this.cpID.replace(/^\(?([0-9]{4})\)?([0-9]{4})?([0-9]{4})?([0-9]{4})$/, "$1-$2-$3-$4")
+      }
+      const regHyphenated = /^\(?([0-9]{4})\)?[-]?([0-9]{4})[-]?([0-9]{4})[-]?([0-9]{4})$/;
+      const validOrcid = regHyphenated.test(this.cpID);
+
+      // Get the data for this ORCID id through Whyis using view=describe
+      if (validOrcid){
+        const response = await axios.get(`/orcid/${this.cpID}?view=describe`, {
+          headers: {
+            'Accept': 'application/ld+json',
+          }
+        })
+        .then(response => { 
+          let orcidAuth = response.data
+          // Sometimes there are multiple entries in the graph
+          if ('@graph' in response.data){
+            // If invalid ORCID, graph will be empty so return nothing
+            if (!response.data['@graph'].length){
+              return this.resetContactPoint();
+            }
+            // Look for the entry that corresponds to the actual ORCID id
+            for (var entry in response.data['@graph']){
+              if (response.data['@graph'][entry]['@id'] === `http://orcid.org/${this.cpID}`){
+                orcidAuth = response.data['@graph'][entry]
+              }
+            }
+          }
+          // Assign values as available
+          if ('schema:familyName' in orcidAuth){
+            this.dataset.contactpoint.cplastname = orcidAuth['schema:familyName']
+          }
+          if ('schema:givenName' in orcidAuth){
+            this.dataset.contactpoint.cpfirstname = orcidAuth['schema:givenName']
+          }
+        })
+        .catch(err => { 
+          throw err;
+        }); 
+      }
+      else {
+        // Invalid ORCID id
+        return this.resetContactPoint();
+      }
+    },
+
+    // Clear contact point values
+    resetContactPoint(){
+      this.cpIDError = true;
+      this.dataset.contactpoint.cplastname = "";
+      this.dataset.contactpoint.cpfirstname = "";
     },
 
     // Create dialog boxes
@@ -594,7 +603,5 @@ created() {
   this.loadDataset();
   EventServices
   .$on('isauthenticated', (data) => this.authenticated = data)
-  // .$on('institutionsupdated', (data) => this.availableInstitutions = data)
-  // .$on('authorsupdated', (data) => this.availableAuthors = data)
 }
 })
