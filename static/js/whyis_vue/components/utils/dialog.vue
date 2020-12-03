@@ -61,12 +61,6 @@
                   <md-input v-model="author.name" required=""></md-input> 
                 </md-field>
               </div> 
-              <!-- <div class="md-layout-item md-size-30">
-                <md-field>
-                  <label>Last name</label>
-                  <md-input v-model="author.lastname" required></md-input> 
-                </md-field>
-              </div>  -->
               <div class="md-layout-item md-size-50">
                 <md-field>
                   <label>ORCID Identifier</label>
@@ -165,8 +159,6 @@
         },
         author:{
           type: "Person",
-          // firstname: "",
-          // lastname:"",
           name: "",
           '@id': null,
         }
