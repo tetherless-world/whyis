@@ -39,11 +39,6 @@ data() {
           "@value": "",
         },
         refby: [], 
-        // distribution:{
-        //   accessURL: null,
-        //   '@id': null,
-        //   hasContent: null,
-        // },
         depiction: {
           name: '',
           accessURL: null,
@@ -89,8 +84,9 @@ data() {
       query: null,
       selectedAuthor: [],
 
-      // TODO: Switch author and org
+      // TODO: deal with empty orgs
       selectedOrg: [],
+      editableOrgs: true,
     }
 },
 methods: {
@@ -127,8 +123,27 @@ methods: {
       Contributor and author handling: User facing 
     */
     handleContrAuth: function(){
-      this.dataset.author = this.contributors
-      this.dataset.contributor = []
+      for (var index in this.contributors){
+        let author = this.contributors[index];
+        let newAuthor = {
+          '@id': author['@id'],
+          "@type": "person",
+          "name": author['name'],
+        }
+        if ((author.onbehalfof.name !== null) && (author.onbehalfof.name !== undefined)){
+          newAuthor["onbehalfof"] = {
+            "@id": author.onbehalfof['@id'],
+            "@type": "organization",
+            "name": author.onbehalfof.name,
+          }
+        }
+        if ('specializationOf' in author){
+          newAuthor["specializationOf"] = {
+                "@id": author['specializationOf']['@id']
+          }
+        }
+        this.dataset.author.push(newAuthor);
+      }
     },
 
     /*
@@ -165,6 +180,8 @@ methods: {
 
       // If there are no files, cancel
       if (!fileList.length) {return this.distrStatus = STATUS_INITIAL}; 
+
+      //TODO: Move this to dataset-upload.js
 
       // Specify is a dataset so handles multiple files
       distrData.append('upload_type', 'http://www.w3.org/ns/dcat#Dataset')
@@ -208,6 +225,7 @@ methods: {
       // If there are no images, cancel
       if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
 
+      // TODO: move this to dataset-upload.js
       let form = new FormData();
       form.append('upload_type', 'http://purl.org/net/provenance/ns#File')
       form.append('depiction', fileList[0]) 
@@ -270,6 +288,7 @@ methods: {
       // Check for at least one distribution
       if (!this.uploadedFiles.length){
         this.isInvalidUpload = true;
+        this.doiLoading = false;
       } else { 
         this.saveRepImg(); 
         this.saveDistribution(); 
@@ -287,7 +306,7 @@ methods: {
     checkSecondPage(){
       // Check the required fields
       const titleBool = (this.dataset.title === "");
-      const cpidBool = (this.cpID === null);
+      const cpidBool = ((this.cpID === null) || (this.cpID === ""));
       const cpfirstnameBool = (this.dataset.contactpoint.cpfirstname === "");
       const cplastnameBool = (this.dataset.contactpoint.cplastname === "");
       const cpemailBool = (this.dataset.contactpoint.cpemail === "");
@@ -296,7 +315,7 @@ methods: {
       // Prevent form submission if required fields are empty
       if (titleBool || cpidBool || cpfirstnameBool || cplastnameBool || cpemailBool || descriptionBool){
         this.isInvalidForm = true;
-      } if (!this.validEmail(this.dataset.contactpoint.cpemail)) { 
+      } else if (!this.validEmail(this.dataset.contactpoint.cpemail)) { 
         this.dataset.contactpoint.cpemail = '';
         this.isInvalidForm = true;
       } else { 
@@ -354,9 +373,9 @@ methods: {
     },
     resolveEntityInstitution (query) {
       this.autocomplete.availableInstitutions = axios.get(
-        `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Organization`)
+        `/?term=${query}*&view=resolve&type=http://schema.org/Organization`)
           .then(function(response) {
-            console.log(response.data);
+            // console.log(response.data);
             return response.data;
           });
     },
@@ -371,16 +390,20 @@ methods: {
       }
       this.contributors.push({
         '@id': item.node, 
-        "@type": "person",
         "name": name,
         onbehalfof: {
-          "@type": "organization",
-          "name": "N/A"
+          "name": null,
         },
       });
       this.selectedAuthor = "";
-      console.log(this.contributors)
+      // console.log(this.contributors)
     }, 
+    selectedOrgChange(row, event){
+      var currentOrg = this.contributors[row]['onbehalfof'];
+      currentOrg['name'] = event.label;
+      currentOrg['@id'] = event.node;
+      return event.label;
+    },
 
     //TODO: decide how to deal with not having organizations available
     addAuthor (agent) {
@@ -391,18 +414,16 @@ methods: {
       // } else {
         this.contributors.push({
           '@id': agent['@id'], 
-          "@type": "person",
           "name": agent.name,
           // "firstname": "",
           // "lastname": "",
           onbehalfof: {
-            "@type": "organization",
-            "name": "N/A"
+            "name": null,
           },
         }); 
       // }
       
-      console.log(this.contributors)
+      // console.log(this.contributors)
     },
 
     async getDOI() {
@@ -439,8 +460,8 @@ methods: {
             this.dataset.title = entry['dc:title']
           }
           if ('dc:date' in entry){
-            this.dataset.datemod = entry['dc:date'];
-            this.dataset.datepub = entry['dc:date']
+            this.dataset.datemod['@value'] = entry['dc:date']['@value'];
+            this.dataset.datepub['@value'] = entry['dc:date']['@value'];
           }
           if ('dc:creator' in entry){
             for (var author in entry['dc:creator']){
@@ -458,7 +479,7 @@ methods: {
           'Accept': 'application/json',
         }
       })
-      .then(response => { 
+      .then(async response => { 
         let doiAuth = response.data
         if ('@graph' in response.data){
           for (var entry in response.data['@graph']){
@@ -469,19 +490,24 @@ methods: {
         }
         var newAuthor = {
           '@id': doiAuth['@id'],
-          "@type": "person",
           name: doiAuth['foaf:name'],
           onbehalfof: {
-            "@type": "organization",
-            name: "N/A",
+            name: null,
           },
         }
         if ('owl:sameAs' in doiAuth){
           newAuthor['specializationOf'] = {};
           newAuthor['specializationOf']['@id'] = doiAuth['owl:sameAs']['@id'];
+          await this.getAuthorOrcid(newAuthor['specializationOf']['@id']);
+        }
+        if ('prov:specializationOf' in doiAuth){
+          newAuthor['specializationOf'] = {};
+          newAuthor['specializationOf']['@id'] = doiAuth['prov:specializationOf']['@id'];
+          // newAuthor['onbehalfof']['name'] = await this.getAuthorOrcid(newAuthor['specializationOf']['@id']);
+          // console.log(affiliation)
         }
         this.contributors.push(newAuthor)
-        console.log(this.contributors)
+        // console.log(this.contributors)
         return newAuthor;
       })
       .catch(err => { 
@@ -490,18 +516,46 @@ methods: {
     },
 
     async getAuthorOrcid(authorOrcidUri){
-      authorOrcid = authorOrcidUri.substring(authorOrcidUri.lastIndexOf("/") + 1, authorOrcidUri.length);;
-      const response = await axios.get(`${authorOrcid}`, {
+      var authorOrcid = authorOrcidUri.substring(authorOrcidUri.lastIndexOf("/") + 1, authorOrcidUri.length);;
+      await axios.get(`/orcid/${authorOrcid}?view=describe`, {
         headers: {
           'Accept': 'application/json',
         }
       })
-      .then(response => { 
-        console.log(response.data)
+      .then(async response => { 
+        let orcidAuth = response.data
+        // Sometimes there are multiple entries in the graph, find the right one
+        orcidAuth = this.findCorrectEntry(orcidAuth, `http://orcid.org/${authorOrcid}`)
+        // Assign values as available
+        if ('schema:affiliation' in orcidAuth){
+          var affiliationResponse = await axios.get(`/about?uri=${orcidAuth['schema:affiliation']['@id']}&view=describe`, {
+            headers: {
+              'Accept': 'application/json',
+            }
+          })
+          var affiliation = affiliationResponse.data;
+          affiliation = this.findCorrectEntry(affiliation, orcidAuth['schema:affiliation']['@id']);
+          return affiliation['schema:name']
+        }
       })
       .catch(err => { 
         throw err;
       }); 
+    },
+
+    findCorrectEntry(responseData, correctId){
+      if ('@graph' in responseData){
+        // If invalid id, graph will be empty so return nothing
+        if (!responseData['@graph'].length){
+          return
+        }
+        // Look for the entry that corresponds to the actual id
+        for (var entry in responseData['@graph']){
+          if (responseData['@graph'][entry]['@id'] === correctId){
+            return responseData['@graph'][entry]
+          }
+        }
+      }
     },
 
     async lookupOrcid(){
@@ -565,7 +619,7 @@ methods: {
     // Create dialog boxes
     showNewInstitution () {
       EventServices
-      .$emit('open-new-instance', {status: true, title:"Add new institution", type: "institution"})
+      .$emit('open-new-instance', {status: true, title:"Add new institution", type: "organization"})
       return
     },
     showNewAuthor () {
@@ -586,6 +640,7 @@ methods: {
       runSetStyle = setInterval(() => {
         const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
         if(itemListContainer.length >= 1) {
+          // console.log(itemListContainer[0].parentNode.nodeName)
           itemListContainer[0].setAttribute("style", "width: 90%; max-width: 90%; position: absolute; top: 841px; left: 95px; will-change: top, left;")
           return status = true
         }

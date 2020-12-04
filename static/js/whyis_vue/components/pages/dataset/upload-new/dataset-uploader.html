@@ -98,7 +98,7 @@
                           <div class="md-layout md-gutter" style="align-items: center;">  
 
                             <div class="md-layout-item md-size-30">
-                              <md-field :class="{ 'md-invalid': (isInvalidForm && (cpID === null))}" style="max-width: 100%;">
+                              <md-field :class="{ 'md-invalid': (isInvalidForm && ((cpID === null) || (cpID==='')) )}" style="max-width: 100%;">
                                 <label>ORCID Identifier (e.g., 0000-0001-2345-6789)</label>
                                 <md-input v-model="cpID" required v-on:change="lookupOrcid()"></md-input>
                                 <span class="md-error">ORCID iD required</span>
@@ -190,18 +190,19 @@
                                   <td style="width:40%">
                                     {{contributors[index]['name']}}
                                   </td>
-                                  <td style="width:30%">
+                                  <td v-if="editableOrgs" style="width:30%">
                                     <md-autocomplete 
                                       style="max-width: 90%;" 
                                       v-model="row['onbehalfof']['name']" 
                                       :md-options="autocomplete.availableInstitutions" 
                                       :md-open-on-focus="false"
                                       @md-changed="resolveEntityInstitution"
+                                      @md-selected="selectedOrgChange(index, $event)"
                                     >
                                       <label>Organization</label>
                           
                                       <template style="max-width: 90%;" slot="md-autocomplete-item" slot-scope="{ item, term }">
-                                        <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
+                                        <md-highlight-text :md-term="term">{{ item.label }}</md-highlight-text>
                                       </template>
                           
                                       <template style="max-width: 90%;" slot="md-autocomplete-empty" slot-scope="{ term }">
@@ -211,6 +212,7 @@
                                     </md-autocomplete>
 
                                   </td>
+                                  <td v-else="editableOrgs" style="width:30%"></td>
                                   <td>
                                     <a v-on:click="removeElement(index)" style="cursor: pointer" >Remove</a> 
                                   </td>
@@ -277,7 +279,7 @@
                           v-bind:key="index + 'resContr'"
                         >
                           <span>{{elem.name}}</span>
-                          <template v-if="(elem.onbehalfof !== null)&&(elem.onbehalfof.name !== 'N/A')"> - {{elem.onbehalfof.name}}</template>
+                          <template v-if="(elem.onbehalfof !== null)&&(elem.onbehalfof.name !== undefined)"> - {{elem.onbehalfof.name}}</template>
                         </div> 
                         
                         <p>Date Published: {{ dataset.datepub['@value'] }}</p>
