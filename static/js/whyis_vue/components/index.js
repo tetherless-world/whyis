@@ -7,4 +7,4 @@ import "./table-view";
 import './vega-lite-wrapper';
 import './yasqe';
 import './yasr';
-import './gallery'; 
+import './gallery';

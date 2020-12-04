@@ -1,0 +1,16 @@
+{{'''
+select distinct ?class (count(distinct ?mid) as ?rank) where {
+  {
+    ?e a ?type.
+  } union {
+    ?e ?p ?o.
+    ?p rdfs:domain|<http://purl.org/dc/dcam/domainIncludes>|schema:domainIncludes ?type.
+  } union {
+    ?s ?p ?e.
+    ?p rdfs:range|<http://purl.org/dc/dcam/rangeIncludes>|schema:rangeIncludes ?type.
+  }
+  ?mid (rdfs:subClassOf|owl:equivalentClass)* ?type.
+  ?class (rdfs:subClassOf|owl:equivalentClass)* ?mid.
+  filter (!isBLANK(?class))
+  filter not exists { ?e a ?class }
+} group by ?class order by ?rank''' | query(values={"e":this.identifier}) | iter_labelize(key="class", label_key="label") | tojson }}
