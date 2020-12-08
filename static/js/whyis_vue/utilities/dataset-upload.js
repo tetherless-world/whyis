@@ -1,38 +1,7 @@
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
+import axios from 'axios'
 
-// TODO: Check whether this is necessary
-const defaultContext= { 
-  "dcat": "http://w3.org/ns/dcat#",
-  "dct": "http://purl.org/dc/terms/",
-  "vcard": "http://www.w3.org/2006/vcard/ns#",
-  "foaf": "http://xmlns.com/foaf/0.1/",
-  
-  "title": "dct:title",
-  "description": "dct:description",
-  
-  "contactpoint": "dcat:contactpoint", 
-  "cpemail": "vcard:email",
-  "cpfirstname": "vcard:given-name",
-  "cplastname": "vcard:family-name",
-  "individual": "vcard:individual",
-  
-  "name": "foaf:name",
-  "contributor": "dct:contributor",         
-  "organization": "foaf:Organization",
-  "author": "dct:creator", 
-  "person": "foaf:Person",
-  "lastname":"foaf:lastname",
-  "firstname":"foaf:firstname",
-  "onbehalfof":"http://www.w3.org/ns/prov#actedOnBehalfOf",
-
-  "datepub": "dct:issued",
-  "datemod": "dct:modified",
-  
-  "refby":"dct:isReferencedBy",
-  "repimage":"foaf:depiction",
-  "distribution": "dcat:distribution"
-}
 
 const defaultDataset = {
   title: "",
@@ -122,7 +91,6 @@ function buildDatasetLd (dataset) {
   dataset = Object.assign({}, dataset)
   dataset.context = JSON.stringify(dataset.context)
   const datasetLd =  {
-    // '@context': defaultContext,
     '@id': dataset.uri,
     '@type': [datasetType], 
   }
@@ -174,8 +142,8 @@ function recursiveFieldSetter ([field, value]) {
   if (Array.isArray(value)){
     var fieldArray = []
     for (var val in value) {
-      console.log(val)
-      console.log(value[val])
+      // console.log(val)
+      // console.log(value[val])
       fieldArray.push( recursiveFieldSetter([field, value[val]]) );
     }
     return fieldArray
@@ -295,20 +263,83 @@ function deleteDataset (datasetUri) {
     )
 }
 
+async function saveDistribution(fileList, id){      
+  let distrData = new FormData(); 
+  // Specify is a dataset so handles multiple files
+  distrData.append('upload_type', 'http://www.w3.org/ns/dcat#Dataset')
 
-// Reformat the auto-complete menu
-let run;
+  // append the files to FormData
+  Array
+    .from(Array(fileList.length).keys())
+    .map(x => {
+      distrData.append(fileList[x].name, fileList[x]); 
+    });
 
-const processAutocompleteMenu = () => {
-    run = setInterval(() => {
-        const floatList = document.getElementsByClassName("md-menu-content-bottom-start")
-        if(floatList.length >= 1) {
-            floatList[0].setAttribute("style", "z-index:1000 !important; width: 80%; max-width: 80%; position: absolute; left:50%; transform:translateX(-50%); will-change: top, left;")
-            return status = true
-        }
-    }, 40)
+  // Where to save the distribution
+  const uri = `${lodPrefix}/dataset/${id}`;
+  const baseUrl = `${window.location.origin}/about?uri=${uri}`;
+  axios.post( baseUrl,
+      distrData,
+      {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }, 
+      }
+  )
 
-    return run
 }
 
-export { getDefaultDataset, loadDataset, saveDataset, deleteDataset, processAutocompleteMenu}
+async function saveImg(file, id){
+  // Where to save the image
+  const uri = `${lodPrefix}/dataset/${id}/depiction`;
+  const baseUrl = `${window.location.origin}/about?uri=${uri}`
+
+  let form = new FormData();
+  form.append('upload_type', 'http://purl.org/net/provenance/ns#File')
+  form.append('depiction', file) 
+
+  var data = {
+    '@id': uri,
+    'file': form,
+  }
+  
+  await fetch(baseUrl, {
+    method: 'POST',
+    body: data, 
+    headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data', 
+    }, 
+  })
+  return [uri, baseUrl];
+}
+
+async function getDoi(doi){
+  const response = await axios.get(`/doi/${doi}?view=describe`, {
+    headers: {
+      'Accept': 'application/json',
+    }
+  });
+  return response
+}
+
+async function getDatasetAuthor(authorId){
+  // Use describe view on listed authors
+  const response = await axios.get(`/about?uri=${authorId}&view=describe`, {
+    headers: {
+      'Accept': 'application/json',
+    }
+  })
+  var doiAuth = response.data
+  if ('@graph' in response.data){
+    for (var entry in response.data['@graph']){
+      if (response.data['@graph'][entry]['@id'] === authorId){
+        doiAuth = response.data['@graph'][entry]
+      }
+    }
+  }
+  return doiAuth
+}
+
+
+export { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor}

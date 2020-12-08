@@ -1,12 +1,10 @@
 import Vue from 'vue';
 import { EventServices } from '../../../../modules';
 import VueMaterial from "vue-material";
-import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, processAutocompleteMenu} from "utilities/dataset-upload";
+import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "utilities/dataset-upload";
+import lookupOrcid from "utilities/orcid-lookup";
+import {processAutocompleteMenu, getAuthorList, getOrganizationlist} from "utilities/autocomplete-menu"
 import { goToView } from "utilities/views"; 
-// import { resolveEntity } from '../../../../../whyis'
-import { lodPrefix } from 'utilities/nanopub';  
-import axios from 'axios';
-
 Vue.use(VueMaterial);
 
 const STATUS_INITIAL = 0, STATUS_SAVING = 1, STATUS_SUCCESS = 2, STATUS_FAILED = 3;
@@ -85,7 +83,6 @@ data() {
       selectedAuthor: [],
 
       // TODO: deal with empty orgs
-      selectedOrg: [],
       editableOrgs: true,
     }
 },
@@ -176,36 +173,12 @@ methods: {
 
     async saveDistribution() {
       let fileList = this.uploadedFiles;
-      let distrData = new FormData(); 
+      this.distrStatus = STATUS_SAVING; 
 
       // If there are no files, cancel
       if (!fileList.length) {return this.distrStatus = STATUS_INITIAL}; 
 
-      //TODO: Move this to dataset-upload.js
-
-      // Specify is a dataset so handles multiple files
-      distrData.append('upload_type', 'http://www.w3.org/ns/dcat#Dataset')
-
-      // append the files to FormData
-      Array
-        .from(Array(fileList.length).keys())
-        .map(x => {
-          distrData.append(fileList[x].name, fileList[x]); 
-        });
-
-      // Where to save the distribution
-      const uri = `${lodPrefix}/dataset/${this.generatedUUID}`;
-      const baseUrl = `${window.location.origin}/about?uri=${uri}`;
-      this.distrStatus = STATUS_SAVING; 
-
-      axios.post( baseUrl,
-          distrData,
-          {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }, 
-          }
-      )
+      await saveDistribution(fileList, this.generatedUUID)
       .then(x => {
         this.distrStatus = STATUS_SUCCESS; 
       })
@@ -217,35 +190,15 @@ methods: {
 
     async saveRepImg() {
       const fileList = this.uploadedImg; 
-      // Where to save the image
-      const uri = `${lodPrefix}/dataset/${this.generatedUUID}/depiction`;
-      const baseUrl = `${window.location.origin}/about?uri=${uri}`
       this.depictStatus = STATUS_SAVING; 
 
       // If there are no images, cancel
       if (!fileList.length){return this.depictStatus = STATUS_INITIAL} 
 
-      // TODO: move this to dataset-upload.js
-      let form = new FormData();
-      form.append('upload_type', 'http://purl.org/net/provenance/ns#File')
-      form.append('depiction', fileList[0]) 
-
-      var data = {
-        '@id': uri,
-        'file': form,
-      }
-      
-      await fetch(baseUrl, {
-        method: 'POST',
-        body: data, 
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'multipart/form-data', 
-        }, 
-      })
-      .then(x => {   
-        this.dataset.depiction.accessURL = baseUrl;
-        this.dataset.depiction['@id'] = uri;
+      await saveImg(fileList[0], this.generatedUUID)
+      .then(urls => {   
+        this.dataset.depiction.accessURL = urls[1];
+        this.dataset.depiction['@id'] = urls[0];
         this.dataset.depiction.name=fileList[0].name;
         this.depictStatus = STATUS_SUCCESS;
       })
@@ -353,32 +306,14 @@ methods: {
       }
     },  
 
-    // Auto-complete methods for author and institution
-    resolveEntityAuthor (query) { 
-      // Until the resolver allows for OR operator, must run two gets to capture both person types
-      axios.all([
-        axios.get(
-          `/?term=${query}*&view=resolve&type=http://xmlns.com/foaf/0.1/Person`),
-        axios.get(
-          `/?term=${query}*&view=resolve&type=http://schema.org/Person`)
-      ])
-      .then(axios.spread((foafRes, schemaRes) => {
-        // Merge the results and sort by score descending
-        this.autocomplete.availableAuthors = foafRes.data.concat(schemaRes.data)
-        .sort((a, b) => (a.score < b.score) ? 1 : -1);
-      }))
-      .catch((err) => {
-        throw(err)
-      });
+    async resolveEntityAuthor(query){
+      this.autocomplete.availableAuthors = await getAuthorList(query);
     },
-    resolveEntityInstitution (query) {
-      this.autocomplete.availableInstitutions = axios.get(
-        `/?term=${query}*&view=resolve&type=http://schema.org/Organization`)
-          .then(function(response) {
-            // console.log(response.data);
-            return response.data;
-          });
+
+    async resolveEntityInstitution (query) {
+      this.autocomplete.availableInstitutions = await getOrganizationlist(query);
     },
+    
     selectedAuthorChange(item) {
       var elem = document.createElement("tr");
       var name;
@@ -396,7 +331,6 @@ methods: {
         },
       });
       this.selectedAuthor = "";
-      // console.log(this.contributors)
     }, 
     selectedOrgChange(row, event){
       var currentOrg = this.contributors[row]['onbehalfof'];
@@ -408,22 +342,13 @@ methods: {
     //TODO: decide how to deal with not having organizations available
     addAuthor (agent) {
       var elem = document.createElement("tr");
-
-      // if (arguments.length === 1) {
-      //   this.contributors.push(agent);
-      // } else {
         this.contributors.push({
           '@id': agent['@id'], 
           "name": agent.name,
-          // "firstname": "",
-          // "lastname": "",
           onbehalfof: {
             "name": null,
           },
         }); 
-      // }
-      
-      // console.log(this.contributors)
     },
 
     async getDOI() {
@@ -431,13 +356,8 @@ methods: {
       if (this.doi === ""){
         return
       }
-
       // Otherwise use the describe view
-      const response = await axios.get(`/doi/${this.doi}?view=describe`, {
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
+      const response = await getDoi(this.doi);
       const result = await this.useDescribedDoi(response, this.doi)
       .then(response => { 
         this.doiLoading = false;
@@ -473,140 +393,47 @@ methods: {
     },
 
     async getAuthorDescribed(authorId){ 
-      // Use describe view on listed authors
-      const response = await axios.get(`/about?uri=${authorId}&view=describe`, {
-        headers: {
-          'Accept': 'application/json',
-        }
-      })
-      .then(async response => { 
-        let doiAuth = response.data
-        if ('@graph' in response.data){
-          for (var entry in response.data['@graph']){
-            if (response.data['@graph'][entry]['@id'] === authorId){
-              doiAuth = response.data['@graph'][entry]
-            }
-          }
-        }
-        var newAuthor = {
-          '@id': doiAuth['@id'],
-          name: doiAuth['foaf:name'],
-          onbehalfof: {
-            name: null,
-          },
-        }
-        if ('owl:sameAs' in doiAuth){
-          newAuthor['specializationOf'] = {};
-          newAuthor['specializationOf']['@id'] = doiAuth['owl:sameAs']['@id'];
-          await this.getAuthorOrcid(newAuthor['specializationOf']['@id']);
-        }
-        if ('prov:specializationOf' in doiAuth){
-          newAuthor['specializationOf'] = {};
-          newAuthor['specializationOf']['@id'] = doiAuth['prov:specializationOf']['@id'];
-          // newAuthor['onbehalfof']['name'] = await this.getAuthorOrcid(newAuthor['specializationOf']['@id']);
-          // console.log(affiliation)
-        }
-        this.contributors.push(newAuthor)
-        // console.log(this.contributors)
-        return newAuthor;
-      })
-      .catch(err => { 
-        throw err;
-      }); 
-    },
-
-    async getAuthorOrcid(authorOrcidUri){
-      var authorOrcid = authorOrcidUri.substring(authorOrcidUri.lastIndexOf("/") + 1, authorOrcidUri.length);;
-      await axios.get(`/orcid/${authorOrcid}?view=describe`, {
-        headers: {
-          'Accept': 'application/json',
-        }
-      })
-      .then(async response => { 
-        let orcidAuth = response.data
-        // Sometimes there are multiple entries in the graph, find the right one
-        orcidAuth = this.findCorrectEntry(orcidAuth, `http://orcid.org/${authorOrcid}`)
-        // Assign values as available
-        if ('schema:affiliation' in orcidAuth){
-          var affiliationResponse = await axios.get(`/about?uri=${orcidAuth['schema:affiliation']['@id']}&view=describe`, {
-            headers: {
-              'Accept': 'application/json',
-            }
-          })
-          var affiliation = affiliationResponse.data;
-          affiliation = this.findCorrectEntry(affiliation, orcidAuth['schema:affiliation']['@id']);
-          return affiliation['schema:name']
-        }
-      })
-      .catch(err => { 
-        throw err;
-      }); 
-    },
-
-    findCorrectEntry(responseData, correctId){
-      if ('@graph' in responseData){
-        // If invalid id, graph will be empty so return nothing
-        if (!responseData['@graph'].length){
-          return
-        }
-        // Look for the entry that corresponds to the actual id
-        for (var entry in responseData['@graph']){
-          if (responseData['@graph'][entry]['@id'] === correctId){
-            return responseData['@graph'][entry]
-          }
-        }
+      const doiAuth = await getDatasetAuthor(authorId);
+      var newAuthor = {
+        '@id': doiAuth['@id'],
+        name: doiAuth['foaf:name'],
+        onbehalfof: {
+          name: null,
+        },
       }
+      if ('owl:sameAs' in doiAuth){
+        newAuthor['specializationOf'] = {};
+        newAuthor['specializationOf']['@id'] = doiAuth['owl:sameAs']['@id'];
+      }
+      if ('prov:specializationOf' in doiAuth){
+        newAuthor['specializationOf'] = {};
+        newAuthor['specializationOf']['@id'] = doiAuth['prov:specializationOf']['@id'];
+      }
+      this.contributors.push(newAuthor)
+      return newAuthor;
     },
 
     async lookupOrcid(){
       this.cpIDError = false;
-      // Check for valid ORCID id format
-      const regUnhyphenated = /^\d{16}$/
-      const unhyphenated = regUnhyphenated.test(this.cpID);
-      if (unhyphenated){
-        this.cpID = this.cpID.replace(/^\(?([0-9]{4})\)?([0-9]{4})?([0-9]{4})?([0-9]{4})$/, "$1-$2-$3-$4")
-      }
-      const regHyphenated = /^\(?([0-9]{4})\)?[-]?([0-9]{4})[-]?([0-9]{4})[-]?([0-9]{4})$/;
-      const validOrcid = regHyphenated.test(this.cpID);
-
-      // Get the data for this ORCID id through Whyis using view=describe
-      if (validOrcid){
-        const response = await axios.get(`/orcid/${this.cpID}?view=describe`, {
-          headers: {
-            'Accept': 'application/ld+json',
-          }
-        })
-        .then(response => { 
-          let orcidAuth = response.data
-          // Sometimes there are multiple entries in the graph
-          if ('@graph' in response.data){
-            // If invalid ORCID, graph will be empty so return nothing
-            if (!response.data['@graph'].length){
-              return this.resetContactPoint();
-            }
-            // Look for the entry that corresponds to the actual ORCID id
-            for (var entry in response.data['@graph']){
-              if (response.data['@graph'][entry]['@id'] === `http://orcid.org/${this.cpID}`){
-                orcidAuth = response.data['@graph'][entry]
-              }
-            }
-          }
+      const response = await lookupOrcid(this.cpID, "contactPoint")
+      .then(response => {
+        let orcidData = response;
+        if (orcidData === "Invalid"){
+          return this.resetContactPoint();
+        }
+        else{
           // Assign values as available
-          if ('schema:familyName' in orcidAuth){
-            this.dataset.contactpoint.cplastname = orcidAuth['schema:familyName']
+          if ('schema:familyName' in orcidData){
+            this.dataset.contactpoint.cplastname = orcidData['schema:familyName']
           }
-          if ('schema:givenName' in orcidAuth){
-            this.dataset.contactpoint.cpfirstname = orcidAuth['schema:givenName']
+          if ('schema:givenName' in orcidData){
+            this.dataset.contactpoint.cpfirstname = orcidData['schema:givenName']
           }
-        })
-        .catch(err => { 
-          throw err;
-        }); 
-      }
-      else {
-        // Invalid ORCID id
-        return this.resetContactPoint();
-      }
+        }
+      })
+      .catch(err => { 
+        throw err;
+      }); 
     },
 
     // Clear contact point values
@@ -631,21 +458,7 @@ methods: {
 
     // Modify styling of menu to override bad width
     setListStyle(param){
-      var runSetStyle;
-      if(param){
-        if(runSetStyle){
-          return clearInterval(runSetStyle);
-        }
-      }
-      runSetStyle = setInterval(() => {
-        const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
-        if(itemListContainer.length >= 1) {
-          // console.log(itemListContainer[0].parentNode.nodeName)
-          itemListContainer[0].setAttribute("style", "width: 90%; max-width: 90%; position: absolute; top: 841px; left: 95px; will-change: top, left;")
-          return status = true
-        }
-      }, 20)
-      return runSetStyle
+      return processAutocompleteMenu(param)
     }
 }, 
 

@@ -128,7 +128,7 @@
   import EventServices from '../../modules/events/event-services'
   import { processFloatList, resetProcessFloatList } from '../../utilities/dialog-box-adjust'
   import { goToView } from '../../utilities/views'
-  import { saveAgent } from '../../utilities/new-foaf-agent'
+  import { lookupOrcid } from '../../utilities/orcid-lookup'
   export default Vue.component('dialogBox', {
     data () {
       return {
@@ -206,10 +206,11 @@
         this.active = !this.active
         this.loginRequestSent = false
         if (this.agent === "author"){
-          const author = saveAgent(this.author) 
+          const author = lookupOrcid(this.author['@id'], "author") 
           console.log(author)
         } else if (this.agent === "organization"){
-          saveAgent(this.organization)
+          // saveAgent(this.organization)
+          return
         }
         EventServices.$emit('close-filter-box', this.active)
           // // reset this.author
