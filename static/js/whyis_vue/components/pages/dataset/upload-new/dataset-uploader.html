@@ -187,10 +187,10 @@
                                   v-bind:key="index + 'contr'" 
                                   style="border-top: 0.5pt lightgray solid"
                                 >
-                                  <td style="width:40%">
+                                  <td style="width:50%">
                                     {{contributors[index]['name']}}
                                   </td>
-                                  <td v-if="editableOrgs" style="width:30%">
+                                  <td v-if="editableOrgs" style="width:40%">
                                     <md-autocomplete 
                                       style="max-width: 90%;" 
                                       v-model="row['onbehalfof']['name']" 
