@@ -36,8 +36,21 @@ async function getAuthorList (query) {
 
 async function getOrganizationlist (query) {
     const orgList = await axios.get(
-        `/?term=${query}*&view=resolve&type=http://schema.org/Organization`)
+      `/?term=${query}*&view=resolve&type=http://schema.org/Organization`)
     return orgList.data
 }
 
-export { processAutocompleteMenu, getAuthorList, getOrganizationlist}
+async function getTypeList (query) {
+  const allTypes = await axios.get(
+    `/about?type=http://www.w3.org/2002/07/owl%23Class&view=resolve&term=${query}*`
+  )
+  return allTypes.data
+}
+
+export default async function getSuggestedTypes (uri){
+  const suggestedTypes = await axios.get(
+    `/about?view=suggested_types&uri=${uri}`)
+  return suggestedTypes.data
+}
+
+export { processAutocompleteMenu, getAuthorList, getOrganizationlist, getTypeList, getSuggestedTypes}
