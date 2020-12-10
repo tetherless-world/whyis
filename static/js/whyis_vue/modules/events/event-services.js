@@ -4,8 +4,6 @@ import * as Fn from './functions';
 const EventServices = new Vue({
     data:{
         chartListings: [],
-        // institutions: ["Duke University", "California Institute of Technology", "Northwestern University", "Rensselaer Polytechnic Institute", "University of Vermont"],
-        // authors: ["Author 1", "Author 2", "Other Author", "Research Intern"],
         organization: undefined,
         author: undefined,
         authUser: undefined,
@@ -31,18 +29,6 @@ const EventServices = new Vue({
                 this.$emit('isauthenticated', this.authUser);
             }
         },
-        // institutions(newVal, oldVal){
-        //     if(newVal != oldVal){
-        //         this.getState();
-        //     }
-        //     this.$emit('institutionsupdated', this.institutions);
-        // },
-        // authors(newVal, oldVal){
-        //     if(newVal != oldVal){
-        //         this.getState();
-        //     }
-        //     this.$emit('authorsupdated', this.authors);
-        // },
         organization(newVal, oldVal){
             if(newVal != oldVal){
                 this.getState();
