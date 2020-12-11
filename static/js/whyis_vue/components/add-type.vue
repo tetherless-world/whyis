@@ -1,15 +1,20 @@
 <template>
 <div>
     <slot>
-        <md-button id="addtypebutton" @click="showNewInstitution()" class="md-button-icon">+ Add type(s)</md-button>
+        <!--Default button -->
+        <button id="addtypebutton" class="md-button-icon"
+            style="border:none">
+            <i>+ Add type(s)</i>
+        <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
+        </button>
     </slot>
     
     <div>
     <md-dialog :md-active.sync="active" style="margin-top: -4rem" :md-click-outside-to-close="true">
-        <div style="margin:10px">
-            <div class="utility-dialog-box_header" >
-            <md-dialog-title> Add new types/classes</md-dialog-title>
-            </div>
+        <div class="utility-dialog-box_header" >
+            <md-dialog-title> Specify additional types/classes</md-dialog-title>
+        </div>
+        <div style="margin:20px;">
             <md-autocomplete
                 :value="selectedType" 
                 :md-options="typeList" 
@@ -34,7 +39,10 @@
             <div
                 v-for="(chip, key) in typeChips" 
                 v-bind:key="key + 'chips'">
-                <md-chip md-deletable v-model=typeChips[key]>{{typeChips[key].label}}</md-chip>
+                <md-chip v-model=typeChips[key] style="margin-bottom:4px">
+                    {{typeChips[key].label}}
+                    <button @click="removeChip(key)" style="border:none; border-radius:50%; margin-left:4px">x</button>
+                </md-chip>
             </div>
         
             <div class="utility-margin-big viz-2-col">
@@ -42,7 +50,7 @@
                 </div>
                 <div class="utility-align--right utility-margin-top">
                 <a @click.prevent="onCancel" class="btn-text btn-text--default"> &larr; Exit</a> &nbsp; &nbsp;
-                <a @click.prevent="onSubmitNew" class="btn-text btn-text--default">Submit &rarr; </a>
+                <a @click.prevent="onSubmit" class="btn-text btn-text--default">Submit &rarr; </a>
                 </div>
             </div>
         </div>
@@ -50,12 +58,12 @@
     </div>
 </div>
 </template>
-
+<style scoped lang="scss" src="../assets/css/main.scss"></style>
 <script>
 import Vue from "vue";
 import {getTypeList, getSuggestedTypes} from "../utilities/autocomplete-menu";
-import { EventServices } from '../modules';
 import { processFloatList, resetProcessFloatList } from '../utilities/dialog-box-adjust';
+import { postNewNanopub } from '../utilities/nanopub'
 
 export default Vue.component('add-type', {
     props: ['attributes'],
@@ -80,24 +88,56 @@ export default Vue.component('add-type', {
             this.typeChips.push(item);
         },
         // Create dialog boxes
-        showNewInstitution () {
+        showDialogBox () {
             this.active=true;
             return processFloatList()
-            // EventServices
-            // .$emit('open-new-instance', {status: true, title:"Add types or classes"})
-            // return
         },
-        onCancel() {
+        removeChip(index){
+            this.typeChips.splice(index, 1);
+        },
+        resetDialogBox(){
             this.active = !this.active;
+            this.typeChips = []
             return resetProcessFloatList();
         },
-    },
-    created() {
-    //   EventServices
-    //   .$on('open-add-type', (data) => {
-    //     this.status = data.status
-    //     this.id = data.id;
-    //   })
+        onCancel() {
+            return this.resetDialogBox();
+        },
+        onSubmit() {
+            this.saveNewTypes();
+            return this.resetDialogBox();
+        },
+        async saveNewTypes () {
+            let deletePromise = Promise.resolve()
+            const uri = this.attributes;
+            const types = this.processTypeChips();
+            const jsonLd = {
+                '@id': this.attributes,
+                '@type': types, 
+            }
+            await deletePromise
+            try{
+                return postNewNanopub(jsonLd)
+            } catch(err){
+                return alert(err)
+            }
+        },
+        processTypeChips () {
+            var processedChips = this.typeChips
+            Object.keys(processedChips).map(function(key, index) {
+                if (processTypeChips[key]["node"]){
+                    processedChips[key] = processedChips[key]["node"];
+                }
+            });
+            return processedChips
+        },
     }
 });
+window.onload=function(){
+    document.getElementById("addtypebutton").addEventListener("click", function() {
+        this.parentNode.__vue__.showDialogBox();
+    });
+}
+
+
 </script>
