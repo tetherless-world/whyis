@@ -8,10 +8,16 @@
     <md-card-header>
         <md-card-header-text>
             <div class="md-title">{{attributes.label}}</div>
-            {% if attributes.type | length > 0 %}<div class="md-subhead">{{attributes['type'][0].label}}</div>{% endif %}
-            <add-type class="md-subhead" style="padding:0px" attributes="{{attributes['@id']}}">
-                <!-- <md-button id="addtypebutton" class="md-button-icon">+</md-button> -->
-            </add-type>
+            <div class="md-layout md-gutter md-alignment-center-left">
+                {% if attributes.type | length > 0 %}<div class="md-subhead md-layout-item" style="max-width: fit-content;">
+                    {{attributes['type'][0].label}}
+                </div>{% endif %}
+                <add-type class="md-subhead md-layout-item" style="padding:0px" attributes="{{attributes['@id']}}">
+                    <button id="addtypebutton" class="md-button-icon" style="border:none"> +
+                        <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
+                    </button>
+                </add-type>
+            </div>
         </md-card-header-text>
         {% if attributes.thumbnail %}<md-card-media md-big >
             <img src="{{url_for('entity.view', uri=attributes.thumbnail)}}" alt="{{attributes.label}}"/>
