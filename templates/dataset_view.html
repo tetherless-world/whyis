@@ -12,10 +12,10 @@
                 {% if attributes.type | length > 0 %}<div class="md-subhead md-layout-item" style="max-width: fit-content;">
                     {{attributes['type'][0].label}}
                 </div>{% endif %}
-                <add-type class="md-subhead md-layout-item" style="padding:0px" attributes="{{attributes['@id']}}">
-                    <button id="addtypebutton" class="md-button-icon" style="border:none"> +
+                <add-type class="md-subhead md-layout-item" style="padding:0px" uri="{{attributes['@id']}}">
+                    <div style="max-width:fit-content"> +
                         <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
-                    </button>
+                    </div>
                 </add-type>
             </div>
         </md-card-header-text>
