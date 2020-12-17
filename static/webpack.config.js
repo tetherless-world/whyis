@@ -34,6 +34,18 @@ module.exports = (env, argv) => ({
       {
         test: /\.vue$/,
         loader: 'vue-loader'
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/'
+            }
+          }
+        ]
       }
     ]
   },
@@ -41,7 +53,8 @@ module.exports = (env, argv) => ({
   output: {
     filename: 'js/whyis_vue_bundle.js',
     libraryTarget: 'umd',
-    path: __dirname
+    path: __dirname,
+    publicPath: path.basename(__dirname) + '/',
   },
   plugins: [
     new MiniCssExtractPlugin({
