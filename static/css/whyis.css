@@ -81,7 +81,7 @@ md-app-toolbar {
 }
 
 .md-drawer-div {
-  height: 3.5rem !important; 
+  height: 3.5rem !important;
   margin-bottom: 1.2rem !important;
 }
 
@@ -108,6 +108,11 @@ md-app-toolbar {
   }*/
 }
 
+dt {
+    font-weight: bold;
+    margin-top:0.5em;
+}
+
 /**.md {
   &-app {
       font-family: 'Roboto', sans-serif !important;
@@ -126,9 +131,9 @@ md-app-toolbar {
       background-color: rgba($primary-white, 0.9) !important;
 
       &-div {
-          height: 3.5rem !important; 
+          height: 3.5rem !important;
           margin-bottom: 1.2rem !important;
-          
+
       }
   }
 
