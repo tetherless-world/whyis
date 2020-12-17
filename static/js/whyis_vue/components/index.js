@@ -9,3 +9,4 @@ import './yasqe';
 import './yasr';
 import './gallery';
 import './add-type';
+import './add-attribute';
