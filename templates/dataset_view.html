@@ -29,20 +29,19 @@
                 {% if attributes.type | length > 1 %}<div layout="row" class="md-subhead">
                     {% for type in attributes.type %}{{type.label}}{% if not loop.last %}, {% endif %} {% endfor %}
                 </div>{% endif %}
-                {% for desc in attributes.description %}<p><strong>{{desc.label}}:</strong> {{desc.value}}</p>
-                <p>
-                    <strong>Identifier: </strong> {{ attributes['@id']}}
-                </p>
+                <dl>
+                {% for desc in attributes.description %}<dt>{{desc.label}}:</dt> <dd>{{desc.value}}</dd>
                 {% endfor %}
+                    <dt>Identifier</dt> <dd>{{ attributes['@id']}}<dd>
                 {% for attribute in attributes.attributes %}
-                <p>
-                    <strong>{{attribute.label}}: </strong>
+                    <dt>{{attribute.label}} </dt>
                     {% for value in attribute['values'] %}
+                    <dd>
                         {{ value.value}} {% if value.unit_label %}<em>{{value.unit_label}}</em>{% endif %}
-                        {% if not loop.last %}, {% endif %}
+                    </dd>
                     {% endfor %}
-                </p>
                 {% endfor %}
+                </dl>
                 <div>
                 <add-attribute uri="{{attributes['@id']}}">
                     <md-button class="md-raised">Add Attribute
