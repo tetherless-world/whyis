@@ -389,6 +389,7 @@ rdfs:Resource whyis:hasView "resource_view.html";
   whyis:hasSuggestedTypes "suggested_types.json";
   whyis:hasSuggestedLinks "suggested_links.json";
   whyis:hasSuggestedAttributes "suggested_attributes.json";
+  whyis:hasNeighbors "resource_neighbors.json";
   whyis:hasSummary "summary_view.json" .
 
 bibo:AcademicArticle whyis:hasView "article_view.html".
@@ -411,6 +412,9 @@ whyis:hasSuggestedTypes dc:identifier "suggested_types";
   rdfs:subPropertyOf whyis:hasView.
 
 whyis:hasSuggestedLinks dc:identifier "suggested_links";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasNeighbors dc:identifier "neighbors";
   rdfs:subPropertyOf whyis:hasView.
 
 whyis:hasSuggestedAttributes dc:identifier "suggested_attributes";

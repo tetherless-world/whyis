@@ -11,3 +11,4 @@ import './yasr';
 import './gallery';
 import './add-type';
 import './add-attribute';
+import './add-link';
