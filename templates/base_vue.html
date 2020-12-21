@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/vue-material.min.css">
     <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/theme/default.css">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap-theme.min.css')}}">
+
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
 
@@ -51,10 +54,10 @@
     <div class="utility-bg">
       <div class="page-container">
         <md-app md-waterfall md-mode="overlap">
-          <md-app-toolbar 
-            site_name= "{{config['site_name']}}" 
+          <md-app-toolbar
+            site_name= "{{config['site_name']}}"
             page_title = "{{title()}}"
-            register-nav = "{{url_for('security.register')}}" 
+            register-nav = "{{url_for('security.register')}}"
             login-nav="{{url_for('security.login')}}">
           </md-app-toolbar>
           <md-app-drawer logout-nav="{{url_for('security.logout')}}" login-nav="{{url_for('security.login')}}"></md-app-drawer>
@@ -80,8 +83,8 @@
     BASE_RATE = 0.5;
     {% endif %}
     {% if current_user and current_user.identifier %}
-    USER = { 
-      uri: '{{current_user.identifier}}', 
+    USER = {
+      uri: '{{current_user.identifier}}',
       admin: "{{current_user.has_role('Admin')}}",
       name: "{{current_user.givenName}}",
       email: "{{current_user.email}}"

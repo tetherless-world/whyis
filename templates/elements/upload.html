@@ -35,3 +35,38 @@
 {% endif %}
 {% endmacro %}
 
+{% macro upload_button_tab_modal(resource) %}
+{% if g.current_user and g.current_user.is_authenticated %}
+<a class="nav-link" aria-label="Upload file for this entity" title="Upload file for this entity." data-toggle="modal" data-target="#uploadModal">
+    Upload
+</a>
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" action="" method="post" enctype="multipart/form-data">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadModalLabel">Upload File for {{get_label(resource)}}</h4>
+      </div>
+      <div class="modal-body">
+        <p>
+          <div class="form-group">
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" selected="selected" value="http://purl.org/net/provenance/ns#File">Single File
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" value="http://purl.org/dc/dcmitype/Collection"> Collection
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="upload_type" value="http://www.w3.org/ns/dcat#Dataset"> Dataset
+            </label>
+          </div>
+          <div class="form-group">
+            <input name="file" type="file" class="file" multiple>
+          </div>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
