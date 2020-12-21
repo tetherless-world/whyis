@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
+{% block styles %}
+{% endblock %}
+{% block scripts %}
+{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs">
+    {% for v in this | get_views_list -%}
+    <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
+        <a class="nav-link {% if v['view'].value == view %}active{% endif %}"
+           href="{{url_for('entity.view', uri=this.identifier, view=v['view'])}}">
+            {{v['label']}}
+        </a>
+    </li>
+    {%- endfor %}
+</ul>
+<nanopubs resource="{{this.identifier}}"/>
+{% endblock %}

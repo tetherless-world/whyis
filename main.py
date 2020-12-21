@@ -742,6 +742,7 @@ construct {
                 args=request.args if args is None else args,
                 url_for=url_for,
                 app=self,
+                view=view,
                 get_entity=get_entity,
                 get_summary=get_summary,
                 search = search,

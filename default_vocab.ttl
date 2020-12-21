@@ -371,7 +371,26 @@ whyis:hasInstances dc:identifier "instances";
 whyis:hasDataset dc:identifier "dataset";
   rdfs:subPropertyOf whyis:hasView.
 
-rdfs:Resource whyis:hasView "resource_view.html";
+whyis:hasView rdfs:label "View".
+whyis:hasExplore rdfs:label "Explore".
+whyis:hasGraphView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "graph";
+  rdfs:label "RDF Graph View".
+whyis:hasHistory rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "history";
+  rdfs:label "History".
+
+rdfs:Resource
+  whyis:hasNavigation (
+      whyis:hasView
+      whyis:hasExplore
+      whyis:hasGraphView
+      whyis:hasHistory
+      whyis:editInstanceView
+  );
+  whyis:hasView "resource_view.html";
+  whyis:hasGraphView "rdf_viewer.html";
+  whyis:hasHistory "history.html";
   whyis:hasRelated "related_nodes.json";
   whyis:hasOutgoing "outgoing_resource.json";
   whyis:hasIncoming "incoming_resource.json";
@@ -482,6 +501,7 @@ whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "new".
 
 whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;
+  rdfs:label "Edit";
   dc:identifier "edit".
 
 whyis:restoreInstanceView rdfs:subPropertyOf whyis:hasView;
@@ -526,5 +546,4 @@ whyis:DatasetClass a owl:Class;
   whyis:newInstanceView "dataset_new.html".
 
 dcat:Dataset a whyis:DatasetClass;
-  whyis:hasView "dataset_view.html";
   whyis:editInstanceView "dataset_edit.html".

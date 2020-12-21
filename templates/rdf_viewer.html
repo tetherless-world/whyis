@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/rdfviewer.css"></link>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="//cpettitt.github.io/project/dagre/latest/dagre.js"></script>
+<script src="/static/js/rdfviewer.js"></script>
+<script>
+$( function() {
+   graph = new Graph();
+   graph.load(DESCRIPTION).await(function(error) {
+       d3.select("#rdfviewer").datum(graph).each(rdfview());
+   });
+});
+</script>
+{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs">
+    {% for v in this | get_views_list -%}
+    <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
+        <a class="nav-link {% if v['view'].value == view %}active{% endif %}"
+           href="{{url_for('entity.view', uri=this.identifier, view=v['view'])}}">
+            {{v['label']}}
+        </a>
+    </li>
+    {%- endfor %}
+</ul>
+
+<svg class="panel-body"  id="rdfviewer" style="width: 100%; height:600px"></svg>
+{% endblock %}

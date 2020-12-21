@@ -9,6 +9,8 @@ from markupsafe import Markup
 from slugify import slugify
 from urllib import parse
 
+from whyis.namespace import NS
+
 # def geomean(nums):
 #    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
@@ -506,3 +508,29 @@ WHERE {
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
         print(query)
         return query
+
+    @app.template_filter('get_views_list')
+    def get_views_list(this):
+        types = []
+        types.extend((x, 1) for x in app.vocab[this.identifier : NS.RDF.type])
+        if not types: # KG types cannot override vocab types. This should keep views stable where critical.
+            types.extend([(x.identifier, 1) for x in this.description()[NS.RDF.type]])
+        #if len(types) == 0:
+        types.append([NS.RDFS.Resource, 100])
+        type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
+        view_query = '''select ?navlist (count(?mid)+?priority as ?rank) where {
+    values (?c ?priority) { %s }
+    ?c rdfs:subClassOf* ?mid.
+    ?mid rdfs:subClassOf* ?class.
+    ?class whyis:hasNavigation ?navlist.
+} group by ?c ?class order by ?rank limit 1
+''' % type_string
+        views = list(app.vocab.query(view_query, initNs=dict(whyis=NS.whyis, dc=NS.dc)))
+        if len(views) == 0:
+            return []
+        nav = list(app.vocab.collection(views[0][0]))
+        nav = [{'property': x,
+                'view': app.vocab.value(x, NS.dc.identifier),
+                'label':app.get_label(app.vocab.resource(x))}
+               for x in nav]
+        return nav
