@@ -46,6 +46,9 @@ function findCorrectEntry(responseData, correctId, type){
       }
       }
   }
+  else{
+    return responseData
+  }
 }
 
 export {lookupOrcid}
