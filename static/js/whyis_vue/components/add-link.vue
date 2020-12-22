@@ -28,7 +28,7 @@
                     >
                         <label>Link Type</label>
 
-                        <template slot="md-autocomplete-item" slot-scope="{ item, term }">
+                        <template slot="md-autocomplete-item" slot-scope="{ item }">
                         <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
                             {{item.preflabel}}
                         </label>
@@ -46,10 +46,30 @@
             </div>
             <div v-if="property" class="md-layout md-gutter">
                 <div class="md-layout-item">
-                    <md-field >
-                        <label >{{property.label}}</label>
-                        <md-textarea v-model="value" md-autogrow></md-textarea>
-                    </md-field>
+                    <md-autocomplete
+                        :value="entityName"
+                        :md-options="entityList"
+                        :md-open-on-focus="true"
+                        @md-changed="resolveEntity"
+                        v-on:md-selected="selectedEntityChange"
+                        @md-opened="showNeighborEntities"
+                    >
+                        <label>{{property.label}}</label>
+
+                        <template slot="md-autocomplete-item" slot-scope="{ item }">
+                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
+                            {{item.preflabel}}  ({{item.class_label}})
+                        </label>
+                        <label v-else md-term="term" md-fuzzy-search="true">
+                            {{item.label}}  ({{item.class_label}})
+                        </label>
+                        </template>
+
+                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
+                        <p v-if = "term" >No entities matching "{{ term }}" were found.</p>
+                        <p v-else >Type an entity name.</p>
+                        </template>
+                    </md-autocomplete>
                 </div>
             </div>
             <div class="utility-margin-big viz-2-col">
@@ -84,14 +104,17 @@ export default Vue.component('add-link', {
             propertyName: null,
             query: null,
             propertyList: [],
-            value: null,
-            datatype: null,
-            language: null,
+
+            entity: null,
+            entityName: null,
+            entityList: [],
+
             status: false,
             active: false
         };
     },
     methods: {
+        // property selection methods
         showSuggestedProperties(){
             this.processAutocompleteMenu();
         },
@@ -106,14 +129,26 @@ export default Vue.component('add-link', {
         },
         selectedPropertyChange(item){
             this.property = item;
+            this.propertyName = item.label;
             console.log(item);
-            if (item.range && this.datatypes[item.range]) {
-                this.datatype = this.datatypes[item.range];
-            }
-            console.log(this);
         },
-        selectedDatatypeChange(item){
-            console.log(this);
+        // entity selection methods
+        showNeighborEntities(){
+            this.processAutocompleteMenu();
+            this.entityList = this.getNeighborEntities(this.uri);
+        },
+        resolveEntity(query){
+            if (!query.label) {
+                if (query.length > 2) {
+                    this.entityList = this.getEntityList(query);
+                } else
+                    this.entityList = this.getNeighborEntities(this.uri);
+            }
+        },
+        selectedEntityChange(item){
+            this.entity = item;
+            this.entityName = item.label;
+            console.log(item);
         },
         // Create dialog boxes
         showDialogBox () {
@@ -123,28 +158,31 @@ export default Vue.component('add-link', {
         resetDialogBox(){
             this.active = !this.active;
             this.property = null;
-            this.value = null;
-            this.language = null;
-            this.datatype = null;
+            this.entity = null;
         },
         onCancel() {
             return this.resetDialogBox();
         },
         onSubmit() {
-            this.saveProperty()
+            this.saveLink()
             .then(() => window.location.reload());
             return this.resetDialogBox();
         },
-        async saveProperty () {
+        async saveLink () {
             let p = Promise.resolve()
             let jsonLd = {
                 '@id': this.uri
             }
-            if (this.datatype) this.language = null;
-            jsonLd[this.property.node] = {
-                "@value" : this.value,
-                "@lang" : this.language,
-                "@type" : this.datatype
+            // if (this.datatype) this.language = null;
+            if (this.entity['uri']){
+                jsonLd[this.property.property] = {
+                    "@id" : this.entity['uri'],
+                }
+            }
+            else {
+                jsonLd[this.property.property] = {
+                    "@id" : this.entity['node'],
+                }
             }
             console.log(jsonLd);
             await p
@@ -166,7 +204,7 @@ export default Vue.component('add-link', {
         async getSuggestedProperties (uri){
             const suggestedTypes = await axios.get(
                 `/about?view=suggested_links&uri=${uri}`)
-            return suggestedTypes.data
+            return suggestedTypes.data.outgoing
         },
 
         async getPropertyList (query) {
@@ -182,6 +220,18 @@ export default Vue.component('add-link', {
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
             return grouped
+        },
+
+        async getNeighborEntities (uri) {
+            const neighborEntities = await axios.get(
+                `/about?view=neighbors&uri=${uri}`)
+            return neighborEntities.data
+        },
+
+        async getEntityList (query) {
+            const entityList = await axios.get(
+                `/?term=*${query}*&view=resolve`)
+            return entityList.data
         },
 
         // Group entries by the value of a particular key
