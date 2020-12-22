@@ -12,3 +12,4 @@ import './gallery';
 import './add-type';
 import './add-attribute';
 import './add-link';
+import './add-knowledge-menu';
