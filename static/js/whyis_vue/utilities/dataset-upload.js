@@ -235,16 +235,16 @@ function extractDataset (datasetLd) {
 
 
 async function saveDataset (dataset, guuid) {
-  let deletePromise = Promise.resolve()
+  let p = Promise.resolve()
   if (dataset.uri) {
-    deletePromise = deleteDataset(dataset.uri)
+    p = deleteDataset(dataset.uri)
   } else if (arguments.length === 1){
     dataset.uri = generateDatasetId()
   } else {
     dataset.uri = generateDatasetId(guuid)
   } 
   const datasetLd = buildDatasetLd(dataset) 
-  await deletePromise
+  await p
   try{
     return postNewNanopub(datasetLd)
   } catch(err){

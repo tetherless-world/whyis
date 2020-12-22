@@ -6,13 +6,13 @@
             <button class="md-button-icon"
                 style="border:none; background:transparent">
                 <i>+ Add type(s)</i>
-            <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
+            <md-tooltip>Specify additional type, subclass, or superclass.</md-tooltip>
             </button>
         </slot>
     </div>
     
     <div>
-    <md-dialog :md-active.sync="active" style="margin-top: -4rem" :md-click-outside-to-close="true">
+    <md-dialog :md-active.sync="active" :md-click-outside-to-close="true">
         <div class="utility-dialog-box_header" >
             <md-dialog-title> Specify additional types/classes</md-dialog-title>
         </div>
@@ -61,11 +61,15 @@
             </div>
         
             <div class="utility-margin-big viz-2-col">
-                <div class="utility-align--right utility-margin-top"> 
+                <div class="utility-align--right utility-margin-top">
                 </div>
                 <div class="utility-align--right utility-margin-top">
-                <a @click.prevent="onCancel" class="btn-text btn-text--default"> &larr; Exit</a> &nbsp; &nbsp;
-                <a @click.prevent="onSubmit" class="btn-text btn-text--default">Submit &rarr; </a>
+                <md-button @click.prevent="onCancel" class="md-raised">
+                    Cancel
+                </md-button>
+                <md-button @click.prevent="onSubmit" class="md-raised">
+                    Submit
+                </md-button>
                 </div>
             </div>
         </div>
@@ -122,13 +126,13 @@ export default Vue.component('add-type', {
             return this.resetDialogBox();
         },
         async saveNewTypes () {
-            let deletePromise = Promise.resolve()
+            let p = Promise.resolve()
             const types = this.processTypeChips();
             const jsonLd = {
                 '@id': this.uri,
                 '@type': types, 
             }
-            await deletePromise
+            await p
             try{
                 return postNewNanopub(jsonLd)
             } catch(err){
@@ -146,20 +150,25 @@ export default Vue.component('add-type', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            var runSetStyle;
-            if(param){
-            if(runSetStyle){
-                return clearInterval(runSetStyle);
-            }
-            }
-            runSetStyle = setInterval(() => {
+            // var runSetStyle;
+            // if(param){
+            // if(runSetStyle){
+            //     return clearInterval(runSetStyle);
+            // }
+            // }
+            // runSetStyle = setInterval(() => {
+            // const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+            // if(itemListContainer.length >= 1) {
+            //     itemListContainer[0].setAttribute("style", "z-index:1000 !important; width: 270px; max-width: 410px; position: absolute; top: 366px; left:50%; transform:translateX(-50%); will-change: top, left;")
+            //     return status = true
+            // }
+            // }, 20)
+            // return runSetStyle
             const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
             if(itemListContainer.length >= 1) {
-                itemListContainer[0].setAttribute("style", "z-index:1000 !important; width: 270px; max-width: 410px; position: absolute; top: 366px; left:50%; transform:translateX(-50%); will-change: top, left;")
+                itemListContainer[0].style['z-index'] = 12;
                 return status = true
             }
-            }, 20)
-            return runSetStyle
         },
 
         async getSuggestedTypes (uri){

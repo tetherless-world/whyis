@@ -2,20 +2,13 @@ import axios from 'axios'
 
 // Reformat the auto-complete menu
 function processAutocompleteMenu (param) {
-    var runSetStyle;
-    if(param){
-      if(runSetStyle){
-        return clearInterval(runSetStyle);
-      }
-    }
-    runSetStyle = setInterval(() => {
-      const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
-      if(itemListContainer.length >= 1) {
-        itemListContainer[0].setAttribute("style", "width: 90%; max-width: 90%; position: absolute; top: 841px; left: 95px; will-change: top, left;")
+    const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+    if(itemListContainer.length >= 1) {
+        itemListContainer[0].style['z-index'] = 12;
+        itemListContainer[0].style['width'] = "75%";
+        itemListContainer[0].style['max-width'] = "75%";
         return status = true
-      }
-    }, 20)
-    return runSetStyle
+    }
   }
 
 // Auto-complete methods for author and institution
