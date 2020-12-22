@@ -14,7 +14,7 @@
                 </div>{% endif %}
                 <add-type class="md-subhead md-layout-item" style="padding:0px" uri="{{attributes['@id']}}">
                     <div style="max-width:fit-content"> +
-                        <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
+                        <md-tooltip>Specify additional type, subclass, or superclass.</md-tooltip>
                     </div>
                 </add-type>
             </div>
@@ -86,6 +86,11 @@
                     </md-card-header>
 
                     <md-card-actions>
+                        <add-link uri="{{rdflib.URIRef(item.target)}}">
+                            <md-button class="md-raised">Add Link
+                                <md-tooltip>Link to another entity.</md-tooltip>
+                            </md-button>
+                        </add-link>
                         <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="md-button-icon">View</md-button>
                         {% if this.graph.value(rdflib.URIRef(item.target), ns.whyis.hasFileID) %}
                         <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="md-button-icon">Download</md-button>
