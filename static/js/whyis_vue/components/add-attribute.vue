@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div v-on:click="showDialogBox" >
+    <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
             <button class="md-button-icon">
@@ -28,7 +28,7 @@
                     >
                         <label>Attribute</label>
 
-                        <template slot="md-autocomplete-item" slot-scope="{ item, term }">
+                        <template slot="md-autocomplete-item" slot-scope="{ item }">
                         <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
                             {{item.preflabel}}
                         </label>
@@ -97,7 +97,7 @@ import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
 export default Vue.component('add-attribute', {
-    props: ['uri'],
+    props: ['uri', 'hideButton'],
     data: function() {
         return {
             id: null,
@@ -324,6 +324,13 @@ export default Vue.component('add-attribute', {
             })
             return values
         },
+    },
+    created: function () {
+        // If the component was called with hideButton enabled,
+        // render the dialog box without needing a click from the button component
+        if(this.hideButton){
+            this.active=true;
+        }
     }
 });
 

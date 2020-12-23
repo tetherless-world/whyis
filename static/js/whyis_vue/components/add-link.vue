@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div v-on:click="showDialogBox" >
+    <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
             <button class="md-button-icon">
@@ -96,7 +96,7 @@ import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
 export default Vue.component('add-link', {
-    props: ['uri'],
+    props: ['uri', 'hideButton'],
     data: function() {
         return {
             id: null,
@@ -110,7 +110,7 @@ export default Vue.component('add-link', {
             entityList: [],
 
             status: false,
-            active: false
+            active: false,
         };
     },
     methods: {
@@ -245,6 +245,13 @@ export default Vue.component('add-link', {
             })
             return values
         },
+    },
+    created: function () {
+        // If the component was called with hideButton enabled,
+        // render the dialog box without needing a click from the button component
+        if(this.hideButton){
+            this.active=true;
+        }
     }
 });
 
