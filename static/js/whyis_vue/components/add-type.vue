@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div v-on:click="showDialogBox" >
+    <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
             <button class="md-button-icon"
@@ -84,7 +84,7 @@ import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
 export default Vue.component('add-type', {
-    props: ['uri'],
+    props: ['uri', 'hideButton'],
     data: function() {
         return {
             id: null,
@@ -150,20 +150,6 @@ export default Vue.component('add-type', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            // var runSetStyle;
-            // if(param){
-            // if(runSetStyle){
-            //     return clearInterval(runSetStyle);
-            // }
-            // }
-            // runSetStyle = setInterval(() => {
-            // const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
-            // if(itemListContainer.length >= 1) {
-            //     itemListContainer[0].setAttribute("style", "z-index:1000 !important; width: 270px; max-width: 410px; position: absolute; top: 366px; left:50%; transform:translateX(-50%); will-change: top, left;")
-            //     return status = true
-            // }
-            // }, 20)
-            // return runSetStyle
             const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
             if(itemListContainer.length >= 1) {
                 itemListContainer[0].style['z-index'] = 12;
@@ -203,6 +189,13 @@ export default Vue.component('add-type', {
             })
             return values
         },
+    },
+    created: function () {
+        // If the component was called with hideButton enabled,
+        // render the dialog box without needing a click from the button component
+        if(this.hideButton){
+            this.active=true;
+        }
     }
 });
 
