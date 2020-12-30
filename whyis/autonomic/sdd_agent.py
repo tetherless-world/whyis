@@ -1,8 +1,8 @@
 from builtins import str
 import sadi
-import rdflib
 import setlr
 import sdd2rdf
+import rdflib
 from sdd2rdf import sdd2setl
 from datetime import datetime
 
@@ -63,8 +63,9 @@ FILTER NOT EXISTS { ?data_file rdf:type whyis:ProcessedFile . }
 }
 ''')
         output = sdd2setl(values.json["results"]["bindings"][0]["sdd_file"]["value"] + "#InfoSheet",values.json["results"]["bindings"][0]["prefix"]["value"],values.json["results"]["bindings"][0]["data_file"]["value"],values.json["results"]["bindings"][0]["content_type"]["value"],values.json["results"]["bindings"][0]["delimiter"]["value"],'Infosheet')
-        #with open('/apps/whyis/out.setl','wb') as out: 
-        #    out.write(output.encode('utf8'))
+        g = rdflib.Graph()
+        g.parse(data=output, format="turtle")
         npub = Nanopublication(store=self.app.db.store)
-        npub.assertion.parse(data=output,format="turtle")
+        for s, p, o in g:
+            npub.assertion.add((s, p, o))
         npub.assertion.add((rdflib.URIRef(values.json["results"]["bindings"][0]["data_file"]["value"]), rdflib.RDF.type, whyis.ProcessedFile))
