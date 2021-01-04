@@ -757,7 +757,7 @@ construct {
 
             types.extend((x, 1) for x in self.vocab[resource.identifier : NS.RDF.type])
             if not types: # KG types cannot override vocab types. This should keep views stable where critical.
-                types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]])
+                types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]  if isinstance(x, rdflib.URIRef)])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])

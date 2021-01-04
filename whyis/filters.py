@@ -514,16 +514,16 @@ WHERE {
         types = []
         types.extend((x, 1) for x in app.vocab[this.identifier : NS.RDF.type])
         if not types: # KG types cannot override vocab types. This should keep views stable where critical.
-            types.extend([(x.identifier, 1) for x in this.description()[NS.RDF.type]])
+            types.extend([(x.identifier, 1) for x in this.description()[NS.RDF.type]  if isinstance(x, rdflib.URIRef)])
         #if len(types) == 0:
         types.append([NS.RDFS.Resource, 100])
         type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
         view_query = '''select ?navlist (count(?mid)+?priority as ?rank) where {
-    values (?c ?priority) { %s }
     ?c rdfs:subClassOf* ?mid.
     ?mid rdfs:subClassOf* ?class.
     ?class whyis:hasNavigation ?navlist.
 } group by ?c ?class order by ?rank limit 1
+values (?c ?priority) { %s }
 ''' % type_string
         views = list(app.vocab.query(view_query, initNs=dict(whyis=NS.whyis, dc=NS.dc)))
         if len(views) == 0:
