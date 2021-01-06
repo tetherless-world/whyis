@@ -44,6 +44,7 @@ class NamespaceContainer(object):
     hint = rdflib.Namespace("http://www.bigdata.com/queryHints#")
     void = rdflib.Namespace("http://rdfs.org/ns/void#")
     schema = rdflib.Namespace("http://schema.org/")
+    setl = rdflib.Namespace("http://purl.org/twc/vocab/setl/")
 
     @property
     def prefixes(self):

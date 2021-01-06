@@ -71,7 +71,7 @@ requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
 scipy==1.2.1
-sdd2rdf
+sdd2rdf==0.1.1
 setlr==0.2.14
 six==1.12.0
 soupsieve==1.9.1
