@@ -453,6 +453,7 @@ owl:Ontology rdfs:label "Ontology";
     whyis:hasOutgoing "outgoing_ontology.json";
     whyis:hasIncoming "incoming_ontology.json";
     whyis:hasDescribe "describe_ontology.json";
+    whyis:hasData "ontology_data.json";
     whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;
@@ -529,6 +530,8 @@ whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
   dc:identifier "incoming".
 whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
   dc:identifier "attributes".
+whyis:hasData rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "data".
 
 whyis:ChartClass a owl:Class;
   rdfs:subClassOf owl:Class;
