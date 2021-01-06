@@ -71,7 +71,12 @@ WHERE {
 }
 ''', initBindings={"sdd_file": i.identifier})
         for prefix, sdd_file, data_file, content_type, delimiter in values:
-            output = sdd2setl(sdd_file + "#InfoSheet",
+            resource = self.app.get_resource(sdd_file)
+            fileid = resource.value(self.app.NS.whyis.hasFileID)
+            if fileid is not None:
+                sdd_file = self.app.file_depot.get(fileid.value)
+
+            output = sdd2setl(sdd_file,
                               prefix.value,
                               data_file,
                               content_type.value,
