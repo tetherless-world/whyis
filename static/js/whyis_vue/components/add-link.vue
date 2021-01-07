@@ -54,7 +54,7 @@
                         v-on:md-selected="selectedEntityChange"
                         @md-opened="showNeighborEntities"
                     >
-                        <label>{{property.label}}</label>
+                        <label>{{propertyName}}</label>
 
                         <template slot="md-autocomplete-item" slot-scope="{ item }">
                         <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
@@ -117,19 +117,21 @@ export default Vue.component('add-link', {
         // property selection methods
         showSuggestedProperties(){
             this.processAutocompleteMenu();
+            this.propertyList = this.getSuggestedProperties(this.uri);
         },
         resolveProperty(query){
             console.log(query);
             if (!query.label) {
-                if (query.length > 2) {
-                    this.propertyList = this.getPropertyList(query);
-                } else
-                    this.propertyList = this.getSuggestedProperties(this.uri);
+                this.propertyList = this.getPropertyList(query);
+                    
             }
         },
         selectedPropertyChange(item){
             this.property = item;
-            this.propertyName = item.label;
+            if(item.preflabel){
+                this.propertyName = item.preflabel;
+            }
+            else {this.propertyName = item.label; }
             console.log(item);
         },
         // entity selection methods
@@ -174,16 +176,20 @@ export default Vue.component('add-link', {
                 '@id': this.uri
             }
             // if (this.datatype) this.language = null;
+            let entityUri = this.entity['node'];
+            let propertyUri = this.property['node'];
+
             if (this.entity['uri']){
-                jsonLd[this.property.property] = {
-                    "@id" : this.entity['uri'],
-                }
+                entityUri = this.entity['uri'];
             }
-            else {
-                jsonLd[this.property.property] = {
-                    "@id" : this.entity['node'],
-                }
+            if (this.property['property']){
+                propertyUri = this.property['property']
             }
+
+            jsonLd[propertyUri] = {
+                "@id" : entityUri,
+            }
+            
             console.log(jsonLd);
             await p
             try {

@@ -43,7 +43,7 @@
                 {% if attributes.type | length > 0 %}<div class="md-subhead md-layout-item" style="max-width: fit-content;">
                     {% for type in attributes.type %}{{type.label}}{% if not loop.last %}, {% endif %} {% endfor %}
                 </div>{% endif %}
-                <add-type class="md-subhead md-layout-item" style="padding:0px" uri="{{attributes['@id']}}">
+                <add-type class="md-subhead md-layout-item" uri="{{attributes['@id']}}">
                     <div style="max-width:fit-content"> +
                         <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
                     </div>
@@ -77,6 +77,13 @@
                     </md-button>
                 </add-attribute>
                 </div>
+                <div>
+                    <add-link uri="{{attributes['@id']}}">
+                        <md-button class="md-raised">Add Link
+                            <md-tooltip>Link another entity.</md-tooltip>
+                        </md-button>
+                    </add-link>
+                    </div>
             </div>
             <div class="md-layout-item">
                 {% for link_name, items in outgoing | groupby("link_label") %}

@@ -69,12 +69,12 @@ where {
   filter not exists {
     ?node a owl:AnnotationProperty.
   }
-  filter not exists {
-    ?node a owl:ObjectProperty.
-  }
-  filter not exists {
-    ?node a owl:DatatypeProperty.
-  }
+  # filter not exists {
+  #   ?node a owl:ObjectProperty.
+  # }
+  # filter not exists {
+  #   ?node a owl:DatatypeProperty.
+  # }
   filter not exists {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
