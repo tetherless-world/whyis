@@ -3,7 +3,7 @@
 # whyis-deps sets up the environment (apache, celery, redis) and installs our Python and Java dependencies. We assume it will change infrequently, because dependencies should change infrequently.
 # When requirements do change, we should build and push a new whyis-deps to Dockerhub for the CI to incorporate into the whyis build.
 
-FROM python:3.7-buster
+FROM python:3.7.9-buster
 
 # Installation of required packages
 RUN apt-get update && apt-get install -y \
