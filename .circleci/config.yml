@@ -16,7 +16,9 @@ jobs:
       - run:
           name: Build monolithic Docker image
           command: |
-            cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
+            cd docker/compose/monolithic
+            WHYIS_IMAGE_TAG=latest docker-compose pull
+            WHYIS_IMAGE_TAG=latest docker-compose build
       - run:
           name: Run unit tests
           command: .circleci/test-unit.sh tetherlessworld/whyis:latest
@@ -44,7 +46,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
+              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push
 
               tag=`git describe --exact-match` || echo "latest commit is not tagged"
               if [ $tag ] ; then
