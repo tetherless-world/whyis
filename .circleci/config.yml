@@ -44,7 +44,8 @@ jobs:
       - run:
           name: Build and push monolithic Docker images
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            #if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ ]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push
 
