@@ -69,7 +69,9 @@
                 <div class="md-layout-item">
                     <md-field >
                         <label >{{attribute.label}}</label>
-                        <md-textarea v-model="value" md-autogrow></md-textarea>
+                        <md-textarea v-if="(datatype==null)||(datatypes[datatype].widget=='textarea')" 
+                            v-model="value" md-autogrow></md-textarea>
+                        <md-input v-else v-model="value" :type=datatypes[datatype].widget> </md-input>
                     </md-field>
                 </div>
             </div>
