@@ -5,7 +5,8 @@ WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
 curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
 sudo dpkg -i puppet-release-xenial.deb
 
-sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository -y ppa:deadsnakes/ppa
 sudo apt-get update
 
 echo "Installing puppet..."
