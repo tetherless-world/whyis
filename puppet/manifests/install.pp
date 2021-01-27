@@ -4,10 +4,9 @@ $whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
 notice("Whyis branch: ${whyis_branch_}")
 
 class { 'python' :
-  version    => 'system',
+  version    => '3.7',
   pip        => 'present',
   dev        => 'present',
-  virtualenv => 'present',
   gunicorn   => 'absent',
 }
 
@@ -18,7 +17,7 @@ service { jetty8:
 }
 
 # Install and uninstall packages
-package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "python3-dev", "libdb5.3-dev"]:
+package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "libdb5.3-dev", "python3.7-dev"]:
   ensure => "installed"
 } ->
 package { "jetty8":
@@ -157,19 +156,24 @@ file { "/data/files":
 } ->
 
 # Set up the whyis Python virtual environment
-python::virtualenv { '/apps/whyis/venv' :
+python::pyvenv { '/apps/whyis/venv' :
   ensure       => present,
-  version      => '3',
+  version      => '3.7',
   systempkgs   => false,
-  distribute   => false,
   venv_dir     => '/apps/whyis/venv',
   owner        => 'whyis',
   group        => 'whyis',
-  cwd          => '/apps/whyis',
-  timeout      => 18000,
 } ->
 python::pip { 'pip-upgrade' :
   pkgname       => 'pip',
+  ensure        => 'latest',
+  virtualenv    => '/apps/whyis/venv',
+  owner         => 'whyis',
+  group         => 'whyis',
+  timeout       => 18000,
+} ->
+python::pip { 'pip-wheel' : 
+  pkgname       => 'wheel',
   ensure        => 'latest',
   virtualenv    => '/apps/whyis/venv',
   owner         => 'whyis',
