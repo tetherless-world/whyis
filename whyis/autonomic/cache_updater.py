@@ -9,8 +9,8 @@ import json
 import itertools
 
 from .global_change_service import GlobalChangeService
-from nanopub import Nanopublication
-from datastore import create_id
+from whyis.nanopub import Nanopublication
+from whyis.datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -18,7 +18,7 @@ import logging
 
 import sys, traceback
 
-import database
+import whyis.database
 
 import tempfile
 

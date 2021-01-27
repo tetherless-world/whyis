@@ -4,7 +4,7 @@ import rdflib
 import os
 import collections
 import requests
-from dataurl import DataURLStorage
+from whyis.dataurl import DataURLStorage
 from werkzeug.utils import secure_filename
 
 import tempfile
@@ -18,7 +18,7 @@ import pytz
 from whyis.namespace import np, prov, dc, frbr, whyis
 from uuid import uuid4
 
-from datastore import create_id
+from whyis.datastore import create_id
 from .nanopublication import Nanopublication
 
 from rdflib.plugins.serializers import nquads

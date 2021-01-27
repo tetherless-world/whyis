@@ -9,7 +9,7 @@ def config_str_to_obj(cfg):
 
 
 def app_factory(config, app_name, blueprints=None):
-    from main import App, PROJECT_PATH
+    from whyis.app import App, PROJECT_PATH
     # you can use Empty directly if you wish
     app = App(app_name, root_path=PROJECT_PATH)
     config = config_str_to_obj(config)

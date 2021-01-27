@@ -1,6 +1,6 @@
 import rdflib
 from datetime import datetime
-from nanopub import Nanopublication
+from whyis.nanopub import Nanopublication
 import logging
 import sys
 import pandas as pd

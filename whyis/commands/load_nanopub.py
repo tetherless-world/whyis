@@ -6,7 +6,7 @@ from flask_script import Command, Option, Server
 import flask
 
 import rdflib
-from nanopub import Nanopublication
+from whyis.nanopub import Nanopublication
 import tempfile
 
 from whyis.namespace import np
@@ -44,7 +44,7 @@ class LoadNanopub(Command):
 
         try:
             g1 = load_nanopub_graph(location=input_file, format=file_format, store=g.store)
-            
+
             nanopubs = []
             for npub in flask.current_app.nanopub_manager.prepare(g):
                 if was_revision_of is not None:

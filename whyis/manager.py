@@ -27,3 +27,9 @@ class Manager(script.Manager):
         self.add_command("testagent", commands.TestAgent())
         self.add_command("updateuser", commands.UpdateUser())
         self.add_command("uninstallapp", commands.UninstallApp())
+
+def main():
+    Manager().run()
+
+if __name__ == "__main__":
+    Manager().run()

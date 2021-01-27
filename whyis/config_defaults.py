@@ -1,6 +1,6 @@
 # -*- config:utf-8 -*-
 
-import importer
+from whyis import importer
 from whyis import autonomic
 import logging
 
@@ -41,7 +41,7 @@ Config = dict(
         'cache_max_age' : 3600*24*7,
         'depot.storage_path' : '/data/files'
     },
-    vocab_file = "default_vocab.ttl",
+    vocab_file = "whyis/default_vocab.ttl",
     WHYIS_TEMPLATE_DIR = None,
     WHYIS_CDN_DIR = None,
 
@@ -412,6 +412,7 @@ del Test['admin_updateEndpoint']
 del Test['knowledge_queryEndpoint']
 del Test['knowledge_updateEndpoint']
 Test.update(dict(
+    DEBUG=False,
     nanopub_archive = {
         'depot.backend' : 'depot.io.memory.MemoryFileStorage'
     },

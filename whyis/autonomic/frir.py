@@ -6,8 +6,8 @@ from datetime import datetime
 from depot.manager import DepotManager
 
 from .update_change_service import UpdateChangeService
-from nanopub import Nanopublication
-from datastore import create_id
+from whyis.nanopub import Nanopublication
+from whyis.datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -15,7 +15,7 @@ import logging
 
 import sys, traceback
 
-import database
+import whyis.database
 
 import tempfile
 
@@ -56,7 +56,7 @@ class FRIRArchiver(UpdateChangeService):
     def __init__(self, expression_digest=rgda1_digest, manifestation_digest=sha256):
         self.expression_digest = expression_digest
         self.manifestation_digest = manifestation_digest
-        
+
     def getInputClass(self):
         return np.Nanopublication
 
@@ -93,12 +93,12 @@ select distinct ?resource where {
             o.graph.add((work, frbr.realization, exp))
             o.graph.add((work, rdflib.RDF.type, frbr.Work))
             o.graph.add((exp, rdflib.RDF.type, frbr.Expression))
-        
+
         with self.app.nanopub_depot.get(fileid) as stored_file:
             manifestation_id = self.manifestation_digest(stored_file)
         manifestation = pmanif[hex(manifestation_id)[2:]]
         o.graph.add((nanopub_expression_uri, frbr.embodiment, manifestation))
-            
+
         o.graph.add((manifestation, rdflib.RDF.type, pv.File))
         o.graph.add((manifestation, whyis.hasFileID, rdflib.Literal(fileid)))
         o.graph.add((manifestation, dc.created, rdflib.Literal(datetime.utcnow())))
