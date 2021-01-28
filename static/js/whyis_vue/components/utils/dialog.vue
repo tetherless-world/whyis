@@ -1,6 +1,6 @@
 <template>
   <div>
-    <md-dialog :md-active.sync="active" style="margin-top: -4rem" :md-click-outside-to-close="true">
+    <md-dialog :md-active.sync="active" :md-click-outside-to-close="true">
       <div class="viz-intro" v-if="dialog.intro">
         <div class="utility-gridicon utility-margin-top"><span class="viz-intro-title">tips &dot;</span></div>
         <intros :screen="introTipScreen" />
@@ -27,6 +27,11 @@
             </md-field>
             <span class="md-subheading"> {{ dialog.message }}</span>
           </div>
+          <div v-else-if="dialog.tableview" style="margin-right: .8rem !important;">
+            <div class="viz-intro-query" style="min-height: 40rem !important">
+              <yasr v-model="dialog.query"></yasr>
+            </div>
+          </div>
           <div v-else-if="dialog.query" style="margin-right: .8rem !important;">
             <div class="viz-intro-query">
               <yasqe v-model="dialog.query" :showBtns='true'></yasqe>
@@ -35,9 +40,9 @@
           </div>
           <div v-else> <span class="md-subheading">{{ dialog.message }}</span> </div>
           
-          <div class="utility-margin-big viz-2-col" v-if="dialog.share || dialog.delete || dialog.query || dialog.diag">
+          <div class="utility-margin-big viz-2-col" v-if="dialog.share || dialog.delete || dialog.query || dialog.diag || dialog.tableview">
             <div class="utility-margin-top"></div>
-            <div class="utility-align--right utility-margin-top" v-if="dialog.share || dialog.query">
+            <div class="utility-align--right utility-margin-top" v-if="dialog.share || dialog.query || dialog.tableview">
               <a @click.prevent="cancelDel" class="btn-text btn-text--default">Close</a>
             </div>
             <div class="utility-align--right utility-margin-top" v-else-if="dialog.delete || dialog.diag">
@@ -144,7 +149,8 @@
         chartResults: {
           title: [],
           description: [],
-          query:[]
+          query:[],
+          tableview: []
         },
         dialog:{
           status: false
