@@ -21,6 +21,8 @@ Config = dict(
 
     site_name = "Whyis Knowledge Graph",
 
+    base_rate_probability = 0.6,
+
     # use TESTING mode?
     TESTING = False,
 
