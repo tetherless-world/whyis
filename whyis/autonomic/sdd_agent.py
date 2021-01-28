@@ -38,18 +38,7 @@ class SDDAgent(GlobalChangeService):
         return '''select distinct ?resource where { ?resource a %s.}''' % self.getInputClass().n3()
 
     def process(self, i, o):
-        values = self.app.db.query('''prefix sio: <http://semanticscience.org/resource/>
-prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-prefix sdd: <http://purl.org/twc/sdd/>
-prefix ov: <http://open.vocab.org/terms/>
-prefix void: <http://rdfs.org/ns/void#>
-prefix dcterms: <http://purl.org/dc/terms/>
-prefix dcat: <http://www.w3.org/ns/dcat#>
-prefix csvw: <http://www.w3.org/ns/csvw#>
-prefix whyis: <http://vocab.rpi.edu/whyis/>
-prefix setl: <http://purl.org/twc/vocab/setl/>
-prefix prov:          <http://www.w3.org/ns/prov#>
-
+        values = self.app.db.query('''
 SELECT ?prefix ?sdd_file ?data_file ?content_type ?delimiter
 WHERE {
     ?data_file dcterms:conformsTo ?sdd_file ;
@@ -69,9 +58,16 @@ WHERE {
             prov:used ?data_file.
     }
 }
-''', initBindings={"sdd_file": i.identifier})
+''', initBindings={"sdd_file": i.identifier}, initNs=NS.prefixes)
         for prefix, sdd_file, data_file, content_type, delimiter in values:
-            output = sdd2setl(sdd_file + "#InfoSheet",
+            resource = self.app.get_resource(sdd_file)
+            fileid = resource.value(self.app.NS.whyis.hasFileID)
+            if fileid is not None:
+                sdd_data = self.app.file_depot.get(fileid.value)
+            else:
+                sdd_data = sdd_file
+
+            output = sdd2setl(sdd_data,
                               prefix.value,
                               data_file,
                               content_type.value,

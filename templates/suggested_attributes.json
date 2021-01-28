@@ -1,0 +1,29 @@
+{{'''
+    select distinct ?node ?range where {
+      {
+        ?e a ?type.
+      } union {
+        ?e ?p ?o.
+        ?p rdfs:domain|<http://purl.org/dc/dcam/domainIncludes>|schema:domainIncludes ?type.
+      } union {
+        ?s ?p ?e.
+        ?p rdfs:range|<http://purl.org/dc/dcam/rangeIncludes>|schema:rangeIncludes ?type.
+      }
+      ?type (rdfs:subClassOf|owl:equivalentClass)* ?mid.
+      ?mid (rdfs:subClassOf|owl:equivalentClass)* ?class.
+      {
+          ?p rdfs:subPropertyOf* ?node.
+          ?node rdfs:domain|<http://purl.org/dc/dcam/domainIncludes>|schema:domainIncludes ?class.
+          optional {
+              ?node rdfs:range|<http://purl.org/dc/dcam/rangeIncludes>|schema:rangeIncludes ?range.
+          }
+      } union {
+          [] a ?class;
+             ?node ?o.
+          optional {
+             ?node rdfs:range|<http://purl.org/dc/dcam/rangeIncludes>|schema:rangeIncludes ?range.
+          }
+      }
+      minus { ?node a owl:ObjectProperty. }
+      filter ( ?node != rdf:type)
+    }''' | query(values={"e":this.identifier}) | iter_labelize(key="node", label_key="label") | iter_labelize(key="range", label_key="range_label") | tojson }}

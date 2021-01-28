@@ -1,1 +1,2 @@
-import './vega'
+import './vega';
+import './dataset'

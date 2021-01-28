@@ -4,6 +4,8 @@ import * as Fn from './functions';
 const EventServices = new Vue({
     data:{
         chartListings: [],
+        organization: undefined,
+        author: undefined,
         authUser: undefined,
         navOpen: false,
         tempChart: undefined,
@@ -26,6 +28,18 @@ const EventServices = new Vue({
                 }
                 this.$emit('isauthenticated', this.authUser);
             }
+        },
+        organization(newVal, oldVal){
+            if(newVal != oldVal){
+                this.getState();
+            }
+            this.$emit('organizationSelected', this.organization); 
+        },
+        author(newVal, oldVal){
+            if(newVal != oldVal){
+                this.getState();
+            }
+            this.$emit('authorSelected', this.author); 
         }
     },
     methods: {...Fn.controller},

@@ -9,6 +9,7 @@ from markupsafe import Markup
 from slugify import slugify
 from urllib import parse
 
+from whyis.namespace import NS
 
 # def geomean(nums):
 #    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
@@ -180,7 +181,8 @@ def configure(app):
 ?source
 ?link
 ?target
-(group_concat(distinct ?link_type; separator=" ") as ?link_types)
+?link_type
+#(group_concat(distinct ?link_type; separator=" ") as ?link_types)
 ?np
 ?probability
 #(max(?tfidf) as ?tfidf)
@@ -221,7 +223,7 @@ where {
       #bind (?frequency * ?idf as ?tfidf)
       #bind (?tfidf/(1+?tfidf) as ?probability)
     }
-} group by ?source ?target ?link ?np ?prob_np ?probability''' % select
+} group by ?source ?target ?link ?link_type ?np ?prob_np ?probability''' % select
 
     @app.template_filter('mergeLinks')
     def mergeLink(edges):
@@ -260,7 +262,7 @@ where {
         for edge in edges:
 #            edge['source_types'] = [x for x in edge.get('source_types','').split(' ') if len(x) > 0]
 #            edge['target_types'] = [x for x in edge.get('target_types','').split(' ') if len(x) > 0]
-            edge['link_types'] = [x for x in edge.get('link_types','').split(' ') if len(x) > 0]
+            edge['link_types'] = [x for x in edge.get('link_type','').split(' ') if len(x) > 0]
             edge['articles'] = [x for x in edge.get('articles','').split(' ') if len(x) > 0]
             byLink[(edge['source'],edge['link'],edge['target'])].append(edge)
         result = list(map(merge, list(byLink.values())))
@@ -302,6 +304,8 @@ where {
         results = mergeLink(results)
         results = sorted(mergeLinkTypes(results), key=lambda x: x['probability'], reverse=True)
         for r in results:
+            if 'link_type' in r:
+                labelize(r, 'link_type', 'link_label')
             r['link_types'] = [labelize({"uri":x},'uri','label') for x in r['link_types']]
             # resource = # return value of the next line is never used
             app.get_resource(rdflib.URIRef(r['link']))
@@ -504,3 +508,29 @@ WHERE {
         query = instance_data_template.render(constraints=constraints, variables=variables, this=this)
         print(query)
         return query
+
+    @app.template_filter('get_views_list')
+    def get_views_list(this):
+        types = []
+        types.extend((x, 1) for x in app.vocab[this.identifier : NS.RDF.type])
+        if not types: # KG types cannot override vocab types. This should keep views stable where critical.
+            types.extend([(x.identifier, 1) for x in this.description()[NS.RDF.type]  if isinstance(x, rdflib.URIRef)])
+        #if len(types) == 0:
+        types.append([NS.RDFS.Resource, 100])
+        type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
+        view_query = '''select ?navlist (count(?mid)+?priority as ?rank) where {
+    ?c rdfs:subClassOf* ?mid.
+    ?mid rdfs:subClassOf* ?class.
+    ?class whyis:hasNavigation ?navlist.
+} group by ?c ?class order by ?rank limit 1
+values (?c ?priority) { %s }
+''' % type_string
+        views = list(app.vocab.query(view_query, initNs=dict(whyis=NS.whyis, dc=NS.dc)))
+        if len(views) == 0:
+            return []
+        nav = list(app.vocab.collection(views[0][0]))
+        nav = [{'property': x,
+                'view': app.vocab.value(x, NS.dc.identifier),
+                'label':app.get_label(app.vocab.resource(x))}
+               for x in nav]
+        return nav

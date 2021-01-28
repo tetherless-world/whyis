@@ -10,7 +10,7 @@ html {
         font-size: 1.5rem;
     }
     &-bg {
-        background: url('/static/images/random_network.png') no-repeat bottom center !important; 
+        background: url('/static/images/random_network.png') no-repeat bottom center !important;
         background-size: "cover" !important;
     }
     &-header-intro {
@@ -46,7 +46,7 @@ html {
     }
     &-gridbg {
         background-color: rgba($primary-black, 0.7) !important;
-        border: 1px solid $primary-color !important;    
+        border: 1px solid $primary-color !important;
     }
     &-gridborder {
         border: 1px solid $primary-color !important;
@@ -133,7 +133,7 @@ html {
                 top: .2rem;
                 right: .3rem;
             }
-            
+
             & > div {
                 display: inline-block;
             }
@@ -161,7 +161,7 @@ html {
                     color: $primary-white !important;
                 }
             }
-            
+
         }
     }
     &-show_hide {
@@ -174,7 +174,7 @@ html {
         &:hover {
             & > span.md-body-1 {
                 display: block !important;
-                visibility: visible !important; 
+                visibility: visible !important;
             }
         }
     }
@@ -230,7 +230,7 @@ html {
         & > button,
         & > div {
             color: $primary-black !important;
-            
+
 
             & > div > i {
                 color: $primary-black !important;
@@ -270,33 +270,40 @@ html {
         background-color: rgba($primary-white, 0.9) !important;
 
         &-div {
-            height: 3.5rem !important; 
+            height: 3.5rem !important;
             margin-bottom: 1.2rem !important;
-            
+
         }
+    }
+
+    &-dialog {
+        bottom: unset
     }
 
     &-dialog /deep/.md-dialog-container {
         max-width: 90%;
         height: auto;
-
         @include respond(tab-land) {
             max-width: 768px;
         }
     }
 
     &-autocomplete + strong {
-        margin-top: 36px;
+        //margin-top: 36px;
         display: block;
-        z-index: 1000;
+        //z-index: 1000;
     }
 
     &-field {
-        max-width: 300px;
+        max-width: 100%;
     }
 
     &-tabs {
         margin-bottom: 24px;
+    }
+
+    &-menu-content {
+        z-index: 12;
     }
 }
 

@@ -23,6 +23,7 @@ class NamespaceContainer(object):
     owl = rdflib.OWL
     xsd = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
     dc = rdflib.Namespace("http://purl.org/dc/terms/")
+    dcterms = rdflib.Namespace("http://purl.org/dc/terms/")
     dcelements = rdflib.Namespace("http://purl.org/dc/elements/1.1/")
     auth = rdflib.Namespace("http://vocab.rpi.edu/auth/")
     foaf = rdflib.Namespace("http://xmlns.com/foaf/0.1/")
@@ -45,6 +46,8 @@ class NamespaceContainer(object):
     void = rdflib.Namespace("http://rdfs.org/ns/void#")
     schema = rdflib.Namespace("http://schema.org/")
     setl = rdflib.Namespace("http://purl.org/twc/vocab/setl/")
+    sdd = rdflib.Namespace("http://purl.org/twc/sdd/")
+    csvw = rdflib.Namespace("http://www.w3.org/ns/csvw#")
 
     @property
     def prefixes(self):
