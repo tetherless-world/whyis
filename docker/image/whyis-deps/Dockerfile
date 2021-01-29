@@ -3,10 +3,13 @@
 # whyis-deps sets up the environment (apache, celery, redis) and installs our Python and Java dependencies. We assume it will change infrequently, because dependencies should change infrequently.
 # When requirements do change, we should build and push a new whyis-deps to Dockerhub for the CI to incorporate into the whyis build.
 
-FROM ubuntu:18.04
+FROM python:3.7-buster
 
 # Installation of required packages
-RUN apt-get update && apt-get install -y sudo curl lsb-release
+RUN apt-get update && apt-get install -y \
+	lsb-release \
+	sudo \
+	curl
 
 # Puppet
 RUN curl -O https://apt.puppetlabs.com/puppet-release-bionic.deb &&\
