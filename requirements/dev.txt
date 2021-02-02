@@ -5,3 +5,5 @@ flask-testing
 #selenium==3.141.0
 #chromedriver_binary
 unittest-xml-reporting==2.5.1
+wheel
+mod_wsgi
