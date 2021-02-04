@@ -29,7 +29,7 @@
           </div>
           <div v-else-if="dialog.tableview" style="margin-right: .8rem !important;">
             <div class="viz-intro-query" style="min-height: 40rem !important">
-              <yasr v-model="dialog.query"></yasr>
+              <yasr v-bind:results="dialog.tableview"></yasr>
             </div>
           </div>
           <div v-else-if="dialog.query" style="margin-right: .8rem !important;">
