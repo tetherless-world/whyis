@@ -97,14 +97,6 @@
           <md-button class="md-primary" @click="specViewer.show = false">Close</md-button>
         </md-dialog-actions>
       </md-dialog>
-      <!-- <md-dialog :md-active.sync="voyager.show">
-        <md-dialog-title>Viewing Data in Voyager</md-dialog-title>
-        <md-content class="voyager-view" v-if="voyager.show">
-        </md-content>
-        <md-dialog-actions>
-          <md-button class="md-primary" @click="voyager.show = false">Close</md-button>
-        </md-dialog-actions>
-      </md-dialog> -->
       <data-voyager v-if="voyager.show" :data="spec.data"></data-voyager>
     </div>
   </div>
