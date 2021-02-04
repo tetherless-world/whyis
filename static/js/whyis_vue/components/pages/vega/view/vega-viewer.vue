@@ -197,9 +197,14 @@
       },
       tableView(){
         if(this.chart.query){
-          return EventServices.$emit("dialoguebox", {status: true, tableview: true, 
-          title: "Table View of Chart Data", 
-          chart: this.chart.query})
+          querySparql(this.chart.query)
+          .then(sparqlResults => {
+            console.log(sparqlResults)
+            return EventServices.$emit("dialoguebox", {status: true, 
+              tableview: sparqlResults, 
+              title: "Table View of Chart Data",
+              chart: this.chart.query})
+          })
         }
       },
       slugify(args){
