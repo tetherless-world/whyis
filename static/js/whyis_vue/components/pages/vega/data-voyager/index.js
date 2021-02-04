@@ -1,2 +1,3 @@
 import Vue from 'vue'
-Vue.component('data-voyager', () => import('./data-voyager'))
+import dv from './data-voyager'
+Vue.component('data-voyager', dv)

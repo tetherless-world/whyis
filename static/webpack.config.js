@@ -8,7 +8,10 @@ module.exports = (env, argv) => ({
     app: ['./js/whyis_vue/main.js']
   },
   externals: {
-    jquery: 'jQuery'
+    'jquery': 'jQuery',
+    'node-fetch': 'fetch',
+    'solid-auth-cli': 'null',
+    'fs': 'null-fs'
   },
   module: {
     rules: [
@@ -36,7 +39,11 @@ module.exports = (env, argv) => ({
         loader: 'vue-loader'
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: "url-loader"
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
         use: [
           {
             loader: 'file-loader',
@@ -72,5 +79,5 @@ module.exports = (env, argv) => ({
   resolveLoader: {
     modules: [path.join(__dirname, 'node_modules')]
   },
-  target: 'web'
+  target: 'web',
 })
