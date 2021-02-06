@@ -17,7 +17,7 @@ service { jetty8:
 }
 
 # Install and uninstall packages
-package { ["unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libapache2-mod-wsgi-py3", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "libdb5.3-dev", "python3.7-dev"]:
+package { ["apache2-dev", "unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "libdb5.3-dev", "python3.7-dev"]:
   ensure => "installed"
 } ->
 package { "jetty8":
@@ -172,7 +172,7 @@ python::pip { 'pip-upgrade' :
   group         => 'whyis',
   timeout       => 18000,
 } ->
-python::pip { 'pip-wheel' : 
+python::pip { 'pip-wheel' :
   pkgname       => 'wheel',
   ensure        => 'latest',
   virtualenv    => '/apps/whyis/venv',
@@ -217,6 +217,9 @@ file { "/var/log/whyis":
 } ->
 
 # Configure Apache
+exec { "enable wsgi":
+  command => "/apps/whyis/venv/bin/mod_wsgi-express module-config > /etc/apache2/mods-available/wsgi.load",
+} ->
 exec { "a2enmod wsgi":
   command => "a2enmod wsgi",
 } ->
