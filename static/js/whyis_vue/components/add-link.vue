@@ -35,6 +35,7 @@
                         <label v-else md-term="term" md-fuzzy-search="true">
                             {{item.label}}
                         </label>
+                        <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
                         </template>
 
                         <template slot="md-autocomplete-empty" slot-scope="{ term }">
@@ -63,6 +64,8 @@
                         <label v-else md-term="term" md-fuzzy-search="true">
                             {{item.label}}  ({{item.class_label}})
                         </label>
+                        
+                        <md-tooltip>{{item.node}}{{item.uri}}</md-tooltip>
                         </template>
 
                         <template slot="md-autocomplete-empty" slot-scope="{ term }">
