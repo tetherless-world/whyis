@@ -1,0 +1,14 @@
+{{'''
+select distinct ?uri (sample(?class) as ?class) where {
+    ?e (!rdf:type|^!rdf:type)?/(!rdf:type|^!rdf:type)? ?uri.
+    ?uri rdf:type/rdfs:subClassOf* ?type.
+    ?uri a ?class.
+
+    filter (?e != ?uri)
+    filter (isURI(?uri))
+} group by (?uri) limit 50 '''
+| query(values={"e":this.identifier, "type" : rdflib.URIRef(args['type'])}
+               if args['type'] else {"e":this.identifier})
+| iter_labelize(key="uri", label_key="label")
+| iter_labelize(key="class", label_key="class_label")
+| tojson }}

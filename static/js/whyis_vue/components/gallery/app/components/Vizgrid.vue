@@ -1,83 +1,143 @@
 <template>
-    <div class="utility-roverflow">
-        <div class="utility-content__result">
-            <span class="utility-color" v-if="otherArgs != null && authenticated">Home > <strong>My Chart</strong> > </span>
-            <span v-if="results.length == 1">Just {{results.length}} result (0.59 seconds)</span>
-            <span v-else-if="results.length >= 2">About {{results.length}} results (0.59 seconds)</span>
-            <span v-else>No result (0.59 seconds)</span>
+    <div class="">
+        <spinner :loading="loading" text='Loading charts...' v-if="loading"/>
+        <div class="utility-roverflow" v-else>
+            <div class="utility-content__result">
+                <!-- TODO TIME TO RESULT -->
+                <span v-if="otherArgs == null && results.length <= 1">{{results.length}} result (0.59 seconds)</span>
+                <span v-else-if="otherArgs == null && results.length >= 2">About {{results.length}} results (0.59 seconds)</span>
+                <span class="utility-color" v-else-if="otherArgs != null">Home > <strong> {{ otherArgs }}</strong> > About {{results.length}} results (0.59 seconds)</span>
+                <span v-else>No result (0.59 seconds)</span>
+            </div>
+            <div class="viz-content">
+                <md-card v-for="(result, index) in newResults" :key="index" class="btn--animated">
+                    <div class="utility-gridicon" v-if="authenticated && authenticated.admin=='True'">
+                        <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
+                        <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
+                        <div @click.prevent="deleteChart(result)"><md-icon>delete_outline</md-icon></div>
+                    </div>
+                    <div class="utility-gridicon" v-else-if="authenticated">
+                        <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
+                        <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
+                    </div>
+                    <md-card-media-cover md-solid @click.native.prevent="navigate(result)">
+                        <md-card-media md-ratio="4:3">
+                        <img :src="result.backup.depiction" :alt="result.backup.title">
+                        </md-card-media>
+                        <md-card-area class="utility-gridbg">
+                            <md-card-header class="utility-show_hide">
+                                <span class="md-subheading">
+                                    <strong>{{ result.backup.title }}</strong>
+                                </span>
+                                <span class="md-body-1">{{ reduceDescription(result.backup.description) }}</span>
+                            </md-card-header>
+                        </md-card-area>
+                    </md-card-media-cover>
+                </md-card>
+            </div>
+            <pagination v-if="results.length > basePage" :cpage="currentPage" :tpages="totalPages" />
         </div>
-        <div class="viz-content">
-            <md-card v-for="(result, index) in results" :key="index" @click.native.prevent="navigate(result)">
-                <md-card-media-cover md-solid >
-                    <md-card-media md-ratio="4:3">
-                    <img :src="result.thumbnail" :alt="result.label">
-                    </md-card-media>
-                    <md-card-area class="utility-gridbg">
-                        <md-card-header class="utility-show_hide">
-                            <span class="md-subheading">
-                                <strong>{{ result.label }}</strong>
-                            </span>
-                            <span class="md-body-1">{{ reduceDescription(result.description) }}</span>
-                        </md-card-header>
-                    </md-card-area>
-                </md-card-media-cover>
-            </md-card>
-        </div>
-        <pagination v-if="results.length >= 12" />
     </div>
 </template>
-<style scoped lang="scss" src="../static/css/main.scss"></style>
+<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
-    import { eventCourier as ec, state } from '../store'
-    import { router } from '../router/routes'
+    import { EventServices, Slug } from '../../../../modules'
     import pagination from './Pagination'
-    import { Loader } from '../js/index'
-    import { getViewUrl } from '../../../../utilities/views'
     export default {
         name: "viz-grid",
-        mixins: [router],
-        props: ['globalargs', 'authenticated'],
+        props: ['authenticated'],
         data() {
             return {
                 results: [],
+                newResults: [],
                 loading: false,
                 loadError: false,
-                otherArgs: null
+                otherArgs: null,
+                totalPages: 1,
+                currentPage: 1,
+                basePage: 10,
+                perPage: 10,
+            }
+        },
+        watch: {
+            results(newValues, oldValues){
+                if(newValues && newValues != oldValues){
+                    const length = newValues.length;
+                    let tpages = Math.round(length/this.basePage)
+                    if(length <= this.basePage){
+                       this.totalPages = 1;
+                    } else if(length%this.basePage == 0){
+                        this.totalPages = tpages;
+                    } else if(length%this.basePage <= 4) {
+                        this.totalPages = tpages + 1;
+                    } else {
+                        this.totalPages = tpages;
+                    }
+                }
+                this.showResults()
+            },
+            currentPage(newValues, oldValues){
+                if(newValues != oldValues){
+                    this.showResults()
+                }
             }
         },
         components: {
             pagination
         },
         methods: {
+            async showResults(){
+                this.perPage = this.currentPage * this.basePage
+                const newArr = [];
+                await this.results.map((e,i) => {
+                    if(i+1 <= this.perPage && i+1 > this.perPage - this.basePage){
+                        newArr.push(e)
+                    }
+                })
+                return this.newResults = newArr;
+            },
             navigate(args) {
-                return window.open(`${window.location.origin}/about?uri=${args.identifier}`, "_blank")
-                // return this.changeRoute("single", args)
+                return window.location = args.backup.uri
             },
             reduceDescription(args) {
-                let arr, arrSplice
+                let arr, arrSplice, res
                 arr = args.split(" ")
                 arr.splice(15)
                 arrSplice = arr.reduce((a,b) => `${a} ${b}`, "")
-                return `${arrSplice}...`
+                res = Slug(arrSplice)
+                return `${res}...`
             },
-            loadVisualization () {
-                this.loading = true;
-                /** passing view=instances&uri=this.parsedArg */ 
-                const pageUri = getViewUrl(this.globalargs, "instances")
-                this.chart = Loader(pageUri)
+            bookmark(args, exist){
+                return EventServices.createChartBookMark(args, exist);
+            },
+            deleteChart(chart){
+                return EventServices.$emit("dialoguebox", {status: true, delete: true, title: "Delete Chart", message: `Are you sure you want to delete this chart?`, chart})
+            },
+            async loadAllCharts(){
+                this.loading = true
+                const vvodd = await EventServices.getVizOfTheDayStatus()
+                const result = await EventServices.fetchAllCharts()
+                if(result.length > 0 && vvodd.status == true){
+                    let viz = result[0];
+                    if("backup" in viz){
+                        this.loading = false
+                        // return window.location = viz.backup.uri
+                    }
+                }
+                return this.loading = false
             }
         },
-        async beforeMount(){
-            const reslt = await this.loadVisualization();
-            if(reslt == false) {
-                return this.loadError = true;
-            }
+        beforeMount(){
+            return this.loadAllCharts()
         },
         created(){
-            ec
-            .getState()
-            .$on("appstate", (data) => this.results = data)
-            .$on("route-args", (data) => this.otherArgs = data)
+            EventServices
+            .$on("appstate", (data) => {
+                this.results = data.filter((el) => el.enabled == true)
+            })
+            .$on("filterexistcancel", (data) => this.results = data)
+            .$on("filterexist", (data) => this.results = data)
+            .$on("chartpagination", (data) => this.currentPage = data)
         }
     }
 </script>

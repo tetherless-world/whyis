@@ -257,7 +257,7 @@ class App(Empty):
     _nanopub_depot = None
     @property
     def nanopub_depot(self):
-        if self._nanopub_depot is None:
+        if self._nanopub_depot is None and 'nanopub_archive' in self.config:
             if DepotManager.get('nanopublications') is None:
                 DepotManager.configure('nanopublications', self.config['nanopub_archive'])
             self._nanopub_depot = DepotManager.get('nanopublications')
@@ -547,9 +547,12 @@ construct {
                 if len(labels) == 0:
                     name = [x.value for x in [resource_entity.value(self.NS.foaf.givenName),
                                               resource_entity.value(self.NS.foaf.familyName)] if x is not None]
-                    if len(name) > 0:
-                        label = ' '.join(name)
-                        return label
+                    if len(labels) == 0:
+                        name = [x.value for x in [resource_entity.value(self.NS.schema.givenName),
+                                                  resource_entity.value(self.NS.schema.familyName)] if x is not None]
+                        if len(name) > 0:
+                            label = ' '.join(name)
+                            return label
             try:
                 label = self.db.qname(uri).split(":")[1].replace("_"," ")
                 return ' '.join(camel_case_split(label)).title()
@@ -739,6 +742,7 @@ construct {
                 args=request.args if args is None else args,
                 url_for=url_for,
                 app=self,
+                view=view,
                 get_entity=get_entity,
                 get_summary=get_summary,
                 search = search,
@@ -752,19 +756,22 @@ construct {
                 types = [URIRef(request.args['as']), 0]
 
             types.extend((x, 1) for x in self.vocab[resource.identifier : NS.RDF.type])
-            if not types: # KG types cannot override vocab types. This should keep views stable where critical.
-                types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]])
+            if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
+                types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]  if isinstance(x.identifier, rdflib.URIRef)])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
-            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c where {
+            view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c ?content_type where {
     values (?c ?priority ?id) { %s }
     ?c rdfs:subClassOf* ?mid.
     ?mid rdfs:subClassOf* ?class.
     ?class ?viewProperty ?view.
     ?viewProperty rdfs:subPropertyOf* whyis:hasView.
     ?viewProperty dc:identifier ?id.
-} group by ?c ?class order by ?rank
+    optional {
+        ?viewProperty dc:format ?content_type
+    }
+} group by ?c ?class ?content_type order by ?rank
 ''' % type_string
 
             #print view_query
@@ -776,7 +783,9 @@ construct {
             extension = views[0]['view'].value.split(".")[-1]
             if extension in DATA_EXTENSIONS:
                 headers['Content-Type'] = DATA_EXTENSIONS[extension]
-
+            print(views[0]['view'], views[0]['content_type'])
+            if views[0]['content_type'] is not None:
+                    headers['Content-Type'] = views[0]['content_type']
 
             # default view (list of nanopubs)
             # if available, replace with class view
