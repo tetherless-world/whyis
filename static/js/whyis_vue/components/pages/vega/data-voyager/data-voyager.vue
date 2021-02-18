@@ -7,8 +7,15 @@
 <script>
   import Vue from 'vue'
   import { Voyager, CreateVoyager } from 'datavoyager'
-  // import 'datavoyager/dist/static/js/main.21331228'
-  import 'datavoyager/dist/static/css/main.a907da23.css'
+  import 'datavoyager/build/style.css'
+
+  const exampleData = {
+    "values": [
+      {"fieldA": "A", "fieldB": 28}, {"fieldA": "B", "fieldB": 55}, {"fieldA": "C", "fieldB": 43},
+      {"fieldA": "D", "fieldB": 91}, {"fieldA": "E", "fieldB": 81}, {"fieldA": "F", "fieldB": 53},
+    ]
+  }
+
 
   export default {
     props: {
@@ -19,17 +26,12 @@
     },
     mounted() {
       console.log('data', this.data)
-      const container = document.getElementById("voyager-embed");
-      const config = undefined;
-      // const data = this.data;
-      this.exdata = {
-        "values": [
-          {"fieldA": "A", "fieldB": 28}, {"fieldA": "B", "fieldB": 55}, {"fieldA": "C", "fieldB": 43},
-          {"fieldA": "D", "fieldB": 91}, {"fieldA": "E", "fieldB": 81}, {"fieldA": "F", "fieldB": 53},
-        ]
-      };
-      this.voyagerInstance = CreateVoyager(container, config, undefined);
-      this.voyagerInstance.updateData(this.exdata)
+      const container = document.getElementById("voyager-embed")
+      const config = undefined
+      this.voyagerInstance = CreateVoyager(container, config, undefined)
+      const data = this.data
+      // const data = exampleData
+      this.voyagerInstance.updateData(data)
     }
   };
 </script>
@@ -43,6 +45,5 @@
     height: 100vh;
     width: 100vw;
     z-index: 10;
-
   }
 </style>

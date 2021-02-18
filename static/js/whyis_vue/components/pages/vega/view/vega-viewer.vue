@@ -191,7 +191,7 @@
         return EventServices.navTo('view', true)
       },
       openVoyager() {
-        this.voyager.show = true
+        goToView(this.chart.uri, 'voyager')
       },
       shareChart() {
         return EventServices.$emit("dialoguebox", {status: true, share: true,
