@@ -544,9 +544,14 @@ whyis:ChartClass a owl:Class;
   whyis:manageInstanceView "chart_manage.html";
   whyis:restoreInstanceView "chart_restore.html".
 
+whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
+  rdfs:domain whyis:ChartClass;
+  dc:identifier "voyager".
+
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
-  whyis:editInstanceView "chart_edit.html".
+  whyis:editInstanceView "chart_edit.html";
+  whyis:voyagerView "chart_voyager.html".
 
 whyis:DatasetClass a owl:Class;
   rdfs:subClassOf owl:Class;
