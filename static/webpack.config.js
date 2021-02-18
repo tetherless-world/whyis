@@ -74,7 +74,7 @@ module.exports = (env, argv) => ({
       vue$: 'vue/dist/vue.esm.js' // Include the runtime template compiler
     },
     extensions: ['.js', '.vue'],
-    modules: [path.join(__dirname, 'js', 'whyis_vue'), path.join(__dirname, 'node_modules')]
+    modules: [path.join(__dirname, 'js/whyis_vue'), 'node_modules']
   },
   resolveLoader: {
     modules: [path.join(__dirname, 'node_modules')]
