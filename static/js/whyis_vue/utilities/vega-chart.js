@@ -79,9 +79,10 @@ function buildChartLd (chart) {
 }
 
 function extractChart (chartLd) {
-  const chart = {
-    uri: chartLd['@id'],
-    depiction: chartLd[foafDepictionUri][0]['@id'],
+  const chart = {uri: chartLd['@id']}
+
+  if (chartLd[foafDepictionUri]) {
+    chart.depiction = chartLd[foafDepictionUri][0]['@id']
   }
 
   Object.entries(chartFieldUris)

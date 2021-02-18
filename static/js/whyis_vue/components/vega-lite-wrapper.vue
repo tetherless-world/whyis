@@ -33,7 +33,7 @@ export default Vue.component('vega-lite', {
   },
   methods: {
     async plotSpec () {
-      console.debug('plotting spec', this.spec)
+      // console.debug('plotting spec', this.spec)
       let embedResult = await window.vegaEmbed(`#${this.id}`, this.spec)
       this.$emit('new-vega-view', embedResult.view)
     },

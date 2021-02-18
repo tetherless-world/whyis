@@ -1,0 +1,158 @@
+{ "classes" : {{ '''
+SELECT DISTINCT 
+    ?class 
+    ?def 
+    ?comment 
+    (GROUP_CONCAT(DISTINCT ?superClass; separator="&&") as ?superClasses) 
+    (GROUP_CONCAT(DISTINCT ?superLabel; separator="&&") as ?superLabels) 
+    (GROUP_CONCAT(DISTINCT ?subClass; separator="&&") as ?subClasses) 
+    (GROUP_CONCAT(DISTINCT ?subLabel; separator="&&") as ?subLabels) 
+    (GROUP_CONCAT(DISTINCT ?inDomainProperty; separator="&&") as ?inDomainProperties) 
+    (GROUP_CONCAT(DISTINCT ?inDomainPropertyLabel; separator="&&") as ?inDomainPropertyLabels) 
+    (GROUP_CONCAT(DISTINCT ?inRangeProperty; separator="&&") as ?inRangeProperties) 
+    (GROUP_CONCAT(DISTINCT ?inRangePropertyLabel; separator="&&") as ?inRangePropertyLabels) 
+    (GROUP_CONCAT(DISTINCT ?disjointClass; separator="&&") as ?disjointClasses) 
+    (GROUP_CONCAT(DISTINCT ?disjointClassLabel; separator="&&") as ?disjointClassLabels) 
+    (GROUP_CONCAT(DISTINCT ?equivalentClass; separator="&&") as ?equivalentClasses) 
+    (GROUP_CONCAT(DISTINCT ?equivalentClassLabel; separator="&&") as ?equivalentClassLabels)
+    (GROUP_CONCAT(DISTINCT ?member; separator="&&") as ?members) 
+    (GROUP_CONCAT(DISTINCT ?memberLabel; separator="&&") as ?memberLabels) 
+WHERE {
+    GRAPH ?g {
+        ?ontology a owl:Ontology.
+        ?class a owl:Class .
+        OPTIONAL { ?class skos:definition ?def . }
+        OPTIONAL { ?class rdfs:comment ?comment .}
+        OPTIONAL { ?class rdfs:subClassOf ?superClass .  ?superClass rdfs:label ?superLabel .}
+        OPTIONAL { ?subClass rdfs:subClassOf ?class ; rdfs:label ?subLabel . }
+        OPTIONAL { ?inDomainProperty rdfs:domain ?class ; rdfs:label ?inDomainPropertyLabel .}
+        OPTIONAL { ?inRangeProperty rdfs:range ?class ; rdfs:label ?inRangePropertyLabel .}
+        OPTIONAL { ?class owl:disjointWith ?disjointClass . ?disjointClass rdfs:label ?disjointClassLabel .}
+        OPTIONAL { ?class owl:equivalentClass ?equivalentClass . ?equivalentClass rdfs:label ?equivalentClassLabel .}
+        OPTIONAL { ?member rdf:type ?class ; rdfs:label ?memberLabel .}
+    }
+} GROUP BY ?class ?def ?comment''' | query(values={"ontology": this.identifier}) | iter_labelize(key="class", label_key="label") | sort(attribute="label") |  tojson }},
+  "object_properties" : {{'''
+SELECT DISTINCT
+    ?property ?def ?comment
+    (GROUP_CONCAT(DISTINCT ?superProperty; separator="&&") as ?superProperties) 
+    (GROUP_CONCAT(DISTINCT ?superLabel; separator="&&") as ?superLabels) 
+    (GROUP_CONCAT(DISTINCT ?subProperty; separator="&&") as ?subProperties) 
+    (GROUP_CONCAT(DISTINCT ?subLabel; separator="&&") as ?subLabels) 
+    (GROUP_CONCAT(DISTINCT ?domain; separator="&&") as ?domains) 
+    (GROUP_CONCAT(DISTINCT ?domainLabel; separator="&&") as ?domainLabels) 
+    (GROUP_CONCAT(DISTINCT ?range; separator="&&") as ?ranges) 
+    (GROUP_CONCAT(DISTINCT ?rangeLabel; separator="&&") as ?rangeLabels) 
+WHERE {
+    GRAPH ?g {
+        ?ontology a owl:Ontology .
+        ?property a owl:ObjectProperty .
+        OPTIONAL { ?property skos:definition ?def . }
+        OPTIONAL { ?property rdfs:comment ?comment . }
+        OPTIONAL { ?property rdfs:subPropertyOf ?superProperty .  ?superProperty rdfs:label ?superLabel .}
+        OPTIONAL { ?subProperty rdfs:subPropertyOf ?property ; rdfs:label ?subLabel . }
+        OPTIONAL { ?property rdfs:domain ?domain ; rdfs:label ?domainLabel .}
+        OPTIONAL { ?property rdfs:range ?range ; rdfs:label ?rangeLabel .}
+    }
+} GROUP BY ?property ?def ?comment
+''' | query(values={"ontology": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label") |  tojson }},
+  "datatype_properties" : {{'''
+SELECT DISTINCT
+    ?property ?def ?comment
+    (GROUP_CONCAT(DISTINCT ?superProperty; separator="&&") as ?superProperties) 
+    (GROUP_CONCAT(DISTINCT ?superLabel; separator="&&") as ?superLabels) 
+    (GROUP_CONCAT(DISTINCT ?subProperty; separator="&&") as ?subProperties) 
+    (GROUP_CONCAT(DISTINCT ?subLabel; separator="&&") as ?subLabels) 
+    (GROUP_CONCAT(DISTINCT ?domain; separator="&&") as ?domains) 
+    (GROUP_CONCAT(DISTINCT ?domainLabel; separator="&&") as ?domainLabels) 
+    (GROUP_CONCAT(DISTINCT ?range; separator="&&") as ?ranges) 
+    (GROUP_CONCAT(DISTINCT ?rangeLabel; separator="&&") as ?rangeLabels) 
+WHERE {
+    GRAPH ?g {
+        ?ontology a owl:Ontology .
+        ?property a owl:DatatypeProperty .
+        OPTIONAL { ?property skos:definition ?def . }
+        OPTIONAL { ?property rdfs:comment ?comment . }
+        OPTIONAL { ?property rdfs:subPropertyOf ?superProperty .  ?superProperty rdfs:label ?superLabel .}
+        OPTIONAL { ?subProperty rdfs:subPropertyOf ?property ; rdfs:label ?subLabel . }
+        OPTIONAL { ?property rdfs:domain ?domain ; rdfs:label ?domainLabel .}
+        OPTIONAL { ?property rdfs:range ?range ; rdfs:label ?rangeLabel .}
+    }
+} GROUP BY ?property ?def ?comment
+''' | query(values={"ontology": this.identifier}) | iter_labelize(key="property", label_key="label") | sort(attribute="label") |  tojson }},
+  "individuals" : {{'''
+SELECT DISTINCT
+    ?individual ?class
+WHERE {
+    GRAPH ?g {
+        ?ontology a owl:Ontology .
+        {  
+            ?individual rdf:type ?class .
+            ?class rdf:type owl:Class .
+        } UNION
+        {
+            ?individual rdf:type owl:Individual .
+        }
+    }
+}
+''' | query(values={"ontology": this.identifier}) | iter_labelize(key="individual", label_key="label") |  iter_labelize(key="class", label_key="classLabel") | sort(attribute="label") |  tojson }},
+  "metadata" : {{'''
+SELECT DISTINCT
+    ?ontology
+    ?title
+    (GROUP_CONCAT(DISTINCT ?creator; separator="&&") as ?creators) 
+    ?creationTime
+    ?modificationTime
+    (GROUP_CONCAT(DISTINCT ?contributor; separator="&&") as ?contributors) 
+    ?description
+    ?comment
+    (GROUP_CONCAT(DISTINCT ?import; separator="&&") as ?imports) 
+    ?version
+    ?original
+    (GROUP_CONCAT(DISTINCT ?license; separator="&&") as ?licenses)
+    (GROUP_CONCAT(DISTINCT ?right; separator="&&") as ?rights) 
+    (GROUP_CONCAT(DISTINCT ?subject; separator="&&") as ?subjects) 
+    (GROUP_CONCAT(DISTINCT ?language; separator="&&") as ?languages) 
+    ?identifier
+    (GROUP_CONCAT(DISTINCT ?publisher; separator="&&") as ?publishers) 
+    (GROUP_CONCAT(DISTINCT ?coverage; separator="&&") as ?coverages) 
+    (GROUP_CONCAT(DISTINCT ?format; separator="&&") as ?formats) 
+    (GROUP_CONCAT(DISTINCT ?source; separator="&&") as ?sources) 
+    (GROUP_CONCAT(DISTINCT ?relation; separator="&&") as ?relations) 
+    (GROUP_CONCAT(DISTINCT ?requirement; separator="&&") as ?requirements) 
+    ?abstract
+    (GROUP_CONCAT(DISTINCT ?standard; separator="&&") as ?standards) 
+    (GROUP_CONCAT(DISTINCT ?citation; separator="&&") as ?citations) 
+    ?issueDate
+WHERE {
+    GRAPH ?g {
+        ?ontology a owl:Ontology .
+        OPTIONAL { ?ontology dc:title ?title .}
+        OPTIONAL { ?ontology dc:creator ?creator .}
+        OPTIONAL { ?ontology dc:created ?creationTime .}
+        OPTIONAL { ?ontology dc:modified ?modificationTime .}
+        OPTIONAL { ?ontology dc:contributor ?contributor .}
+        OPTIONAL { ?ontology dc:description ?description .}
+        OPTIONAL { ?ontology rdfs:comment ?comment .}
+        OPTIONAL { ?ontology owl:imports ?import .}
+        OPTIONAL { ?ontology owl:versionIRI|dc:hasVersion ?version .}
+        OPTIONAL { ?ontology dc:isVersionOf ?original .}
+        OPTIONAL { ?ontology dc:license ?license .}
+        OPTIONAL { ?ontology dc:rights ?right .}
+        OPTIONAL { ?ontology dc:subject ?subject .}
+        OPTIONAL { ?ontology dc:language ?language .}
+        OPTIONAL { ?ontology dc:identifier ?identifier .}
+        OPTIONAL { ?ontology dc:publisher ?publisher .}
+        OPTIONAL { ?ontology dc:coverage ?coverage .}
+        OPTIONAL { ?ontology dc:format ?format .}
+        OPTIONAL { ?ontology dc:source ?source .}
+        OPTIONAL { ?ontology dc:relation ?relation .}
+        OPTIONAL { ?ontology dc:requires ?requirement .}
+        OPTIONAL { ?ontology dc:abstract ?abstract .}
+        OPTIONAL { ?ontology dc:conformsTo ?standard .}
+        OPTIONAL { ?ontology dc:bibliographicCitation ?citation .}
+        OPTIONAL { ?ontology dc:issued ?issueDate .}
+    }
+} GROUP BY ?ontology ?title ?creationTime ?modificationTime ?description ?comment ?version ?original ?identifier ?abstract ?issueDate
+''' | query(values={"ontology": this.identifier}) | iter_labelize(key="ontology", label_key="label") |  tojson }}
+}

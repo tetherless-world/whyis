@@ -52,32 +52,35 @@ select ?class ?view where {
             print(self.classes_and_views)
             self.views_by_class = {}
             for cv in self.classes_and_views:
-                if cv['class'] not in self.views_by_class:
-                    self.views_by_class[cv['class']] = []
-                self.views_by_class[cv['class']].append(cv['view'])
+                subclasses = self.app.db.query(
+                    'select ?subclass where { ?subclass rdfs:subClassOf* ?type }',
+                    initNs={'rdfs':rdflib.RDFS,'rdf':rdflib.RDF},
+                    initBindings={'type':cv['class']})
+                for subclass, in subclasses:
+                    if subclass not in self.views_by_class:
+                        self.views_by_class[subclass] = []
+                    self.views_by_class[subclass].append(cv['view'])
             self.query = '''
-select distinct ?resource where {
-    ?resource rdf:type/rdfs:subClassOf* ?type.
-} values ?type { %s }
+select distinct ?resource where { ?resource a ?type. } values ?type { %s }
 ''' % ' '.join([cv['class'].n3() for cv in self.classes_and_views])
         return self.query
 
     def process(self, i, o):
         if self.app.cache is None:
             return
-        types = [x for x, in i.graph.query('''
-select ?type where {
-    ?resource rdf:type/rdfs:subClassOf* ?type.
-}''',initNs={'rdfs':rdflib.RDFS,'rdf':rdflib.RDF}, initBindings={'resource':i.identifier})]
+        types = [x for x,
+                 in i.graph.query('select ?type where { ?resource rdf:type ?type. }',
+                                  initBindings={'resource':i.identifier})]
         print(types, self.views_by_class)
         views = [self.views_by_class[x] for x in types if x in self.views_by_class]
         views = set(itertools.chain.from_iterable(views))
         for view in views:
             print ("Caching",i.identifier, view)
             resource = self.app.get_resource(i.identifier)
-            result, response, headers = self.app.render_view(resource, view,
-                                                             use_cache=False)
-            if response == 200:
-                key = str((str(i.identifier),view.value))
-                print(key)
-                self.app.cache.set(key, [result, headers])
+            with self.app.test_request_context('/about', data={'uri': i.identifier, 'view':view}):
+                result, response, headers = self.app.render_view(resource, view,
+                                                                 use_cache=False)
+                if response == 200:
+                    key = str((str(i.identifier),view.value))
+                    print(key)
+                    self.app.cache.set(key, [result, headers])

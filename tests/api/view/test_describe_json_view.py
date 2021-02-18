@@ -15,9 +15,15 @@ class TestDescribeJsonView(ApiTestCase):
                                 mime_type="application/json")
 
         json_content = json.loads(str(content.data, 'utf8'))
-        self.assertIsInstance(json_content, list)
-        self.assertEqual(1, len(json_content))
-        description = json_content[0]
+        if isinstance(json_content, list):
+            self.assertEqual(1, len(json_content))
+            description = json_content[0]
+        else:
+            description = json_content
+        print(description)
         self.assertIsInstance(description, dict)
         self.assertEqual(description["@id"], PERSON_INSTANCE_URI)
-        self.assertEqual(description["http://schema.org/jobTitle"], [{"@value": "Professor"}])
+        if '@context' in description and 'schema' in description['@context']:
+            self.assertEqual(description["schema:jobTitle"], "Professor")
+        else:
+            self.assertEqual(description["http://schema.org/jobTitle"], [{"@value": "Professor"}])

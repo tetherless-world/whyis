@@ -16,10 +16,10 @@ cffi==1.12.3
 chardet==3.0.4
 Click==7.0
 cookiecutter==1.6.0
-cryptography==2.7
+cryptography==3.2
 Cython==0.29.10
 fabric==2.4.0
-filedepot==0.6.0
+filedepot==0.8.0
 Flask==1.0.3
 #Flask-Admin==1.5.3
 #Flask-BabelEx==0.9.3
@@ -71,6 +71,7 @@ requests[security]==2.22.0
 requests-testadapter==0.3.0
 sadi==0.5.7
 scipy==1.2.1
+sdd2rdf==0.1.3
 setlr==0.2.14
 six==1.12.0
 soupsieve==1.9.1
@@ -78,7 +79,6 @@ SPARQLWrapper==1.8.4
 speaklater==1.3
 text-unidecode==1.2
 toposort==1.5
-Unidecode==1.0.23
 urllib3==1.25.3
 vine==1.3.0
 virtualenv==16.6.0

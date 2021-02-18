@@ -423,6 +423,7 @@ function whyis() {
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');
+        $locationProvider.html5Mode(true);
 
         var csrftoken = $('meta[name=csrf-token]').attr('content');
         $httpProvider.defaults.headers.put.X_CSRFTOKEN = csrftoken;
@@ -3130,8 +3131,8 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
      * The controller.
      */
     app.directive("instanceFacets", [
-        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http', 'loadAttributes',
-        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http, loadAttributes) {
+        'FacetHandler', 'instanceFacetService', "facetUrlStateHandlerService", 'getLabel', '$http', 'loadAttributes', 'transformSparqlData',
+        function(FacetHandler, instanceFacetService, facetUrlStateHandlerService, getLabel, $http, loadAttributes, transformSparqlData) {
 	    return {
                 scope: {
                     type : "=",
@@ -3150,6 +3151,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         "url": null,
                         "baseurl" : ROOT_URL+'about?uri='+encodeURIComponent(scope.type)+"&view=instance_data",
                     };
+                    scope.dataConfig = dataConfig;
                     scope.vizConfig = {
                         "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
                         "data": {
@@ -3292,33 +3294,41 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             //    dataConfig.url += "&constraints="+encodeURIComponent(JSON.stringify(facetSelections.constraints));
                             //}
                             //console.log(scope.spec.data.url);
-                            $http.get(ROOT_URL+'about', {
-                                params: {
-                                    uri: scope.type,
-                                    view:'instance_data',
-                                    constraints: JSON.stringify(facetSelections.constraint),
-                                    variables: JSON.stringify(scope.facetValues
-                                        .filter(function(v) { return !v.indep_val}))
-                                }, responseType:'json'})
+                            $http
+                                .get(ROOT_URL+'about', {
+                                    params: {
+                                        uri: scope.type,
+                                        view:'instance_data',
+                                        constraints: JSON.stringify(facetSelections.constraint),
+                                        variables: JSON.stringify(scope.facetValues
+                                            .filter(function(v) { return !v.indep_val}))
+                                    },
+                                    responseType:'text'
+                                })
                                 .then(function(response) {
-                                    scope.vizConfig.data = { values: response.data };
-                                    scope.allData = response.data;
-                                    scope.facetValues.forEach(function(facetValue) {
-                                        if (facetValue.type != "nominal") {
-                                            var extent = d3.extent(response.data,
-                                                                   d => d[facetValue.field]);
-                                            facetValue.min = extent[0];
-                                            if (facetValue.lower === undefined) {
-                                                facetValue.lower = facetValue.min;
-                                            }
-                                            facetValue.max = extent[1];
-                                            if (facetValue.upper === undefined) {
-                                                facetValue.upper = facetValue.max;
-                                            }
-                                            console.log(facetValue);
-                                        }
-                                    })
-                                    vm.isLoadingResults = false;
+                                    scope.dataConfig.query = response.data;
+                                    $http
+                                        .get(ROOT_URL+'sparql', {params : {query : scope.dataConfig.query, output: 'json'}, responseType: 'json'})
+                                        .then(function(response) {
+                                            scope.vizConfig.data = { values: transformSparqlData(response.data) };
+                                            scope.allData = scope.vizConfig.data.values;
+                                            scope.facetValues.forEach(function(facetValue) {
+                                                if (facetValue.type != "nominal") {
+                                                    var extent = d3.extent(scope.vizConfig.data.values,
+                                                                           d => d[facetValue.field]);
+                                                    facetValue.min = extent[0];
+                                                    if (facetValue.lower === undefined) {
+                                                        facetValue.lower = facetValue.min;
+                                                    }
+                                                    facetValue.max = extent[1];
+                                                    if (facetValue.upper === undefined) {
+                                                        facetValue.upper = facetValue.max;
+                                                    }
+                                                    console.log(facetValue);
+                                                }
+                                            })
+                                            vm.isLoadingResults = false;
+                                        });
                                 });
 
                         });
@@ -3357,6 +3367,39 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             };
         }]);
 
+    app.service("transformSparqlData", function() {
+        let converters = {
+            "http://www.w3.org/2001/XMLSchema#integer" : JSON.parse,
+            "http://www.w3.org/2001/XMLSchema#double" : JSON.parse,
+            "http://www.w3.org/2001/XMLSchema#float" : JSON.parse,
+            "http://www.w3.org/2001/XMLSchema#decimal" : JSON.parse,
+            "http://www.w3.org/2001/XMLSchema#boolean" : JSON.parse
+        }
+
+        function fromRdf(value, datatype) {
+            if (converters[datatype])
+                return converters[datatype](value);
+            return value;
+        }
+
+        return function (sparqlResults) {
+            const data = []
+            if (sparqlResults) {
+                for (const row of sparqlResults.results.bindings) {
+                    const resultData = {}
+                    data.push(resultData)
+                    Object.entries(row).forEach(([field, result, t]) => {
+                        let value = result.value
+                        if (result.type === 'literal' && result.datatype) {
+                            value = fromRdf(value, result.datatype)
+                        }
+                        resultData[field] = value
+                    })
+                }
+            }
+            return data
+        };
+    })
 
     app.factory('loadAttributes', ['$http', '$q', function($http, $q) {
         function fn(type, constraints, variables) {
