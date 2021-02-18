@@ -15,19 +15,7 @@ function querySparql(query) {
     withCredentials: true
   }
   return axios(request)
-    // .then(response => response.data)
-    .then(() => ({
-      head: {
-        vars: [
-          'c',
-          'class',
-          'count'
-        ]
-      },
-      results: {
-        bindings: []
-      }
-    }))
+    .then(response => response.data)
 }
 
 export { querySparql }
