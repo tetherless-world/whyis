@@ -17,15 +17,11 @@
     "vega": "^5.9.1",
     "vega-embed": "^6.2.2",
     "vega-lite": "^4.3.1",
-    "vega-loader": "^4.4.0",
-    "vega-parser": "^6.1.3",
-    "vega-scale": "^7.1.1",
-    "vega-scenegraph": "^4.9.3",
     "vue": "^2.6.10",
     "vue-material": "^1.0.0-beta-11",
     "vue-prism-editor": "^0.3.0",
     "vue-splitpane": "^1.0.6",
-    "webpack": "^4.35.2",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.5"
   },
   "devDependencies": {
