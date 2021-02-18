@@ -116,14 +116,6 @@
     padding-left: 20px;
     padding-right: 20px;
   }
-  .voyager-view {
-    padding-left: 20px;
-    padding-right: 20px;
-    height: 80vh;
-    max-height: 100%;
-    width: 80vw;
-    max-width: 100%;
-  }
 </style>
 <script>
   import Vue from 'vue'

@@ -16,6 +16,11 @@
     ]
   }
 
+  const voyagerConf = {
+    showDataSourceSelector: false,
+    hideHeader: true,
+    hideFooter: true,
+  }
 
   export default {
     props: {
@@ -27,23 +32,10 @@
     mounted() {
       console.log('data', this.data)
       const container = document.getElementById("voyager-embed")
-      const config = undefined
-      this.voyagerInstance = CreateVoyager(container, config, undefined)
+      this.voyagerInstance = CreateVoyager(container, voyagerConf, undefined)
       const data = this.data
       // const data = exampleData
       this.voyagerInstance.updateData(data)
     }
   };
 </script>
-
-<style scoped>
-  #voyager-embed {
-    position: fixed;
-    background: #fafafa;
-    top:0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 10;
-  }
-</style>
