@@ -42,8 +42,8 @@ class BackTracer(GlobalChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
-        return '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> SELECT DISTINCT %s WHERE {\n%s %s\nFILTER NOT EXISTS {\n %s whyis:hypothesis "%s" \n\t}\n}''' % (
-        self.resource, self.antecedent, self.consequent, self.resource, self.reference)
+        return '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> SELECT DISTINCT %s WHERE {\n%s GRAPH ?g { %s }\nFILTER NOT EXISTS {\n ?g whyis:hypothesis "%s" \n\t}\n}''' % (
+        self.resource, self.antecedent, self.consequent, self.reference)
 
     def get_context(self, i):
         context = {}
@@ -58,13 +58,18 @@ class BackTracer(GlobalChangeService):
             if self.reference in self.app.config["reasoning_profiles"][profile] :
                 npub = Nanopublication(store=o.graph.store)
                 triples = self.app.db.query(
-                    '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> CONSTRUCT {\n%s whyis:hypothesis "%s" . \n} WHERE {\n%s %s \nFILTER NOT EXISTS {\n%s whyis:hypothesis "%s" \n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
-                    self.resource, self.reference, self.antecedent, self.consequent, self.resource, self.reference, self.resource, i.identifier), initNs=self.prefixes)
-                for s, p, o in triples:
-                    print("Deductor Adding ", s, p, o)
-                    npub.assertion.add((s, p, o))
-                npub.provenance.add((npub.assertion.identifier, prov.value,
-                                     rdflib.Literal(flask.render_template_string(self.explanation, **self.get_context(i)))))
+                    '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> CONSTRUCT {\n?g whyis:hypothesis "%s" . \n} WHERE {\n%s GRAPH ?g { %s } \nFILTER NOT EXISTS {\n?g whyis:hypothesis "%s" \n\t}\nFILTER (regex(str(%s), "^(%s)")) .\n}''' % (
+                    self.reference, self.antecedent, self.consequent, self.reference, self.resource, i.identifier), initNs=self.prefixes)
+                try :
+                    for s, p, o in triples:
+                        print("BackTracer Adding ", s, p, o)
+                        npub.assertion.add((s, p, o))
+                except :
+                    for s, p, o, c in triples:
+                        print("BackTracer Adding ", s, p, o)
+                        npub.assertion.add((s, p, o))
+                #npub.provenance.add((npub.assertion.identifier, prov.value,
+                #                     rdflib.Literal(flask.render_template_string(self.explanation, **self.get_context(i)))))
 
     def __str__(self):
         return "Back Tracer Instance: " + str(self.__dict__)
