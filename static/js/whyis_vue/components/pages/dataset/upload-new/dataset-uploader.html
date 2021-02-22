@@ -37,8 +37,17 @@
                             v-bind:key="key + 'listing'"
                             class="file-listing">
                             <div class="md-layout" style="margin-left:10px; align-items: center;">
-                              <div class="md-layout-item">{{ file.name }}  </div>
-                              <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                              <div class="md-layout-item">{{ file.name }} </div>
+                              <div class="md-layout-item">
+                                <md-field style="max-width: 90%;">
+                                  <label>Label</label>
+                                  <md-input v-model=file.label></md-input>
+                                  <md-tooltip md-delay="300">Provide a human-readable label or leave as the default</md-tooltip>
+                                </md-field>
+                              </div>
+                              <div class="md-layout-item">
+                                <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                              </div>
                             </div>
                           </div>
                         </div>  
