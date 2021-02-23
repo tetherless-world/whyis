@@ -423,7 +423,7 @@ function whyis() {
     app.config(function($interpolateProvider, $httpProvider, $locationProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');
-        $locationProvider.html5Mode(true);
+        $locationProvider.html5Mode({enabled:true, requireBase:false});
 
         var csrftoken = $('meta[name=csrf-token]').attr('content');
         $httpProvider.defaults.headers.put.X_CSRFTOKEN = csrftoken;
