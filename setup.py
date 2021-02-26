@@ -1,5 +1,7 @@
 import os
-from setuptools import setup, find_packages
+from distutils.core import setup
+import distutils.command.build_ext
+import requests
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level
@@ -7,6 +9,38 @@ from setuptools import setup, find_packages
 # string in below ...
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+def download_file(url, filename=None):
+    filename = url.split('/')[-1] if filename is None else filename
+    # NOTE the stream=True parameter below
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                # If you have chunk encoded response uncomment if
+                # and set chunk_size parameter to None.
+                #if chunk:
+                f.write(chunk)
+    return filename
+
+def download_files():
+    files = {
+        'whyis/fuseki/jars/fuseki-server.jar' : 'https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/3.17.0/jena-fuseki-fulljar-3.17.0.jar'
+    }
+    for dest, url in files.items():
+        print("Downloading %s..." % dest)
+        download_file(url, dest)
+    print("Downloads complete.")
+
+class BuildExtCommand(distutils.command.build_ext.build_ext):
+    """Custom build command."""
+
+    def run(self):
+        download_files()
+        distutils.command.build_ext.build_ext.run(self)
+
+
+# mvn -q clean compile assembly:single -PwhyisProfile
 
 setup(
     name = "whyis",
@@ -28,8 +62,12 @@ setup(
     (publication status, attribution, and justification) is transparent and can
     be managed and used.''',
     include_package_data = True,
+    cmdclass={
+        'build_ext': BuildExtCommand,
+    },
     setup_requires = [
-        'wheel'
+        'wheel',
+        'requests'
     ],
     install_requires = [
         'amqp==2.5.1',
@@ -123,8 +161,12 @@ setup(
         'flask-testing',
         'unittest-xml-reporting==2.5.1'
     ],
+    package_data={'whyis.fuseki': ['jars/*.jar']},
     entry_points = {
-        'console_scripts': ['whyis=whyis.manager:main'],
+        'console_scripts': [
+            'whyis=whyis.manager:main',
+            'fuseki-server=whyis.fuseki:main',
+        ],
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",

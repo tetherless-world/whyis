@@ -1,5 +1,7 @@
 Exec { path => ["/usr/local/sbin","/usr/local/bin","/usr/sbin","/usr/bin","/bin"]}
 
+include wget
+
 $whyis_branch_ = $whyis_branch ? { "" => "release", default => $whyis_branch }
 notice("Whyis branch: ${whyis_branch_}")
 
@@ -10,19 +12,12 @@ class { 'python' :
   gunicorn   => 'absent',
 }
 
-service { jetty8:
-    ensure => stopped,
-    subscribe => [Package["jetty8"]],
-
-}
 
 # Install and uninstall packages
-package { ["apache2-dev", "unzip", "zip", "default-jdk", "build-essential","automake", "jetty9", "subversion", "git", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "libdb5.3-dev", "python3.7-dev"]:
+package { ["apache2-dev", "unzip", "zip", "default-jdk", "build-essential","automake",  "subversion", "git", "libblas3", "libblas-dev", "celeryd", "redis-server", "apache2", "libffi-dev", "libssl-dev", "maven", "libdb5.3-dev", "python3.7-dev"]:
   ensure => "installed"
 } ->
-package { "jetty8":
-  ensure => "absent",
-} ->
+
 
 # Check out whyis first, so we can pull Jetty configuration out of it
 group { 'whyis':
@@ -47,7 +42,33 @@ vcsrepo { '/apps/whyis':
   revision => $whyis_branch_,
   user     => 'whyis'
 } ->
-
+file { "/apps/fuseki":
+  ensure => "directory",
+  owner => "whyis",
+  group => "whyis"
+} ->
+file { "/apps/fuseki/extras":
+  ensure => "directory",
+  owner => "whyis",
+  group => "whyis"
+} ->
+file { "/apps/fuseki/fuseki-server":
+  ensure => present,
+  source => "/apps/whyis/puppet/files/fuseki-server",
+  owner => "root"
+} ->
+file { "/apps/fuseki/fuseki-server":
+  ensure => present,
+  source => "/apps/whyis/puppet/files/fuseki.service",
+  owner => "root"
+} ->
+archive { "Fuseki Distribution":
+  path         => "/apps/fuseki/fuseki-server.jar",
+  source       => "https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/3.17.0/jena-fuseki-fulljar-3.17.0.jar",
+  cleanup      => true,
+  user          => 'whyis',
+  group         => 'whyis',
+} ->
 # Configure Jetty
 file_line { "configure_jetty_start":
   path  => '/etc/default/jetty9',
@@ -91,7 +112,7 @@ exec { "unzip_blazegraph":
   command => "unzip -u /tmp/blazegraph.war",
   cwd => "/usr/share/jetty9/webapps/blazegraph",
   creates => "/usr/share/jetty9/webapps/blazegraph/WEB-INF/web.xml",
-} -> 
+} ->
 file_line { "configure_blazegraph_rule_logging":
   path  => '/usr/share/jetty9/webapps/blazegraph/WEB-INF/classes/log4j.properties',
   line  => 'log4j.appender.ruleLog.File=/data/rules.log',
@@ -119,7 +140,7 @@ com.bigdata.rdf.store.AbstractTripleStore.textIndex=true
 com.bigdata.rdf.store.AbstractTripleStore.axiomsClass=com.bigdata.rdf.axioms.NoAxioms
 com.bigdata.namespace.kb.lex.com.bigdata.btree.BTree.branchingFactor=400
 com.bigdata.namespace.kb.spo.com.bigdata.btree.BTree.branchingFactor=1024',
-} -> 
+} ->
 file { "/usr/share/jetty9/webapps/blazegraph/WEB-INF/GraphStore.properties":
   content => '
 com.bigdata.journal.AbstractJournal.file=/data/blazegraph.jnl
@@ -258,7 +279,7 @@ exec { "create_admin_namespace":
   creates => "/apps/whyis/admin_namespace.log",
   user => "whyis",
   cwd => "/apps/whyis",
-} -> 
+} ->
 exec { "create_knowledge_namespace":
   command => "curl -X POST --data-binary @knowledge.properties -H 'Content-Type:text/plain' http://localhost:8080/blazegraph/namespace > /apps/whyis/knowledge_namespace.log",
   creates => "/apps/whyis/knowledge_namespace.log",
