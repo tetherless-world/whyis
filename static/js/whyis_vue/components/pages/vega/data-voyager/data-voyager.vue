@@ -1,41 +1,53 @@
 <template>
   <div>
-    <div id="voyager-embed"></div>
+    <div :id="containerId"></div>
   </div>
 </template>
 
 <script>
-  import Vue from 'vue'
-  import { Voyager, CreateVoyager } from 'datavoyager'
-  import 'datavoyager/build/style.css'
+import { CreateVoyager } from "datavoyager";
+import "datavoyager/build/style.css";
 
-  const exampleData = {
-    "values": [
-      {"fieldA": "A", "fieldB": 28}, {"fieldA": "B", "fieldB": 55}, {"fieldA": "C", "fieldB": 43},
-      {"fieldA": "D", "fieldB": 91}, {"fieldA": "E", "fieldB": 81}, {"fieldA": "F", "fieldB": 53},
-    ]
-  }
+const voyagerConf = {
+  showDataSourceSelector: false,
+  hideHeader: true,
+  hideFooter: true
+};
 
-  const voyagerConf = {
-    showDataSourceSelector: false,
-    hideHeader: true,
-    hideFooter: true,
-  }
-
-  export default {
-    props: {
-      data: {
-        type: Object,
-        default: () => null,
-      }
+export default {
+  data() {
+    return {
+      containerId: "voyager-embed"
+    };
+  },
+  props: {
+    data: {
+      type: Object,
+      default: () => null
     },
-    mounted() {
-      console.log('data', this.data)
-      const container = document.getElementById("voyager-embed")
-      this.voyagerInstance = CreateVoyager(container, voyagerConf, undefined)
-      const data = this.data
-      // const data = exampleData
-      this.voyagerInstance.updateData(data)
+    spec: {
+      type: Object,
+      default: () => null
     }
-  };
+  },
+  methods: {
+    updateSpec() {
+      this.$emit("update:spec", this.voyagerInstance.getSpec());
+    },
+    createVoyager() {
+      const container = document.getElementById(this.containerId);
+      this.voyagerInstance = CreateVoyager(container, voyagerConf, undefined);
+      this.voyagerInstance.onStateChange(() => this.updateSpec());
+      this.voyagerInstance.updateData(this.data);
+    }
+  },
+  watch: {
+    data() {
+      this.createVoyager();
+    }
+  },
+  mounted() {
+    this.createVoyager();
+  }
+};
 </script>
