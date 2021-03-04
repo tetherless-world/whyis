@@ -101,6 +101,18 @@ function getDefaultChart () {
   return Object.assign({}, defaultChart)
 }
 
+/**
+ * Copies the given chart except for the id field, which is generated from scratch
+ * also the depiction is removed
+ */
+function copyChart(sourceChart) {
+  // Shallow copy is OK for the current chart structure
+  const newChart = Object.assign({}, sourceChart)
+  newChart.uri = generateChartId()
+  delete newChart.depiction
+  return newChart
+}
+
 function loadChartFromNanopub(nanopubUri, chartUri) {
   return describeNanopub(nanopubUri)
     .then((describeData) => {
@@ -108,7 +120,16 @@ function loadChartFromNanopub(nanopubUri, chartUri) {
       for (let graph of describeData) {
         if (graph['@id'] === assertion_id) {
           for (let resource of graph['@graph']) {
-            if (resource['@id'] === chartUri) {
+            // Use the chart URI, if provided, to identify the chart.
+            // Otherwise, just grab the first chart found.
+            let chartMatch
+            if (chartUri) {
+              chartMatch = resource['@id'] === chartUri
+            } else {
+              const typeArray = resource['@type']
+              chartMatch = typeArray && (typeArray.indexOf(chartType) >= 0)
+            }
+            if (chartMatch) {
               return extractChart(resource)
             }
           }
@@ -203,4 +224,4 @@ function buildSparqlSpec (baseSpec, sparqlResults) {
   return spec
 }
 
-export { getDefaultChart, loadChart, saveChart, getCharts, buildSparqlSpec}
+export { getDefaultChart, loadChart, saveChart, copyChart, getCharts, buildSparqlSpec}
