@@ -1,6 +1,6 @@
 #!/bin/bash
 WHYIS_FORK="${WHYIS_FORK:-tetherless-world}"
-WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
+WHYIS_BRANCH="${WHYIS_BRANCH:release}"
 
 curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
 sudo dpkg -i puppet-release-xenial.deb
