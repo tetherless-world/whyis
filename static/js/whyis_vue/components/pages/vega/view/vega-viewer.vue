@@ -26,6 +26,12 @@
             <md-icon>integration_instructions</md-icon>
           </md-button>
         </div>
+        <div>
+          <md-button class="md-icon-button" @click.native.prevent="openVoyager()">
+            <md-tooltip class="utility-bckg" md-direction="bottom"> View Data in Voyager </md-tooltip>
+            <md-icon>dynamic_form</md-icon>
+          </md-button>
+        </div>
         <div v-if="allowEdit">
           <md-button class="md-icon-button" @click.native.prevent="editChart">
             <md-tooltip class="utility-bckg" md-direction="top"> Edit Chart </md-tooltip>
@@ -91,11 +97,13 @@
           <md-button class="md-primary" @click="specViewer.show = false">Close</md-button>
         </md-dialog-actions>
       </md-dialog>
+      <data-voyager v-if="voyager.show" :data="spec.data"></data-voyager>
     </div>
   </div>
 </template>
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <style scoped lang="scss">
+
   .vega-spec-container {
     padding-left: 20px;
     padding-right: 20px;
@@ -112,11 +120,13 @@
 <script>
   import Vue from 'vue'
   import VJsoneditor from 'v-jsoneditor'
+
   import { EventServices, Slug } from '../../../../modules'
   import tempFiller from '../../../utils/temporary_filler'
   import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
   import { querySparql } from '../../../../utilities/sparql'
   import { goToView } from '../../../../utilities/views'
+
   export default Vue.component('vega-viewer', {
     data() {
       return {
@@ -130,6 +140,9 @@
         authenticated: EventServices.authUser,
         allowEdit: false,
         vizOfTheDay: false,
+        voyager: {
+          show: false
+        },
         specViewer: {
           show: false,
           includeData: false,
@@ -168,6 +181,9 @@
           EventServices.toggleVizOfTheDay(args)
         }
         return EventServices.navTo('view', true)
+      },
+      openVoyager() {
+        goToView(this.chart.uri, 'voyager')
       },
       shareChart() {
         return EventServices.$emit("dialoguebox", {status: true, share: true,
