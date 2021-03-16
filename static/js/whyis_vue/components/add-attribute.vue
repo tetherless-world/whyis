@@ -107,6 +107,7 @@ export default Vue.component('add-attribute', {
             attribute: null,
             attributeName: null,
             query: null,
+            awaitingResolve: false,
             propertyList: [],
             value: null,
             datatype: null,
@@ -228,13 +229,21 @@ export default Vue.component('add-attribute', {
             this.processAutocompleteMenu();
         },
         resolveAttribute(query){
-            console.log(query);
-            if (!query.label) {
-                if (query.length > 2) {
-                    this.propertyList = this.getAttributeList(query);
-                } else
-                    this.propertyList = this.getSuggestedAttributes(this.uri);
+            var thisVue = this;
+            this.query = query;
+            if (!thisVue.awaitingResolve) {
+                setTimeout(function () {
+                    console.log(thisVue.query);
+                    if (!thisVue.query.label) {
+                        if (thisVue.query.length > 2) {
+                            thisVue.propertyList = thisVue.getAttributeList(thisVue.query);
+                        } else
+                            thisVue.propertyList = thisVue.getSuggestedAttributes(thisVue.uri);
+                    }
+                    thisVue.awaitingResolve = false;
+                }, 1000);   
             }
+            thisVue.awaitingResolve = true;
         },
         selectedAttributeChange(item){
             this.attribute = item;

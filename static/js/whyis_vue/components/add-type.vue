@@ -94,6 +94,8 @@ export default Vue.component('add-type', {
             typeChips: [],
             status: false,
             active: false,
+            query: null,
+            awaitingResolve: false,
         };
     },
     methods: {
@@ -102,7 +104,16 @@ export default Vue.component('add-type', {
             this.typeList = this.getSuggestedTypes(this.uri);
         },
         resolveEntityType(query){
-            this.typeList = this.getTypeList(query);
+            var thisVue = this;
+            this.query = query
+            if (!thisVue.awaitingResolve) {
+                setTimeout(function () {
+                    console.log(thisVue.query)
+                    thisVue.typeList = thisVue.getTypeList(thisVue.query);
+                    thisVue.awaitingResolve = false;
+                }, 1000); 
+            }
+            thisVue.awaitingResolve = true;
         },
         selectedTypeChange(item){
             this.typeChips.push(item);
