@@ -105,15 +105,18 @@ export default Vue.component('add-link', {
             id: null,
             property: null,
             propertyName: null,
-            query: null,
+            propertyQuery: null,
             propertyList: [],
 
             entity: null,
             entityName: null,
+            entityQuery: null,
             entityList: [],
 
             status: false,
             active: false,
+            awaitingResolve: false,
+            awaitingEntity: false,
         };
     },
     methods: {
@@ -123,11 +126,18 @@ export default Vue.component('add-link', {
             this.propertyList = this.getSuggestedProperties(this.uri);
         },
         resolveProperty(query){
-            console.log(query);
-            if (!query.label) {
-                this.propertyList = this.getPropertyList(query);
-                    
+            var thisVue = this;
+            this.propertyQuery = query
+            if (!thisVue.awaitingResolve) {
+                setTimeout(function () {
+                    console.log(thisVue.propertyQuery);
+                    if (!query.label) {
+                        thisVue.propertyList = thisVue.getPropertyList(thisVue.propertyQuery);        
+                    }
+                    thisVue.awaitingResolve = false;
+                }, 1000); 
             }
+            thisVue.awaitingResolve = true;
         },
         selectedPropertyChange(item){
             this.property = item;
@@ -143,12 +153,22 @@ export default Vue.component('add-link', {
             this.entityList = this.getNeighborEntities(this.uri);
         },
         resolveEntity(query){
-            if (!query.label) {
-                if (query.length > 2) {
-                    this.entityList = this.getEntityList(query);
-                } else
-                    this.entityList = this.getNeighborEntities(this.uri);
+            var thisVue = this;
+            this.entityQuery = query
+            // Debounce for entity search 
+            if (!thisVue.awaitingEntity) {
+                setTimeout(function () {
+                    let entityQuery = thisVue.entityQuery;
+                    if (!entityQuery.label) {
+                        if (entityQuery.length > 2) {
+                            thisVue.entityList = thisVue.getEntityList(entityQuery);
+                        } else
+                            thisVue.entityList = thisVue.getNeighborEntities(thisVue.uri);
+                    }
+                    thisVue.awaitingEntity = false;
+                }, 1000); 
             }
+            thisVue.awaitingEntity = true;
         },
         selectedEntityChange(item){
             this.entity = item;
