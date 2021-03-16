@@ -1715,7 +1715,6 @@ ex-kb:Assertion_1 {
 }
 
 ex-kb:Assertion_2 {
-    ex-kb:Tuple rdf:type ex:Type .
     ex-kb:Integer rdf:type ex:Type .
     ex-kb:String rdf:type ex:Type .
     ex-kb:Boolean rdf:type ex:Type .
