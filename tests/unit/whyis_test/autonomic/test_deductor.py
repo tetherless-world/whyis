@@ -2478,7 +2478,7 @@ sio:MeasurementValue rdf:type owl:Class ;
 
 ex-kb:DateTimeMeasurement rdf:type owl:Individual ;
     rdfs:label "date time measurement" ;
-    sio:hasValue "10141990"^^xsd:dateTime .
+    sio:hasValue "1990-10-14T21:32:52"^^xsd:dateTime .
 
 ex-kb:IntegerMeasurement rdf:type owl:Individual ;
     rdfs:label "integer measurement" ;
