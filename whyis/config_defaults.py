@@ -502,7 +502,7 @@ InferenceRules = dict(
     ?resource ?datatypeProperty ?value .
     ?list rdf:rest*/rdf:first ?member .
     {
-        SELECT DISTINCT (COUNT( DISTINCT ?datatypeProperty) AS ?dataCount) #?individual 
+        SELECT DISTINCT (COUNT( DISTINCT ?datatypeProperty) AS ?dataCount) 
         WHERE 
         {
             ?datatypeProperty rdf:type owl:DatatypeProperty ;
