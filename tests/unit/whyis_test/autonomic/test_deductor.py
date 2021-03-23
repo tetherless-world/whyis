@@ -1384,6 +1384,15 @@ ex-kb:Mirror owl:differentFrom ex-kb:Wheel .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Has Value -------
+sio:hasValue rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty;
+    rdfs:label "has value" ;
+    dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
+
+ex:hasAge rdf:type owl:DatatypeProperty ;
+    rdfs:label "has age" ;
+    rdfs:subPropertyOf sio:hasValue .
+    
 ex:Unliked rdf:type owl:Class ;
     owl:equivalentClass
         [ rdf:type owl:Restriction ;
