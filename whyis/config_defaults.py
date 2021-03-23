@@ -238,7 +238,13 @@ InferenceRules = dict(
         "resource" : "?resource", 
         "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
         "antecedent" :  '''
-    ?resource owl:sameAs ?individual .
+    {
+        ?resource owl:sameAs ?individual .
+    }
+        UNION
+    {
+        ?individual owl:sameAs ?resource .
+    }
     ?resource ?p ?o .''', 
         "consequent" : "?individual ?p ?o .",
         "explanation" : "Since {{resource}} is the same as {{individual}}, they share the same properties."#except maybe for annotation properties? should possibly add this check in
