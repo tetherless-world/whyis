@@ -254,8 +254,14 @@ InferenceRules = dict(
         "resource" : "?resource", 
         "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
         "antecedent" :  '''
-    ?resource owl:differentFrom ?individual ;
-        owl:sameAs ?individual .''', 
+    {
+        ?resource owl:differentFrom ?individual .
+    }
+        UNION
+    {
+        ?individual owl:differentFrom ?resource .
+    }
+    ?resource owl:sameAs ?individual .''', 
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{resource}} is asserted as being different from {{individual}}, the assertion that {{resource}} is the same as {{individual}} leads to an inconsistency."
     },
