@@ -45,26 +45,21 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:Attribute rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "attribute" ;
-    #<rdfs:subClassOf rdf:nodeID="arc0158b301"/>
     dct:description "An attribute is a characteristic of some entity." .
 
 sio:RealizableEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Attribute ;
-    #<rdfs:subClassOf rdf:nodeID="arc0158b179"/>
-    #<rdfs:subClassOf rdf:nodeID="arc0158b180"/>
     dct:description "A realizable entity is an attribute that is exhibited under some condition and is realized in some process." ;
     rdfs:label "realizable entity" .
 
 sio:Quality rdf:type owl:Class ;
     rdfs:subClassOf sio:Attribute ;
     owl:disjointWith sio:RealizableEntity ;
-    #<rdfs:subClassOf rdf:nodeID="arc0158b16"/>
     dct:description "A quality is an attribute that is intrinsically associated with its bearer (or its parts), but whose presence/absence and observed/measured value may vary." ;
     rdfs:label "quality" .
 
@@ -184,8 +179,6 @@ sio:hasPart rdf:type owl:ObjectProperty ,
 
 sio:Process rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b17"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b18"/>
     dct:description "A process is an entity that is identifiable only through the unfolding of time, has temporal parts, and unless otherwise specified/predicted, cannot be identified from any instant of time in which it exists." ;
     rdfs:label "process" .
 
@@ -228,12 +221,10 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -397,27 +388,22 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:MaterialEntity  rdf:type owl:Class ;
     rdfs:label "material entity" ;
     rdfs:subClassOf sio:Object ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
     dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
 
 sio:ChemicalEntity  rdf:type owl:Class ;
     rdfs:label "chemical entity" ;
     rdfs:subClassOf sio:MaterialEntity ;
-#    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
     dct:description "A chemical entity is a material entity that pertains to chemistry." .
 
 sio:HeterogeneousSubstance  rdf:type owl:Class ;
     rdfs:label "heterogeneous substance" ;
     rdfs:subClassOf sio:MaterialEntity ;
     rdfs:subClassOf sio:ChemicalEntity ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
     dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
 
 sio:BiologicalEntity  rdf:type owl:Class ;
@@ -436,7 +422,6 @@ sio:Organism rdf:type owl:Class ;
 sio:CellularOrganism  rdf:type owl:Class ;
     rdfs:label "cellular organism" ;
     rdfs:subClassOf sio:Organism ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/Non-cellularOrganism"/>
     dct:description "A cellular organism is an organism that contains one or more cells." .
 
 sio:MulticellularOrganism  rdf:type owl:Class ;
@@ -504,9 +489,6 @@ sio:1DExtentQuantity rdf:type owl:Class ;
 sio:SpatialQuantity rdf:type owl:Class ;
     rdfs:label "spatial quantity" ;
     rdfs:subClassOf sio:DimensionalQuantity ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b33"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b34"/>
-#    <sio:hasSynonym xml:lang="en">physical dimensional quantity</sio:hasSynonym>
     dct:description "A spatial quantity is a quantity obtained from measuring the spatial extent of an entity." .
 
 sio:DimensionalQuantity rdf:type owl:Class ;
@@ -558,7 +540,6 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:InformationContentEntity rdf:type owl:Class ;
@@ -706,14 +687,11 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:MaterialEntity  rdf:type owl:Class ;
     rdfs:label "material entity" ;
     rdfs:subClassOf sio:Object ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
     dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
 # ------- Class Inclusion ------->
 ''', format="turtle")
@@ -751,7 +729,6 @@ sio:Entity rdf:type owl:Class ;
 sio:Object rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
     rdfs:label "object" ;
-    #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
     dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
 sio:Age rdf:type owl:Class ;
@@ -775,14 +752,11 @@ sio:Quantity rdf:type owl:Class ;
         [ rdf:type owl:Class ; 
             owl:unionOf (sio:DimensionlessQuantity sio:DimensionalQuantity) ] ;
     rdfs:subClassOf sio:MeasurementValue ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b38"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b39"/>
     dct:description "A quantity is an informational entity that gives the magnitude of a property." .
 
 sio:MeasurementValue rdf:type owl:Class ;
     rdfs:label "measurement value" ;
     rdfs:subClassOf sio:Number ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b47"/>
     dct:description "A measurement value is a quantitative description that reflects the magnitude of some attribute." .
 
 sio:Number rdf:type owl:Class ;
@@ -797,7 +771,6 @@ sio:MathematicalEntity rdf:type owl:Class ;
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -844,7 +817,6 @@ ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Chain Inclusion -------
-# P owl:propertyChainAxiom (P1 … Pn).
 sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                 owl:SymmetricProperty ;
     rdfs:label "is related to" ;
@@ -1247,8 +1219,6 @@ sio:BiomolecularStructureDescriptor rdf:type owl:Class ;
 
 sio:MolecularStructureDescriptor rdf:type owl:Class ;
     rdfs:subClassOf sio:ChemicalQuality ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b921"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b922"/>
     rdfs:label "molecular structure descriptor" ;
     dct:description "A molecular structure descriptor is data that describes some aspect of the molecular structure (composition) and is about some chemical entity." .
 
@@ -1419,8 +1389,6 @@ sio:Entity rdf:type owl:Class ;
 
 sio:Process rdf:type owl:Class ;
     rdfs:subClassOf sio:Entity ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b17"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b18"/>
     dct:description "A process is an entity that is identifiable only through the unfolding of time, has temporal parts, and unless otherwise specified/predicted, cannot be identified from any instant of time in which it exists." ;
     rdfs:label "process" .
 
@@ -1641,7 +1609,6 @@ sio:ProbabilityValue rdf:type owl:Class ;
                 ]
         ] ;
     dct:description "A p-value or probability value is the probability of obtaining a test statistic at least as extreme as the one that was actually observed, assuming that the null hypothesis is true" ;
-    #<sio:hasSynonym xml:lang="en">p-value</sio:hasSynonym>
     rdfs:label "probability value" .
 
 ex-kb:EffortExerted rdf:type sio:ProbabilityValue ;
@@ -1684,7 +1651,6 @@ sio:hasMember rdf:type owl:ObjectProperty ,
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -1816,14 +1782,11 @@ sio:Triangle rdf:type owl:Class ;
 
 sio:LineSegment rdf:type owl:Class ;
     rdfs:subClassOf sio:Line ;
-#    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
     dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
     rdfs:label "line segment" .
 
 sio:DirectedLineSegment rdf:type owl:Class ;
     rdfs:subClassOf sio:LineSegment ;
-#    <rdfs:subClassOf rdf:nodeID="arc703eb253"/>
-#    <rdfs:subClassOf rdf:nodeID="arc703eb254"/>
     dct:description "A directed line segment is a line segment that is contained by an ordered pair of endpoints (a start point and an endpoint)." ;
     rdfs:label "directed line segment" .
 
@@ -1947,7 +1910,6 @@ sio:Polyline rdf:type owl:Class ;
 
 sio:LineSegment rdf:type owl:Class ;
     rdfs:subClassOf sio:Line ;
-#    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
     dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
     rdfs:label "line segment" .
 
@@ -2337,14 +2299,11 @@ sio:Quantity rdf:type owl:Class ;
         [ rdf:type owl:Class ; 
             owl:unionOf (sio:DimensionlessQuantity sio:DimensionalQuantity) ] ;
     rdfs:subClassOf sio:MeasurementValue ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b38"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b39"/>
     dct:description "A quantity is an informational entity that gives the magnitude of a property." .
 
 sio:MeasurementValue rdf:type owl:Class ;
     rdfs:label "measurement value" ;
     rdfs:subClassOf sio:Number ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b47"/>
     dct:description "A measurement value is a quantitative description that reflects the magnitude of some attribute." .
 
 sio:Number rdf:type owl:Class ;
@@ -2359,7 +2318,6 @@ sio:MathematicalEntity rdf:type owl:Class ;
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -2441,7 +2399,6 @@ ex-kb:Number rdf:type ex:NumericalValue ;
 # <-------  Object Union Of ------- 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -2485,7 +2442,6 @@ sio:hasValue rdf:type owl:DatatypeProperty ,
 
 sio:InformationContentEntity rdf:type owl:Class ;
     rdfs:subClassOf sio:Object ;
-#    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
     rdfs:label "information content entity" ;
     dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
@@ -2560,20 +2516,16 @@ sio:HeterogeneousSubstance  rdf:type owl:Class ;
     rdfs:label "heterogeneous substance" ;
     rdfs:subClassOf sio:MaterialEntity ;
     rdfs:subClassOf sio:ChemicalEntity ;
-#    <owl:disjointWith rdf:resource="http://semanticscience.org/resource/HomogeneousSubstance"/>
     dct:description "A heterogeneous substance is a chemical substance that is composed of more than one different kind of component." .
 
 sio:MaterialEntity  rdf:type owl:Class ;
     rdfs:label "material entity" ;
     rdfs:subClassOf sio:Object ;
-#    <rdfs:subClassOf rdf:nodeID="arc0158b11"/>
-#    <rdfs:subClassOf rdf:nodeID="arc0158b12"/>
     dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
 
 sio:ChemicalEntity  rdf:type owl:Class ;
     rdfs:label "chemical entity" ;
     rdfs:subClassOf sio:MaterialEntity ;
-#    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
     dct:description "A chemical entity is a material entity that pertains to chemistry." .
 
 ex:Lobe rdf:type owl:Class ;
