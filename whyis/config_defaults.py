@@ -477,7 +477,7 @@ InferenceRules = dict(
     ?list rdf:rest*/rdf:first ?member .
     ?resource rdf:type ?class .
     {
-        SELECT DISTINCT (COUNT(DISTINCT ?concept) AS ?conceptCount) #?concept ?individual 
+        SELECT DISTINCT (COUNT(DISTINCT ?concept) AS ?conceptCount)
         WHERE 
         {
             ?concept rdf:type owl:Class ;
