@@ -53,7 +53,11 @@ module.exports = (env, argv) => ({
             }
           }
         ]
-      }
+      },
+      {
+        test: /\.ya?ml$/,
+        loader: 'raw-loader',
+      },
     ]
   },
   name: 'whyis',

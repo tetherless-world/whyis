@@ -559,3 +559,9 @@ whyis:DatasetClass a owl:Class;
 
 dcat:Dataset a whyis:DatasetClass;
   whyis:editInstanceView "dataset_edit.html".
+
+whyis:SparqlTemplateClass a owl:Class;
+  rdfs:subClassOf owl:Class;
+  whyis:hasView "sparql_templates.html".
+
+whyis:SparqlTemplates a whyis:SparqlTemplateClass.

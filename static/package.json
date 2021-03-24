@@ -9,6 +9,7 @@
     "ajv": "^6.11.0",
     "axios": "^0.19.0",
     "datavoyager": "^2.0.0-alpha.24",
+    "js-yaml": "^4.0.0",
     "jsonschema": "^1.2.5",
     "prismjs": "^1.19.0",
     "rdf-literal": "^1.1.0",
