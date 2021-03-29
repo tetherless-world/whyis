@@ -1,0 +1,9 @@
+{% extends "base_vue.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}
+  Data Voyager:
+  {{g.get_label(this)}}
+{% endblock %}
+{% block content %}
+<data-voyager-page></data-voyager-page>
+{% endblock %}
