@@ -8,7 +8,10 @@ module.exports = (env, argv) => ({
     app: ['./js/whyis_vue/main.js']
   },
   externals: {
-    jquery: 'jQuery'
+    'jquery': 'jQuery',
+    'node-fetch': 'fetch',
+    'solid-auth-cli': 'null',
+    'fs': 'null-fs'
   },
   module: {
     rules: [
@@ -34,6 +37,22 @@ module.exports = (env, argv) => ({
       {
         test: /\.vue$/,
         loader: 'vue-loader'
+      },
+      {
+        test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: "url-loader"
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/'
+            }
+          }
+        ]
       }
     ]
   },
@@ -41,7 +60,8 @@ module.exports = (env, argv) => ({
   output: {
     filename: 'js/whyis_vue_bundle.js',
     libraryTarget: 'umd',
-    path: __dirname
+    path: __dirname,
+    publicPath: path.basename(__dirname) + '/',
   },
   plugins: [
     new MiniCssExtractPlugin({
@@ -54,10 +74,10 @@ module.exports = (env, argv) => ({
       vue$: 'vue/dist/vue.esm.js' // Include the runtime template compiler
     },
     extensions: ['.js', '.vue'],
-    modules: [path.join(__dirname, 'js', 'whyis_vue'), path.join(__dirname, 'node_modules')]
+    modules: [path.join(__dirname, 'js/whyis_vue'), 'node_modules']
   },
   resolveLoader: {
     modules: [path.join(__dirname, 'node_modules')]
   },
-  target: 'web'
+  target: 'web',
 })
