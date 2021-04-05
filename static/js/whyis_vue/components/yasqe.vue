@@ -37,12 +37,18 @@ export default Vue.component('yasqe', {
                     },
                 }
             },
+            readOnly: true,
         })
         this.yasqe.setValue(this.value)
         this.yasqe.on('changes', () => {
             yasqeContext.$emit('input', yasqeContext.yasqe.getValue())
         })
         this.yasqe.setSize("100%", "100%")
+    },
+    watch: {
+        value() {
+            this.yasqe.setValue(this.value)
+        }
     }
 })
 </script>
