@@ -1609,86 +1609,16 @@ Config = dict(
         ]
     },
     inferencers  = {
-        "Class Disjointness" : autonomic.Deductor(
-            reference =  InferenceRules["Class_Disjointness"]["reference"],
-            resource = InferenceRules["Class_Disjointness"]["resource"] , 
-            prefixes = InferenceRules["Class_Disjointness"]["prefixes"] , 
-            antecedent =  InferenceRules["Class_Disjointness"]["antecedent"] ,
-            consequent = InferenceRules["Class_Disjointness"]["consequent"] ,
-            explanation = InferenceRules["Class_Disjointness"]["explanation"]
-        ),
-        "Object Property Transitivity" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Transitivity"]["reference"],
-            resource = InferenceRules["Object_Property_Transitivity"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Transitivity"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Transitivity"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Transitivity"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Transitivity"]["explanation"]
-        ),
-        "Object Property Reflexivity" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Reflexivity"]["reference"],
-            resource = InferenceRules["Object_Property_Reflexivity"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Reflexivity"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Reflexivity"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Reflexivity"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Reflexivity"]["explanation"]
-        ),
-        "Property Domain" : autonomic.Deductor(
-            reference =  InferenceRules["Property_Domain"]["reference"],
-            resource = InferenceRules["Property_Domain"]["resource"] , 
-            prefixes = InferenceRules["Property_Domain"]["prefixes"] , 
-            antecedent =  InferenceRules["Property_Domain"]["antecedent"] ,
-            consequent = InferenceRules["Property_Domain"]["consequent"] ,
-            explanation = InferenceRules["Property_Domain"]["explanation"]
-        ),
-        "Property Range" : autonomic.Deductor(
-            reference =  InferenceRules["Property_Range"]["reference"],
-            resource = InferenceRules["Property_Range"]["resource"] , 
-            prefixes = InferenceRules["Property_Range"]["prefixes"] , 
-            antecedent =  InferenceRules["Property_Range"]["antecedent"] ,
-            consequent = InferenceRules["Property_Range"]["consequent"] ,
-            explanation = InferenceRules["Property_Range"]["explanation"]
-        ),
-        "Functional Data Property" : autonomic.Deductor(
-            reference =  InferenceRules["Functional_Data_Property"]["reference"],
-            resource = InferenceRules["Functional_Data_Property"]["resource"] , 
-            prefixes = InferenceRules["Functional_Data_Property"]["prefixes"] , 
-            antecedent =  InferenceRules["Functional_Data_Property"]["antecedent"] ,
-            consequent = InferenceRules["Functional_Data_Property"]["consequent"] ,
-            explanation = InferenceRules["Functional_Data_Property"]["explanation"]
-        ),
-        "Functional Object Property" : autonomic.Deductor(
-            reference =  InferenceRules["Functional_Object_Property"]["reference"],
-            resource = InferenceRules["Functional_Object_Property"]["resource"] , 
-            prefixes = InferenceRules["Functional_Object_Property"]["prefixes"] , 
-            antecedent =  InferenceRules["Functional_Object_Property"]["antecedent"] ,
-            consequent = InferenceRules["Functional_Object_Property"]["consequent"] ,
-            explanation = InferenceRules["Functional_Object_Property"]["explanation"]
-        ),
-        "Property Disjointness" : autonomic.Deductor(
-            reference =  InferenceRules["Property_Disjointness"]["reference"],
-            resource = InferenceRules["Property_Disjointness"]["resource"] , 
-            prefixes = InferenceRules["Property_Disjointness"]["prefixes"] , 
-            antecedent =  InferenceRules["Property_Disjointness"]["antecedent"] ,
-            consequent = InferenceRules["Property_Disjointness"]["consequent"] ,
-            explanation = InferenceRules["Property_Disjointness"]["explanation"]
-        ),
-        "Object Property Asymmetry" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Asymmetry"]["reference"],
-            resource = InferenceRules["Object_Property_Asymmetry"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Asymmetry"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Asymmetry"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Asymmetry"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Asymmetry"]["explanation"]
-        ),
-        "Object Property Symmetry" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Symmetry"]["reference"],
-            resource = InferenceRules["Object_Property_Symmetry"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Symmetry"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Symmetry"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Symmetry"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Symmetry"]["explanation"]
-        ),
+        "Class Disjointness" : autonomic.Deductor( **InferenceRules["Class_Disjointness"] ),
+        "Object Property Transitivity" : autonomic.Deductor( **InferenceRules["Object_Property_Transitivity"] ),
+        "Object Property Reflexivity" : autonomic.Deductor( **InferenceRules["Object_Property_Reflexivity"] ),
+        "Property Domain" : autonomic.Deductor( **InferenceRules["Property_Domain"] ),
+        "Property Range" : autonomic.Deductor( **InferenceRules["Property_Range"] ),
+        "Functional Data Property" : autonomic.Deductor( **InferenceRules["Functional_Data_Property"] ),
+        "Functional Object Property" : autonomic.Deductor( **InferenceRules["Functional_Object_Property"] ),
+        "Property Disjointness" : autonomic.Deductor( **InferenceRules["Property_Disjointness"] ),
+        "Object Property Asymmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Asymmetry"] ),
+        "Object Property Symmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Symmetry"] ),
         "Object Property Irreflexivity": autonomic.Deductor(
             reference =  InferenceRules["Object_Property_Irreflexivity"]["reference"],
             resource = InferenceRules["Object_Property_Irreflexivity"]["resource"] , 
