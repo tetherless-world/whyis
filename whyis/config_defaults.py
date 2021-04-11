@@ -1626,7 +1626,7 @@ Config = dict(
         "Object Property Inclusion" : autonomic.Deductor( **InferenceRules["Object_Property_Inclusion"] ),
         "Data Property Inclusion" : autonomic.Deductor( **InferenceRules["Data_Property_Inclusion"] ),
         "Class Equivalence" : autonomic.Deductor( **InferenceRules["Class_Equivalence"] ),
-        "Property Equivalence" : autonomic.Deductor( **InferenceRules["Property_Equivalence" ),
+        "Property Equivalence" : autonomic.Deductor( **InferenceRules["Property_Equivalence"] ),
         "Object Property Inversion" : autonomic.Deductor( **InferenceRules["Object_Property_Inversion"] ),
         "Same Individual" : autonomic.Deductor( **InferenceRules["Same_Individual"] ),
         "Different Individuals" : autonomic.Deductor( **InferenceRules["Different_Individuals"] ),
