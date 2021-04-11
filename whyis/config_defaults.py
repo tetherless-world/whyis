@@ -1620,7 +1620,7 @@ Config = dict(
         "Object Property Asymmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Asymmetry"] ),
         "Object Property Symmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Symmetry"] ),
         "Object Property Irreflexivity": autonomic.Deductor( **InferenceRules["Object_Property_Irreflexivity"] ),
-        "Class Inclusion" : autonomic.Deductor(**InferenceRules["Class_Inclusion"]["reference"] ),
+        "Class Inclusion" : autonomic.Deductor(**InferenceRules["Class_Inclusion"] ),
         "Individual Inclusion" : autonomic.Deductor( **InferenceRules["Individual_Inclusion"] ),
         "Property Inclusion" : autonomic.Deductor( **InferenceRules["Property_Inclusion"] ),
         "Object Property Inclusion" : autonomic.Deductor( **InferenceRules["Object_Property_Inclusion"] ),
