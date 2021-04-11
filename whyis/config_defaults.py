@@ -1619,454 +1619,60 @@ Config = dict(
         "Property Disjointness" : autonomic.Deductor( **InferenceRules["Property_Disjointness"] ),
         "Object Property Asymmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Asymmetry"] ),
         "Object Property Symmetry" : autonomic.Deductor( **InferenceRules["Object_Property_Symmetry"] ),
-        "Object Property Irreflexivity": autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Irreflexivity"]["reference"],
-            resource = InferenceRules["Object_Property_Irreflexivity"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Irreflexivity"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Irreflexivity"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Irreflexivity"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Irreflexivity"]["explanation"]
-        ),
-        "Class Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Class_Inclusion"]["reference"],
-            resource = InferenceRules["Class_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Class_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Class_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Class_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Class_Inclusion"]["explanation"]
-        ),
-        "Individual Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Individual_Inclusion"]["reference"],
-            resource = InferenceRules["Individual_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Individual_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Individual_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Individual_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Individual_Inclusion"]["explanation"]
-        ),
-        "Property Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Property_Inclusion"]["reference"],
-            resource = InferenceRules["Property_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Property_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Property_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Property_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Property_Inclusion"]["explanation"]
-        ),
-        "Object Property Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Inclusion"]["reference"],
-            resource = InferenceRules["Object_Property_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Inclusion"]["explanation"]
-        ),
-        "Data Property Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Property_Inclusion"]["reference"],
-            resource = InferenceRules["Data_Property_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Data_Property_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Property_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Data_Property_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Data_Property_Inclusion"]["explanation"]
-        ),
-        "Class Equivalence" : autonomic.Deductor(
-            reference =  InferenceRules["Class_Equivalence"]["reference"],
-            resource = InferenceRules["Class_Equivalence"]["resource"] , 
-            prefixes = InferenceRules["Class_Equivalence"]["prefixes"] , 
-            antecedent =  InferenceRules["Class_Equivalence"]["antecedent"] ,
-            consequent = InferenceRules["Class_Equivalence"]["consequent"] ,
-            explanation = InferenceRules["Class_Equivalence"]["explanation"]
-        ),
-        "Property Equivalence" : autonomic.Deductor(
-            reference =  InferenceRules["Property_Equivalence"]["reference"],
-            resource = InferenceRules["Property_Equivalence"]["resource"] , 
-            prefixes = InferenceRules["Property_Equivalence"]["prefixes"] , 
-            antecedent =  InferenceRules["Property_Equivalence"]["antecedent"] ,
-            consequent = InferenceRules["Property_Equivalence"]["consequent"] ,
-            explanation = InferenceRules["Property_Equivalence"]["explanation"]
-        ),
-        "Object Property Inversion" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Inversion"]["reference"],
-            resource = InferenceRules["Object_Property_Inversion"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Inversion"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Inversion"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Inversion"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Inversion"]["explanation"]
-        ),
-        "Same Individual" : autonomic.Deductor(
-            reference =  InferenceRules["Same_Individual"]["reference"],
-            resource = InferenceRules["Same_Individual"]["resource"] , 
-            prefixes = InferenceRules["Same_Individual"]["prefixes"] , 
-            antecedent =  InferenceRules["Same_Individual"]["antecedent"] ,
-            consequent = InferenceRules["Same_Individual"]["consequent"] ,
-            explanation = InferenceRules["Same_Individual"]["explanation"]
-        ),
-        "Different Individuals" : autonomic.Deductor(
-            reference =  InferenceRules["Different_Individuals"]["reference"],
-            resource = InferenceRules["Different_Individuals"]["resource"] , 
-            prefixes = InferenceRules["Different_Individuals"]["prefixes"] , 
-            antecedent =  InferenceRules["Different_Individuals"]["antecedent"] ,
-            consequent = InferenceRules["Different_Individuals"]["consequent"] ,
-            explanation = InferenceRules["Different_Individuals"]["explanation"]
-        ),
-        "All Different Individuals" : autonomic.Deductor(
-            reference =  InferenceRules["All_Different_Individuals"]["reference"],
-            resource = InferenceRules["All_Different_Individuals"]["resource"] , 
-            prefixes = InferenceRules["All_Different_Individuals"]["prefixes"] , 
-            antecedent =  InferenceRules["All_Different_Individuals"]["antecedent"] ,
-            consequent = InferenceRules["All_Different_Individuals"]["consequent"] ,
-            explanation = InferenceRules["All_Different_Individuals"]["explanation"]
-        ),
-        "Class Assertion" : autonomic.Deductor(
-            reference =  InferenceRules["Class_Assertion"]["reference"],
-            resource = InferenceRules["Class_Assertion"]["resource"] , 
-            prefixes = InferenceRules["Class_Assertion"]["prefixes"] , 
-            antecedent =  InferenceRules["Class_Assertion"]["antecedent"] ,
-            consequent = InferenceRules["Class_Assertion"]["consequent"] ,
-            explanation = InferenceRules["Class_Assertion"]["explanation"]
-        ),
-#        "Positive Object Property Assertion" : autonomic.Deductor(
-#            reference =  InferenceRules["Positive_Object_Property_Assertion"]["reference"],
-#            resource = InferenceRules["Positive_Object_Property_Assertion"]["resource"] , 
-#            prefixes = InferenceRules["Positive_Object_Property_Assertion"]["prefixes"] , 
-#            antecedent =  InferenceRules["Positive_Object_Property_Assertion"]["antecedent"] ,
-#            consequent = InferenceRules["Positive_Object_Property_Assertion"]["consequent"] ,
-#            explanation = InferenceRules["Positive_Object_Property_Assertion"]["explanation"]
-#        ),
-#        "Positive Data Property Assertion" : autonomic.Deductor( 
-#            reference =  InferenceRules["Positive_Data_Property_Assertion"]["reference"],
-#            resource = InferenceRules["Positive_Data_Property_Assertion"]["resource"] , 
-#            prefixes = InferenceRules["Positive_Data_Property_Assertion"]["prefixes"] , 
-#            antecedent =  InferenceRules["Positive_Data_Property_Assertion"]["antecedent"] ,
-#            consequent = InferenceRules["Positive_Data_Property_Assertion"]["consequent"] ,
-#            explanation = InferenceRules["Positive_Data_Property_Assertion"]["explanation"]
-#        ), # the previous two might just be s p o assertion
-        "Negative Object Property Assertion" : autonomic.Deductor(
-            reference =  InferenceRules["Negative_Object_Property_Assertion"]["reference"],
-            resource = InferenceRules["Negative_Object_Property_Assertion"]["resource"] , 
-            prefixes = InferenceRules["Negative_Object_Property_Assertion"]["prefixes"] , 
-            antecedent =  InferenceRules["Negative_Object_Property_Assertion"]["antecedent"] ,
-            consequent = InferenceRules["Negative_Object_Property_Assertion"]["consequent"] ,
-            explanation = InferenceRules["Negative_Object_Property_Assertion"]["explanation"]
-        ),
-        "Negative Data Property Assertion" : autonomic.Deductor(
-            reference =  InferenceRules["Negative_Data_Property_Assertion"]["reference"],
-            resource = InferenceRules["Negative_Data_Property_Assertion"]["resource"] , 
-            prefixes = InferenceRules["Negative_Data_Property_Assertion"]["prefixes"] , 
-            antecedent =  InferenceRules["Negative_Data_Property_Assertion"]["antecedent"] ,
-            consequent = InferenceRules["Negative_Data_Property_Assertion"]["consequent"] ,
-            explanation = InferenceRules["Negative_Data_Property_Assertion"]["explanation"]
-        ),
-        "Keys" : autonomic.Deductor(
-            reference =  InferenceRules["Keys"]["reference"],
-            resource = InferenceRules["Keys"]["resource"] , 
-            prefixes = InferenceRules["Keys"]["prefixes"] , 
-            antecedent =  InferenceRules["Keys"]["antecedent"] ,
-            consequent = InferenceRules["Keys"]["consequent"] ,
-            explanation = InferenceRules["Keys"]["explanation"]
-        ),
-        "Inverse Functional Object Property" : autonomic.Deductor(
-            reference =  InferenceRules["Inverse_Functional_Object_Property"]["reference"],
-            resource = InferenceRules["Inverse_Functional_Object_Property"]["resource"] , 
-            prefixes = InferenceRules["Inverse_Functional_Object_Property"]["prefixes"] , 
-            antecedent =  InferenceRules["Inverse_Functional_Object_Property"]["antecedent"] ,
-            consequent = InferenceRules["Inverse_Functional_Object_Property"]["consequent"] ,
-            explanation = InferenceRules["Inverse_Functional_Object_Property"]["explanation"]
-        ),
-        "Object Some Values From" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Some_Values_From"]["reference"],
-            resource = InferenceRules["Object_Some_Values_From"]["resource"] , 
-            prefixes = InferenceRules["Object_Some_Values_From"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Some_Values_From"]["antecedent"] ,
-            consequent = InferenceRules["Object_Some_Values_From"]["consequent"] ,
-            explanation = InferenceRules["Object_Some_Values_From"]["explanation"]
-        ),
-        "Data Some Values From" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Some_Values_From"]["reference"],
-            resource = InferenceRules["Data_Some_Values_From"]["resource"] , 
-            prefixes = InferenceRules["Data_Some_Values_From"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Some_Values_From"]["antecedent"] ,
-            consequent = InferenceRules["Data_Some_Values_From"]["consequent"] ,
-            explanation = InferenceRules["Data_Some_Values_From"]["explanation"]
-        ),
-        "Object Has Self" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Has_Self"]["reference"],
-            resource = InferenceRules["Object_Has_Self"]["resource"] , 
-            prefixes = InferenceRules["Object_Has_Self"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Has_Self"]["antecedent"] ,
-            consequent = InferenceRules["Object_Has_Self"]["consequent"] ,
-            explanation = InferenceRules["Object_Has_Self"]["explanation"]
-        ),
-        "Object Has Value" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Has_Value"]["reference"],
-            resource = InferenceRules["Object_Has_Value"]["resource"] , 
-            prefixes = InferenceRules["Object_Has_Value"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Has_Value"]["antecedent"] ,
-            consequent = InferenceRules["Object_Has_Value"]["consequent"] ,
-            explanation = InferenceRules["Object_Has_Value"]["explanation"]
-        ),
-        "Data Has Value" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Has_Value"]["reference"],
-            resource = InferenceRules["Data_Has_Value"]["resource"] , 
-            prefixes = InferenceRules["Data_Has_Value"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Has_Value"]["antecedent"] ,
-            consequent = InferenceRules["Data_Has_Value"]["consequent"] ,
-            explanation = InferenceRules["Data_Has_Value"]["explanation"]
-        ),
-        "Object One Of Membership" : autonomic.Deductor(
-            reference =  InferenceRules["Object_One_Of_Membership"]["reference"],
-            resource = InferenceRules["Object_One_Of_Membership"]["resource"] , 
-            prefixes = InferenceRules["Object_One_Of_Membership"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_One_Of_Membership"]["antecedent"] ,
-            consequent = InferenceRules["Object_One_Of_Membership"]["consequent"] ,
-            explanation = InferenceRules["Object_One_Of_Membership"]["explanation"]
-        ),
-        "Object One Of Inconsistency" : autonomic.Deductor(
-            reference =  InferenceRules["Object_One_Of_Inconsistency"]["reference"],
-            resource = InferenceRules["Object_One_Of_Inconsistency"]["resource"] , 
-            prefixes = InferenceRules["Object_One_Of_Inconsistency"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_One_Of_Inconsistency"]["antecedent"] ,
-            consequent = InferenceRules["Object_One_Of_Inconsistency"]["consequent"] ,
-            explanation = InferenceRules["Object_One_Of_Inconsistency"]["explanation"]
-        ),
-        "Data One Of" : autonomic.Deductor(
-            reference =  InferenceRules["Data_One_Of"]["reference"],
-            resource = InferenceRules["Data_One_Of"]["resource"] , 
-            prefixes = InferenceRules["Data_One_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_One_Of"]["antecedent"] ,
-            consequent = InferenceRules["Data_One_Of"]["consequent"] ,
-            explanation = InferenceRules["Data_One_Of"]["explanation"]
-        ),
-        "Object All Values From" : autonomic.Deductor(
-            reference =  InferenceRules["Object_All_Values_From"]["reference"],
-            resource = InferenceRules["Object_All_Values_From"]["resource"] , 
-            prefixes = InferenceRules["Object_All_Values_From"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_All_Values_From"]["antecedent"] ,
-            consequent = InferenceRules["Object_All_Values_From"]["consequent"] ,
-            explanation = InferenceRules["Object_All_Values_From"]["explanation"]
-        ),
-        "Data All Values From" : autonomic.Deductor(
-            reference =  InferenceRules["Data_All_Values_From"]["reference"],
-            resource = InferenceRules["Data_All_Values_From"]["resource"] , 
-            prefixes = InferenceRules["Data_All_Values_From"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_All_Values_From"]["antecedent"] ,
-            consequent = InferenceRules["Data_All_Values_From"]["consequent"] ,
-            explanation = InferenceRules["Data_All_Values_From"]["explanation"]
-        ),
-        "Object Max Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Max_Cardinality"]["reference"],
-            resource = InferenceRules["Object_Max_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Object_Max_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Max_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Object_Max_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Object_Max_Cardinality"]["explanation"]
-        ),
-        "Object Min Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Min_Cardinality"]["reference"],
-            resource = InferenceRules["Object_Min_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Object_Min_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Min_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Object_Min_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Object_Min_Cardinality"]["explanation"]
-        ),
-#        "Object Exact Cardinality (Max)" : autonomic.Deductor(
-#            reference =  InferenceRules["Object_Exact_Cardinality_(Max)"]["reference"],
-#            resource = InferenceRules["Object_Exact_Cardinality_(Max)"]["resource"] , 
-#            prefixes = InferenceRules["Object_Exact_Cardinality_(Max)"]["prefixes"] , 
-#            antecedent =  InferenceRules["Object_Exact_Cardinality_(Max)"]["antecedent"] ,
-#            consequent = InferenceRules["Object_Exact_Cardinality_(Max)"]["consequent"] ,
-#            explanation = InferenceRules["Object_Exact_Cardinality_(Max)"]["explanation"]
-#        ),
-#        "Object Exact Cardinality (Min)" : autonomic.Deductor(
-#            reference =  InferenceRules["Object_Exact_Cardinality_(Min)"]["reference"],
-#            resource = InferenceRules["Object_Exact_Cardinality_(Min)"]["resource"] , 
-#            prefixes = InferenceRules["Object_Exact_Cardinality_(Min)"]["prefixes"] , 
-#            antecedent =  InferenceRules["Object_Exact_Cardinality_(Min)"]["antecedent"] ,
-#            consequent = InferenceRules["Object_Exact_Cardinality_(Min)"]["consequent"] ,
-#            explanation = InferenceRules["Object_Exact_Cardinality_(Min)"]["explanation"]
-#        ),
-        "Data Max Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Max_Cardinality"]["reference"],
-            resource = InferenceRules["Data_Max_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Data_Max_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Max_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Data_Max_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Data_Max_Cardinality"]["explanation"]
-        ),
-        "Data Min Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Min_Cardinality"]["reference"],
-            resource = InferenceRules["Data_Min_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Data_Min_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Min_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Data_Min_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Data_Min_Cardinality"]["explanation"]
-        ),
-        "Data Exact Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Exact_Cardinality"]["reference"],
-            resource = InferenceRules["Data_Exact_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Data_Exact_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Exact_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Data_Exact_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Data_Exact_Cardinality"]["explanation"]
-        ),
-        "Object Union Of" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Union_Of"]["reference"],
-            resource = InferenceRules["Object_Union_Of"]["resource"] , 
-            prefixes = InferenceRules["Object_Union_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Union_Of"]["antecedent"] ,
-            consequent = InferenceRules["Object_Union_Of"]["consequent"] ,
-            explanation = InferenceRules["Object_Union_Of"]["explanation"]
-        ),
-        "Disjoint Union" : autonomic.Deductor(
-            reference =  InferenceRules["Disjoint_Union"]["reference"],
-            resource = InferenceRules["Disjoint_Union"]["resource"] , 
-            prefixes = InferenceRules["Disjoint_Union"]["prefixes"] , 
-            antecedent =  InferenceRules["Disjoint_Union"]["antecedent"] ,
-            consequent = InferenceRules["Disjoint_Union"]["consequent"] ,
-            explanation = InferenceRules["Disjoint_Union"]["explanation"]
-        ),
-        "Data Union Of" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Union_Of"]["reference"],
-            resource = InferenceRules["Data_Union_Of"]["resource"] , 
-            prefixes = InferenceRules["Data_Union_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Union_Of"]["antecedent"] ,
-            consequent = InferenceRules["Data_Union_Of"]["consequent"] ,
-            explanation = InferenceRules["Data_Union_Of"]["explanation"]
-        ),
-        "Object Complement Of" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Complement_Of"]["reference"],
-            resource = InferenceRules["Object_Complement_Of"]["resource"] , 
-            prefixes = InferenceRules["Object_Complement_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Complement_Of"]["antecedent"] ,
-            consequent = InferenceRules["Object_Complement_Of"]["consequent"] ,
-            explanation = InferenceRules["Object_Complement_Of"]["explanation"]
-        ),
-        "Data Complement Of" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Complement_Of"]["reference"],
-            resource = InferenceRules["Data_Complement_Of"]["resource"] , 
-            prefixes = InferenceRules["Data_Complement_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Complement_Of"]["antecedent"] ,
-            consequent = InferenceRules["Data_Complement_Of"]["consequent"] ,
-            explanation = InferenceRules["Data_Complement_Of"]["explanation"]
-        ),
-        "Object Property Complement Of" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Complement_Of"]["reference"],
-            resource = InferenceRules["Object_Property_Complement_Of"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Complement_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Complement_Of"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Complement_Of"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Complement_Of"]["explanation"]
-        ),
-        "Data Property Complement Of" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Property_Complement_Of"]["reference"],
-            resource = InferenceRules["Data_Property_Complement_Of"]["resource"] , 
-            prefixes = InferenceRules["Data_Property_Complement_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Property_Complement_Of"]["antecedent"] ,
-            consequent = InferenceRules["Data_Property_Complement_Of"]["consequent"] ,
-            explanation = InferenceRules["Data_Property_Complement_Of"]["explanation"]
-        ),
-        "Object Intersection Of" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Intersection_Of"]["reference"],
-            resource = InferenceRules["Object_Intersection_Of"]["resource"] , 
-            prefixes = InferenceRules["Object_Intersection_Of"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Intersection_Of"]["antecedent"] ,
-            consequent = InferenceRules["Object_Intersection_Of"]["consequent"] ,
-            explanation = InferenceRules["Object_Intersection_Of"]["explanation"]
-        ),
-#        "Data Intersection Of" : autonomic.Deductor(
-#            reference =  InferenceRules["Data_Intersection_Of"]["reference"],
-#            resource = InferenceRules["Data_Intersection_Of"]["resource"] , 
-#            prefixes = InferenceRules["Data_Intersection_Of"]["prefixes"] , 
-#            antecedent =  InferenceRules["Data_Intersection_Of"]["antecedent"] ,
-#            consequent = InferenceRules["Data_Intersection_Of"]["consequent"] ,
-#            explanation = InferenceRules["Data_Intersection_Of"]["explanation"]
-#        ),
-        "Object Qualified Max Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Qualified_Max_Cardinality"]["reference"],
-            resource = InferenceRules["Object_Qualified_Max_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Object_Qualified_Max_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Qualified_Max_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Object_Qualified_Max_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Object_Qualified_Max_Cardinality"]["explanation"]
-        ),
-        "Object Qualified Min Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Qualified_Min_Cardinality"]["reference"],
-            resource = InferenceRules["Object_Qualified_Min_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Object_Qualified_Min_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Qualified_Min_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Object_Qualified_Min_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Object_Qualified_Min_Cardinality"]["explanation"]
-        ),
-#        "Object Qualified Exact Cardinality (Max)" : autonomic.Deductor( 
-#            reference =  InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["reference"],
-#            resource = InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["resource"] , 
-#            prefixes = InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["prefixes"] , 
-#            antecedent =  InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["antecedent"] ,
-#            consequent = InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["consequent"] ,
-#            explanation = InferenceRules["Object_Qualified_Exact_Cardinality_(Max)"]["explanation"]
-#        ),
-#        "Object Qualified Exact Cardinality (Min)" : autonomic.Deductor(
-#            reference =  InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["reference"],
-#            resource = InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["resource"] , 
-#            prefixes = InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["prefixes"] , 
-#            antecedent =  InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["antecedent"] ,
-#            consequent = InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["consequent"] ,
-#            explanation = InferenceRules["Object_Qualified_Exact_Cardinality_(Min)"]["explanation"]
-#        ),
-        "Data Qualified Max Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Qualified_Max_Cardinality"]["reference"],
-            resource = InferenceRules["Data_Qualified_Max_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Data_Qualified_Max_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Qualified_Max_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Data_Qualified_Max_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Data_Qualified_Max_Cardinality"]["explanation"]
-        ),
-        "Data Qualified Min Cardinality" : autonomic.Deductor(
-            reference =  InferenceRules["Data_Qualified_Min_Cardinality"]["reference"],
-            resource = InferenceRules["Data_Qualified_Min_Cardinality"]["resource"] , 
-            prefixes = InferenceRules["Data_Qualified_Min_Cardinality"]["prefixes"] , 
-            antecedent =  InferenceRules["Data_Qualified_Min_Cardinality"]["antecedent"] ,
-            consequent = InferenceRules["Data_Qualified_Min_Cardinality"]["consequent"] ,
-            explanation = InferenceRules["Data_Qualified_Min_Cardinality"]["explanation"]
-        ),
-#        "Data Qualified Exact Cardinality" : autonomic.Deductor(
-#            reference =  InferenceRules["Data_Qualified_Exact_Cardinality"]["reference"],
-#            resource = InferenceRules["Data_Qualified_Exact_Cardinality"]["resource"] , 
-#            prefixes = InferenceRules["Data_Qualified_Exact_Cardinality"]["prefixes"] , 
-#            antecedent =  InferenceRules["Data_Qualified_Exact_Cardinality"]["antecedent"] ,
-#            consequent = InferenceRules["Data_Qualified_Exact_Cardinality"]["consequent"] ,
-#            explanation = InferenceRules["Data_Qualified_Exact_Cardinality"]["explanation"]
-#        ),
-        "Datatype Restriction" : autonomic.Deductor(
-            reference =  InferenceRules["Datatype_Restriction"]["reference"],
-            resource = InferenceRules["Datatype_Restriction"]["resource"] , 
-            prefixes = InferenceRules["Datatype_Restriction"]["prefixes"] , 
-            antecedent =  InferenceRules["Datatype_Restriction"]["antecedent"] ,
-            consequent = InferenceRules["Datatype_Restriction"]["consequent"] ,
-            explanation = InferenceRules["Datatype_Restriction"]["explanation"]
-        ),
-        "All Disjoint Classes" : autonomic.Deductor(
-            reference =  InferenceRules["All_Disjoint_Classes"]["reference"],
-            resource = InferenceRules["All_Disjoint_Classes"]["resource"] , 
-            prefixes = InferenceRules["All_Disjoint_Classes"]["prefixes"] , 
-            antecedent =  InferenceRules["All_Disjoint_Classes"]["antecedent"] ,
-            consequent = InferenceRules["All_Disjoint_Classes"]["consequent"] ,
-            explanation = InferenceRules["All_Disjoint_Classes"]["explanation"]
-        ),
-        "All Disjoint Properties" : autonomic.Deductor(
-            reference =  InferenceRules["All_Disjoint_Properties"]["reference"],
-            resource = InferenceRules["All_Disjoint_Properties"]["resource"] , 
-            prefixes = InferenceRules["All_Disjoint_Properties"]["prefixes"] , 
-            antecedent =  InferenceRules["All_Disjoint_Properties"]["antecedent"] ,
-            consequent = InferenceRules["All_Disjoint_Properties"]["consequent"] ,
-            explanation = InferenceRules["All_Disjoint_Properties"]["explanation"]
-        ),
-        "Object Property Chain Inclusion" : autonomic.Deductor(
-            reference =  InferenceRules["Object_Property_Chain_Inclusion"]["reference"],
-            resource = InferenceRules["Object_Property_Chain_Inclusion"]["resource"] , 
-            prefixes = InferenceRules["Object_Property_Chain_Inclusion"]["prefixes"] , 
-            antecedent =  InferenceRules["Object_Property_Chain_Inclusion"]["antecedent"] ,
-            consequent = InferenceRules["Object_Property_Chain_Inclusion"]["consequent"] ,
-            explanation = InferenceRules["Object_Property_Chain_Inclusion"]["explanation"]
-        ),
+        "Object Property Irreflexivity": autonomic.Deductor( **InferenceRules["Object_Property_Irreflexivity"] ),
+        "Class Inclusion" : autonomic.Deductor(**InferenceRules["Class_Inclusion"]["reference"] ),
+        "Individual Inclusion" : autonomic.Deductor( **InferenceRules["Individual_Inclusion"] ),
+        "Property Inclusion" : autonomic.Deductor( **InferenceRules["Property_Inclusion"] ),
+        "Object Property Inclusion" : autonomic.Deductor( **InferenceRules["Object_Property_Inclusion"] ),
+        "Data Property Inclusion" : autonomic.Deductor( **InferenceRules["Data_Property_Inclusion"] ),
+        "Class Equivalence" : autonomic.Deductor( **InferenceRules["Class_Equivalence"] ),
+        "Property Equivalence" : autonomic.Deductor( **InferenceRules["Property_Equivalence" ),
+        "Object Property Inversion" : autonomic.Deductor( **InferenceRules["Object_Property_Inversion"] ),
+        "Same Individual" : autonomic.Deductor( **InferenceRules["Same_Individual"] ),
+        "Different Individuals" : autonomic.Deductor( **InferenceRules["Different_Individuals"] ),
+        "All Different Individuals" : autonomic.Deductor( **InferenceRules["All_Different_Individuals"] ),
+        "Class Assertion" : autonomic.Deductor( **InferenceRules["Class_Assertion"] ),
+#        "Positive Object Property Assertion" : autonomic.Deductor( **InferenceRules["Positive_Object_Property_Assertion"] ),
+#        "Positive Data Property Assertion" : autonomic.Deductor( **InferenceRules["Positive_Data_Property_Assertion"] ), # the previous two might just be s p o assertion
+        "Negative Object Property Assertion" : autonomic.Deductor( **InferenceRules["Negative_Object_Property_Assertion"] ),
+        "Negative Data Property Assertion" : autonomic.Deductor( **InferenceRules["Negative_Data_Property_Assertion"] ),
+        "Keys" : autonomic.Deductor( **InferenceRules["Keys"] ),
+        "Inverse Functional Object Property" : autonomic.Deductor( **InferenceRules["Inverse_Functional_Object_Property"] ),
+        "Object Some Values From" : autonomic.Deductor( **InferenceRules["Object_Some_Values_From"] ),
+        "Data Some Values From" : autonomic.Deductor( **InferenceRules["Data_Some_Values_From"] ),
+        "Object Has Self" : autonomic.Deductor( **InferenceRules["Object_Has_Self"] ),
+        "Object Has Value" : autonomic.Deductor( **InferenceRules["Object_Has_Value"] ),
+        "Data Has Value" : autonomic.Deductor( **InferenceRules["Data_Has_Value"] ),
+        "Object One Of Membership" : autonomic.Deductor( **InferenceRules["Object_One_Of_Membership"] ),
+        "Object One Of Inconsistency" : autonomic.Deductor( **InferenceRules["Object_One_Of_Inconsistency"] ),
+        "Data One Of" : autonomic.Deductor( **InferenceRules["Data_One_Of"] ),
+        "Object All Values From" : autonomic.Deductor( **InferenceRules["Object_All_Values_From"] ),
+        "Data All Values From" : autonomic.Deductor( **InferenceRules["Data_All_Values_From"] ),
+        "Object Max Cardinality" : autonomic.Deductor( **InferenceRules["Object_Max_Cardinality"] ),
+        "Object Min Cardinality" : autonomic.Deductor( **InferenceRules["Object_Min_Cardinality"] ),
+        "Object Exact Cardinality" : autonomic.Deductor( **InferenceRules["Object_Exact_Cardinality"] ),
+        "Data Max Cardinality" : autonomic.Deductor( **InferenceRules["Data_Max_Cardinality"] ),
+        "Data Min Cardinality" : autonomic.Deductor( **InferenceRules["Data_Min_Cardinality"] ),
+        "Data Exact Cardinality" : autonomic.Deductor( **InferenceRules["Data_Exact_Cardinality"] ),
+        "Object Union Of" : autonomic.Deductor( **InferenceRules["Object_Union_Of"] ),
+        "Disjoint Union" : autonomic.Deductor( **InferenceRules["Disjoint_Union"] ),
+        "Data Union Of" : autonomic.Deductor( **InferenceRules["Data_Union_Of"] ),
+        "Object Complement Of" : autonomic.Deductor( **InferenceRules["Object_Complement_Of"] ),
+        "Data Complement Of" : autonomic.Deductor( **InferenceRules["Data_Complement_Of"] ),
+        "Object Property Complement Of" : autonomic.Deductor( **InferenceRules["Object_Property_Complement_Of"] ),
+        "Data Property Complement Of" : autonomic.Deductor( **InferenceRules["Data_Property_Complement_Of"] ),
+        "Object Intersection Of" : autonomic.Deductor( **InferenceRules["Object_Intersection_Of"] ),
+#        "Data Intersection Of" : autonomic.Deductor( **InferenceRules["Data_Intersection_Of"] ),
+        "Object Qualified Max Cardinality" : autonomic.Deductor( **InferenceRules["Object_Qualified_Max_Cardinality"] ),
+        "Object Qualified Min Cardinality" : autonomic.Deductor( **InferenceRules["Object_Qualified_Min_Cardinality"] ),
+        "Object Qualified Exact Cardinality" : autonomic.Deductor( **InferenceRules["Object_Qualified_Exact_Cardinality"] ),
+        "Data Qualified Max Cardinality" : autonomic.Deductor( **InferenceRules["Data_Qualified_Max_Cardinality"] ),
+        "Data Qualified Min Cardinality" : autonomic.Deductor( **InferenceRules["Data_Qualified_Min_Cardinality"] ),
+        "Data Qualified Exact Cardinality" : autonomic.Deductor( **InferenceRules["Data_Qualified_Exact_Cardinality"] ),
+        "Datatype Restriction" : autonomic.Deductor( **InferenceRules["Datatype_Restriction"] ),
+        "All Disjoint Classes" : autonomic.Deductor( **InferenceRules["All_Disjoint_Classes"] ),
+        "All Disjoint Properties" : autonomic.Deductor( **InferenceRules["All_Disjoint_Properties"] ),
+        "Object Property Chain Inclusion" : autonomic.Deductor( **InferenceRules["Object_Property_Chain_Inclusion"] ),
         "SDDAgent": autonomic.SDDAgent(), 
         "SETLr": autonomic.SETLr(),
         "SETLMaker": autonomic.SETLMaker(),
