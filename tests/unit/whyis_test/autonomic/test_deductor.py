@@ -2069,6 +2069,16 @@ ex-kb:Katie rdf:type ex:Person ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Max Cardinality -------
+sio:InformationContentEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:Object ;
+    rdfs:label "information content entity" ;
+    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+
+sio:MathematicalEntity rdf:type owl:Class ;
+    rdfs:subClassOf sio:InformationContentEntity ;
+    rdfs:label "mathematical entity" ;
+    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+
 ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf sio:hasValue ;
     rdfs:label "has polynomial root" .
@@ -2078,33 +2088,9 @@ ex-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
     owl:maxQualifiedCardinality "2"^^xsd:integer ;
     owl:onDataRange xsd:decimal .
 
-ex-kb:QuadraticPolynomialInstance rdf:type sio:Human ;
+ex-kb:QuadraticPolynomialInstance rdf:type sio:MathematicalEntity ;
     rdfs:label "quadratic polynomial instance" ;
     ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
-
-#sio:InformationContentEntity rdf:type owl:Class ;
-#    rdfs:subClassOf sio:Object ;
-##    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
-#    rdfs:label "information content entity" ;
-#    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
-#
-#sio:MathematicalEntity rdf:type owl:Class ;
-#    rdfs:subClassOf sio:InformationContentEntity ;
-#    rdfs:label "mathematical entity" ;
-#    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
-#
-#ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
-#    rdfs:subPropertyOf sio:hasValue ;
-#    rdfs:label "has polynomial root" .
-#
-#ex-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
-#    owl:onProperty ex:hasPolynomialRoot ;
-#    owl:maxQualifiedCardinality "2"^^xsd:integer ;
-#    owl:onDataRange xsd:decimal .
-#
-#ex-kb:QuadraticPolynomialInstance rdf:type sio:ConceptualEntity ;
-#    rdfs:label "quadratic polynomial instance" ;
-#    ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
 # -------  Data Qualified Max Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
@@ -2223,11 +2209,9 @@ ex-kb:Stephen rdf:type sio:Human ;
 # -------  Data Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Qualified Max Cardinality"]
+        agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stephen, RDF.type, OWL.Nothing), self.app.db)
-#        agent =  config.Config["inferencers"]["Data Qualified Min Cardinality"]
-#        agent.process_graph(self.app.db)
 
     def test_object_complement_of(self):
         self.dry_run = False
