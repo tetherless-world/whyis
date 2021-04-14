@@ -1978,11 +1978,7 @@ ex-kb:Bonnie rdf:type sio:Human ;
 # -------  Object Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Min Cardinality"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.BonnieAndClyde, SIO.hasMember))
-        self.assertEquals(len(objects), 2)
-        agent =  config.Config["inferencers"]["Object Max Cardinality"]
+        agent =  config.Config["inferencers"]["Object Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stooges, RDF.type, OWL.Nothing), self.app.db)
 
@@ -2030,11 +2026,7 @@ ex-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="turtle")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.SingleVertexPolyEdge, SIO.hasComponentPart))
-        self.assertEquals(len(objects), 2)
-        agent =  config.Config["inferencers"]["Object Qualified Max Cardinality"]
+        agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.TripleVertexPolyEdge, RDF.type, OWL.Nothing), self.app.db)
 
