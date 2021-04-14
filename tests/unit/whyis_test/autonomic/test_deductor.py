@@ -2096,8 +2096,8 @@ ex-kb:QuadraticPolynomialInstance rdf:type sio:MathematicalEntity ;
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality"]
         agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.QuadraticPolynomialInstance, ONT.hasPolynomialRoot))
-        print(objects)
+        #objects = list(self.app.db.objects(KB.QuadraticPolynomialInstance, ONT.hasPolynomialRoot))
+        #print(objects)
         self.assertIn((KB.QuadraticPolynomialInstance, RDF.type, OWL.Nothing), self.app.db)
 
 
