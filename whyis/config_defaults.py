@@ -1080,7 +1080,7 @@ InferenceRules = dict(
         "consequent" : "?resource ?datatypeProperty [ rdf:type rdfs:Datatype ] .",
         "explanation" : "Since {{datatypeProperty}} is constrained with a qualified min cardinality restriction on datatype {{datatype}} to have a min of {{cardinalityValue}} values, and {{resource}} has {{valueCount}} values of type {{datatype}} for property {{datatypeProperty}}, we can infer the existence of at least one more additional value."
     },
-    Data_Qualified_Exact_Cardinality = {#result shows up in blazegraph, but triple is not being added
+    Data_Qualified_Exact_Cardinality = {
         "reference" : "Data Qualified Exact Cardinality",
         "resource" : "?resource", 
         "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
@@ -1094,7 +1094,7 @@ InferenceRules = dict(
     {
         SELECT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
         {
-            ?resource ?datatypeProperty ?value .
+            ?individual ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .
             ?restriction rdf:type owl:Restriction ;
                 owl:onProperty ?datatypeProperty ;
