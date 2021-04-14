@@ -591,7 +591,7 @@ InferenceRules = dict(
     ?class rdfs:subClassOf|owl:equivalentClass
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ;
-            owl:minCardinality|owl:cardinality ?cardinalityValue ].
+            owl:minCardinality ?cardinalityValue ].
     FILTER(?objectCount < ?cardinalityValue)
     {
         SELECT DISTINCT (COUNT(DISTINCT ?object) AS ?objectCount)
@@ -603,7 +603,7 @@ InferenceRules = dict(
             ?class rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
-                    owl:minCardinality|owl:cardinality ?cardinalityValue ].
+                    owl:minCardinality ?cardinalityValue ].
         }
     }''',
         "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
@@ -947,7 +947,7 @@ InferenceRules = dict(
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
                     owl:onClass ?restrictedClass ;
-                    owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinalityValue ].
+                    owl:maxQualifiedCardinality ?cardinalityValue ].
         } GROUP BY ?individual ?concept
     }
     BIND(?resource AS ?individual)
@@ -967,7 +967,7 @@ InferenceRules = dict(
     ?class rdfs:subClassOf|owl:equivalentClass
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ; 
-            owl:minQualifiedCardinality|owl:qualifiedCardinality ?value ;
+            owl:minQualifiedCardinality ?value ;
             owl:onClass ?restrictedClass ] .
     {
         SELECT (COUNT(DISTINCT ?object) AS ?objectCount) ?individual ?concept WHERE 
@@ -979,7 +979,7 @@ InferenceRules = dict(
             ?concept rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ; 
-                    owl:minQualifiedCardinality|owl:qualifiedCardinality ?value ;
+                    owl:minQualifiedCardinality ?value ;
                     owl:onClass ?restrictedClass ] .
         } GROUP BY ?individual ?concept
     }
@@ -1089,7 +1089,7 @@ InferenceRules = dict(
     ?datatypeProperty rdf:type owl:DatatypeProperty .
     ?restriction rdf:type owl:Restriction ;
         owl:onProperty ?datatypeProperty ;
-#        owl:onDataRange ?datatype ;
+        owl:onDataRange ?datatype ;
         owl:qualifiedCardinality ?cardinalityValue .
     {
         SELECT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
@@ -1098,12 +1098,12 @@ InferenceRules = dict(
             ?datatypeProperty rdf:type owl:DatatypeProperty .
             ?restriction rdf:type owl:Restriction ;
                 owl:onProperty ?datatypeProperty ;
-#                owl:onDataRange ?datatype ;
+                owl:onDataRange ?datatype ;
                 owl:qualifiedCardinality ?cardinalityValue .
         } GROUP BY ?individual
     }
     BIND(?resource AS ?individual)
-#    FILTER(DATATYPE(?value) = ?datatype)
+    FILTER(DATATYPE(?value) = ?datatype)
     FILTER(?valueCount > ?cardinalityValue)''',
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{datatypeProperty}} is constrained with a qualified cardinality restriction on datatype {{datatype}} to have {{cardinalityValue}} values, and {{resource}} has {{valueCount}} values of type {{datatype}} for property {{datatypeProperty}}, an inconsistency occurs."# currently the same as qualified max. need to incorporate min requirement
