@@ -1034,7 +1034,7 @@ InferenceRules = dict(
     ?restriction rdf:type owl:Restriction ;
         owl:onProperty ?datatypeProperty ;
         owl:onDataRange ?datatype ;
-        owl:qualifiedCardinality ?cardinalityValue .
+        owl:maxQualifiedCardinality ?cardinalityValue .
     {
         SELECT DISTINCT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
         {
@@ -1043,7 +1043,7 @@ InferenceRules = dict(
             ?restriction rdf:type owl:Restriction ;
                 owl:onProperty ?datatypeProperty ;
                 owl:onDataRange ?datatype ;
-                owl:qualifiedCardinality ?cardinalityValue .
+                owl:maxQualifiedCardinality ?cardinalityValue .
         } GROUP BY ?individual
     }
     BIND(?resource AS ?individual)
