@@ -2237,7 +2237,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Exact Cardinality Back Tracer')), self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Exact Cardinality Back Tracer')), self.app.db)
 
     def test_object_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2374,63 +2374,63 @@ ex-kb:Assertion_2 {
         self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Max Cardinality Back Tracer')), self.app.db)
 
 
-    def test_data_min_cardinality_back_tracer(self):
-        self.dry_run = False
+#    def test_data_min_cardinality_back_tracer(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <-------  Data Min Cardinality -------
+#ex:hasDiameterValue rdf:type owl:DatatypeProperty ;
+#    rdfs:subPropertyOf sio:hasValue ;
+#    rdfs:label "has diameter value" .
+#
+#ex:ConicalCylinder rdf:type owl:Class ;
+#    rdfs:subClassOf
+#        [ rdf:type owl:Restriction ;
+#            owl:onProperty ex:hasDiameterValue ;
+#            owl:minCardinality "2"^^xsd:integer ] ;
+#    rdfs:label "conical cylinder" .
+#
+#ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
+#    ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
+#    rdfs:label "coffee container" .
+#
+## come back to this
+## -------  Data Min Cardinality ------->
+#''', format="trig")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Data Min Cardinality Back Tracer"]
+#        agent.process_graph(self.app.db)
+#        objects = list(self.app.db.objects(KB.CoffeeContainer, ONT.hasDiameterValue))
+#        self.assertEquals(len(objects), 2)
 
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------  Data Min Cardinality -------
-ex:hasDiameterValue rdf:type owl:DatatypeProperty ;
-    rdfs:subPropertyOf sio:hasValue ;
-    rdfs:label "has diameter value" .
-
-ex:ConicalCylinder rdf:type owl:Class ;
-    rdfs:subClassOf
-        [ rdf:type owl:Restriction ;
-            owl:onProperty ex:hasDiameterValue ;
-            owl:minCardinality "2"^^xsd:integer ] ;
-    rdfs:label "conical cylinder" .
-
-ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
-    ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
-    rdfs:label "coffee container" .
-
-# come back to this
-# -------  Data Min Cardinality ------->
-''', format="trig")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Min Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.CoffeeContainer, ONT.hasDiameterValue))
-        self.assertEquals(len(objects), 2)
-
-    def test_data_qualified_min_cardinality_back_tracer(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------  Data Qualified Min Cardinality -------
-ex:hasName rdf:type owl:DatatypeProperty ;
-    rdfs:subPropertyOf sio:hasValue ;
-    rdfs:label "has name" .
-
-ex-kb:NameRestriction rdf:type owl:Restriction ;
-    owl:onProperty ex:hasName ;
-    owl:minQualifiedCardinality "2"^^xsd:integer ;
-    owl:onDataRange xsd:string .
-
-ex-kb:Jackson rdf:type sio:Human ;
-    rdfs:label "Jackson" ;
-    ex:hasName "Jackson"^^xsd:string .
-
-#come back to this
-# -------  Data Qualified Min Cardinality ------->
-''', format="trig")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Qualified Min Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.Jackson, ONT.hasName))
-        self.assertEquals(len(objects), 2)
+#    def test_data_qualified_min_cardinality_back_tracer(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <-------  Data Qualified Min Cardinality -------
+#ex:hasName rdf:type owl:DatatypeProperty ;
+#    rdfs:subPropertyOf sio:hasValue ;
+#    rdfs:label "has name" .
+#
+#ex-kb:NameRestriction rdf:type owl:Restriction ;
+#    owl:onProperty ex:hasName ;
+#    owl:minQualifiedCardinality "2"^^xsd:integer ;
+#    owl:onDataRange xsd:string .
+#
+#ex-kb:Jackson rdf:type sio:Human ;
+#    rdfs:label "Jackson" ;
+#    ex:hasName "Jackson"^^xsd:string .
+#
+##come back to this
+## -------  Data Qualified Min Cardinality ------->
+#''', format="trig")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Data Qualified Min Cardinality Back Tracer"]
+#        agent.process_graph(self.app.db)
+#        objects = list(self.app.db.objects(KB.Jackson, ONT.hasName))
+#        self.assertEquals(len(objects), 2)
 
     def test_data_exact_cardinality_back_tracer(self):
         self.dry_run = False
