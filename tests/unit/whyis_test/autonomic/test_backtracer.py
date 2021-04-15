@@ -2248,54 +2248,52 @@ ex-kb:Stooges rdf:type owl:Nothing .
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Exact Cardinality -------
-sio:hasComponentPart rdf:type owl:ObjectProperty ;
-    rdfs:subPropertyOf sio:hasDirectPart ;
-    rdfs:label "has component part" ;
-    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
+ex-kb:Assertion_1 {
+    sio:hasComponentPart rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf sio:hasDirectPart ;
+        rdfs:label "has component part" ;
+        dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
 
-sio:PolygonEdge rdf:type owl:Class ;
-    rdfs:subClassOf sio:LineSegment ;
-    rdfs:subClassOf 
-        [ rdf:type owl:Restriction ;
-            owl:onProperty sio:isPartOf ;
-            owl:someValuesFrom sio:Polygon ] ;
-    rdfs:subClassOf 
-        [ rdf:type owl:Restriction ;
-            owl:onProperty sio:hasComponentPart ; 
-            owl:onClass sio:PolygonVertex ;
-            owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ] ;
-    dct:description "A polygon edge is a line segment joining two polygon vertices." ;
-    rdfs:label "polygon edge" .
+    sio:PolygonEdge rdf:type owl:Class ;
+        rdfs:subClassOf sio:LineSegment ;
+        rdfs:subClassOf 
+            [ rdf:type owl:Restriction ;
+                owl:onProperty sio:isPartOf ;
+                owl:someValuesFrom sio:Polygon ] ;
+        rdfs:subClassOf 
+            [ rdf:type owl:Restriction ;
+                owl:onProperty sio:hasComponentPart ; 
+                owl:onClass sio:PolygonVertex ;
+                owl:qualifiedCardinality "2"^^xsd:nonNegativeInteger ] ;
+        dct:description "A polygon edge is a line segment joining two polygon vertices." ;
+        rdfs:label "polygon edge" .
 
-ex-kb:TripleVertexPolyEdge rdf:type sio:PolygonEdge ;
-    rdfs:label "triple vertex polygon edge" ;
-    sio:hasComponentPart ex-kb:VertexOne , ex-kb:VertexTwo , ex-kb:VertexThree .
+    ex-kb:TripleVertexPolyEdge rdf:type sio:PolygonEdge ;
+        rdfs:label "triple vertex polygon edge" ;
+        sio:hasComponentPart ex-kb:VertexOne , ex-kb:VertexTwo , ex-kb:VertexThree .
 
-ex-kb:VertexOne rdf:type sio:PolygonVertex ;
-    rdfs:label "vertex one" .
+    ex-kb:VertexOne rdf:type sio:PolygonVertex ;
+        rdfs:label "vertex one" .
 
-ex-kb:VertexTwo rdf:type sio:PolygonVertex ;
-    rdfs:label "vertex two" .
+    ex-kb:VertexTwo rdf:type sio:PolygonVertex ;
+        rdfs:label "vertex two" .
 
-ex-kb:VertexThree rdf:type sio:PolygonVertex ;
-    rdfs:label "vertex three" .
+    ex-kb:VertexThree rdf:type sio:PolygonVertex ;
+        rdfs:label "vertex three" .
 
-ex-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
-    rdfs:label "triple vertexed polygon edge" ;
-    sio:hasComponentPart ex-kb:VertexOne .
-
-# come back to abductive length check part of this rule
-ex-kb:TripleVertexPolyEdge rdf:type owl:Nothing .
+    ex-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
+        rdfs:label "triple vertexed polygon edge" ;
+        sio:hasComponentPart ex-kb:VertexOne .
+}
+ex-kb:Assertion_2 {
+    ex-kb:TripleVertexPolyEdge rdf:type owl:Nothing .
+}
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
+        agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.SingleVertexPolyEdge, SIO.hasComponentPart))
-        self.assertEquals(len(objects), 2)
-        agent =  config.Config["inferencers"]["Object Qualified Max Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        self.assertIn((KB.TripleVertexPolyEdge, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Exact Cardinality Back Tracer')), self.app.db)
 
     def test_data_max_cardinality_back_tracer(self):
         self.dry_run = False
