@@ -2078,107 +2078,106 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Max Cardinality Back Tracer')), self.app.db)
 
-    def test_object_min_cardinality_back_tracer(self):
-        self.dry_run = False
+#    def test_object_min_cardinality_back_tracer(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## Need to come back to this to expand list size and make sure it still works
+## <-------  Object Min Cardinality -------
+#sio:isRelatedTo rdf:type owl:ObjectProperty ,
+#                                owl:SymmetricProperty ;
+#    rdfs:label "is related to" ;
+#    dct:description "A is related to B iff there is some relation between A and B." .
+#
+#sio:hasAttribute rdf:type owl:ObjectProperty ;
+#    rdfs:label "has attribute" ;
+#    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+#    rdfs:subPropertyOf sio:isRelatedTo .
+#
+#sio:hasMember rdf:type owl:ObjectProperty ,
+#                                owl:IrreflexiveProperty ;
+#    rdfs:subPropertyOf sio:hasAttribute ;
+#    owl:inverseOf sio:isMemberOf ;
+#    rdfs:label "has member" ;
+#    dct:description "has member is a mereological relation between a collection and an item." .
+#
+#ex:StudyGroup rdf:type owl:Class ;
+#    rdfs:subClassOf sio:Collection ,
+#        [ rdf:type owl:Restriction ;
+#            owl:onProperty sio:hasMember ;
+#            owl:minCardinality "2"^^xsd:integer ] ; 
+#    rdfs:label "study group" .
+#
+#ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
+#    sio:hasMember 
+#        ex-kb:Steve .#,
+#        #ex-kb:Luis ,
+##        ex-kb:Ali .
+#
+#ex-kb:Steve rdf:type sio:Human .
+##ex-kb:Luis rdf:type sio:Human .
+##ex-kb:Ali rdf:type sio:Human .
+#
+##ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
+##    owl:distinctMembers
+##        (ex-kb:Steve 
+##        #ex-kb:Luis 
+##        ex-kb:Ali ) .
+#
+## come back to abductive rule for this
+## -------  Object Min Cardinality ------->
+#''', format="trig")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["All Different Individuals"]
+#        agent.process_graph(self.app.db)
+#        agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
+#        agent.process_graph(self.app.db)
+#        objects = list(self.app.db.objects(KB.StudyGroupInstance, SIO.hasMember))
+#        self.assertEquals(len(objects), 2)
 
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# Need to come back to this to expand list size and make sure it still works
-# <-------  Object Min Cardinality -------
-sio:isRelatedTo rdf:type owl:ObjectProperty ,
-                                owl:SymmetricProperty ;
-    rdfs:label "is related to" ;
-    dct:description "A is related to B iff there is some relation between A and B." .
 
-sio:hasAttribute rdf:type owl:ObjectProperty ;
-    rdfs:label "has attribute" ;
-    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
-    rdfs:subPropertyOf sio:isRelatedTo .
-
-sio:hasMember rdf:type owl:ObjectProperty ,
-                                owl:IrreflexiveProperty ;
-    rdfs:subPropertyOf sio:hasAttribute ;
-    owl:inverseOf sio:isMemberOf ;
-    rdfs:label "has member" ;
-    dct:description "has member is a mereological relation between a collection and an item." .
-
-ex:StudyGroup rdf:type owl:Class ;
-    rdfs:subClassOf sio:Collection ,
-        [ rdf:type owl:Restriction ;
-            owl:onProperty sio:hasMember ;
-            owl:minCardinality "2"^^xsd:integer ] ; 
-    rdfs:label "study group" .
-
-ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
-    sio:hasMember 
-        ex-kb:Steve .#,
-        #ex-kb:Luis ,
-#        ex-kb:Ali .
-
-ex-kb:Steve rdf:type sio:Human .
-#ex-kb:Luis rdf:type sio:Human .
-#ex-kb:Ali rdf:type sio:Human .
-
-#ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
-#    owl:distinctMembers
-#        (ex-kb:Steve 
-#        #ex-kb:Luis 
-#        ex-kb:Ali ) .
-
-# come back to abductive rule for this
-# -------  Object Min Cardinality ------->
-''', format="trig")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["All Different Individuals"]
-        agent.process_graph(self.app.db)
-        agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.StudyGroupInstance, SIO.hasMember))
-        self.assertEquals(len(objects), 2)
-
-
-    def test_object_qualified_min_cardinality_back_tracer(self):
-        self.dry_run = False
-
-        np = nanopub.Nanopublication()
-        np.assertion.parse(data=prefixes+'''
-# <-------  Object Qualified Min Cardinality -------
-sio:hasComponentPart rdf:type owl:ObjectProperty ;
-    rdfs:subPropertyOf sio:hasDirectPart ;
-    rdfs:label "has component part" ;
-    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
-
-sio:Polyline rdf:type owl:Class ;
-    rdfs:subClassOf sio:GeometricEntity ;
-    rdfs:subClassOf 
-        [ rdf:type owl:Restriction ;
-            owl:onProperty sio:hasComponentPart ; 
-            owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
-            owl:onClass sio:LineSegment ] ;
-    dct:description "A polyline is a connected sequence of line segments." ;
-    rdfs:label "polyline" .
-
-sio:LineSegment rdf:type owl:Class ;
-    rdfs:subClassOf sio:Line ;
-#    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
-    dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
-    rdfs:label "line segment" .
-
-ex-kb:PolylineSegment rdf:type sio:Polyline ;
-    rdfs:label "polyline segment " ;
-    sio:hasComponentPart ex-kb:LineSegmentInstance .
-
-ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
-    rdfs:label "line segment instance" .
-
-# come back to abductive rule for this
-# -------  Object Qualified Min Cardinality ------->
-''', format="trig")
-        self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.PolylineSegment, SIO.hasComponentPart))
-        self.assertEquals(len(objects), 2)
+#    def test_object_qualified_min_cardinality_back_tracer(self):
+#        self.dry_run = False
+#
+#        np = nanopub.Nanopublication()
+#        np.assertion.parse(data=prefixes+'''
+## <-------  Object Qualified Min Cardinality -------
+#sio:hasComponentPart rdf:type owl:ObjectProperty ;
+#    rdfs:subPropertyOf sio:hasDirectPart ;
+#    rdfs:label "has component part" ;
+#    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
+#
+#sio:Polyline rdf:type owl:Class ;
+#    rdfs:subClassOf sio:GeometricEntity ;
+#    rdfs:subClassOf 
+#        [ rdf:type owl:Restriction ;
+#            owl:onProperty sio:hasComponentPart ; 
+#            owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+#            owl:onClass sio:LineSegment ] ;
+#    dct:description "A polyline is a connected sequence of line segments." ;
+#    rdfs:label "polyline" .
+#
+#sio:LineSegment rdf:type owl:Class ;
+#    rdfs:subClassOf sio:Line ;
+#    dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
+#    rdfs:label "line segment" .
+#
+#ex-kb:PolylineSegment rdf:type sio:Polyline ;
+#    rdfs:label "polyline segment " ;
+#    sio:hasComponentPart ex-kb:LineSegmentInstance .
+#
+#ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
+#    rdfs:label "line segment instance" .
+#
+## come back to abductive rule for this
+## -------  Object Qualified Min Cardinality ------->
+#''', format="trig")
+#        self.app.nanopub_manager.publish(*[np])
+#        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
+#        agent.process_graph(self.app.db)
+#        objects = list(self.app.db.objects(KB.PolylineSegment, SIO.hasComponentPart))
+#        self.assertEquals(len(objects), 2)
 
     def test_object_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2186,61 +2185,59 @@ ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Exact Cardinality -------
-sio:isRelatedTo rdf:type owl:ObjectProperty ,
-                                owl:SymmetricProperty ;
-    rdfs:label "is related to" ;
-    dct:description "A is related to B iff there is some relation between A and B." .
+ex-kb:Assertion_1 {
+    sio:isRelatedTo rdf:type owl:ObjectProperty ,
+                                    owl:SymmetricProperty ;
+        rdfs:label "is related to" ;
+        dct:description "A is related to B iff there is some relation between A and B." .
 
-sio:hasAttribute rdf:type owl:ObjectProperty ;
-    rdfs:label "has attribute" ;
-    dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
-    rdfs:subPropertyOf sio:isRelatedTo .
+    sio:hasAttribute rdf:type owl:ObjectProperty ;
+        rdfs:label "has attribute" ;
+        dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
+        rdfs:subPropertyOf sio:isRelatedTo .
 
-sio:hasMember rdf:type owl:ObjectProperty ,
-                                owl:IrreflexiveProperty ;
-    rdfs:subPropertyOf sio:hasAttribute ;
-    owl:inverseOf sio:isMemberOf ;
-    rdfs:label "has member" ;
-    dct:description "has member is a mereological relation between a collection and an item." .
+    sio:hasMember rdf:type owl:ObjectProperty ,
+                                    owl:IrreflexiveProperty ;
+        rdfs:subPropertyOf sio:hasAttribute ;
+        owl:inverseOf sio:isMemberOf ;
+        rdfs:label "has member" ;
+        dct:description "has member is a mereological relation between a collection and an item." .
 
-ex:Duo rdf:type owl:Class ;
-    rdfs:subClassOf 
-        [ rdf:type owl:Restriction ;
-            owl:onProperty sio:hasMember ;
-            owl:cardinality "2"^^xsd:integer
-        ] .
+    ex:Duo rdf:type owl:Class ;
+        rdfs:subClassOf 
+            [ rdf:type owl:Restriction ;
+                owl:onProperty sio:hasMember ;
+                owl:cardinality "2"^^xsd:integer
+            ] .
 
-ex-kb:Stooges rdf:type ex:Duo ;
-    sio:hasMember 
-        ex-kb:Larry ,
-        ex-kb:Moe ,
-        ex-kb:Curly .
+    ex-kb:Stooges rdf:type ex:Duo ;
+        sio:hasMember 
+            ex-kb:Larry ,
+            ex-kb:Moe ,
+            ex-kb:Curly .
 
-ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
-    owl:distinctMembers
-        ( ex-kb:Larry 
-        ex-kb:Moe 
-        ex-kb:Curly ) .
+    ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
+        owl:distinctMembers
+            ( ex-kb:Larry 
+            ex-kb:Moe 
+            ex-kb:Curly ) .
 
-ex-kb:BonnieAndClyde rdf:type ex:Duo ;
-    rdfs:label "Bonnie and Clyde" ;
-    sio:hasMember ex-kb:Bonnie .
+    ex-kb:BonnieAndClyde rdf:type ex:Duo ;
+        rdfs:label "Bonnie and Clyde" ;
+        sio:hasMember ex-kb:Bonnie .
 
-ex-kb:Bonnie rdf:type sio:Human ;
-    rdfs:label "Bonnie" .
-
-# come back to abductive length check part of this rule
-ex-kb:Stooges rdf:type owl:Nothing .
+    ex-kb:Bonnie rdf:type sio:Human ;
+        rdfs:label "Bonnie" .
+}
+ex-kb:Assertion_2 {
+    ex-kb:Stooges rdf:type owl:Nothing .
+}
 # -------  Object Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
-        agent.process_graph(self.app.db)
-        objects = list(self.app.db.objects(KB.BonnieAndClyde, SIO.hasMember))
-        self.assertEquals(len(objects), 2)
         agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Stooges, RDF.type, OWL.Nothing), self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Exact Cardinality Back Tracer')), self.app.db)
 
     def test_object_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
