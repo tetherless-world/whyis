@@ -579,7 +579,7 @@ InferenceRules = dict(
     BIND(?class AS ?concept)''',
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-    },# Still need to check distinctness of object
+    },
     Object_Min_Cardinality = {#Works, but for lists of size greater than 1, additional (unnecessary) blank nodes are added. LIMIT 1 on the result would address this, but it is outside the where query
         "reference" : "Object Min Cardinality",
         "resource" : "?resource", 
@@ -608,7 +608,7 @@ InferenceRules = dict(
     }''',
         "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
         "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."
-    },# Still need to check distinctness
+    },
         Object_Exact_Cardinality = {
             "reference" : "Object Exact Cardinality",
             "resource" : "?resource", 
@@ -636,9 +636,9 @@ InferenceRules = dict(
     }
     FILTER(?objectCount > ?cardinalityValue)
     BIND(?resource AS ?individual)''',
-            "consequent" : "?resource rdf:type owl:Nothing .",
-            "explanation" : "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-        },# Still need to check distinctness of object
+        "consequent" : "?resource rdf:type owl:Nothing .",
+        "explanation" : "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+    },
     Data_Max_Cardinality = {
         "reference" : "Data Max Cardinality",
         "resource" : "?resource", 
@@ -729,7 +729,7 @@ InferenceRules = dict(
     FILTER(?dataCount > ?cardinalityValue)''',
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-    }, # -- This is currently only accounting for max. Min accounted for in data min rule
+    },
     Object_Union_Of = {
         "reference" : "Object Union Of",
         "resource" : "?resource", 
@@ -1036,7 +1036,7 @@ InferenceRules = dict(
         owl:maxQualifiedCardinality ?cardinalityValue ;
         owl:onDataRange ?datatype .
     {
-        SELECT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
+        SELECT DISTINCT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
         {
             ?individual ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1092,7 +1092,7 @@ InferenceRules = dict(
         owl:onDataRange ?datatype ;
         owl:qualifiedCardinality ?cardinalityValue .
     {
-        SELECT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
+        SELECT DISTINCT (COUNT(DISTINCT ?value) AS ?valueCount) ?individual WHERE
         {
             ?individual ?datatypeProperty ?value .
             ?datatypeProperty rdf:type owl:DatatypeProperty .
