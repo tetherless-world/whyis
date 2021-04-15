@@ -2025,14 +2025,11 @@ ex-kb:Assertion_1 {
 
     sio:LineSegment rdf:type owl:Class ;
         rdfs:subClassOf sio:Line ;
-    #    <rdfs:subClassOf rdf:nodeID="arc703eb252"/>
         dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
         rdfs:label "line segment" .
 
     sio:DirectedLineSegment rdf:type owl:Class ;
         rdfs:subClassOf sio:LineSegment ;
-    #    <rdfs:subClassOf rdf:nodeID="arc703eb253"/>
-    #    <rdfs:subClassOf rdf:nodeID="arc703eb254"/>
         dct:description "A directed line segment is a line segment that is contained by an ordered pair of endpoints (a start point and an endpoint)." ;
         rdfs:label "directed line segment" .
 
@@ -2062,10 +2059,10 @@ ex-kb:Assertion_1 {
         rdfs:label "first arrow" .
 
     ex-kb:SecondArrow rdf:type sio:Triangle ;
-        rdfs:label "first arrow" .
+        rdfs:label "second arrow" .
 
     ex-kb:ThirdArrow rdf:type sio:Triangle ;
-        rdfs:label "first arrow" .
+        rdfs:label "third arrow" .
 
     ex-kb:LineSegment rdf:type sio:LineSegment ;
         rdfs:label "line segment " .
@@ -2241,7 +2238,7 @@ ex-kb:Stooges rdf:type owl:Nothing .
         agent.process_graph(self.app.db)
         objects = list(self.app.db.objects(KB.BonnieAndClyde, SIO.hasMember))
         self.assertEquals(len(objects), 2)
-        agent =  config.Config["inferencers"]["Object Max Cardinality Back Tracer"]
+        agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         self.assertIn((KB.Stooges, RDF.type, OWL.Nothing), self.app.db)
 
@@ -2346,6 +2343,17 @@ ex-kb:Assertion_2 {
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Max Cardinality -------
 ex-kb:Assertion_1 {
+
+    sio:InformationContentEntity rdf:type owl:Class ;
+        rdfs:subClassOf sio:Object ;
+        rdfs:label "information content entity" ;
+        dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
+    
+    sio:MathematicalEntity rdf:type owl:Class ;
+        rdfs:subClassOf sio:InformationContentEntity ;
+        rdfs:label "mathematical entity" ;
+        dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
+
     ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "has polynomial root" .
@@ -2358,30 +2366,6 @@ ex-kb:Assertion_1 {
     ex-kb:QuadraticPolynomialInstance rdf:type sio:Human ;
         rdfs:label "quadratic polynomial instance" ;
         ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
-
-    #sio:InformationContentEntity rdf:type owl:Class ;
-    #    rdfs:subClassOf sio:Object ;
-    ##    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
-    #    rdfs:label "information content entity" ;
-    #    dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
-    #
-    #sio:MathematicalEntity rdf:type owl:Class ;
-    #    rdfs:subClassOf sio:InformationContentEntity ;
-    #    rdfs:label "mathematical entity" ;
-    #    dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
-    #
-    #ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
-    #    rdfs:subPropertyOf sio:hasValue ;
-    #    rdfs:label "has polynomial root" .
-    #
-    #ex-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
-    #    owl:onProperty ex:hasPolynomialRoot ;
-    #    owl:maxQualifiedCardinality "2"^^xsd:integer ;
-    #    owl:onDataRange xsd:decimal .
-    #
-    #ex-kb:QuadraticPolynomialInstance rdf:type sio:ConceptualEntity ;
-    #    rdfs:label "quadratic polynomial instance" ;
-    #    ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
 }
 
 ex-kb:Assertion_2 {
@@ -2392,8 +2376,6 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        #objects = list(self.app.db.objects(KB.QuadraticPolynomialInstance, ONT.hasPolynomialRoot))
-        #print(objects)
         self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Max Cardinality Back Tracer')), self.app.db)
 
 
@@ -2521,11 +2503,9 @@ ex-kb:Assertion_2 {
 # -------  Data Qualified Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
-        agent =  config.Config["inferencers"]["Data Qualified Max Cardinality Back Tracer"]
+        agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Max Cardinality Back Tracer')), self.app.db)
-#        agent =  config.Config["inferencers"]["Data Qualified Min Cardinality"]
-#        agent.process_graph(self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Exact Cardinality Back Tracer')), self.app.db)
 
     def test_object_complement_of_back_tracer(self):
         self.dry_run = False
