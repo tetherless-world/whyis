@@ -1424,7 +1424,6 @@ Config = dict(
             "Property Domain",
             "Property Range",
             "Functional Data Property",
-            #"Assertions", (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
             "Different Individuals",
             "Class Assertion",
@@ -1433,19 +1432,14 @@ Config = dict(
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
             "Keys",
-            #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
             "Data Some Values From",
-            #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
             "Object Has Value",
             "Data Has Value",
-            #"Self Restriction" (ObjectHasSelf)
             "Object Has Self",
-            #"Individual Enumeration" (ObjectOneOf, DataOneOf) # need to traverse lists to do
-            #"Object One Of",
-            #"Data One Of",
-            #"Intersection" (ObjectIntersectionOf, DataIntersectionOf)
-            #"Object Intersection Of",
+            "Object One Of",
+            "Data One Of",
+            "Object Intersection Of",
             #"Data Intersection Of",
         ],
         "OWL2 QL" : [
@@ -1461,13 +1455,10 @@ Config = dict(
             "Object Property Reflexivity",
             "Object Property Irreflexivity",
             "Object Property Asymmetry",
-            #"Assertions", (DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, and DataPropertyAssertion)
             "Different Individuals",
             "Class Assertion",
             #"Positive Object Property Assertion",
             #"Positive Data Property Assertion"
-            #
-            #Negation
             "Object Complement Of",
             "Object Property Complement Of",
             "Data Property Complement Of",
@@ -1480,7 +1471,7 @@ Config = dict(
             "Functional Data Property",
             "Functional Object Property",
             "Object Property Irreflexivity",
-            #"Inverse Functional Object Property",
+            "Inverse Functional Object Property",
             "Property Disjointness",
             "Object Property Symmetry",
             "Object Property Asymmetry",
@@ -1491,7 +1482,6 @@ Config = dict(
             "Class Equivalence",
             "Property Equivalence",
             "Object Property Inversion",
-            #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
             "Different Individuals",
             "Class Assertion",
@@ -1500,35 +1490,31 @@ Config = dict(
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
             "Keys",
-            #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
             "Data Some Values From",
-            #"Self Restriction" (ObjectHasSelf)
             "Object Has Self",
-            #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
             "Object Has Value",
             "Data Has Value",
-            #"Individual Enumeration" (ObjectOneOf, DataOneOf) # need to traverse lists to do
-            #"Object One Of",
-            #"Data One Of",
-            #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
+            "Object One Of",
+            "Data One Of",
             "Object All Values From",
             "Data All Values From",
-            #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
-            #"Object Max Cardinality",
+            "Object Max Cardinality",
             #"Object Min Cardinality",
-            #"Object Exact Cardinality",
-            #"Object Qualified Max Cardinality",
+            "Object Exact Cardinality",
+            "Object Qualified Max Cardinality",
             #"Object Qualified Min Cardinality",
-            #"Object Qualified Exact Cardinality",
+            "Object Qualified Exact Cardinality",
             "Data Max Cardinality",
             #"Data Min Cardinality",
-            #"Data Exact Cardinality",
-            #"Data Qualified Max Cardinality",
+            "Data Exact Cardinality",
+            "Data Qualified Max Cardinality",
             #"Data Qualified Min Cardinality",
-            #"Data Qualified Exact Cardinality",
-            #"Datatype Restriction"
+            "Data Qualified Exact Cardinality",
+            "Datatype Restriction"
             # Disjunction  (ObjectUnionOf, and DataUnionOf)
+            "Object Union Of",
+            "Data Union Of"
         ], 
         "OWL DL" : [
             "Class Disjointness",
@@ -1552,7 +1538,6 @@ Config = dict(
             "Property Equivalence",
             "Object Property Inversion",
             "Object Complement Of",
-            #"Assertions" (SameIndividual, DifferentIndividuals, ClassAssertion, ObjectPropertyAssertion, DataPropertyAssertion, NegativeObjectPropertyAssertion, and NegativeDataPropertyAssertion)
             "Same Individual",
             "All Different Individuals",
             "All Disjoint Classes",
@@ -1566,37 +1551,30 @@ Config = dict(
             "Negative Object Property Assertion",
             "Negative Data Property Assertion",
             "Keys",
-            #"Class Existential Quantification" (ObjectSomeValuesFrom and DataSomeValuesFrom)
             "Object Some Values From",
             "Data Some Values From",
-            #"Self Restriction" (ObjectHasSelf)
             "Object Has Self",
-            #"Individual Existential Quantification" (ObjectHasValue, DataHasValue)
             "Object Has Value",
             "Data Has Value",
             "Object Property Complement Of",
-            #"Individual Enumeration" (ObjectOneOf, DataOneOf) # need to traverse lists to do
             "Object One Of Membership",
             "Object One Of Inconsistency",
             "Data One Of",
-            #"Class Universal Quantification" (ObjectAllValuesFrom, DataAllValuesFrom)
             "Object All Values From",
             "Data All Values From",
-            #"Cardinality Restriction" (ObjectMaxCardinality, ObjectMinCardinality, ObjectExactCardinality, DataMaxCardinality, DataMinCardinality, DataExactCardinality)
             "Object Max Cardinality",
-            "Object Min Cardinality",
+            #"Object Min Cardinality",
             "Object Exact Cardinality",
             "Object Qualified Max Cardinality",
-            "Object Qualified Min Cardinality",
+            #"Object Qualified Min Cardinality",
             "Object Qualified Exact Cardinality",
             "Data Max Cardinality",
-            "Data Min Cardinality",
+            #"Data Min Cardinality",
             "Data Exact Cardinality",
             "Data Qualified Max Cardinality",
-            "Data Qualified Min Cardinality",
+            #"Data Qualified Min Cardinality",
             "Data Qualified Exact Cardinality",
             "Datatype Restriction",
-            # Disjunction  (ObjectUnionOf, and DataUnionOf)
             "Data Union Of",
             "Disjoint Union",
             "Object Union Of",
