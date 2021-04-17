@@ -986,7 +986,7 @@ InferenceRules = dict(
     BIND(?resource AS ?individual)
     BIND(?class AS ?concept)
     FILTER(?objectCount < ?value)''',
-        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
+        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ; owl:differentFrom ?object ] .",
         "explanation" : "Since {{class}} is constrained with a qualified min cardinality restriction on property {{objectProperty}} to have a min of {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}} which is less than {{value}}, we can infer the existence of another object."
     },
     Object_Qualified_Exact_Cardinality = { 
