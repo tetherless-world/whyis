@@ -2316,8 +2316,6 @@ ex:Percentage rdfs:subClassOf sio:UnitOfMeasurement ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Complement Of ------- 
-# Need to come back to this
-
 ex:nonTextValue rdf:type owl:DatatypeProperty ;
     rdfs:subClassOf sio:hasValue ;
     rdfs:label "non-text value" ;
@@ -2410,7 +2408,6 @@ sio:Line rdf:type owl:Class ;
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Union Of ------- 
-# Need to come back to this.. not sure reasoning logic is correct
 sio:hasValue rdf:type owl:DatatypeProperty ,
                                 owl:FunctionalProperty;
     rdfs:label "has value" ;
