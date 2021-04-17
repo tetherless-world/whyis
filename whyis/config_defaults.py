@@ -580,7 +580,7 @@ InferenceRules = dict(
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
     },
-    Object_Min_Cardinality = {#Works, but for lists of size greater than 1, additional (unnecessary) blank nodes are added. LIMIT 1 on the result would address this, but it is outside the where query
+    Object_Min_Cardinality = {#Works, but for lists of size greater than 1, additional blank nodes are added that are not asserted to be the same
         "reference" : "Object Min Cardinality",
         "resource" : "?resource", 
         "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
@@ -592,7 +592,6 @@ InferenceRules = dict(
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ;
             owl:minCardinality ?cardinalityValue ].
-    FILTER(?objectCount < ?cardinalityValue)
     {
         SELECT DISTINCT (COUNT(DISTINCT ?object) AS ?objectCount)
         WHERE 
@@ -605,15 +604,16 @@ InferenceRules = dict(
                     owl:onProperty ?objectProperty ;
                     owl:minCardinality ?cardinalityValue ].
         }
-    }''',
-        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
-        "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."
+    }
+    FILTER(?objectCount < ?cardinalityValue)''',
+        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ; owl:differentFrom ?object ] .",
+        "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments other than {{object}} of {{objectProperty}} for {{resource}}."
     },
-        Object_Exact_Cardinality = {
-            "reference" : "Object Exact Cardinality",
-            "resource" : "?resource", 
-            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-            "antecedent" :  '''
+    Object_Exact_Cardinality = {
+        "reference" : "Object Exact Cardinality",
+        "resource" : "?resource", 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
     ?objectProperty rdf:type owl:ObjectProperty .
