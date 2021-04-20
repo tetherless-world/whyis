@@ -41,6 +41,7 @@
                         <template slot="md-autocomplete-empty" slot-scope="{ term }">
                         <p v-if = "term" >No attributes matching "{{ term }}" were found.</p>
                         <p v-else >Type a property name.</p>
+                        <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom attribute URI</a> 
                         </template>
                     </md-autocomplete>
                 </div>
@@ -66,10 +67,19 @@
                     </md-field>
                 </div>
             </div>
+            <div v-if="useCustom" class="md-layout md-gutter">
+                <div class="md-layout-item">
+                    <md-field >
+                        <label>Full URI of attribute</label>
+                        <md-input v-model="customAttributeURI"></md-input>
+                    </md-field>
+                </div>
+            </div>
             <div v-if="attribute" class="md-layout md-gutter">
                 <div class="md-layout-item">
                     <md-field >
-                        <label >{{attribute.label}}</label>
+                        <label v-if="attribute.label">{{attribute.label}}</label>
+                        <label v-else>Value</label>
                         <md-textarea v-if="(datatype==null)||(datatypes[datatype].widget=='textarea')" 
                             v-model="value" md-autogrow></md-textarea>
                         <md-input v-else v-model="value" :type=datatypes[datatype].widget> </md-input>
@@ -106,6 +116,8 @@ export default Vue.component('add-attribute', {
             id: null,
             attribute: null,
             attributeName: null,
+            useCustom: false,
+            customAttributeURI: null,
             query: null,
             awaitingResolve: false,
             propertyList: [],
@@ -228,6 +240,10 @@ export default Vue.component('add-attribute', {
         showSuggestedAttributes(){
             this.processAutocompleteMenu();
         },
+        useCustomURI(){
+            this.useCustom = true;
+            this.attribute = "Custom attribute"
+        },
         resolveAttribute(query){
             var thisVue = this;
             this.query = query;
@@ -264,6 +280,9 @@ export default Vue.component('add-attribute', {
         resetDialogBox(){
             this.active = !this.active;
             this.attribute = null;
+            this.attributeName = null;
+            this.useCustom = false;
+            this.customAttributeURI = null;
             this.value = null;
             this.language = null;
             this.datatype = null;
@@ -282,10 +301,19 @@ export default Vue.component('add-attribute', {
                 '@id': this.uri
             }
             if (this.datatype) this.language = null;
-            jsonLd[this.attribute.node] = {
-                "@value" : this.value,
-                "@lang" : this.language,
-                "@type" : this.datatype
+            if (this.attribute.node){
+                jsonLd[this.attribute.node] = {
+                    "@value" : this.value,
+                    "@lang" : this.language,
+                    "@type" : this.datatype
+                }
+            }
+            else if (this.customAttributeURI){
+                jsonLd[this.customAttributeURI] = {
+                    "@value" : this.value,
+                    "@lang" : this.language,
+                    "@type" : this.datatype
+                }
             }
             console.log(jsonLd);
             await p

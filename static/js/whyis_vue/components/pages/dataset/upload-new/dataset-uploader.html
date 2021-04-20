@@ -25,7 +25,7 @@
                       </md-field>
         
                         <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
-                          <label>Upload distributions (multiple allowed)</label>
+                          <label>Select files to upload for this dataset</label>
                           <md-file v-model="distr_upload" id="distrFiles" multiple required isInvalidValue=false
                             v-on:change="handleDistrUpload($event.target.files)"/> 
                           <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
@@ -53,7 +53,7 @@
                         </div>  
               
                         <md-field style="max-width: none;">
-                          <label>Upload a representative image to use as thumbnail</label>
+                          <label>Select a representative image to use as thumbnail</label>
                           <md-file 
                             id="repImgUploader" v-model="rep_image" accept="image/*" 
                             v-on:change="handleImgUpload($event.target.files); previewFile()"/>

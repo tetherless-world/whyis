@@ -41,8 +41,17 @@
                         <template slot="md-autocomplete-empty" slot-scope="{ term }">
                         <p v-if = "term" >No link types matching "{{ term }}" were found.</p>
                         <p v-else >Type a property name.</p>
+                        <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom property URI</a> 
                         </template>
                     </md-autocomplete>
+                </div>
+            </div>
+            <div v-if="useCustom" class="md-layout md-gutter">
+                <div class="md-layout-item">
+                    <md-field >
+                        <label>Full URI of property</label>
+                        <md-input v-model="customPropertyURI"></md-input>
+                    </md-field>
                 </div>
             </div>
             <div v-if="property" class="md-layout md-gutter">
@@ -55,7 +64,8 @@
                         v-on:md-selected="selectedEntityChange"
                         @md-opened="showNeighborEntities"
                     >
-                        <label>{{propertyName}}</label>
+                        <label v-if="propertyName">{{propertyName}}</label>
+                        <label v-else>Linked entity</label>
 
                         <template slot="md-autocomplete-item" slot-scope="{ item }">
                         <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
@@ -107,6 +117,8 @@ export default Vue.component('add-link', {
             propertyName: null,
             propertyQuery: null,
             propertyList: [],
+            useCustom: false,
+            customPropertyURI: null,
 
             entity: null,
             entityName: null,
@@ -120,6 +132,10 @@ export default Vue.component('add-link', {
         };
     },
     methods: {
+        useCustomURI(){
+            this.useCustom = true;
+            this.property = "Custom attribute"
+        },
         // property selection methods
         showSuggestedProperties(){
             this.processAutocompleteMenu();
@@ -183,7 +199,11 @@ export default Vue.component('add-link', {
         resetDialogBox(){
             this.active = !this.active;
             this.property = null;
+            this.propertyName = null;
+            this.useCustom = false;
+            this.customPropertyURI = null;
             this.entity = null;
+            this.entityName = null;
         },
         onCancel() {
             return this.resetDialogBox();
@@ -198,15 +218,20 @@ export default Vue.component('add-link', {
             let jsonLd = {
                 '@id': this.uri
             }
-            // if (this.datatype) this.language = null;
             let entityUri = this.entity['node'];
-            let propertyUri = this.property['node'];
-
             if (this.entity['uri']){
                 entityUri = this.entity['uri'];
             }
-            if (this.property['property']){
+            
+            let propertyUri = null;
+            if (this.property['node']){
+                propertyUri = this.property['node'];
+            }
+            else if (this.property['property']){
                 propertyUri = this.property['property']
+            }
+            else if (this.customPropertyURI){
+                propertyUri = this.customPropertyURI
             }
 
             jsonLd[propertyUri] = {
