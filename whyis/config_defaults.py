@@ -572,7 +572,7 @@ InferenceRules = dict(
             ?concept rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
-                    owl:maxCardinality|owl:cardinality ?cardinalityValue ].
+                    owl:maxCardinality ?cardinalityValue ].
         } GROUP BY ?individual ?concept
     }
     BIND(?resource AS ?individual)
