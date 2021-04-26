@@ -8,7 +8,7 @@
   <head>
     <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>{{ title() }} - {{ config['site_name'] }}</title>
+    <title>{{ title() }} - {{ config['SITE_NAME'] }}</title>
     <meta charset="utf-8">
     <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
@@ -55,7 +55,7 @@
       <div class="page-container">
         <md-app md-waterfall md-mode="overlap">
           <md-app-toolbar
-            site_name= "{{config['site_name']}}"
+            site_name= "{{config['SITE_NAME']}}"
             page_title = "{{title()}}"
             register-nav = "{{url_for('security.register')}}"
             login-nav="{{url_for('security.login')}}">
@@ -76,9 +76,9 @@
   </div>
 
   <script>
-    LOD_PREFIX = '{{config.lod_prefix}}';
-    {% if 'base_rate_probability' in config %}
-    BASE_RATE = {{config['base_rate_probability']}};
+    LOD_PREFIX = '{{config.LOD_PREFIX}}';
+    {% if 'BASE_RATE_PROBABILITY' in config %}
+    BASE_RATE = {{config['BASE_RATE_PROBABILITY']}};
     {% else %}
     BASE_RATE = 0.5;
     {% endif %}

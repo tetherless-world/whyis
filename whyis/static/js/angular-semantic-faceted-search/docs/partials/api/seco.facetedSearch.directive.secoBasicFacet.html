@@ -1,0 +1,58 @@
+<a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/edit/master/src/facets/basic/facets.basic-facet.directive.js" class="improve-docs"><i class="icon-edit"> </i>Improve this doc</a><a href="https://github.com/SemanticComputing/angular-semantic-faceted-search/blob/3958655/src/facets/basic/facets.basic-facet.directive.js#L55" class="view-source"><i class="icon-eye-open"> </i>View source</a><h1><code ng:non-bindable="">secoBasicFacet</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">seco.facetedSearch</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secobasicfacet-page"><p>A basic select box facet with text filtering.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;seco-basic-facet
+       options="{Object}"&gt;
+&lt;/seco-basic-facet&gt;</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="seco-facetedsearch-directive-page seco-facetedsearch-directive-secobasicfacet-page"><p>The configuration object with the following structure:</p>
+<ul>
+<li><strong>facetId</strong> - <code>{string}</code> - A friendly id for the facet.
+Should be unique in the set of facets, and should be usable as a SPARQL variable.</li>
+<li><strong>name</strong> - <code>{string}</code> - The title of the facet. Will be displayed to end users.</li>
+<li><strong>predicate</strong> - <code>{string}</code> - The property (path) that defines the facet values.</li>
+<li><strong>[specifier]</strong> <code>{string}</code> - Restriction on the values as a SPARQL triple pattern.
+Helpful if multiple facets need to be generated from the same predicate,
+or not all values defined by the given predicate should be selectable.
+<code>?value</code> is the variable to which the facet selection is bound.
+For example, if <code>predicate</code> has been defined as
+<code>&lt;http://purl.org/dc/terms/subject&gt;</code> (subject),
+and there are different kinds of subjects for the resource, and you want
+to select people (<code>&lt;http://xmlns.com/foaf/0.1/Person&gt;</code>) only, you would
+define <code>specifier</code> as <code>&#39;?value a &lt;http://xmlns.com/foaf/0.1/Person&gt; .&#39;</code>.
+This would generate the following triple patterns:<pre><code>?id &lt;http://purl.org/dc/terms/subject&gt; ?value .
+?value a &lt;http://xmlns.com/foaf/0.1/Person&gt; .
+</code></pre></li>
+<li><strong>[enabled]</strong> <code>{boolean}</code> - Whether or not the facet is enabled by default.
+If undefined, the facet will be disabled by default.</li>
+<li><strong>[endpointUrl]</strong> <code>{string}</code> - The URL of the SPARQL endpoint.
+Optional, as it can also be given globally in
+<a href="#/api/seco.facetedSearch.FacetHandler"><code>FacetHandler</code></a> config.</li>
+<li><strong>[chart]</strong> <code>{boolean}</code> - If truthy, there will be an additional button next to the
+enable/disable button of the facet. Clicking the button will display the facet values
+as a pie chart.</li>
+<li><strong>[headers]</strong> <code>{Object}</code> - Additional HTTP headers.
+Note that currently it is not possible to specify separate headers for separate
+services.</li>
+<li><strong>[services]</strong> <code>{Array}</code> - In case labels for the facet values are (partially)
+found in another SPARQL endpoint, those endpoints can be given as a list of URIs.
+A separate query is made to each additional service to retrieve the labels.</li>
+<li><strong>[preferredLang]</strong> - <code>{string|Array}</code> - The language tag that is preferred
+when getting labels for facet values, in case the value is a resource.
+The default is &#39;en&#39;.
+Can also be a list of languages, in which case the languages are tried
+in order.
+If a label is not found in the given languages, a label without a
+language tag is used. If a label is still not found,
+the end part of the resource URI is used.
+Supported label properties are <code>skos:prefLabel</code>, and <code>rdfs:label</code>.</li>
+<li><strong>[priority]</strong> - <code>{number}</code> - Priority for constraint sorting.
+Undefined by default.</li>
+</ul>
+</div></td></tr></tbody></table></div>
+</div>

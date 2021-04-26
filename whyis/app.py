@@ -46,7 +46,9 @@ from whyis.empty import Empty
 from whyis.html_mime_types import HTML_MIME_TYPES
 from whyis.namespace import NS
 from whyis.nanopub import NanopublicationManager
+from whyis.authenticator import SingleUserAuthenticator
 # from flask_login.config import EXEMPT_METHODS
+from pkg_resources import resource_filename
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')
@@ -56,8 +58,7 @@ rdflib.plugin.register('sparql', UpdateProcessor,
         'rdflib.plugins.sparql.processor', 'SPARQLUpdateProcessor')
 
 # apps is a special folder where you can place your blueprints
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(PROJECT_PATH, "apps"))
+PROJECT_PATH = resource_filename(__name__,"")
 
 # we create some comparison keys:
 # increase probability that the rule will be near or at the top
@@ -83,15 +84,25 @@ class App(Empty):
     def configure_extensions(self):
 
         Empty.configure_extensions(self)
+
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
         self.celery.conf.update(self.config)
-        self.celery.conf.ONCE = {
-            'backend': 'celery_once.backends.Redis',
-            'settings': {
-                'url': self.config['CELERY_BROKER_URL'],
-                'default_timeout': 60 * 60 * 24
+        if self.config['CELERY_BROKER_URL'] == 'memory':
+            self.celery.conf.ONCE = {
+                'backend': 'celery_once.backends.File',
+                'settings': {
+                    'location': '/tmp/celery_once',
+                    'default_timeout': 60 * 60
+                }
             }
-        }
+        else:
+            self.celery.conf.ONCE = {
+                'backend': 'celery_once.backends.Redis',
+                'settings': {
+                    'url': self.config['CELERY_BROKER_URL'],
+                    'default_timeout': 60 * 60 * 24
+                }
+            }
 
         class ContextTask(self.celery.Task):
             def __call__(self, *args, **kwargs):
@@ -122,12 +133,12 @@ class App(Empty):
 
         @self.celery.task(base=QueueOnce, once={'graceful': True})
         def process_resource(service_name, taskid=None):
-            service = self.config['inferencers'][service_name]
+            service = self.config['INFERENCERS'][service_name]
             service.process_graph(app.db)
 
         @self.celery.task
         def process_nanopub(nanopub_uri, service_name, taskid=None):
-            service = self.config['inferencers'][service_name]
+            service = self.config['INFERENCERS'][service_name]
             print(service, nanopub_uri)
             if app.nanopub_manager.is_current(nanopub_uri):
                 nanopub = app.nanopub_manager.get(nanopub_uri)
@@ -157,10 +168,10 @@ class App(Empty):
             return task
 
         app.inference_tasks = []
-        if 'inference_tasks' in self.config:
-            app.inference_tasks = [setup_periodic_task(task) for task in self.config['inference_tasks']]
+        if 'INFERENCE_TASKS' in self.config:
+            app.inference_tasks = [setup_periodic_task(task) for task in self.config['INFERENCE_TASKS']]
 
-        for name, task in list(self.config['inferencers'].items()):
+        for name, task in list(self.config['INFERENCERS'].items()):
             task.app = app
 
         for task in app.inference_tasks:
@@ -184,14 +195,14 @@ class App(Empty):
             #    return
             nanopub = app.nanopub_manager.get(nanopub_uri)
             nanopub_graph = ConjunctiveGraph(nanopub.store)
-            if 'inferencers' in self.config:
-                for name, service in list(self.config['inferencers'].items()):
+            if 'INFERENCERS' in self.config:
+                for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         if service.getInstances(nanopub_graph):
                             print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
-                for name, service in list(self.config['inferencers'].items()):
+                for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.globalChangeQuery:
                         process_resource.apply_async(kwargs={'service_name':name}, priority=5)
@@ -235,7 +246,7 @@ class App(Empty):
                     raise
 
         self.nanopub_manager = NanopublicationManager(self.db.store,
-                                                      Namespace('%s/pub/'%(self.config['lod_prefix'])),
+                                                      Namespace('%s/pub/'%(self.config['LOD_PREFIX'])),
                                                       self,
                                                       update_listener=self.nanopub_update_listener)
 
@@ -250,16 +261,16 @@ class App(Empty):
     def file_depot(self):
         if self._file_depot is None:
             if DepotManager.get('files') is None:
-                DepotManager.configure('files', self.config['file_archive'])
+                DepotManager.configure('files', self.config['FILE_ARCHIVE'])
             self._file_depot = DepotManager.get('files')
         return self._file_depot
 
     _nanopub_depot = None
     @property
     def nanopub_depot(self):
-        if self._nanopub_depot is None and 'nanopub_archive' in self.config:
+        if self._nanopub_depot is None and 'NANOPUB_ARCHIVE' in self.config:
             if DepotManager.get('nanopublications') is None:
-                DepotManager.configure('nanopublications', self.config['nanopub_archive'])
+                DepotManager.configure('nanopublications', self.config['NANOPUB_ARCHIVE'])
             self._nanopub_depot = DepotManager.get('nanopublications')
         return self._nanopub_depot
 
@@ -268,21 +279,23 @@ class App(Empty):
         Database configuration should be set here
         """
         self.NS = NS
-        self.NS.local = rdflib.Namespace(self.config['lod_prefix']+'/')
+        self.NS.local = rdflib.Namespace(self.config['LOD_PREFIX']+'/')
 
-        self.admin_db = database.engine_from_config(self.config, "admin_")
-        self.db = database.engine_from_config(self.config, "knowledge_")
+        self.admin_db = database.engine_from_config(self.config.get_namespace('ADMIN'))
+        self.db = database.engine_from_config(self.config.get_namespace("KNOWLEDGE"))
         self.db.app = self
 
         self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
         default_vocab = Graph(store=self.vocab.store)
         default_vocab.parse(source=os.path.abspath(os.path.join(os.path.dirname(__file__), "default_vocab.ttl")), format="turtle", publicID=str(self.NS.local))
-        custom_vocab = Graph(store=self.vocab.store)
-        custom_vocab.parse(self.config['vocab_file'], format="turtle", publicID=str(self.NS.local))
+        if 'VOCAB_FILE' in self.config and os.path.exists(self.config['VOCAB_FILE']):
+            custom_vocab = Graph(store=self.vocab.store)
+            custom_vocab.parse(self.config['VOCAB_FILE'], format="turtle", publicID=str(self.NS.local))
+        else:
+            print("Not loading custom view mappings.")
 
-
-        self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['lod_prefix'])
+        self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['LOD_PREFIX'])
         self.security = Security(self, self.datastore,
                                  register_form=ExtendedRegisterForm)
 
@@ -305,7 +318,7 @@ class App(Empty):
         return decorator
 
     def map_entity(self, name):
-        for importer in self.config['namespaces']:
+        for importer in self.config['NAMESPACES']:
             if importer.matches(name):
                 new_name = importer.map(name)
                 #print 'Found mapped URI', new_name
@@ -313,7 +326,7 @@ class App(Empty):
         return None, None
 
     def find_importer(self, name):
-        for importer in self.config['namespaces']:
+        for importer in self.config['NAMESPACES']:
             if importer.resource_matches(name):
                 return importer
         return None
@@ -588,10 +601,14 @@ construct {
 
         self.initialize_g = initialize_g
 
+        if not self.config.get("MULTIUSER", True):
+            self.config['AUTHENTICATORS'] = SingleUserAuthenticator()
+            
         @self.before_request
         def load_forms():
-            if 'authenticators' in self.config:
-                for authenticator in self.config['authenticators']:
+
+            if 'AUTHENTICATORS' in self.config:
+                for authenticator in self.config['AUTHENTICATORS']:
                     user = authenticator.authenticate(request, self.datastore, self.config)
                     if user is not None:
                     #    login_user(user)
@@ -755,6 +772,7 @@ construct {
             if 'as' in request.args:
                 types = [URIRef(request.args['as']), 0]
 
+            print (list(self.vocab.triples((None, NS.RDF.type, None))))
             types.extend((x, 1) for x in self.vocab[resource.identifier : NS.RDF.type])
             if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
                 types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]  if isinstance(x.identifier, rdflib.URIRef)])
@@ -774,11 +792,10 @@ construct {
 } group by ?c ?class ?content_type order by ?rank
 ''' % type_string
 
-            #print view_query
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
             if len(views) == 0:
                 abort(404)
-
+            print(resource.identifier, views)
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
             if extension in DATA_EXTENSIONS:
@@ -787,9 +804,6 @@ construct {
             if views[0]['content_type'] is not None:
                     headers['Content-Type'] = views[0]['content_type']
 
-            # default view (list of nanopubs)
-            # if available, replace with class view
-            # if available, replace with instance view
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
 

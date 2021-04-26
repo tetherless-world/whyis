@@ -1,0 +1,309 @@
+<md-card data-ng-if="!isArray(resource) && isResource(resource, property)">
+  <md-card-content layout="column">
+    <div layout="row" layout-align="start end">
+      <div style="width:130px; font-size:1.2em;padding-top:10px; padding-bottom:10px;"><strong>type</strong></div>
+      <md-chips flex ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
+        <md-autocomplete
+          md-selected-item="selectedTypeItem"
+          md-search-text="searchTypeText"
+          md-items="item in querySearchType(searchTypeText)"
+          md-item-text="getLabel(item)"
+          placeholder="+ Type"
+        >
+          <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+        </md-autocomplete>
+        <md-chip-template>
+          <span>{{getLabel($chip)}}</span>
+        </md-chip-template>
+      </md-chips>
+      <!--span class="md-title" flex="auto" ng-hide="getLabel(resource) == getID()">{{getLabel(resource)}}X </span-->
+      <div style="width:50px;"><strong style="float:right; padding-right:15px;font-size:1.75rem;">ID</strong></div>
+      <!--md-input-container flex class="md-subhead" flex="auto" md-no-float>
+        <input placeholder="IRI" type="text" data-ng-if="index === undefined && isString(resource)" data-ng-model="parent[property]" ng-change="validateEditor(parent, property)"></input>
+        <input placeholder="IRI" type="text" data-ng-if="index !== undefined && isString(resource)" data-ng-model="parent[property][index]" ng-change="validateEditor(parent, property)"></input>
+        <input placeholder="IRI" type="text" data-ng-if="!isString(resource)" data-ng-model="resource['@id']" ng-change="validateEditor(parent, property)"></input>
+      </md-input-container-->
+      <md-autocomplete 
+        data-ng-if="!isString(resource)" 
+        flex 
+        class="md-subhead hide-label" 
+        flex="auto" 
+        md-no-float
+        md-selected-item="selectedTypeItem"
+        md-search-text="searchTypeText"
+        md-items="item in querySearchID(searchTypeText,resource['@type'][0])"
+        md-item-text="getLabel(item)"
+        ng-init="searchTypeText=resource['@id']"
+        placeholder="+ ID"
+        md-floating-label="hide this label"
+        >
+        <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+      </md-autocomplete>
+      
+      <div flex="none">
+        <div class="btn-group">
+          <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <md-icon class="material-icons md-light md-48">more_vert</md-icon>
+          </md-button>
+          <ul class="dropdown-menu">
+            <li>
+              <a aria-label="Add Type" data-ng-click="appendValue({'@id':''},'@type',$event); ">
+                <md-icon class="material-icons md-light md-48">add</md-icon>Add Type
+              </a>
+            </li>
+            <li>
+              <a aria-label="Remove" data-ng-click="remove($event)">
+                <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
+              </a>
+            </li>
+            <li>
+              <a aria-label="Add Named Graph" data-ng-click="addProperty('@graph')">
+                <md-icon class="material-icons md-light md-48">group_work</md-icon>Add Named Graph
+              </a>
+            </li>
+            <li>
+              <a aria-label="Set Context..." data-ng-click="">
+                <md-icon class="material-icons md-light md-48">label</md-icon>Set Context...
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!-- expand/collapse button-->
+        <div class="btn-group">
+          <md-button class="md-icon-button" ng-click="collapseToggle()" aria-label="expand/collapse">
+            <md-icon ng-if="isCollapsed === false" class="material-icons md-light md-48">expand_less</md-icon>
+            <md-icon ng-if="isCollapsed === true" class="material-icons md-light md-48">expand_more</md-icon>
+          </md-button>
+        </div>
+      </div>
+    </div> 
+        <!--collapse/expand here -->
+        <table width="100%" flex="100" uib-collapse="isCollapsed">
+          <!-- moved this up to first line -->
+            <!-- <tr ng-if="resource['@type'] !== undefined">
+              <th style="vertical-align:top; padding: 0px;">type</th>
+              <td width="100%">
+                <md-chips ng-model="resource['@type']" md-autocomplete-snap md-require-match="false">
+                  <md-autocomplete
+                      md-selected-item="selectedTypeItem"
+                      md-search-text="searchTypeText"
+                      md-items="item in querySearch(searchTypeText)"
+                      md-item-text="getLabel(item)"
+                      placeholder="+ Type">
+                    <span md-highlight-text="ctrl.searchText">{{getLabel(item)}}</span>
+                  </md-autocomplete>
+                  <md-chip-template>
+                    <span>{{getLabel($chip)}}</span>
+                  </md-chip-template>
+                </md-chips>
+              </td>
+            </tr> -->
+            
+            <!-- add ng-addclass below -->
+            <tr data-ng-repeat="property in getProperties(resource) track by $index">
+                <th style="vertical-align:top ; padding: 8px;">{{getLabel(property)}}</th>
+                <td width="100%">
+                  <json-ld-editor 
+                    resource="resource[property]" 
+                    property="property" 
+                    parent="resource" 
+                    context="localContext" 
+                    global-context="globalContext"
+                    collapse-all="collapseAll" 
+                  >
+                  </json-ld-editor>
+                </td>
+                <td style="vertical-align:top">
+                    <div class="btn-group">
+                        <md-button class="md-icon-button" aria-label="Add" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <md-icon class="material-icons md-light md-48">add</md-icon>
+                        </md-button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a aria-label="Add a thing" ng-if="!isLiteralProperty(property)" ng-click="appendValue({'@id':'','@type':[]}, property, $event)">Add a thing</a></li>
+                            <li><a aria-label="Add a value" ng-if="!isResourceProperty(property)" ng-click="appendValue({'@value':''}, property, $event)">Add a value</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top; padding: 0px;">
+                    <md-autocomplete md-selected-item="selectedProperty" md-search-text="searchProperty" md-selected-item-change="addProperty(item.display) ; searchProperty = selectedProperty = null"
+                        md-items="item in queryProperties(searchProperty)" md-autoselect="true" md-item-text="item.display" md-min-length="0"
+                        md-floating-label="+">
+                        <md-item-template>
+                            <span md-highlight-text="searchProperty" md-highlight-flags="^i">{{item.display}}</span>
+                        </md-item-template>
+                        <md-not-found>
+                            <a ng-click="addProperty(searchProperty) ; searchProperty = selectedProperty = null">Add Property
+                                <i>{{searchText}}</i>
+                            </a>
+                        </md-not-found>
+                    </md-autocomplete>
+                </td>
+                <td width="100%">
+                </td>
+            </tr>
+        </table>
+        <md-content data-ng-if="resource['@graph']">
+          <md-toolbar class="md-theme-light">
+              <div class="md-toolbar-tools">
+                  <h2 flex md-truncate>Graph</h2>
+                  <md-button class="md-icon-button" aria-label="Add" ng-click="appendValue({'@id':''}, '@graph')">
+                      <md-icon class="material-icons md-light md-48">add</md-icon>
+                  </md-button>
+              </div>
+          </md-toolbar>
+          <json-ld-editor 
+            resource="resource['@graph']" 
+            property="'@graph'" 
+            parent="resource" 
+            context="localContext" 
+            global-context="globalContext"
+            collapse-all="collapseAll"
+          ></json-ld-editor>
+        </md-content>
+    </md-card-content>
+</md-card>
+
+<md-card data-ng-if="!isArray(resource) && !isResource(resource, property)">
+  <md-card-content>
+    <div flex="grow" layout="row">
+      <md-input-container flex="grow" data-ng-show="resource['@value'] !== undefined" md-no-float>
+        <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="resource['@value']"></textarea>
+      </md-input-container>
+      <md-input-container flex="grow" data-ng-show="index !== undefined && resource['@value'] === undefined" md-no-float>
+        <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="parent[property][index]"></textarea>
+      </md-input-container>
+      <md-input-container flex="grow" data-ng-show="index === undefined && resource['@value'] === undefined" md-no-float>
+        <textarea placeholder="Value" aria-label="{{property}}" rows="1" data-ng-model="parent[property]"></textarea>
+      </md-input-container>
+      <!-- Testing ng-click to get the target element on change -->
+      <md-autocomplete  ng-click="eventTarget = $event.currentTarget"
+                        md-selected-item-change="validateEditor(parent, property, targetEl, eventTarget)"
+                        ng-if="resource['@type'] !== undefined" 
+                        flex="initial" 
+                        md-selected-item="resource['@type']"  
+                        md-search-text="typeSearch"
+                        md-items="item in queryDatatypes(typeSearch)" 
+                        md-autoselect="true" 
+                        md-item-text="item" 
+                        md-min-length="0" 
+                        md-floating-label="Type">
+        <md-item-template>
+          <span md-highlight-text="typeSearch" md-highlight-flags="^i">{{item}}</span>
+        </md-item-template>
+        <md-not-found>
+          <a ng-click="resource['@type'] = typeSearch">Add Datatype
+            <i>{{typeSearch}}</i>
+          </a>
+        </md-not-found>
+      </md-autocomplete>
+      <md-autocomplete 
+        ng-if="resource['@language'] !== undefined" 
+        flex="initial" 
+        md-selected-item="resource['@language']" 
+        md-search-text="searchLang"
+        md-items="item in queryLanguages(searchLang)" 
+        md-autoselect="true" 
+        md-item-text="item" 
+        md-min-length="0" 
+        md-floating-label="Language"
+      >
+        <md-item-template>
+          <span md-highlight-text="searchLang" md-highlight-flags="^i">{{item}}</span>
+        </md-item-template>
+        <md-not-found>
+          <a ng-click="resource['@language'] = searchLang">Add Language
+            <i>{{searchLang}}</i>
+          </a>
+        </md-not-found>
+      </md-autocomplete>
+      <div flex="none">
+        <div class="btn-group">
+          <md-button class="md-icon-button" aria-label="Actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <md-icon class="material-icons md-light md-48">more_vert</md-icon>
+          </md-button>
+          <ul class="dropdown-menu">
+            <li>
+              <a aria-label="Remove" data-ng-click="remove($event)">
+                <md-icon class="material-icons md-light md-48">clear</md-icon>Remove
+              </a>
+            </li>
+            <li>
+              <a disabled="{{resource['@type'] !== undefined}}" aria-label="Add Datatype" data-ng-click="addDatatype()">
+                <md-icon class="material-icons md-light md-48">code</md-icon>Set Datatype...
+              </a>
+            </li>
+            <li>
+              <a disabled="{{resource['@language'] !== undefined}}" aria-label="Set Language" data-ng-click="addLanguage()">
+                <md-icon class="material-icons md-light md-48">language</md-icon>Set Language...
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>    
+  </md-card-content>
+</md-card>
+
+<div data-ng-if="isArray(resource)" layout="{{'column' ? parent === undefined : 'row'}}" layout-wrap="true">
+  <json-ld-editor 
+    flex="auto" 
+    data-ng-repeat="r in resource track by $index" 
+    resource="r" 
+    index="$index" 
+    property="property" 
+    parent="parent"
+    context="localContext" 
+    global-context="globalContext"
+    collapse-all="collapseAll" 
+  >
+  </json-ld-editor>
+  <md-button data-ng-if="parent == null" class="md-icon-button" aria-label="Add Thing">
+    <md-icon class="material-icons md-light md-48">add</md-icon>
+  </md-button>
+</div>
+
+<style>
+    /* hide the label on autocomplete */
+    .hide-label label {
+      visibility: hidden;
+    }
+    
+    #toast-container {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        font-size: 1.2rem;
+    }
+    json-ld-editor .well {
+        margin-bottom: 0px;
+    }
+
+    json-ld-editor .panel-group {
+        margin-bottom: 0px;
+    }
+
+    .md-errors-spacer {
+        display: none;
+    }
+
+    json-ld-editor md-input-container {
+        margin-bottom: 0px;
+        margin-top: 0px;
+    }
+
+    json-ld-editor md-card-title {
+        padding: 4px;
+        padding-top: 10px;
+    }
+
+    json-ld-editor md-card-content {
+        padding-bottom: 8px;
+    }
+
+    json-ld-editor md-autocomplete {
+        min-width: 100px;
+    }
+    
+</style>

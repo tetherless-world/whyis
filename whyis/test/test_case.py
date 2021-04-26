@@ -38,18 +38,16 @@ class TestCase(flask_testing.TestCase):
         except:
             from whyis import config_defaults as config
 
-        if 'admin_queryEndpoint' in config.Test:
-            del config.Test['admin_queryEndpoint']
-            del config.Test['admin_updateEndpoint']
-            del config.Test['knowledge_queryEndpoint']
-            del config.Test['knowledge_updateEndpoint']
+        if 'ADMIN_ENDPOINT' in config.Test:
+            del config.Test['ADMIN_ENDPOINT']
+            del config.Test['KNOWLEDGE_ENDPOINT']
         config.Test['TESTING'] = True
         config.Test['WTF_CSRF_ENABLED'] = False
-        config.Test['nanopub_archive'] = {
+        config.Test['NANOPUB_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
         config.Test['DEFAULT_ANONYMOUS_READ'] = False
-        config.Test['file_archive'] = {
+        config.Test['FILE_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
         # Default port is 5000

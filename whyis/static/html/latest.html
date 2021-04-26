@@ -1,0 +1,18 @@
+<div ng-cloak layout-gt-sm="row" layout="column">
+
+  <section layout="column" flex style="height: 60em; margin-bottom:1em;">
+    <explore flex start-list="[entities[0].about]"></explore>
+  </section>
+  <!-- fix for footer (layout-fill problem on chrome) -->
+  <div flex layout-fill layout="column" style="height:auto;">
+    <md-toolbar layout="column">
+      <div class="md-toolbar-tools">
+        <h2>Recently Changed</h2>
+      </div>
+      <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
+    </md-toolbar>
+    <kg-card  ng-show="entities.length > 0" ng-repeat="entity in entities"  compact="true" src="entity.about">
+      ({{entity.fromNow}})
+    </kg-card>
+  </div>
+</div>

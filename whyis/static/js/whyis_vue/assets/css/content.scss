@@ -1,0 +1,615 @@
+@keyframes moveInBottom {
+    0% {
+        opacity: 0;
+        transform: translateY(3rem);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0);
+    }
+}
+
+@keyframes loading {
+    100% {
+      background-size:100% 100%;
+    }
+}
+
+.viz {
+    &-u {
+        &-display {
+            &__ph{
+                display: block;
+                @include respond(tab-land){
+                    display: none;
+                    visibility: hidden;
+                }
+            }
+    
+            &__desktop{
+                display: none;
+                visibility: hidden;
+                @include respond(tab-land){
+                    display: block;
+                    visibility: visible;
+                }
+            }
+        }
+        &-maxwidth {
+            max-width: 99% !important;
+        }
+        &-postion {
+            &__rel {
+                position: relative !important;
+            }
+            &__abs {
+                position: absolute !important;
+            }
+        }
+        &-display {
+            &__show {
+                display: block !important;
+            }
+            &__hide {
+                display: none !important;
+            }
+        }
+        &-mgup {
+            &-sm {
+                margin-top: .8rem;
+            }
+            &-md {
+                margin-top: 1.5rem;
+            }
+        }
+        &-mgbottom {
+            &-sm {
+                margin-bottom: .8rem;
+            }
+            &-big {
+                margin-bottom: 1.6rem;
+            }
+        }
+    } 
+
+    &-content {
+        display: grid;
+        grid-template-rows: repeat(10);
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: .4rem;
+        cursor: pointer;
+
+        @include respond(tab-port){
+            grid-template-rows: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 1rem;
+        }
+
+        @include respond(tab-land){
+            grid-template-rows: repeat(1, 1fr);
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 1rem;
+        }
+
+        @include respond(desktop){
+            grid-template-rows: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 1rem;
+        }
+
+        @include respond(big-desktop){
+            grid-template-rows: repeat(2, 1fr);
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 1rem;
+            grid-row-gap: 5rem;
+        }       
+    }
+
+    &-3-col {
+        display: grid;
+        grid-template-rows: repeat(2, 1fr);
+        grid-template-columns: repeat(1, 1fr);
+        grid-row-gap: 1rem;
+
+        @include respond(tab-land){
+            grid-template-rows: repeat(1, 1fr);
+            grid-template-columns: repeat(1, 32%) 1fr;
+            grid-column-gap: .2rem;
+        }
+    }
+
+    &-2-col {
+        display: grid;
+        grid-template-rows: repeat(1, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+        grid-column-gap: 1rem;
+    }
+
+    &-dark-loading {
+        background-color: rgba(0,0,0,.2); 
+        border-radius:3px; 
+        height:96%; 
+        z-index:1000; 
+        position:absolute; 
+        width:98%
+    }
+
+    &-setting {
+        display: grid;
+        grid-template-rows: repeat(1, 1fr);
+        grid-template-columns: repeat(1, 1fr);
+        border: .05rem solid rgba($primary-black, .3);
+        border-radius: .15rem;
+
+        @include respond(tab-port){
+            grid-template-rows: repeat(1, 1fr);
+            grid-template-columns: repeat(1, 18rem) 1fr;
+            grid-gap: 1rem;
+        }
+
+        &-links {
+            border-right: .05rem solid rgba($primary-black, .3);
+            padding: .5rem;
+            display: grid;
+            grid-template-rows: repeat(6, 4rem);
+            grid-template-columns: repeat(1, 100%);
+            grid-gap: .4rem;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        &-content{
+            border-left: .05rem solid rgba($primary-black, .3);
+            padding: 1rem;
+
+            @include respond(tab-port){
+                border-left: none;
+            }
+        }
+    }
+
+    &-pagination-container {
+        width: 80%; 
+        margin: 1.5rem auto; 
+        text-align:center;
+
+        @include respond(tab-land) {
+            max-width: 28%;
+            margin: 0 auto; 
+            margin-top: 3.5rem; 
+        }
+    }
+
+    &-pagination {
+        margin-top: .8rem;
+        @include respond(tab-port){
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: repeat(1, 100%);
+            grid-template-columns: repeat(4, 1fr);
+            grid-column-gap: 1rem;
+            margin: 1rem auto;
+            max-width: 70%;
+        }
+
+        @include respond(tab-land) {
+            max-width: 100%;
+        }
+
+        & > a {
+            padding:10px 24px !important;
+            color: $primary-white !important;
+            font-size: .8rem;
+            border: none;
+            background-color: $primary-color;
+            text-align: center;
+            cursor: pointer;
+
+            &:not(:nth-child(3)) {
+                margin-right: .8rem;
+            }
+
+            @include respond(tab-land) {
+                padding:10px !important;
+                font-size: 1rem;
+                margin: 0;
+            }
+
+            &:hover {
+                text-decoration: none;
+                border: none;
+                background-color: rgba($primary-color, 0.8);
+                color: $primary-white !important;
+            }
+        }
+        &-active {
+            background-color: rgba($primary-color, 0.8);
+        }
+    }
+
+    &-editor {
+        height: 93.5%;
+        display: none;
+        &-tabs {
+            display: block;
+            padding: 2px;
+            text-align: left;
+            margin-bottom: 1rem;
+
+            &-item{
+                padding: .3rem;
+                font-size: 1rem;
+                letter-spacing: .1rem;
+                display: inline-block;
+                cursor: pointer;
+                color: rgba($primary-black, .6) !important;
+                font-weight: 100;
+                vertical-align: middle;
+                margin-right: .5rem;
+                text-decoration: none;
+
+                &:hover,
+                &.tabselected{
+                    color: $primary-color;
+                    border-bottom: .06rem solid $primary-color;
+                    font-weight: 500;
+                    border-radius: 2px;
+                    text-decoration: none;
+                }
+            }
+        }
+        &-show {
+            display: block !important;
+        }
+       
+    }
+
+    &-sample {
+        margin: 0 .5rem;
+        height: 100%;
+
+        &__header {
+            padding: .8rem;
+            font-size: 1.6rem;
+            font-weight: 100;
+            border-bottom: .05rem solid gray;
+            color: gray;
+
+            @include respond(tab-land) {
+                padding: .4rem 0rem;
+                margin: 0 1.3rem;
+            }
+        }
+
+        &__content {
+            padding: .4rem .8rem;
+            font-weight: 300;
+            color: gray;
+            line-height: 2rem;
+
+            @include respond(tab-land) {
+                padding: .4rem 1.3rem;
+            }
+
+            &__card {
+                background: $primary-white;
+                border-radius: 6px;
+                border-left: .8rem solid black;
+                padding: .5rem 1rem;
+                min-width: 16rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                top: 1%;
+                left: 50%;
+                transform: translate(-32%, -100%);
+                z-index: 1;
+            }
+        }
+
+        &__loading {
+            font-size: 2rem;
+
+            &_anim {
+                background:linear-gradient(#fff,$primary-color) left no-repeat,
+                    rgba(0, 0, 0, .3);
+                background-size:0% 100%;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                color: transparent;
+                animation:loading 2s forwards ease-out infinite;
+            }
+        }
+
+        &__list {
+            margin: 2rem 0 2.5rem 0;
+            display: none;
+            @include respond(tab-land) {
+                display: block;
+            }
+            & > ul {
+                margin: 0 !important;
+                padding: 0 !important;
+                & > li {
+                    border-left: 1.3rem solid;
+                    padding: .1rem .45rem;
+                    display: inline-block;
+                    margin: 0 1.4rem 1.2rem 0;
+                    cursor: pointer;
+    
+                    &:nth-child(1){
+                        background-color: rgba($color-1,.2);
+                        border-left-color: $color-1;
+                        color: $primary-black;
+                    }
+                    &:nth-child(2){
+                        background-color: rgba($color-2,.2);
+                        border-left-color: $color-2;
+                        color: $primary-black;
+                    }
+                    &:nth-child(3){
+                        background-color: rgba($color-3,.2);
+                        border-left-color: $color-3;
+                        color: $primary-black;
+                    }
+                    &:nth-child(4){
+                        background-color: rgba($color-4,.2);
+                        border-left-color: $color-4;
+                        color: $primary-black;
+                    }
+                    &:nth-child(5){
+                        background-color: rgba($color-5,.2);
+                        border-left-color: $color-5;
+                        color: $primary-black;
+                    }
+                    &:nth-child(6){
+                        background-color: rgba($color-6,.2);
+                        border-left-color: $color-6;
+                        color: $primary-black;
+                    }
+                    &:nth-child(7){
+                        background-color: rgba($color-7,.2);
+                        border-left-color: $color-7;
+                        color: $primary-black;
+                    }
+                    &:nth-child(8){
+                        background-color: rgba($primary-color,.2);
+                        border-left-color: $primary-color;
+                        color: $primary-black;
+                    }
+
+                    &:hover,
+                    &:active {
+                        .viz-u-display__hide {
+                            display: block !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &-intro {
+        min-height: 20rem;
+        width: 100%;
+        padding: 1rem 1rem;
+        background-image: linear-gradient(180deg, rgba(#21214b, .9) 0%, rgba($primary-white, .6) 59%, transparent 59%);
+        @include respond(big-desktop){
+            min-height: 30rem;
+            padding: 2rem 1rem;
+        }
+
+        &-title {
+            font-weight: 400;
+            font-size: 2.5rem;
+            color: $primary-white;
+            text-shadow: #21214b 2px 2px 0px, rgba(0,0,0,.3) 4px 4px 0px;
+            letter-spacing: .5rem;
+
+            &-text {
+                color:#08233c; 
+                font-weight: 700;
+            }
+
+            @include respond(big-desktop){
+                font-size: 3.5rem;
+            }
+        }
+
+        &-text {
+            text-align: justify !important; 
+            font-weight: 400; 
+            letter-spacing: .3;
+            line-height: 1.5;
+            font-size: .8rem;
+
+            @include respond(big-desktop){
+                font-size: 1.25rem;
+            }
+        }
+
+        &-image {
+            height:13.02rem; 
+            margin-bottom: .6rem; 
+            width:21rem;
+
+            @include respond(desktop){
+                height:18.6rem; 
+                margin-bottom: .6rem; 
+                width:30rem;
+            }
+
+            @include respond(medium-height){
+                height:31rem; 
+                margin-bottom: 1rem; 
+                width:50rem;
+            }
+        }
+
+        &-query {
+            max-height: 12rem !important; 
+            overflow-y: scroll !important;
+            border: .1rem solid rgba($primary-black, .4);
+
+            @include respond(desktop){
+                max-height: 20rem !important;
+            }
+        }
+    }
+}
+
+.loading-dialog {
+    text-align: center;
+    &__justify {
+        text-align: justify;
+    }
+}
+
+.vega-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn {
+    &,
+    &:link,
+    &:visited {
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 1rem 3rem;
+        display: inline-block;
+        border-radius: 10rem;
+        transition: all .2s;
+        position: relative;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+    }
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 1rem 2rem rgba(#000000, .2);
+        text-decoration: none;
+        &::after {
+            transform: scaleX(1.4) scaleY(1.6);
+            opacity: 0;
+        }
+    }
+
+    &:active,
+    &:focus {
+        text-decoration: none;
+        outline: none;
+        transform: translateY(-1px);
+        box-shadow: 0 .5rem 1rem rgba(#000000, .2);
+    }
+
+    &_small {
+        padding: .8rem 2rem;
+        border-radius: .07rem;
+        font-size: .74rem;
+        font-weight: 100;
+
+        &::after {
+            border-radius: .07rem !important;
+        }
+    }
+
+    &_medium {
+        padding: .8rem 2rem;
+        border-radius: .1rem;
+
+        &::after {
+            border-radius: .1rem !important;
+        }
+    }
+
+    &--primary {
+        background-color: #08233c;
+        color: #ffffff !important;
+
+        &::after{
+            background-color: #08233c;
+        }
+    }
+
+    &--default {
+        background-color: #64b5f6;
+        color: #000000;
+        &::after{
+            background-color: #64b5f6;
+        }
+    }
+
+    &::after {
+        content: "";
+        display: inline-block;
+        height: 100%;
+        width: 100%;
+        border-radius: 10rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        transition: all .4s;
+    }
+
+    &--animated {
+        animation: moveInBottom 1.5s ease-out;
+    }
+}
+
+.btn-text {
+    &:link,
+    &:visited {
+        font-size: 1rem;
+        display: inline-block;
+        padding: 3px;
+        transition: all .3s;
+        text-decoration: none !important;
+    }
+
+    &--default {
+        color: #64b5f6 !important;
+        border-bottom: 1px solid #64b5f6;
+        cursor: pointer;
+        transition: all .3s;
+        &:hover {
+            background-color: #64b5f6 !important;
+            color: #000000 !important;
+            padding: .8rem 1.76rem;
+        }
+    }
+
+    &--white {
+        color: $primary-white !important;
+    }
+
+    &--primary {
+        color: $primary-color !important;
+        border-bottom: 1px solid $primary-color;
+        cursor: pointer;
+        &:hover {
+            background-color: $primary-color !important;
+            color: $primary-white !important;
+            padding: .8rem 1.76rem;
+        }
+    }
+
+    &--simple {
+        color: $primary-color !important;
+        border-bottom: 1px solid $primary-color;
+        cursor: pointer;
+        text-decoration: none !important;
+    }
+
+    &:hover {
+        box-shadow: 0 1rem 2rem rgba(#000000, .15);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        box-shadow: 0 .5rem 1rem rgba(#000000, .15);
+        transform: translateY(0);
+    }
+}

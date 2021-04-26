@@ -1,0 +1,152 @@
+<div ng-cloak md-whiteframe="2"  style="height:100%" layout="column" layout-fill>
+  <md-toolbar class="md-primary" >
+    <div class="md-toolbar-tools" layout="row">
+      <h2 flex ng-bind="title"></h2>
+      <ng-transclude>
+      </ng-transclude>
+      <md-button class="md-mini"
+                 ng-class="{'md-primary' : view=='help'}"
+                 aria-label="Help"
+                 title="Help"
+                 data-ng-click="view='help'">
+        <md-icon>help_outline</md-icon> Help
+      </md-button>
+      <md-button class="md-mini"
+                 ng-class="{'md-primary' : view=='list'}"
+                 aria-label="List View"
+                 title="List View"
+                 data-ng-click="view='list'">
+        <md-icon>view_list</md-icon> List
+      </md-button>
+      <md-button class="md-mini"
+                 ng-class="{'md-primary' : view=='table'}"
+                 aria-label="Table View"
+                 title="Table View"
+                 data-ng-click="view='table'">
+        <md-icon>table_chart</md-icon> Table
+      </md-button>
+      <md-button class=" md-mini"
+                 ng-class="{'md-primary' : view=='chart'}"
+                 aria-label="Chart View"
+                 title="Chart View"
+                 data-ng-click="view='chart'">
+        <md-icon>show_chart</md-icon> Chart
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-progress-linear ng-show="isLoadingResults" md-mode="indeterminate"></md-progress-linear>
+  <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert>
+  <div layout="row" flex>
+    <md-content flex="30" style="overflow:scroll">
+      <md-subheader>
+          <span ng-show="vizConfig.data.values.length">{{vizConfig.data.values.length}} results found.</span>
+          <md-button ng-disabled="!updatable"  class=" md-mini md-primary"
+                     aria-label="Update"
+                     title="Update Results"
+                     data-ng-click="updateResults(null, cons)">
+            Update
+          </md-button>
+          <md-button ng-show="view=='chart'"  class=" md-mini md-primary"
+                     aria-label="Save Chart"
+                     title="Save Chart to knowledge graph"
+                     data-ng-click="showSaveChart($event)">
+              Save Chart
+          </md-button>
+
+          <md-progress-circular ng-show="vm.isLoadingResults" md-diameter="20px"></md-progress-circular>
+      </md-subheader>
+      <vega-controller spec="vizConfig" facet-values="facetValues" ng-show="view=='chart'" ></vega-controller>
+      <!-- Facets are defined here using the configurations defined in the controller -->
+        <div ng-repeat="facet in facets" ng-switch="facet.type">
+          <whyis-text-facet ng-switch-when="text" data-options="facet"></whyis-text-facet>
+          <whyis-smart-facet ng-switch-when="basic" data-options="facet"></seco-basic-facet>
+          <seco-hierarchy-facet ng-switch-when="hierarchy"  data-options="facet"></seco-hierarchy-facet>
+          <seco-checkbox-facet ng-switch-when="checkbox"  data-options="facet"></seco-checkbox-facet>
+          <seco-timespan-facet ng-switch-when="timespan"  data-options="facet"></seco-timespan-facet>
+        </div>
+    </md-content>
+
+    <!-- Results view -->
+    <div flex="grow" layout="column" >
+
+      <md-content layout="column" when-scrolled="pager.loadMore()" ng-if="view=='list'" ng-show="view=='list'" >
+        <kg-card ng-repeat="entity in pager.all track by entity.id" compact="true" src="entity.id">
+        </kg-card>
+      </md-content>
+      <md-content layout="column" ng-if="view=='chart'" ng-show="view=='chart'" >
+        <vega spec="vizConfig" viewBox="0 0 60 55"></vega>
+      </md-content>
+      <md-content layout="column" ng-if="view=='table'" ng-show="view=='table'" >
+        <table class="table">
+          <thead>
+            <th scope="col">Identifier</th>
+            <th ng-repeat="facet in facetValues">{{facet.name}} <span ng-if="facet.unit_label">({{facet.unit_label}})</span></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in vizConfig.data.values">
+              <td scope="row">{{row['id']}}</td>
+              <td ng-repeat="facet in facetValues">{{row[facet.field]}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </md-content>
+      <md-content layout="column" ng-if="view=='help'" ng-show="view=='help'" >
+          <h2>How to Search for {{title}}</h2>
+          <p>
+              This faceted browser, configured for {{title}}, contains a search box for each
+              available facet in the panel to the left. Select facet values to filter search
+              results from the knowledge graph. Click <b>UPDATE</b> to refresh search results.
+              For quantitative data, a range slider will appear to enable further refinement of
+              search results.
+          </p>
+          <h2>How to View Selections</h2>
+          <p>
+              Click an icon in the navigation bar on the top right to view search results.
+          </p>
+          <!-- COMMENT OUT BELOW IF DISABLING LIST VIEW -->
+          <h3><md-icon>view_list</md-icon> List</h3>
+          <p>
+              The List view includes an "infobox" for each search result. Click on the title
+              of the infobox to visit the page for the search results.
+          </p>
+          <!-- COMMENT OUT ABOVE IF DISABLING LIST VIEW -->
+          <h3><md-icon>table_chart</md-icon> Table</h3>
+          <p>
+              The Table view includes a column for each facet value selected, and each row
+              corresponds to a search result.
+          </p>
+          <h3><md-icon>show_chart</md-icon> Chart</h3>
+          <p>
+            The Chart view lets you plot search results using various visualization strategies
+            for quantitative (Q) or nominal (N) data values:
+          </p>
+          <ul>
+            <li>
+              <b>Scatter Plot:</b> X Axis (Q), Y Axis (Q), <i>Color (Q/N), Size (Q/N)</i>
+            </li>
+            <li>
+              <b>Histogram:</b> X Axis (Q/N) <i>or</i> Y Axis (Q/N)
+            </li>
+            <li>
+              <b>Bar Chart:</b> X Axis (Q), Y Axis (N)
+            </li>
+            <li>
+              <b>Box Plot:</b> X Axis (Q), Y Axis (N)
+            </li>
+            <li>
+              <b>Heatmap:</b> X Axis (Q/N), Y Axis (Q/N)
+            </li>
+            <li>
+              <b>Density Plot:</b> X Axis (Q), Y Axis (Q)
+            </li>
+            <li>
+              <b>Strip Plot:</b> X Axis (Q), Y Axis (N), <i>Color (Q/N)</i>
+            </li>
+            <li>
+              <b>Line Plot:</b> X Axis (Q), Y Axis (Q), <i>Color (Q/N), Size (Q/N)</i>
+            </li>
+          </ul>
+      </md-content>
+  </div>
+  </div>
+</div>

@@ -4,7 +4,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RESULTS = {{ rdflib.URIRef(config.lod_prefix+'/searchApi') | include| safe }};
+RESULTS = {{ rdflib.URIRef(config.LOD_PREFIX+'/searchApi') | include| safe }};
 </script>
 {% endblock %}
 {% block content %}

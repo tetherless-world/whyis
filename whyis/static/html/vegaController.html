@@ -1,0 +1,93 @@
+<div>
+  <div layout="row" flex>
+    <md-input-container flex>
+      <label>View</label>
+      <md-select ng-model="selectedView">
+        <md-option ng-repeat="view in views" ng-value="view">
+          {{view.label}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+  </div>
+
+  <div layout="row" flex>
+  <md-input-container ng-show="selectedView.dimensions.x" flex>
+    <label>X Axis</label>
+    <md-select ng-model="variables.x">
+      <md-option ng-value="null"><em>None</em></md-option>
+      <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
+        {{variable.name}} {{variable.unit_label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  <md-input-container ng-show="selectedView.dimensions.x.scale" flex="none">
+    <label>Scale</label>
+    <md-select ng-model="selectedView.dimensions.x.scale">
+      <md-option ng-repeat="scale in scales" ng-value="scale">
+        {{scale.type}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  </div>
+
+  <div layout="row" flex>
+  
+  <md-input-container ng-show="selectedView.dimensions.y" flex>
+    <label>Y Axis</label>
+    <md-select ng-model="variables.y">
+      <md-option ng-value="null"><em>None</em></md-option>
+      <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
+        {{variable.name}} {{variable.unit_label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  <md-input-container ng-show="selectedView.dimensions.y.scale" flex="none">
+    <label>Scale</label>
+    <md-select ng-model="selectedView.dimensions.y.scale">
+      <md-option ng-repeat="scale in scales" ng-value="scale">
+        {{scale.type}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  </div>
+
+  <div layout="row" flex>
+  <md-input-container ng-show="selectedView.dimensions.size" flex>
+    <label>Size</label>
+    <md-select ng-model="variables.size">
+      <md-option ng-value="null"><em>None</em></md-option>
+      <md-option ng-repeat="variable in facetValues  track by variable.field" ng-value="variable">
+        {{variable.name}} {{variable.unit_label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  <md-input-container ng-show="selectedView.dimensions.scale" flex="none">
+    <label>X Axis Scale</label>
+    <md-select ng-model="selectedView.dimensions.scale">
+      <md-option ng-repeat="scale in scales" ng-value="scale">
+        {{scale.type}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  </div>
+
+  <div layout="row" flex>
+  <md-input-container ng-show="selectedView.dimensions.color" flex>
+    <label>Color</label>
+    <md-select ng-model="variables.color">
+      <md-option ng-value="null"><em>None</em></md-option>
+      <md-option ng-repeat="variable in facetValues track by variable.field" ng-value="variable">
+        {{variable.name}} {{variable.unit_label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  <md-input-container ng-show="selectedView.dimensions.scale" flex="none">
+    <label>X Axis Scale</label>
+    <md-select ng-model="selectedView.dimensions.scale">
+      <md-option ng-repeat="scale in scales" ng-value="scale">
+        {{scale.type}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+  </div>
+</div>

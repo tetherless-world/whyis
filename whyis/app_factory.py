@@ -1,20 +1,11 @@
-basestring = getattr(__builtins__, 'basestring', str)
+from whyis.config.utils import import_config_module
 
-
-def config_str_to_obj(cfg):
-    if isinstance(cfg, basestring):
-        module = __import__('config', fromlist=[cfg])
-        return getattr(module, cfg)
-    return cfg
-
-
-def app_factory(config, app_name, blueprints=None):
+def app_factory(blueprints=None):
     from whyis.app import App, PROJECT_PATH
     # you can use Empty directly if you wish
-    app = App(app_name, root_path=PROJECT_PATH)
-    config = config_str_to_obj(config)
+    app = App("Whyis", root_path=PROJECT_PATH, instance_relative_config=True)
     #print dir(config)
-    app.configure(config)
+    import_config_module(app)
     if blueprints:
         app.add_blueprint_list(blueprints)
     app.setup()

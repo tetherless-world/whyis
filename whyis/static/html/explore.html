@@ -1,0 +1,93 @@
+<div layout="column" layout-fill >
+  <md-toolbar flex="initial" class="md-primary" >
+    <div class="md-toolbar-tools" layout="row">
+      <md-button ng-click="toggleSidebar()" class="md-icon-button" aria-label="Settings">
+        <md-icon>menu</md-icon>
+      </md-button>
+        <search-autocomplete
+           flex
+           style="color:black;
+           selected-item-change="selectedItemChange"
+           search-text-change="searchTextChange">
+        </search-autocomplete>
+      <div flex="none" layout="row">
+           <md-button class="md-icon-button" aria-label="Remove Selected" title="Remove Selected"  data-ng-click="remove()">
+             <md-icon>delete</md-icon>
+           </md-button>
+           <span flex></span>
+           <md-button class="md-icon-button"
+                      aria-label="Find Incoming Links"
+                      title="Find Incoming Links"
+                      data-ng-click="incoming()">
+             <md-icon>arrow_back</md-icon>
+           </md-button>
+           <md-button class="md-icon-button"
+                      aria-label="Find Incoming and Outgoing Links"
+                      title="Find Incoming and Outgoing Links"
+                      data-ng-click="incomingOutgoing()">
+             <md-icon>compare_arrows</md-icon>
+           </md-button>
+           <md-button class="md-icon-button"
+                      aria-label="Find Outgoing Links"
+                      title="Find Outgoing Links"
+                      data-ng-click="outgoing()">
+             <md-icon >arrow_forward</md-icon>
+           </md-button>
+           <span flex></span>
+           <md-button class="md-icon-button"
+                      aria-label="Update Layout"
+                      title="Update Layout"
+                      data-ng-click="update()">
+             <md-icon >refresh</md-icon>
+           </md-button>
+      </div>
+    </div>
+  </md-toolbar>
+  <md-progress-linear flex="none" ng-show="loading.length > 0" md-mode="indeterminate"></md-progress-linear>
+  <md-content flex layout="column" layout-fill>
+    <div flex class="graph" layout-fill ></div>
+    <md-sidenav class="md-sidenav-left" md-component-id="explore"
+                md-disable-backdrop md-whiteframe="4">
+      <md-content layout-fill layout="column">
+        <md-list flex="none">
+          <md-subheader >Link Traversal Options</md-subheader>
+          <md-list-item>
+            <md-slider-container layout="row">
+              <span flex="30">Min Joint P</span>
+              <md-slider flex min="0" max="1" step="0.01" ng-model="probThreshold" aria-label="Min Joint Probability " id="joint-probability-slider">
+              </md-slider>
+              <md-input-container flex="30">
+                <input type="number" ng-model="probThreshold" aria-label="Min Joint Probability" aria-controls="joint-probability-slider">
+              </md-input-container>
+            </md-slider-container>
+          </md-list-item>
+        </md-list>
+      </md-content>
+    </md-sidenav>
+    <md-sidenav class="md-sidenav-right" md-component-id="explore_details"
+                md-disable-backdrop md-whiteframe="4">
+      <md-content layout-fill layout="column">
+        <md-subheader ng-show="selectedNodes.length > 0" >Nodes</md-subheader>
+        <kg-card  ng-show="selectedNodes.length > 0" ng-repeat="element in selectedNodes"  compact="true" src="element.data().uri"></kg-card>
+        <md-subheader ng-show="selectedEdges.length > 0" >Edges</md-subheader>
+        <div ng-show="selectedEdges.length > 0" ng-repeat="element in selectedEdges">
+          <md-card >
+            <md-card-header>
+              <md-card-header-text>
+                <span class="md-title"><a ng-href="{{element.data().source | kglink : 'view' }}" ng-bind="element.source().data().label"/> {{element.data().label}} <a ng-href="{{element.data().target | kglink : 'view' }}" ng-bind="element.target().data().label"/></span>
+              </md-card-header-text>
+            </md-card-header>
+            <md-card-content>
+              <div class="md-caption"><em ng-if="element.data().probability">p={{element.data().probability | number}}</em> <span data-ng-repeat="type in element.data().types">{{ type.label}}<span ng-hide="$last">, </span></div>
+              <p>{{element.data().summary}}</p>
+              <md-progress-linear
+                 ng-show="element.data().loading - element.data().loaded > 0"
+                 md-mode="determinate"
+                 value="{{(100.0*element.data().loaded)/(element.data().loaded)}}"></md-progress-linear>
+            </md-card-content>
+          </md-card>
+          </div>
+      </md-content>
+    </md-sidenav>
+  </md-content>
+</div>

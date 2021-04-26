@@ -25,7 +25,9 @@ def download_file(url, filename=None):
 
 def download_files():
     files = {
-        'whyis/fuseki/jars/fuseki-server.jar' : 'https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/3.17.0/jena-fuseki-fulljar-3.17.0.jar'
+        'whyis/fuseki/jars/fuseki-server.jar' : 'https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/3.17.0/jena-fuseki-fulljar-3.17.0.jar',
+#        'whyis/fuseki/jars/jena-spatial.jar': 'https://repo1.maven.org/maven2/org/apache/jena/jena-spatial/3.12.0/jena-spatial-3.12.0.jar'
+# TODO: https://jena.apache.org/documentation/query/spatial-query.html#spatial-dataset-assembler
     }
     for dest, url in files.items():
         print("Downloading %s..." % dest)
@@ -70,27 +72,27 @@ setup(
         'requests'
     ],
     install_requires = [
-        'amqp==2.5.1',
-        'arrow==0.14.2',
+#        'amqp==2.5.1',
+#        'arrow==0.14.2',
         'asn1crypto==0.24.0',
         'Babel==2.7.0',
         'bcrypt==3.1.6',
         'beautifulsoup4==4.7.1',
         'bibtexparser==1.1.0',
-        'billiard==3.6.1.0',
-        'binaryornot==0.4.4',
-        'blinker==1.4',
+#        'billiard==3.6.1.0',
+#        'binaryornot==0.4.4',
+#        'blinker==1.4',
         'bsddb3==6.2.6',
-        'celery==4.3.0',
-        'celery_once==3.0.1',
+        'celery==5.0.5',
+        'celery_once',
         'certifi==2019.3.9',
         'cffi==1.12.3',
-        'chardet==3.0.4',
+#        'chardet==3.0.4',
         'Click==7.0',
         'cookiecutter==1.6.0',
         'cryptography==2.8',
         'Cython==0.29.10',
-        'fabric==2.4.0',
+#        'fabric==2.4.0',
         'filedepot==0.8.0',
         'Flask==1.0.3',
         'Flask-Login==0.3.2',
@@ -107,7 +109,7 @@ setup(
         'Jinja2==2.10.1',
         'jinja2-time==0.2.0',
         'keepalive==0.5',
-        'kombu==4.6.4',
+        'kombu',
         'lxml==4.3.4',
         'Markdown==3.1.1',
         'MarkupSafe==1.1.1',
@@ -145,7 +147,7 @@ setup(
         'text-unidecode==1.2',
         'toposort==1.5',
         'urllib3==1.25.3',
-        'vine==1.3.0',
+#        'vine==1.3.0',
         'virtualenv==16.6.0',
         'webencodings==0.5.1',
         'WebOb==1.8.5',
@@ -161,7 +163,10 @@ setup(
         'flask-testing',
         'unittest-xml-reporting==2.5.1'
     ],
-    package_data={'whyis.fuseki': ['jars/*.jar']},
+    package_data={
+        'whyis.fuseki': ['jars/*.jar','webapp/*'],
+        'whyis': ['config-template/*']
+    },
     entry_points = {
         'console_scripts': [
             'whyis=whyis.manager:main',

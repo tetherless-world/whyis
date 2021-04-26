@@ -126,7 +126,7 @@ class NanopublicationManager(object):
   ?npa prov:wasDerivedFrom* ?ra.
   ?np np:hasAssertion ?npa.
   ?np a np:Nanopublication.
-''' + ('' if self.app.config.get('delete_archive_nanopubs',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
+''' + ('' if self.app.config.get('DELETE_ARCHIVE_NANOPUBS',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
 }'''
         file_query = '''select ?fileid where {
   ?np np:hasAssertion ?assertion.

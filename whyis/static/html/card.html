@@ -1,0 +1,46 @@
+<md-progress-linear flex="none" ng-hide="entity" md-mode="indeterminate"></md-progress-linear>
+<md-card ng-if="entity" flex>
+  <md-card-header ng-if="compact">
+    <md-card-avatar ng-if="entity.thumbnail">
+      <img ng-src="{{entity.thumbnail}} | kglink " class="md-avatar" alt="{{entity.label}}" />
+    </md-card-avatar>
+    <md-card-header-text>
+      <span class="md-title"><a ng-href="{{entity['@id'] | kglink : 'view' }}" ng-bind="entity.label"/></span>
+      <div layout="row" class="md-subhead" ng-transclude>
+      </div>
+    </md-card-header-text>
+  </md-card-header>
+  <img ng-hide="compact" ng-if="entity.thumbnail" ng-src="{{entity.thumbnail | kglink}}" class="md-card-image"></img>
+  <md-card-title ng-hide="compact" >
+    <md-card-title-text>
+      <span class="md-headline" ng-bind="entity.label"></span>
+    </md-card-title-text>
+  </md-card-title>
+  <md-card-content>
+    <div layout="row" class="md-caption" ng-if="entity.type.length > 0" >
+      <span flex  ng-show="showAllTypes">
+        <span data-ng-repeat="type in entity.type" ><a ng-href="{{type['@id'] | kglink : 'view' }}" ng-bind="type.label"/><span ng-hide="$last">, </span></span>
+      </span>
+      <span flex="grow" class="flex-truncate" ng-hide="showAllTypes">
+        <span data-ng-repeat="type in entity.type" ><a ng-href="{{type['@id'] | kglink : 'view' }}" ng-bind="type.label"/><span ng-hide="$last">, </span></span>
+      </span>
+      <a aria-label="Show All Types"
+               ng-style="{ 'font-size': '1em', height: '1em'}"
+                 title="Show All Types" class="size-16" style="line-height: 1rem" flex="initial" ng-hide="compact || showAllTypes"  data-ng-click="showAllTypes = true">(more)</a>
+    </div>
+    <p ng-repeat="desc in entity.description" ng-if="!compact || $first">
+      <strong ng-hide="compact" ng-bind="desc.label"/>
+      <span ng-bind="desc.value"/>
+    </p>
+    <p ng-if="!compact" >
+      <strong>Identifier: </strong> {{ entity['@id']}}
+      <emph ng-if="value.unit_label" ng-bind="value.unit_label"/>
+    </p>
+    <p ng-repeat="attribute in entity.attributes" ng-if="!compact">
+      <strong>{{attribute.label}}: </strong>
+      <span data-ng-repeat="value in attribute.values">
+        {{ value.value}}<emph ng-if="value.unit_label" ng-bind="value.unit_label"/><span ng-hide="$last">, </span>
+      </span>
+    </p>
+  </md-card-content>
+</md-card>

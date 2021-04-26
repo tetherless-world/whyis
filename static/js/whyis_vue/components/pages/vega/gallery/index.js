@@ -1,1 +1,0 @@
-import './vega-gallery'

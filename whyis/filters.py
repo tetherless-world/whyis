@@ -89,7 +89,7 @@ def configure(app):
         best_lang = request.accept_languages.best_match(list(languages))
         best_terms = [x for x in literals if x.language == best_lang]
         if not best_terms:
-            best_terms = [x for x in literals if x.language == app.config['default_language']]
+            best_terms = [x for x in literals if x.language == app.config['DEFAULT_LANGUAGE']]
         if best_terms:
             return resources + best_terms
         return resources
@@ -229,7 +229,7 @@ where {
     def mergeLink(edges):
         from scipy.stats import combine_pvalues
 
-        base_rate = app.config['base_rate_probability']
+        base_rate = app.config['BASE_RATE_PROBABILITY']
 
         def merge(links):
             result = dict(links[0])

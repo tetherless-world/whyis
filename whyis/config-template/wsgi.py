@@ -1,0 +1,1 @@
+from whyis.wsgi import *

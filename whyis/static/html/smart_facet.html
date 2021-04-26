@@ -1,0 +1,59 @@
+<div class="autocomplete md-padding" >
+  <label id="facet{{vm.facet.facetId}}Label">{{vm.facet.name}}</label>
+  <div ng-if="vm.facet.typeProperty != ''">
+    <md-chips layout="column"
+              ng-model="vm.facet.selected"
+              md-require-match="true"
+              md-transform-chip="$chip"
+              md-on-add="vm.changed()"
+              md-on-remove="vm.changed()"
+              md-autocomplete-snap="width"
+       >
+      <md-autocomplete flex
+         md-selected-item="vm.facet.selectedItem"
+         md-search-text="vm.facet.searchText"
+         md-min-length="0"
+         placeholder="+"
+         input-aria-describedby="facet{{vm.facet.facetId}}Label"
+         md-items="item in vm.facet.search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
+         md-item-text="item.name" >
+         <md-item-template>
+          <span md-highlight-text="vm.facet.searchText" md-highlight-flags="^i">{{ item.name }} {{item.unit_label ? ("(" + item.unit_label + ")") : ""}}</span>
+         </md-item-template>
+      </md-autocomplete>
+      <md-chip-template>
+        <span>{{ $chip.name }} <span ng-if="$chip.unit_label">({{$chip.unit_label}})</span></span>
+      </md-chip-template>
+    </md-chips>
+    <div ng-repeat="value in vm.facet.selected">
+        <div ng-if="value.type != 'nominal' && value.min !== undefined">
+            <label>{{value.name}}: {{value.lower | number}} - {{value.upper | number}}</label>
+            <range-slider step="(value.max-value.min)/100"
+                          lower-value="value.lower" upper-value="value.upper"
+                          min="value.min" max="value.max" >
+            </range-slider>
+            <div ng-repeat="indep_value in value.indep_vals">
+                <div ng-if="indep_value.type != 'nominal' && indep_value.min !== undefined">
+                    <label>{{indep_value.name}}: {{indep_value.lower | number}} - {{indep_value.upper | number}}</label>
+                    <range-slider step="(indep_value.max-value.min)/100"
+                                  lower-value="indep_value.lower" upper-value="indep_value.upper"
+                                  min="indep_value.min" max="indep_value.max" >
+                    </range-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div ng-if="vm.facet.typeProperty == '' && vm.facet.type != 'nominal'">
+    <range-slider step="(vm.facet.max-vm.facet.min)/100" min-gap="(vm.facet.max-vm.facet.min)/100"
+                  lower-value="vm.facet.lower" upper-value="vm.facet.upper"
+                  min="vm.facet.min" max="vm.facet.max">
+    </range-slider>
+  </div>
+  <md-progress-linear md-mode="indeterminate" ng-show="vm.isLoading()"></md-progress-linear>
+  <md-toolbar class="md-warn" ng-if="vm.error">
+    <div class="md-toolbar-tools">
+      <h2 class="md-flex">{{ vm.error|limitTo:100 }}</h2>
+    </div>
+  </md-toolbar>
+</div>

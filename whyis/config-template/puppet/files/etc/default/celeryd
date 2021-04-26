@@ -1,0 +1,41 @@
+# Edit the options in this file to match your projects environment.
+# See http://ask.github.com/celery/cookbook/daemonizing.html for the complete
+# documentation on the options.
+
+# WARNING: This script is only designed to run the worker(s) for a single
+# project. If you need to start workers for multiple projects you should
+# consider using supervisor.
+# Examples can be found in /usr/share/doc/python-celery/supervisord/
+
+# Change this to true when done to enable the init.d script.
+# Default: false
+ENABLED="true"
+
+# Name of nodes to start
+# here we have a single node
+CELERYD_NODES="w1"
+# or we could have three nodes:
+#CELERYD_NODES="w1 w2 w3"
+
+# Where to chdir at start.
+CELERYD_CHDIR="/apps/whyis"
+CELERYBEAT_CHDIR=$CELERYD_CHDIR
+
+ENV_PYTHON="$CELERYD_CHDIR/venv/bin/python"
+
+# Extra arguments to celeryd
+CELERYD_OPTS="-A wsgi.celery --concurrency=4"
+CELERYBEAT_OPTS="-A wsgi.celery"
+
+# Name of the celery config module.
+#CELERY_CONFIG_MODULE="wsgi.celery"
+CELERY_BIN=$CELERYD_CHDIR"/venv/bin/celery"
+
+# %n will be replaced with the nodename.
+CELERYD_LOG_FILE="/var/log/celery/%n.log"
+
+# Workers should run as an unprivileged user.
+CELERYD_USER="whyis"
+CELERYD_GROUP="whyis"
+CELERYBEAT_USER=$CELERYD_USER
+CELERYBEAT_GROUP=$CELERYD_GROUP

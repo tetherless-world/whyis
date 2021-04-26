@@ -6,7 +6,16 @@ import sys
 from flask_script import Option, Server
 
 import os
+import socket
+from whyis import fuseki
 
+from celery import current_app
+from celery.bin import worker
+
+def find_free_port():
+    with socket.socket() as s:
+        s.bind(('', 0))            # Bind to a free port provided by the host.
+        return s.getsockname()[1]  # Return the port number assigned.
 
 class WhyisServer(Server):
     """
@@ -21,6 +30,23 @@ class WhyisServer(Server):
             ]
 
     def __call__(self, app, watch, *args, **kwds):
+        print("starting fuseki (maybe)...")
+        if app.config.get('EMBEDDED_FUSEKI', False):
+            port = find_free_port()
+            app.fuseki_server = fuseki.FusekiServer(port=port)
+            app.config['FUSEKI_PORT'] = port
+            knowledge_endpoint = app.fuseki_server.get_dataset('/knowledge')
+            print("Knowledge Endpoint:", knowledge_endpoint)
+            app.config['KNOWLEDGE_ENDPOINT'] = knowledge_endpoint
+            admin_endpoint = app.fuseki_server.get_dataset('/admin')
+            app.config['ADMIN_ENDPOINT'] = admin_endpoint
+            print("Admin Endpoint:", admin_endpoint)
+
+
+        if app.config.get('EMBEDDED_CELERY', False):
+            app.celery_worker = app.celery.WorkController()
+            app.celery_worker.start()
+
         if not watch:
             return Server.__call__(self, app=app, *args, **kwds)
 
@@ -54,6 +80,8 @@ class WhyisServer(Server):
                 try:
                     import signal
                     os.killpg(0, signal.SIGINT)  # kill all processes in my group
+
+                    app.celery_worker.stop()
                 except KeyboardInterrupt:
                     # SIGINT is delievered to this process as well as the child processes.
                     # Ignore it so that the existing exception, if any, is returned. This
@@ -64,4 +92,4 @@ class WhyisServer(Server):
             for static_dir_path in webpack_static_dir_paths:
                 subprocess.Popen(["npm", "start"], cwd=static_dir_path)
 
-            Server.__call__(self, app=app, *args, **kwds)
+            return Server.__call__(self, app=app, *args, **kwds)

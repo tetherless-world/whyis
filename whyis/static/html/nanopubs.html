@@ -1,0 +1,95 @@
+<newnanopub data-ng-if="current_user.uri != null && !disableNanopubing" data-ng-hide="disableNanopubing" verb="Add" nanopub="newNanopub" on-save="createNanopub(newNanopub)"/>
+
+<div data-ng-hide="disableNanopubing || current_user.uri" class="alert alert-warning" role="alert">Please log in or register to add knowledge.</div>
+
+<div data-ng-if="current_user.uri != null && !disableNanopubing" class="modal fade" id="deleteNanopubModal" tabindex="-1" role="dialog" >
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">Are you sure you want to delete this nanopub?</div>
+      <div class="modal-footer">
+        <button class="btn btn-link" type="button" data-ng-click="delete(toDelete)" data-dismiss="modal" >
+          Yes
+        </button>
+        <button class="btn btn-link" type="button" data-ng-click="toDelete = null" data-dismiss="modal" >
+          No
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<div style="background-color: white">
+  <md-card data-ng-repeat="nanopub in nanopubs">
+    <md-card-header>
+      <md-card-avatar>
+        <md-icon ng-show="nanopub.contributor">person</md-icon>
+        <md-icon ng-hide="nanopub.contributor">code</md-icon>
+      </md-card-avatar>
+      <md-card-header-text>
+        <span class="md-title">
+          <span data-ng-if="nanopub.contributor">
+            <span data-ng-bind="nanopub.contributor_label"/>
+          </span>
+          <span data-ng-if="nanopub.generation_type">
+            <span data-ng-bind="nanopub.generation_type_label"/>
+          </span>
+        </span>
+        <span class="md-subhead">
+          <span data-ng-show="nanopub.modified">Edited <span data-ng-bind="nanopub.modified | date"/></span>
+          <span data-ng-hide="nanopub.modified" data-ng-bind="nanopub.created | date"></span>
+      </md-card-header-text>
+      <md-card-actions layout="row" layout-align="start center">
+        <md-menu md-position-mode="target-right target">
+          <md-button aria-label="Open Menu" class="md-icon-button" ng-click="$mdMenu.open($event)">
+            <md-icon md-menu-origin>more_vert</md-icon>
+          </md-button>
+          <md-menu-content width="4">
+            <md-menu-item>
+              <md-button ng-href="{{nanopub.np_local_url}}">Details</md-button>
+            </md-menu-item>
+            <md-menu-item data-ng-if="canEdit(nanopub)" data-ng-hide="nanopub.editing && !disableNanopubing" >
+              <md-button data-ng-click="editNanopub(nanopub)">Edit</md-button>
+            </md-menu-item>
+            <md-menu-item data-ng-if="canEdit(nanopub)" data-ng-hide="nanopub.editing && !disableNanopubing" >
+              <md-button data-ng-click="deleteNanopub(nanopub)">Delete</md-button>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+      </md-card-actions>
+    </md-card-header>
+    <md-card-content>
+      <div data-ng-if="nanopub.editing && (!disableNanopubing && current_user.uri != null)" >
+        <newnanopub verb="Edit" nanopub="nanopub.graph" editing="true" on-save="saveNanopub(nanopub)"/>
+      </div>
+      <div data-ng-hide="nanopub.editing" data-ng-bind-html="trust(nanopub.content)"></div>
+      <div>
+        <blockquote style="font-size:0.8em" data-ng-repeat="reply in nanopub.replies">
+          <div class="dropdown pull-right" data-ng-hide="reply.editing" data-ng-if="canEdit(reply) && !disableNanopubing">
+            <button class="btn btn-link dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              <span class="glyphicon glyphicon-chevron-down"></span>
+            </button>
+            <ul class="dropdown-menu" >
+              <li><a href="#" data-ng-click="editNanopub(reply)">Edit</a></li>
+              <li><a href="#" data-ng-click="deleteNanopub(reply)">Delete</a></li>
+            </ul>
+          </div>
+          <div data-ng-if="reply.editing &&  (!disableNanopubing ||current_user.uri != null)" >
+            <newnanopub verb="Edit" editing="true" nanopub="reply.graph" on-save="saveNanopub(reply)"/>
+          </div>
+          <div data-ng-hide="reply.editing" data-ng-bind-html="trust(reply.content)"></div>
+          <footer>
+            <span >
+              <!--<span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/givenName')"/>
+                  <span data-ng-bind="contributor.value('http://xmlns.com/foaf/0.1/familyName')"/>-->
+              <span data-ng-if="reply.contributor" data-ng-bind="reply.contributor_label"/>
+            </span>
+            (<span data-ng-show="reply.modified">Edited <span data-ng-bind="reply.modified | date"/>
+            </span><span data-ng-hide="reply.modified" data-ng-bind="reply.created | date"/>)
+          </footer>
+        </blockquote>
+        <newnanopub ng-if="!disableNanopubing && current_user.uri != null" verb="Reply" nanopub="nanopub.newNanopub" on-save="createNanopub(nanopub.newNanopub)"/>
+      </div>
+    </md-card-content>
+  </md-card>
+</div>

@@ -1,0 +1,28 @@
+{
+  "name": "whyis",
+  "homepage": "https://github.com/tetherless-world/whyis",
+  "authors": [
+    "Jim McCusker <mccusker@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "Apache 2.0",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lf-ng-md-file-input": "^1.5.2",
+    "angular-resource": "^1.6.4",
+    "angular-sanitize": "^1.6.4",
+    "d3": "^4.8.0",
+    "jquery": "^3.2.1",
+    "d3-cloud": "^1.2.4",
+    "bootstrap": "^3.3.7",
+    "angular-semantic-faceted-search": "sparql-faceter#^1.5.3"
+  }
+}

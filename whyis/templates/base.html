@@ -8,7 +8,7 @@
   <head>
     <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>{{ title() }} - {{ config['site_name'] }}</title>
+    <title>{{ title() }} - {{ config['SITE_NAME'] }}</title>
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
     <!-- Angular Material style sheet -->
@@ -152,9 +152,9 @@
     {% endblock %}
 
     <script>
-      LOD_PREFIX = '{{config.lod_prefix}}';
-      {% if 'base_rate_probability' in config %}
-      BASE_RATE = {{config['base_rate_probability']}};
+      LOD_PREFIX = '{{config.LOD_PREFIX}}';
+      {% if 'BASE_RATE_PROBABILITY' in config %}
+      BASE_RATE = {{config['BASE_RATE_PROBABILITY']}};
       {% else %}
       BASE_RATE = 0.5;
       {% endif %}

@@ -1,0 +1,16 @@
+<div ng-cloak layout-gt-sm="row" layout="column">
+    <md-progress-linear ng-hide="entities" md-mode="indeterminate"></md-progress-linear>
+    <!-- <md-toolbar layout="column" class="md-hue-3">
+        <div class="md-toolbar-tools">
+            <span>Search Results</span>
+        </div>
+        
+    </md-toolbar> -->
+
+</div>
+<div ng-show="entities" layout-fill layout="column">
+  <kg-card  ng-show="entities.length > 0" ng-repeat="entity in entities"  compact="true" src="entity.sub">
+  </kg-card>
+  <md-subheader ng-hide="entities.length > 0" >No results found.</md-subheader>
+</div>
+

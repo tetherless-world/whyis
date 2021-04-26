@@ -1,0 +1,48 @@
+<md-button data-ng-hide="editing" class="md-primary" data-ng-click="editing=true">{{verb}}...</md-button>
+<md-card data-ng-show="editing">
+  <md-card-title layout="row" layout-sm="column" md-card >
+      <md-nav-bar md-selected-nav-item="currentGraph" md-no-ink-bar="true" nav-bar-aria-label="navigation links">
+        <md-nav-item md-nav-click="goto('assertion')" name="assertion">Assertion</md-nav-item>
+        <md-nav-item md-nav-click="goto('provenance')" name="provenance">Provenance</md-nav-item>
+      </md-nav-bar>
+      <div flex="grow"></div>
+      <div class="btn-group" flex="none" ><md-button  aria-label="Cancel" data-ng-click="editing = false">&times;</md-button></div>
+  </md-card-title>
+  <md-card-content>
+  <section data-ng-repeat="graph in ['assertion','provenance']" layout="column" data-ng-show="currentGraph === graph">
+    <md-input-container md-no-float data-ng-hide="nanopub.resource[graph]['http://www.w3.org/ns/prov#value'][0]['@type'] == 'xsd:base64Binary'" >
+      <textarea placeholder="Content" max-rows="10" rows="1" data-ng-model="nanopub.resource[graph]['http://www.w3.org/ns/prov#value'][0]['@value']"></textarea>
+    </md-input-container>
+    <section layout="row">
+      <md-input-container flex="grow" data-ng-show="nanopub.resource[graph].resource.remote">
+        <label>URL</label>
+        <input ng-model="nanopub.resource[graph]['http://www.w3.org/ns/prov#wasQuotedFrom'][0]['@id']" type="url"  ></input>
+      </md-input-container>
+      <md-input-container flex="grow"  data-ng-hide="nanopub.resource[graph].resource.remote" >
+        <input aria-label="Choose File" file-model="nanopub.resource[graph]['http://www.w3.org/ns/prov#value'][0]['@value']"
+               format="nanopub.resource[graph]['http://open.vocab.org/terms/hasContentType'][0]['@value']" type="file" />
+        <!--<lf-ng-md-file-input lf-file="nanopub.resource[graph].resource.files"></lf-ng-md-file-input>-->
+      </md-input-container>
+      <md-input-container flex="none" >
+        <md-checkbox ng-model="nanopub.resource[graph].resource.remote" aria-label="Remote">Remote</md-checkbox>
+      </md-input-container>
+      <md-input-container flex="none">
+        <label>Format</label>
+        <md-select ng-model="nanopub.resource[graph]['http://open.vocab.org/terms/hasContentType'][0]['@value']">
+          <md-option ng-value="null">Structured Data</md-option>
+          <md-optgroup label="Text">
+            <md-option ng-value="'text/markdown'">Semantic Markdown</md-option>
+            <md-option ng-value="'text/html'">HTML+RDFa</md-option>
+          </md-optgroup>
+          <md-optgroup label="Data">
+            <md-option ng-value="format.mimetype" ng-repeat="format in formats">{{format.name}}</md-option>
+          </md-optgroup>
+        </md-select>
+      </md-input-container>
+    </section>
+  </section>
+  </md-card-content>
+  <md-card-actions layout="row" layout-align="end center">
+    <md-button class="md-primary" data-ng-click="save() ; editing = false">{{verb}}</md-button>
+  </md-card-actions>
+</md-card>
