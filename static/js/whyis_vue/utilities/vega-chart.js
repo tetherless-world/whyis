@@ -1,6 +1,7 @@
 
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
+import axios from 'axios'
 
 import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
 import { querySparql } from 'utilities/sparql'
@@ -43,11 +44,12 @@ const chartType = 'http://semanticscience.org/resource/Chart'
 const foafDepictionUri = 'http://xmlns.com/foaf/0.1/depiction'
 const hasContentUri = 'http://vocab.rpi.edu/whyis/hasContent'
 
-const chartFieldUris = {
+const chartFieldPredicates = {
   baseSpec: 'http://semanticscience.org/resource/hasValue',
   query: 'http://schema.org/query',
   title: 'http://purl.org/dc/terms/title',
   description: 'http://purl.org/dc/terms/description',
+  dataset: 'http://www.w3.org/ns/prov#used',
 }
 
 const chartPrefix = 'viz'
@@ -73,8 +75,8 @@ function buildChartLd (chart) {
     }
   }
   Object.entries(chart)
-    .filter(([field, value]) => chartFieldUris[field])
-    .forEach(([field, value]) => chartLd[chartFieldUris[field]] = [{ '@value': value }])
+    .filter(([field, value]) => chartFieldPredicates[field])
+    .forEach(([field, value]) => chartLd[chartFieldPredicates[field]] = [{ '@value': value }])
   return chartLd
 }
 
@@ -85,14 +87,10 @@ function extractChart (chartLd) {
     chart.depiction = chartLd[foafDepictionUri][0]['@id']
   }
 
-  Object.entries(chartFieldUris)
-    .forEach(([field, uri]) => {
-      let value = ""
-      if (uri in chartLd) {
-        value = chartLd[uri][0]['@value']
-      }
-      chart[field] = value
-    })
+  Object.entries(chartFieldPredicates)
+    .filter(([field, uri]) => uri in chartLd)
+    .forEach(([field, uri]) => chart[field] = chartLd[uri][0]['@value'])
+
   chart.baseSpec = JSON.parse(chart.baseSpec)
   return chart
 }
@@ -111,41 +109,6 @@ function copyChart(sourceChart) {
   newChart.uri = generateChartId()
   delete newChart.depiction
   return newChart
-}
-
-function loadChartFromNanopub(nanopubUri, chartUri) {
-  return describeNanopub(nanopubUri)
-    .then((describeData) => {
-      const assertion_id = `${nanopubUri}_assertion`
-      for (let graph of describeData) {
-        if (graph['@id'] === assertion_id) {
-          for (let resource of graph['@graph']) {
-            // Use the chart URI, if provided, to identify the chart.
-            // Otherwise, just grab the first chart found.
-            let chartMatch
-            if (chartUri) {
-              chartMatch = resource['@id'] === chartUri
-            } else {
-              const typeArray = resource['@type']
-              chartMatch = typeArray && (typeArray.indexOf(chartType) >= 0)
-            }
-            if (chartMatch) {
-              return extractChart(resource)
-            }
-          }
-        }
-      }
-    })
-}
-
-function loadChart (chartUri) {
-  return listNanopubs(chartUri)
-    .then(nanopubs => {
-      if (nanopubs.length > 0) {
-        const nanopubUri = nanopubs[0].np
-        return loadChartFromNanopub(nanopubUri, chartUri)
-      }
-    })
 }
 
 function saveChart (chart) {
@@ -172,29 +135,51 @@ const chartQuery = `
   PREFIX sio: <http://semanticscience.org/resource/>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
   PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-  SELECT DISTINCT ?uri ?title ?description ?query ?baseSpec ?depiction
+  PREFIX prov: <http://www.w3.org/ns/prov#>
+  PREFIX dcat: <http://www.w3.org/ns/dcat#>
+  SELECT DISTINCT ?uri ?downloadUrl ?title ?description ?query ?dataset ?baseSpec ?depiction
   WHERE {
-    ?uri a sio:Chart ;
-         dcterms:title ?title ;
-         dcterms:description ?description ;
-         schema:query ?query ;
-         sio:hasValue ?baseSpec ;
-         foaf:depiction ?depiction .
+    ?uri a sio:Chart .
+    OPTIONAL { ?uri dcterms:title ?title } .
+    OPTIONAL { ?uri dcterms:description ?description } .
+    OPTIONAL { ?uri schema:query ?query } .
+    OPTIONAL { ?uri prov:used ?dataset}
+    OPTIONAL { ?uri sio:hasValue ?baseSpec } .
+    OPTIONAL { ?uri foaf:depiction ?depiction } .
+    OPTIONAL { ?uri dcat:downloadURL ?downloadUrl } .
   }
   `
 
-function getCharts () {
-  return querySparql(chartQuery)
-    .then(data =>
-      data.results.bindings.map((chartResult) => {
-        const chart = {}
-        Object.entries(chartResult)
-          .forEach(([field, value]) => chart[field] = value.value)
-        chart.baseSpec = JSON.parse(chart.baseSpec)
-        return chart
-      })
-    )
+async function getCharts () {
+  const {results} = await querySparql(chartQuery)
+  const charts = []
+  for (let row of results.bindings) {
+    charts.push(await readChartSparqlRow(row))
+  }
+  return charts
+}
 
+async function loadChart(chartUri) {
+  const singleChartQuery = chartQuery + `\n  VALUES (?uri) { (<${chartUri}>) }`
+  const {results} = await querySparql(singleChartQuery)
+  const rows = results.bindings
+  if (rows.length < 1) {
+    throw `No chart found for uri: ${chartUri}`
+  }
+  return await readChartSparqlRow(rows[0])
+}
+
+async function readChartSparqlRow(chartResult) {
+  const chart = {}
+  Object.entries(chartResult)
+    .forEach(([field, value]) => chart[field] = value.value)
+  if (chart.baseSpec) {
+    chart.baseSpec = JSON.parse(chart.baseSpec)
+  } else if (chart.downloadUrl) {
+    const {data} = await axios.get(`/about?uri=${chart.uri}`)
+    chart.baseSpec = data
+  }
+  return chart
 }
 
 function transformSparqlData (sparqlResults) {
