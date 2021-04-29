@@ -137,11 +137,10 @@ InferenceRules = dict(
         "resource" : "?resource", 
         "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
         "antecedent" :  '''
-    ?resource ?irreflexiveProperty ?o .
     ?irreflexiveProperty rdf:type owl:IrreflexiveProperty .
     ?resource ?irreflexiveProperty ?resource .''',
         "consequent" : "?resource rdf:type owl:Nothing .",
-        "explanation" : "Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."
+        "explanation" : "Since {{resource}} has a {{irreflexiveProperty}} assertion pointing to itself, and {{irreflexiveProperty}} is a irreflexive property, we can infer that there is an inconsistency associated with {{resource}}."
     },
     Class_Inclusion = {
         "reference" : "Class Inclusion",
