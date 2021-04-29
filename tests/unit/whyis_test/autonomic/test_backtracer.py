@@ -248,12 +248,10 @@ ex-kb:Assertion_1 {
     sio:Object rdf:type owl:Class ;
         rdfs:subClassOf sio:Entity ;
         rdfs:label "object" ;
-        #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
         dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
     sio:InformationContentEntity rdf:type owl:Class ;
         rdfs:subClassOf sio:Object ;
-    #    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
         rdfs:label "information content entity" ;
         dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
