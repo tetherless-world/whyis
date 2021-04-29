@@ -975,7 +975,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Chain Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Chain Back Tracer')), self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Chain Inclusion Back Tracer')), self.app.db)
 
     def test_class_equivalence_back_tracer(self):
         self.dry_run = False
