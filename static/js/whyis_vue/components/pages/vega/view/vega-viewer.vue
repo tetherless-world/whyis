@@ -14,7 +14,7 @@
             <md-icon>share</md-icon>
           </md-button>
         </div>
-        <div>
+        <div v-if="chart.query">
           <md-button class="md-icon-button" @click.native.prevent="chartQuery">
             <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Query </md-tooltip>
             <md-icon>preview</md-icon>
@@ -164,17 +164,20 @@
       }
     },
     methods: {
-      loadVisualization () {
-        loadChart(this.pageUri)
-          .then(chart => {
-            this.chart = chart
-            EventServices.checkIfEditable(this.chart.uri)
-            return querySparql(chart.query)
-          })
-          .then(sparqlResults => {
-            this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
-          })
-          .finally(() => this.loading = false)
+      async loadVisualization () {
+        this.chart = await loadChart(this.pageUri)
+        EventServices.checkIfEditable(this.chart.uri)
+        if (this.chart.query) {
+          const sparqlResults = await querySparql(this.chart.query)
+          this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
+        } else {
+          this.spec = this.chart.baseSpec
+        }
+        if (this.chart.dataset) {
+          this.spec = this.chart.baseSpec
+          this.spec.data = {url: `/about?uri=${this.chart.dataset}`}
+        }
+        this.loading = false
       },
       navBack(args){
         if(args) {
