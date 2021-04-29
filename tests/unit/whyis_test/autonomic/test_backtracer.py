@@ -2134,47 +2134,49 @@ ex-kb:Assertion_2 {
         self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Min Cardinality Back Tracer')), self.app.db)
 
 
-#    def test_object_qualified_min_cardinality_back_tracer(self):
-#        self.dry_run = False
-#
-#        np = nanopub.Nanopublication()
-#        np.assertion.parse(data=prefixes+'''
-## <-------  Object Qualified Min Cardinality -------
-#sio:hasComponentPart rdf:type owl:ObjectProperty ;
-#    rdfs:subPropertyOf sio:hasDirectPart ;
-#    rdfs:label "has component part" ;
-#    dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
-#
-#sio:Polyline rdf:type owl:Class ;
-#    rdfs:subClassOf sio:GeometricEntity ;
-#    rdfs:subClassOf 
-#        [ rdf:type owl:Restriction ;
-#            owl:onProperty sio:hasComponentPart ; 
-#            owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
-#            owl:onClass sio:LineSegment ] ;
-#    dct:description "A polyline is a connected sequence of line segments." ;
-#    rdfs:label "polyline" .
-#
-#sio:LineSegment rdf:type owl:Class ;
-#    rdfs:subClassOf sio:Line ;
-#    dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
-#    rdfs:label "line segment" .
-#
-#ex-kb:PolylineSegment rdf:type sio:Polyline ;
-#    rdfs:label "polyline segment " ;
-#    sio:hasComponentPart ex-kb:LineSegmentInstance .
-#
-#ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
-#    rdfs:label "line segment instance" .
-#
-## come back to abductive rule for this
-## -------  Object Qualified Min Cardinality ------->
-#''', format="trig")
-#        self.app.nanopub_manager.publish(*[np])
-#        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
-#        agent.process_graph(self.app.db)
-#        objects = list(self.app.db.objects(KB.PolylineSegment, SIO.hasComponentPart))
-#        self.assertEquals(len(objects), 2)
+    def test_object_qualified_min_cardinality_back_tracer(self):
+        self.dry_run = False
+
+        np = nanopub.Nanopublication()
+        np.assertion.parse(data=prefixes+'''
+# <-------  Object Qualified Min Cardinality -------
+ex-kb:Assertion_1 {
+    sio:hasComponentPart rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf sio:hasDirectPart ;
+        rdfs:label "has component part" ;
+        dct:description "has component part is a relation between a whole and a component part where the component is instrinsic to the whole, and loss of the part would change the kind that it is." .
+
+    sio:Polyline rdf:type owl:Class ;
+        rdfs:subClassOf sio:GeometricEntity ;
+        rdfs:subClassOf 
+            [ rdf:type owl:Restriction ;
+                owl:onProperty sio:hasComponentPart ; 
+                owl:minQualifiedCardinality "2"^^xsd:nonNegativeInteger ;
+                owl:onClass sio:LineSegment ] ;
+        dct:description "A polyline is a connected sequence of line segments." ;
+        rdfs:label "polyline" .
+
+    sio:LineSegment rdf:type owl:Class ;
+        rdfs:subClassOf sio:Line ;
+        dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
+        rdfs:label "line segment" .
+
+    ex-kb:PolylineSegment rdf:type sio:Polyline ;
+        rdfs:label "polyline segment " ;
+        sio:hasComponentPart ex-kb:LineSegmentInstance .
+
+    ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
+        rdfs:label "line segment instance" .
+}
+ex-kb:Assertion_2 {
+    ex-kb:PolylineSegment sio:hasComponentPart [ rdf:type owl:Individual ; owl:differentFrom ex-kb:LineSegmentInstance ] .
+}
+# -------  Object Qualified Min Cardinality ------->
+''', format="trig")
+        self.app.nanopub_manager.publish(*[np])
+        agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
+        agent.process_graph(self.app.db)
+        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Min Cardinality Back Tracer')), self.app.db)
 
     def test_object_exact_cardinality_back_tracer(self):
         self.dry_run = False
