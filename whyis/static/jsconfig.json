@@ -1,0 +1,8 @@
+{
+    "exclude": [
+        "node_modules",
+        "js/*whyis_vue_bundle.js.*"
+    ],
+    "include": ["js/whyis_vue/**/*"],
+    "checkJs": true
+}

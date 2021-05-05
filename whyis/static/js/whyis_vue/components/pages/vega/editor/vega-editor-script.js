@@ -108,7 +108,7 @@ export default Vue.component('vega-editor', {
       let getChartPromise;
       if (this.pageView === 'new') {
         getChartPromise = Promise.resolve(getDefaultChart())
-      } else if(this.pageView === 'restore'){ 
+      } else if(this.pageView === 'restore'){
 	      await this.postChartBk()
 	      return this.getSparqlData()
       }else {
