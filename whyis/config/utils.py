@@ -22,4 +22,3 @@ def import_config_module(app):
         app.config.from_pyfile('whyis_system.conf')
     else:
         app.config.from_object(default.EmbeddedSystem)
-        print(app.config['EMBEDDED_FUSEKI'])

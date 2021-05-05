@@ -602,8 +602,8 @@ construct {
         self.initialize_g = initialize_g
 
         if not self.config.get("MULTIUSER", True):
-            self.config['AUTHENTICATORS'] = SingleUserAuthenticator()
-            
+            self.config['AUTHENTICATORS'] = [SingleUserAuthenticator()]
+
         @self.before_request
         def load_forms():
 

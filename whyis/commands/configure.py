@@ -21,9 +21,6 @@ class Configure(Command):
 
         # Create project from the cookiecutter-pypackage/ template
         extra_context = {
-            'SECRET_KEY': rando(),
-            'SECURITY_PASSWORD_SALT': rando(),
-            'project_slug' : os.getcwd().split(os.sep)[-1]
         }
         template_path = resource_filename('whyis', 'config-template')
 

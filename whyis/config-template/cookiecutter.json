@@ -4,9 +4,7 @@
     "project_slug": "{{ cookiecutter.project_name.lower()|replace(' ', '_')|replace('-', '_') }}",
     "author": "J. Doe",
     "email": "j.doe@example.com",
-    "linked_data_prefix": "http://localhost",
+    "linked_data_prefix": "http://purl.org/whyis/local",
     "version": "0.1",
-    "packages": "",
-    "SECRET_KEY":"",
-    "SECURITY_PASSWORD_SALT" : ""
+    "packages": ""
 }

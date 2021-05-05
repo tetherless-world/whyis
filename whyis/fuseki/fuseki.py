@@ -45,7 +45,6 @@ class FusekiServer:
         self.process = run_fuseki(args+['--port',str(port),'-q', '--localhost', '--mem','/ds'],
                                   stdin, stdout, stderr)
         _wait_for_port(port)
-        print("Fuseki Server started with datasets:",*self.datasets.keys())
 
     @property
     def datasets(self):
@@ -60,7 +59,6 @@ class FusekiServer:
             response = requests.post(self.url+'/$/datasets',
                                      data=assembler,
                                      headers={'Content-Type':"text/turtle"})
-            print(name, response.status_code, response.text)
         return self.url+name
 
 def run_fuseki(args, stdin=None, stdout=None, stderr=None):

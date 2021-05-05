@@ -55,6 +55,7 @@ class ProductionSystem:
 
 
 class EmbeddedSystem:
+    DEBUG = True  # we want debug level output
     # LOGGING
     LOGGER_NAME = "whyis_log"
     LOG_FILENAME = "log/output-whyis-%s.log" % (str(datetime.now()).replace(' ','_'))

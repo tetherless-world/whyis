@@ -6,6 +6,16 @@ from whyis import commands
 
 from whyis.app_factory import app_factory
 
+import sys
+import os
+
+# Add current directory to python path to enable imports for app.
+try:
+    sys.path.index(os.getcwd())
+except:
+    sys.path.append(os.getcwd())
+
+
 class Manager(script.Manager):
     def __init__(self):
         script.Manager.__init__(self, app_factory)
