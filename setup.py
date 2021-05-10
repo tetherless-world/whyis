@@ -2,6 +2,7 @@ import os
 from distutils.core import setup
 import distutils.command.build_ext
 import requests
+import subprocess
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level
@@ -9,6 +10,9 @@ import requests
 # string in below ...
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+def build_js():
+    subprocess.run('npm install'.split(' '),shell=True,cwd='static')
 
 def download_file(url, filename=None):
     filename = url.split('/')[-1] if filename is None else filename
