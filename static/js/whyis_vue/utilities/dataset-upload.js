@@ -265,6 +265,7 @@ function deleteDataset (datasetUri) {
 
 async function saveDistribution(fileList, id){      
   let distrData = new FormData(); 
+  let distrLDs = Array(fileList.length);
   // Specify is a dataset so handles multiple files
   distrData.append('upload_type', 'http://www.w3.org/ns/dcat#Dataset')
 
@@ -272,8 +273,13 @@ async function saveDistribution(fileList, id){
   Array
     .from(Array(fileList.length).keys())
     .map(x => {
-      distrData.append(fileList[x].name, fileList[x]); 
+      distrData.append(fileList[x].label, fileList[x]); 
+      distrLDs[x] = {
+        '@id': `${lodPrefix}/dataset/${id}/${fileList[x].name.replace(/ /g, '_')}`,
+        'http://www.w3.org/2000/01/rdf-schema#label': fileList[x].label,
+      }
     });
+
 
   // Where to save the distribution
   const uri = `${lodPrefix}/dataset/${id}`;
@@ -286,6 +292,13 @@ async function saveDistribution(fileList, id){
         }, 
       }
   )
+  Array
+    .from(Array(fileList.length).keys())
+    .map(x => {
+      if(distrLDs[x]['http://www.w3.org/2000/01/rdf-schema#label'] != ''){
+        postNewNanopub(distrLDs[x])
+      }
+  });
 
 }
 

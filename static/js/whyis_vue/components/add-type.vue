@@ -35,6 +35,7 @@
                 <label v-else md-term="term" md-fuzzy-search="true">
                     {{item.label}}
                 </label>
+                <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
                 </template>
             
                 <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
@@ -93,6 +94,8 @@ export default Vue.component('add-type', {
             typeChips: [],
             status: false,
             active: false,
+            query: null,
+            awaitingResolve: false,
         };
     },
     methods: {
@@ -101,7 +104,16 @@ export default Vue.component('add-type', {
             this.typeList = this.getSuggestedTypes(this.uri);
         },
         resolveEntityType(query){
-            this.typeList = this.getTypeList(query);
+            var thisVue = this;
+            this.query = query
+            if (!thisVue.awaitingResolve) {
+                setTimeout(function () {
+                    console.log(thisVue.query)
+                    thisVue.typeList = thisVue.getTypeList(thisVue.query);
+                    thisVue.awaitingResolve = false;
+                }, 1000); 
+            }
+            thisVue.awaitingResolve = true;
         },
         selectedTypeChange(item){
             this.typeChips.push(item);
