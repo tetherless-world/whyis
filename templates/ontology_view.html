@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_vue.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
 <link rel="stylesheet" href="/static/css/resources/primer.css" media="screen" type="text/css"/>    
-<link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>    
+<!-- <link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>     -->
 <link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>    
 <link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/> 
 {% endblock %}
@@ -30,7 +30,9 @@
 <script type="text/javascript">
     var ontology = "{{this.description().identifier}}";
 </script>
-
+<div class="page-header" layout="row">
+  <h1 flex property="rdfs:label">{{get_label(this.description())}}</h1>
+</div>
 <!--TABLE OF CONTENTS-->
 <div id="toc">
 <p class="toc_title"><h2>Contents</h2></p>
