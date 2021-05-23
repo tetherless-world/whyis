@@ -22,7 +22,7 @@ sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
-sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 6.0.0
+sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 5.12.0
 
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
