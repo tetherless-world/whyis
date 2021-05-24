@@ -2104,7 +2104,7 @@ ex-kb:Assertion_1 {
         rdfs:subClassOf sio:Collection ,
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasMember ;
-                owl:minCardinality "2"^^xsd:integer ] ; 
+                owl:minCardinality "3"^^xsd:integer ] ; 
         rdfs:label "study group" .
 
     ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
@@ -2388,11 +2388,11 @@ ex-kb:Assertion_1 {
         rdfs:subClassOf
             [ rdf:type owl:Restriction ;
                 owl:onProperty ex:hasDiameterValue ;
-                owl:minCardinality "2"^^xsd:integer ] ;
+                owl:minCardinality "3"^^xsd:integer ] ;
         rdfs:label "conical cylinder" .
 
     ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
-        ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
+        ex:hasDiameterValue "1"^^xsd:integer ;
         rdfs:label "coffee container" .
 }
 ex-kb:Assertion_2 {
