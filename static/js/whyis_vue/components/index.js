@@ -13,3 +13,5 @@ import './add-attribute';
 import './add-link';
 import './add-knowledge-menu';
 import './accordion'
+import './facets'
+import './facet-browser'
