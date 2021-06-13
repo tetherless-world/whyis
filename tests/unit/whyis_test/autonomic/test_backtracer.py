@@ -112,7 +112,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Class Disjointness Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Disjointness Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_transitivity_back_tracer(self):
         self.dry_run = False
@@ -180,7 +182,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Transitivity Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Transitivity Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Transitivity Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_reflexivity_back_tracer(self):
         self.dry_run = False
@@ -220,7 +224,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Reflexivity Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Reflexivity Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Reflexivity Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_irreflexivity_back_tracer(self):
         self.dry_run = False
@@ -283,7 +289,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Irreflexivity Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Irreflexivity Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Irreflexivity Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_functional_object_property_back_tracer(self):
         self.dry_run = False
@@ -358,7 +366,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Functional Object Property Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Functional Object Property Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_property_domain_back_tracer(self):
         self.dry_run = False
@@ -499,7 +509,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Domain Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Property Domain Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Domain Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_property_range_back_tracer(self):
         self.dry_run = False
@@ -572,7 +584,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Range Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Property Range Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Range Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_inverse_functional_object_property_back_tracer(self):
         self.dry_run = False
@@ -639,7 +653,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Inverse Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Inverse Functional Object Property Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Inverse Functional Object Property Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_functional_data_property_back_tracer(self):
         self.dry_run = False
@@ -665,7 +681,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Functional Data Property Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Functional Data Property Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Functional Data Property Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_property_disjointness_back_tracer(self):
         self.dry_run = False
@@ -699,7 +717,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Property Disjointness Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Disjointness Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_symmetry_back_tracer(self):
         self.dry_run = False
@@ -729,7 +749,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Symmetry Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Symmetry Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Symmetry Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_asymmetry_back_tracer(self):
         self.dry_run = False
@@ -762,7 +784,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Asymmetry Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Asymmetry Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Asymmetry Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_class_inclusion_back_tracer(self):
         self.dry_run = False
@@ -797,7 +821,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Class Inclusion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Inclusion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_inclusion_back_tracer(self):
         self.dry_run = False
@@ -893,7 +919,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Inclusion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Inclusion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_property_inclusion_back_tracer(self):
         self.dry_run = False
@@ -925,7 +953,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Property Inclusion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Property Inclusion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_property_chain_inclusion_back_tracer(self):
         self.dry_run = False
@@ -973,7 +1003,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Chain Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Chain Inclusion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Chain Inclusion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_class_equivalence_back_tracer(self):
         self.dry_run = False
@@ -998,7 +1030,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Class Equivalence Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Equivalence Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_property_equivalence_back_tracer(self):
         self.dry_run = False
@@ -1029,7 +1063,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Property Equivalence Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Equivalence Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_individual_inclusion_back_tracer(self):
         self.dry_run = False
@@ -1055,7 +1091,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Individual Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Individual Inclusion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Individual Inclusion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_inversion_back_tracer(self):
         self.dry_run = False
@@ -1115,7 +1153,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Inversion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Inversion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Inversion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_same_individual_back_tracer(self):
         self.dry_run = False
@@ -1144,7 +1184,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Same Individual Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Same Individual Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Same Individual Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_different_individuals_back_tracer(self):
         self.dry_run = False
@@ -1165,7 +1207,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Different Individuals Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Different Individuals Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 
     def test_class_assertion_back_tracer(self):
@@ -1207,7 +1251,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Class Assertion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Assertion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 #    def test_positive_object_property_assertion_back_tracer(self):
 #        self.dry_run = False
@@ -1284,7 +1330,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Negative Object Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Negative Object Property Assertion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Negative Object Property Assertion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_negative_data_property_assertion_back_tracer(self):
         self.dry_run = False
@@ -1316,7 +1364,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Negative Data Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Negative Data Property Assertion Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Negative Data Property Assertion Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_keys_back_tracer(self):
         self.dry_run = False
@@ -1350,7 +1400,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Keys Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Keys Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Keys Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_some_values_from_back_tracer(self):
         self.dry_run = False
@@ -1431,7 +1483,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Some Values From Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Some Values From Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_some_values_from_back_tracer(self):
         self.dry_run = False
@@ -1463,7 +1517,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Some Values From Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Some Values From Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_has_self_back_tracer(self):
         self.dry_run = False
@@ -1499,7 +1555,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Has Self Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Has Self Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Has Self Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_has_value_back_tracer(self):
         self.dry_run = False
@@ -1553,7 +1611,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Has Value Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Has Value Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Has Value Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_has_value_back_tracer(self):
         self.dry_run = False
@@ -1590,7 +1650,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Has Value Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Has Value Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Has Value Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_all_disjoint_classes_back_tracer(self):
         self.dry_run = False
@@ -1635,7 +1697,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Classes Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('All Disjoint Classes Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Disjoint Classes Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_all_disjoint_properties_back_tracer(self):
         self.dry_run = False
@@ -1667,7 +1731,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Properties Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('All Disjoint Properties Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Disjoint Properties Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_all_different_individuals_back_tracer(self):
         self.dry_run = False
@@ -1700,7 +1766,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('All Different Individuals Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Different Individuals Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_one_of_membership_back_tracer(self):
         self.dry_run = False
@@ -1737,7 +1805,9 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Membership Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object One Of Membership Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object One Of Membership Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_one_of_inconsistency_back_tracer(self):
         self.dry_run = False
@@ -1772,7 +1842,9 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Inconsistency Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object One Of Inconsistency Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object One Of Inconsistency Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_one_of_back_tracer(self):
         self.dry_run = False
@@ -1798,7 +1870,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data One Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data One Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data One Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_datatype_restriction_back_tracer(self):
         self.dry_run = False
@@ -1845,7 +1919,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Datatype Restriction Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Datatype Restriction Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Datatype Restriction Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_all_values_from_back_tracer(self):
         self.dry_run = False
@@ -1902,7 +1978,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object All Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object All Values From Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object All Values From Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_all_values_from_back_tracer(self):
         self.dry_run = False
@@ -1935,7 +2013,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data All Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data All Values From Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data All Values From Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2002,7 +2082,9 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Max Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Max Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_qualified_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2074,7 +2156,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Max Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Max Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_min_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2131,7 +2215,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Min Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Min Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 
     def test_object_qualified_min_cardinality_back_tracer(self):
@@ -2176,7 +2262,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Min Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Min Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2236,7 +2324,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Exact Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Exact Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2289,7 +2379,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Qualified Exact Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Exact Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2327,7 +2419,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Max Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Max Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 
     def test_data_qualified_max_cardinality_back_tracer(self):
@@ -2370,7 +2464,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Max Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Max Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 
     def test_data_min_cardinality_back_tracer(self):
@@ -2392,7 +2488,7 @@ ex-kb:Assertion_1 {
         rdfs:label "conical cylinder" .
 
     ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
-        ex:hasDiameterValue "1"^^xsd:integer ;
+        ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
         rdfs:label "coffee container" .
 }
 ex-kb:Assertion_2 {
@@ -2403,7 +2499,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Min Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Min Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_qualified_min_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2433,7 +2531,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Min Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Min Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2467,7 +2567,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Exact Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Exact Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2503,7 +2605,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Qualified Exact Cardinality Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Exact Cardinality Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2540,7 +2644,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Complement Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Complement Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_property_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2615,7 +2721,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Property Complement Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Complement Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2645,7 +2753,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Complement Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Complement Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_property_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2682,7 +2792,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Property Complement Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Property Complement Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_union_of_back_tracer(self):
         self.dry_run = False
@@ -2726,7 +2838,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Union Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Union Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Union Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_data_union_of_back_tracer(self):
         self.dry_run = False
@@ -2805,7 +2919,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Union Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Data Union Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Union Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_disjoint_union_back_tracer(self):
         self.dry_run = False
@@ -2869,7 +2985,9 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Disjoint Union Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Disjoint Union Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Disjoint Union Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
     def test_object_intersection_of_back_tracer(self):
         self.dry_run = False
@@ -2898,32 +3016,19 @@ ex-kb:Assertion_1 {
 
     ex-kb:Therapy rdf:type sio:Process ;
         rdfs:label "therapy" .
-
-    # update following example. using it for testing for now
-    ex-kb:Brian rdf:type ex:CanTalk , ex:Dog , ex:Friendly .
-
-    ex:CanTalk rdf:type owl:Class .
-    ex:Dog rdf:type owl:Class .
-    ex:Friendly rdf:type owl:Class .
-
-    ex:FriendlyTalkingDog rdf:type owl:Class ;
-        owl:intersectionOf (ex:CanTalk ex:Dog ex:Friendly) .
 }
 
 ex-kb:Assertion_2 {
     ex-kb:ProteinReceptor rdf:type sio:Target .
-}
-
-ex-kb:Assertion_3 {
-    ex-kb:Brian rdf:type ex:FriendlyTalkingDog .
 }
 # ------- Object Intersection Of -------> 
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Intersection Of Back Tracer"]
         agent.process_graph(self.app.db)
-        self.assertIn((KB.Assertion_2, WHYIS.hypothesis, Literal('Object Intersection Of Back Tracer')), self.app.db)
-        self.assertIn((KB.Assertion_3, WHYIS.hypothesis, Literal('Object Intersection Of Back Tracer')), self.app.db)
+        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Intersection Of Back Tracer') ))
+        for hyp in hypothesis :
+            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
 #    def test_data_intersection_of_back_tracer(self):
 #        self.dry_run = False
