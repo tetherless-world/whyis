@@ -14,11 +14,13 @@ LOD_PREFIX = 'http://localhost:5000'
 
 # from whyis.namespace import skos
 
+
 InferenceRules = dict(
     Class_Disjointness = {
         "reference" : "Class Disjointness",
+        "rule" : "sets:ClassDisjointnessRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class .
     ?resource rdf:type ?disjointClass .
@@ -30,8 +32,9 @@ InferenceRules = dict(
     },
     Object_Property_Transitivity = {
         "reference" : "Object Property Transitivity",
+        "rule" : "sets:ObjectPropertyTransitivityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?transitiveProperty ?o1 .
     ?o1  ?transitiveProperty ?o2 .
@@ -41,8 +44,9 @@ InferenceRules = dict(
     },
     Object_Property_Reflexivity = {
         "reference" : "Object Property Reflexivity",
+        "rule" : "sets:ObjectPropertyTransitivityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?type ;
         ?reflexiveProperty ?o .
@@ -53,8 +57,9 @@ InferenceRules = dict(
     },
     Property_Domain = {
         "reference" : "Property Domain",
+        "rule" : "sets:PropertyDomainRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdfs:domain ?class .''',
@@ -63,8 +68,9 @@ InferenceRules = dict(
     },
     Property_Range = {
         "reference" : "Property Range",
+        "rule" : "sets:PropertyRangeRule",
         "resource" : "?resource",
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdfs:range ?class .''',
@@ -73,8 +79,9 @@ InferenceRules = dict(
     },
     Functional_Data_Property = {
         "reference" : "Functional Data Property",
+        "rule" : "sets:FunctionalDataPropertyRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?functionalProperty ?o1 ,
             ?o2 .
@@ -86,8 +93,9 @@ InferenceRules = dict(
     },
     Functional_Object_Property = {
         "reference" : "Functional Object Property",
+        "rule" : "sets:FunctionalObjectPropertyRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?functionalProperty ?o1 ,
             ?o2 .
@@ -99,8 +107,9 @@ InferenceRules = dict(
     },
     Property_Disjointness = {
         "reference" : "Property Disjointness",
+        "rule" : "sets:PropertyDisjointnessRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?p1 ?o1 ,
             ?o2 .
@@ -113,8 +122,9 @@ InferenceRules = dict(
     },
     Object_Property_Asymmetry = {
         "reference" : "Object Property Asymmetry",
+        "rule" : "sets:ObjectPropertyAsymmetryRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?asymmetricProperty ?o .
     ?asymmetricProperty rdf:type owl:AsymmetricProperty .
@@ -124,8 +134,9 @@ InferenceRules = dict(
     },
     Object_Property_Symmetry = {
         "reference" : "Object Property Symmetry",
+        "rule" : "sets:ObjectPropertySymmetryRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?symmetricProperty ?o .
     ?symmetricProperty rdf:type owl:SymmetricProperty .''',
@@ -134,18 +145,21 @@ InferenceRules = dict(
     },
     Object_Property_Irreflexivity = {
         "reference" : "Object Property Irreflexivity",
+        "rule" : "sets:ObjectPropertyIrreflexivityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
+    ?resource ?irreflexiveProperty ?o .
     ?irreflexiveProperty rdf:type owl:IrreflexiveProperty .
     ?resource ?irreflexiveProperty ?resource .''',
         "consequent" : "?resource rdf:type owl:Nothing .",
-        "explanation" : "Since {{resource}} has a {{irreflexiveProperty}} assertion pointing to itself, and {{irreflexiveProperty}} is a irreflexive property, we can infer that there is an inconsistency associated with {{resource}}."
+        "explanation" : "Since {{resource}} has a {{irreflexiveProperty}} assertion, and {{irreflexiveProperty}} is a irreflexive property, we can infer that the relationship {{resource}} {{irreflexiveProperty}} {{resource}} does not exist."
     },
     Class_Inclusion = {
         "reference" : "Class Inclusion",
+        "rule" : "sets:ClassInclusionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdfs:subClassOf ?class .
     ?class rdfs:subClassOf+ ?superClass .''',
@@ -154,8 +168,9 @@ InferenceRules = dict(
     },
     Individual_Inclusion = {
         "reference" : "Individual Inclusion",
+        "rule" : "sets:IndividualInclusionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class .
     ?class rdfs:subClassOf+ ?superClass .''',
@@ -164,8 +179,9 @@ InferenceRules = dict(
     },
     Property_Inclusion = {
         "reference" : "Property Inclusion",
+        "rule" : "sets:PropertyInclusionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdf:type owl:Property ;
@@ -175,8 +191,9 @@ InferenceRules = dict(
     },
     Object_Property_Inclusion = {
         "reference" : "Object Property Inclusion",
+        "rule" : "sets:ObjectPropertyInclusionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdf:type owl:ObjectProperty ;
@@ -186,8 +203,9 @@ InferenceRules = dict(
     },
     Data_Property_Inclusion = {
         "reference" : "Data Property Inclusion",
+        "rule" : "sets:DataPropertyInclusionRule",
         "resource" : "?resource",
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdf:type owl:DatatypeProperty ;
@@ -197,8 +215,9 @@ InferenceRules = dict(
     },
     Class_Equivalence = {
         "reference" : "Class Equivalence",
+        "rule" : "sets:ClassEquivalenceRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource rdf:type ?superClass.
     {?superClass owl:equivalentClass ?equivClass .}
@@ -209,8 +228,9 @@ InferenceRules = dict(
     },
     Property_Equivalence = {
         "reference" : "Property Equivalence",
+        "rule" : "sets:PropertyEquivalenceRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o .
     {?p owl:equivalentProperty ?equivProperty .}
@@ -221,8 +241,9 @@ InferenceRules = dict(
     },
     Object_Property_Inversion = {
         "reference" : "Object Property Inversion",
+        "rule" : "sets:ObjectPropertyInversionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o .
     ?p rdf:type owl:ObjectProperty .
@@ -234,8 +255,9 @@ InferenceRules = dict(
     },
     Same_Individual = {
         "reference" : "Same Individual",
+        "rule" : "sets:SameIndividualRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     {
         ?resource owl:sameAs ?individual .
@@ -250,8 +272,9 @@ InferenceRules = dict(
     },
     Different_Individuals = {
         "reference" : "Different Individuals",
+        "rule" : "sets:DifferentIndividualsRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     {
         ?resource owl:differentFrom ?individual .
@@ -266,8 +289,9 @@ InferenceRules = dict(
     },
     All_Different_Individuals = {
         "reference" : "All Different Individuals",
+        "rule" : "sets:AllDifferentIndividualsRule",
         "resource" : "?restriction", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?restriction rdf:type owl:AllDifferent ;
         owl:distinctMembers ?list .
@@ -287,8 +311,9 @@ InferenceRules = dict(
     },
     Class_Assertion = {
         "reference" : "Class Assertion",
+        "rule" : "sets:ClassAssertionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource rdf:type ?class .
     ?class rdf:type owl:Class ;
@@ -298,8 +323,9 @@ InferenceRules = dict(
     },
 #        Positive_Object_Property_Assertion = {
 #            "reference" : "Positive Object Property Assertion",
+#            "rule" : "sets:PositiveObjectPropertyAssertionRule",
 #            "resource" : "?resource", 
-#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
 #            "antecedent" :  '''
 #    ?resource ?objectProperty ?o.
 #    ?objectProperty rdf:type owl:ObjectProperty .
@@ -313,8 +339,9 @@ InferenceRules = dict(
 #        },
 #        Positive_Data_Property_Assertion = { # Need to revisit to include data ranges
 #            "reference" : "Positive Data Property Assertion",
+#            "rule" : "sets:PositiveDataPropertyAssertionRule",
 #            "resource" : "?resource", 
-#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
 #            "antecedent" :  '''
 #    ?resource ?dataProperty ?o.
 #    ?dataProperty rdf:type owl:DatatypeProperty .
@@ -329,8 +356,9 @@ InferenceRules = dict(
 #        }, # the previous two might just be s p o assertion
     Negative_Object_Property_Assertion = {
         "reference" : "Negative Object Property Assertion",
+        "rule" : "sets:NegativeObjectPropertyAssertionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o.
     ?p rdf:type owl:ObjectProperty .
@@ -343,8 +371,9 @@ InferenceRules = dict(
     },
     Negative_Data_Property_Assertion = {
         "reference" : "Negative Data Property Assertion",
+        "rule" : "sets:NegativeDataPropertyAssertionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"},
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"},
         "antecedent" :  '''
     ?resource ?p ?o.
     ?p rdf:type owl:DatatypeProperty .
@@ -357,8 +386,9 @@ InferenceRules = dict(
     },
     Keys = {
         "reference" : "Keys",
+        "rule" : "sets:KeysRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?keyProperty ?keyValue.
@@ -371,8 +401,9 @@ InferenceRules = dict(
     },
     Inverse_Functional_Object_Property = {
         "reference" : "Inverse Functional Object Property",
+        "rule" : "sets:InverseFunctionalObjectPropertyRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?invFunctionalProperty ?o .
     ?individual ?invFunctionalProperty ?o .
@@ -383,8 +414,9 @@ InferenceRules = dict(
     },
     Object_Some_Values_From = {# Should revisit this after confirming test case
         "reference" : "Object Some Values From",
+        "rule" : "sets:ObjectSomeValuesFromRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?objectProperty
         [ rdf:type ?valueclass ] .
@@ -398,8 +430,9 @@ InferenceRules = dict(
     },
     Data_Some_Values_From = {
         "reference" : "Data Some Values From",
+        "rule" : "sets:DataSomeValuesFromRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?datatypeProperty ?val .
@@ -415,8 +448,9 @@ InferenceRules = dict(
     },#Data some and all values from behave the same as each other..? May need to revisit
     Object_Has_Self = {
         "reference" : "Object Has Self",
+        "rule" : "sets:ObjectHasSelfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class .
     ?objectProperty rdf:type owl:ObjectProperty .
@@ -429,8 +463,9 @@ InferenceRules = dict(
     },
     Object_Has_Value = {
         "reference" : "Object Has Value",
+        "rule" : "sets:ObjectHasValueRule",
         "resource" : "?resource",
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class .
     ?objectProperty rdf:type owl:ObjectProperty.
@@ -443,8 +478,9 @@ InferenceRules = dict(
     },
     Data_Has_Value = {
         "reference" : "Data Has Value",
+        "rule" : "sets:DataHasValueRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?datatypeProperty ?value.
     ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -457,8 +493,9 @@ InferenceRules = dict(
     },#Note that only owl:equivalentClass results in inference, not rdfs:subClassOf
     Object_One_Of_Membership = {
         "reference" : "Object One Of Membership",
+        "rule" : "sets:ObjectOneOfMembershipRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type owl:Class ;
         owl:oneOf ?list .
@@ -468,8 +505,9 @@ InferenceRules = dict(
     },
     Object_One_Of_Inconsistency = {
         "reference" : "Object One Of Inconsistency",
+        "rule" : "sets:ObjectOneOfInconsistencyRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?class rdf:type owl:Class ;
         owl:oneOf ?list .
@@ -492,8 +530,9 @@ InferenceRules = dict(
     },
     Data_One_Of = {
         "reference" : "Data One Of",
+        "rule" : "sets:DataOneOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?datatypeProperty rdf:type owl:DatatypeProperty ;
         rdfs:range [ rdf:type owl:DataRange ;
@@ -518,8 +557,9 @@ InferenceRules = dict(
     }, #need to come back to this
     Object_All_Values_From = {
         "reference" : "Object All Values From",
+        "rule" : "sets:ObjectAllValuesFromRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?individual rdf:type ?class ; 
         ?objectProperty ?resource .
@@ -533,8 +573,9 @@ InferenceRules = dict(
     },
     Data_All_Values_From = {
         "reference" : "Data All Values From",
+        "rule" : "sets:DataAllValuesFromRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?datatypeProperty ?val .
@@ -550,8 +591,9 @@ InferenceRules = dict(
     },
     Object_Max_Cardinality = {
         "reference" : "Object Max Cardinality",
+        "rule" : "sets:ObjectMaxCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
@@ -571,18 +613,19 @@ InferenceRules = dict(
             ?concept rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
-                    owl:maxCardinality ?cardinalityValue ].
+                    owl:maxCardinality|owl:cardinality ?cardinalityValue ].
         } GROUP BY ?individual ?concept
     }
     BIND(?resource AS ?individual)
     BIND(?class AS ?concept)''',
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{objectProperty}} is assigned a maximum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-    },
-    Object_Min_Cardinality = {#Works, but for lists of size greater than 1, additional blank nodes are added that are not asserted to be the same
+    },# Still need to check distinctness of object
+    Object_Min_Cardinality = {#Works, but for lists of size greater than 1, additional (unnecessary) blank nodes are added. LIMIT 1 on the result would address this, but it is outside the where query
         "reference" : "Object Min Cardinality",
+        "rule" : "sets:ObjectMinCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
@@ -590,7 +633,8 @@ InferenceRules = dict(
     ?class rdfs:subClassOf|owl:equivalentClass
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ;
-            owl:minCardinality ?cardinalityValue ].
+            owl:minCardinality|owl:cardinality ?cardinalityValue ].
+    FILTER(?objectCount < ?cardinalityValue)
     {
         SELECT DISTINCT (COUNT(DISTINCT ?object) AS ?objectCount)
         WHERE 
@@ -601,18 +645,18 @@ InferenceRules = dict(
             ?class rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
-                    owl:minCardinality ?cardinalityValue ].
+                    owl:minCardinality|owl:cardinality ?cardinalityValue ].
         }
-    }
-    FILTER(?objectCount < ?cardinalityValue)''',
-        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ; owl:differentFrom ?object ] .",
-        "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments other than {{object}} of {{objectProperty}} for {{resource}}."
-    },
-    Object_Exact_Cardinality = {
-        "reference" : "Object Exact Cardinality",
-        "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
-        "antecedent" :  '''
+    }''',
+        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
+        "explanation" : "Since {{objectProperty}} is assigned a minimum cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is less than {{cardinalityValue}}, we can conclude the existence of additional assignments of {{objectProperty}} for {{resource}}."
+    },# Still need to check distinctness
+        Object_Exact_Cardinality = {
+            "reference" : "Object Exact Cardinality",
+            "reference" : "Object Exact Cardinality",
+            "resource" : "?resource", 
+            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
+            "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
     ?objectProperty rdf:type owl:ObjectProperty .
@@ -635,13 +679,14 @@ InferenceRules = dict(
     }
     FILTER(?objectCount > ?cardinalityValue)
     BIND(?resource AS ?individual)''',
-        "consequent" : "?resource rdf:type owl:Nothing .",
-        "explanation" : "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-    },
+            "consequent" : "?resource rdf:type owl:Nothing .",
+            "explanation" : "Since {{objectProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{objectCount}} distinct assignments of {{objectProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
+        },# Still need to check distinctness of object
     Data_Max_Cardinality = {
         "reference" : "Data Max Cardinality",
+        "rule" : "sets:DataMaxCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?dataProperty ?data .
@@ -669,8 +714,9 @@ InferenceRules = dict(
     },
     Data_Min_Cardinality = {
         "reference" : "Data Min Cardinality",
+        "rule" : "sets:DataMinCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?dataProperty ?data .
@@ -700,8 +746,9 @@ InferenceRules = dict(
     },
     Data_Exact_Cardinality = {
         "reference" : "Data Exact Cardinality",
+        "rule" : "sets:DataExactCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?dataProperty ?data .
@@ -728,11 +775,12 @@ InferenceRules = dict(
     FILTER(?dataCount > ?cardinalityValue)''',
         "consequent" : "?resource rdf:type owl:Nothing .",
         "explanation" : "Since {{dataProperty}} is assigned an exact cardinality of {{cardinalityValue}} for class {{class}}, {{resource}} rdf:type {{class}}, and {{resource}} has {{dataCount}} distinct assignments of {{dataProperty}} which is greater than {{cardinalityValue}}, we can conclude that there is an inconsistency associated with {{resource}}."
-    },
+    }, # -- This is currently only accounting for max. Min accounted for in data min rule
     Object_Union_Of = {
         "reference" : "Object Union Of",
+        "rule" : "sets:ObjectUnionOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type owl:Class ;
         rdfs:subClassOf|owl:equivalentClass
@@ -744,8 +792,9 @@ InferenceRules = dict(
     },
     Disjoint_Union = {
         "reference" : "Disjoint Union",
+        "rule" : "sets:DisjointUnionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type owl:Class ;
         rdfs:subClassOf|owl:equivalentClass
@@ -769,8 +818,9 @@ InferenceRules = dict(
     },
     Data_Union_Of = {
         "reference" : "Data Union Of",
+        "rule" : "sets:DataUnionOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?class rdf:type owl:Class ;
         rdfs:subClassOf|owl:equivalentClass
@@ -788,8 +838,9 @@ InferenceRules = dict(
     },
     Object_Complement_Of = {
         "reference" : "Object Complement Of",
+        "rule" : "sets:ObjectComplementOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ,
             ?complementClass .
@@ -803,8 +854,9 @@ InferenceRules = dict(
     },
     Data_Complement_Of = {
         "reference" : "Data Complement Of",
+        "rule" : "sets:DataComplementOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?datatype rdf:type rdfs:Datatype ;
         owl:datatypeComplementOf ?complement .
@@ -817,8 +869,9 @@ InferenceRules = dict(
     },
     Object_Property_Complement_Of = {
         "reference" : "Object Property Complement Of",
+        "rule" : "sets:ObjectPropertyComplementOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?class rdf:type owl:Class ;
         rdfs:subClassOf|owl:equivalentClass
@@ -843,8 +896,9 @@ InferenceRules = dict(
     },
     Data_Property_Complement_Of = {
         "reference" : "Data Property Complement Of",
+        "rule" : "sets:DataPropertyComplementOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?class rdf:type owl:Class ;
         rdfs:subClassOf|owl:equivalentClass
@@ -863,8 +917,9 @@ InferenceRules = dict(
     },
     Object_Intersection_Of = {
         "reference" : "Object Intersection Of",
+        "rule" : "sets:ObjectIntersectionOfRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?class rdf:type owl:Class ;
         owl:intersectionOf ?list .
@@ -910,8 +965,9 @@ InferenceRules = dict(
     },
 #        Data_Intersection_Of = {
 #            "reference" : "Data Intersection Of",
+#            "rule" : "sets:DataIntersectionOf",
 #            "resource" : "?resource", 
-#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+#            "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
 #            "antecedent" :  '''
 #    ?datatype rdf:type rdfs:Datatype ;
 #        owl:intersectionOf ?list .
@@ -921,8 +977,9 @@ InferenceRules = dict(
 #        },
     Object_Qualified_Max_Cardinality = {
         "reference" : "Object Qualified Max Cardinality",
+        "rule" : "sets:ObjectQualifiedMaxCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
@@ -946,7 +1003,7 @@ InferenceRules = dict(
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ;
                     owl:onClass ?restrictedClass ;
-                    owl:maxQualifiedCardinality ?cardinalityValue ].
+                    owl:maxQualifiedCardinality|owl:qualifiedCardinality ?cardinalityValue ].
         } GROUP BY ?individual ?concept
     }
     BIND(?resource AS ?individual)
@@ -956,8 +1013,9 @@ InferenceRules = dict(
     },
     Object_Qualified_Min_Cardinality = {
         "reference" : "Object Qualified Min Cardinality",
+        "rule" : "sets:ObjectQualifiedMinCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
@@ -966,7 +1024,7 @@ InferenceRules = dict(
     ?class rdfs:subClassOf|owl:equivalentClass
         [ rdf:type owl:Restriction ;
             owl:onProperty ?objectProperty ; 
-            owl:minQualifiedCardinality ?value ;
+            owl:minQualifiedCardinality|owl:qualifiedCardinality ?value ;
             owl:onClass ?restrictedClass ] .
     {
         SELECT (COUNT(DISTINCT ?object) AS ?objectCount) ?individual ?concept WHERE 
@@ -978,20 +1036,21 @@ InferenceRules = dict(
             ?concept rdfs:subClassOf|owl:equivalentClass
                 [ rdf:type owl:Restriction ;
                     owl:onProperty ?objectProperty ; 
-                    owl:minQualifiedCardinality ?value ;
+                    owl:minQualifiedCardinality|owl:qualifiedCardinality ?value ;
                     owl:onClass ?restrictedClass ] .
         } GROUP BY ?individual ?concept
     }
     BIND(?resource AS ?individual)
     BIND(?class AS ?concept)
     FILTER(?objectCount < ?value)''',
-        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ; owl:differentFrom ?object ] .",
+        "consequent" : "?resource ?objectProperty [ rdf:type owl:Individual ] .",
         "explanation" : "Since {{class}} is constrained with a qualified min cardinality restriction on property {{objectProperty}} to have a min of {{value}} objects of type class {{restrictedClass}}, and {{resource}} is a {{class}} but has {{objectCount}} objects assigned to {{objectProperty}} which is less than {{value}}, we can infer the existence of another object."
     },
     Object_Qualified_Exact_Cardinality = { 
         "reference" : "Object Qualified Exact Cardinality",
+        "rule" : "sets:ObjectQualifiedExactCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?objectProperty ?object .
@@ -1025,8 +1084,9 @@ InferenceRules = dict(
     },
     Data_Qualified_Max_Cardinality = {
         "reference" : "Data Qualified Max Cardinality",
+        "rule" : "sets:DataQualifiedMaxCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?datatypeProperty ?value .
     ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1053,8 +1113,9 @@ InferenceRules = dict(
     },
     Data_Qualified_Min_Cardinality = {
         "reference" : "Data Qualified Min Cardinality",
+        "rule" : "sets:DataQualifiedMinCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?datatypeProperty ?value .
     ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1081,8 +1142,9 @@ InferenceRules = dict(
     },
     Data_Qualified_Exact_Cardinality = {
         "reference" : "Data Qualified Exact Cardinality",
+        "rule" : "sets:DataQualifiedExactCardinalityRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource ?datatypeProperty ?value .
     ?datatypeProperty rdf:type owl:DatatypeProperty .
@@ -1109,8 +1171,9 @@ InferenceRules = dict(
     },
     Datatype_Restriction = {
         "reference" : "Datatype Restriction",
+        "rule" : "sets:DatatypeRestrictionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?resource rdf:type ?class ;
         ?dataProperty ?value .
@@ -1142,8 +1205,9 @@ InferenceRules = dict(
     },
     All_Disjoint_Classes = {
         "reference" : "All Disjoint Classes",
+        "rule" : "sets:AllDisjointClassesRule",
         "resource" : "?restriction", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?restriction rdf:type owl:AllDisjointClasses ;
         owl:members ?list .
@@ -1163,8 +1227,9 @@ InferenceRules = dict(
     },
     All_Disjoint_Properties = {
         "reference" : "All Disjoint Properties",
+        "rule" : "sets:AllDisjointPropertiesRule",
         "resource" : "?restriction", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?restriction rdf:type owl:AllDisjointProperties ;
         owl:members ?list .
@@ -1184,8 +1249,9 @@ InferenceRules = dict(
     },
     Object_Property_Chain_Inclusion = {
         "reference" : "Object Property Chain Inclusion",
+        "rule" : "sets:ObjectPropertyChainInclusionRule",
         "resource" : "?resource", 
-        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#"}, 
+        "prefixes" : {"owl": "http://www.w3.org/2002/07/owl#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","sets":"http://purl.org/ontology/sets/ont#"}, 
         "antecedent" :  '''
     ?objectProperty rdf:type owl:ObjectProperty ;
         owl:propertyChainAxiom ?list .

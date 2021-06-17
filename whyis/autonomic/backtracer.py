@@ -24,13 +24,14 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 class BackTracer(GlobalChangeService):
-    def __init__(self, reference, antecedent, consequent, explanation, resource="?resource", prefixes=None): 
+    def __init__(self, reference, antecedent, consequent, explanation, resource="?resource", rule="<http://vocab.rpi.edu/whyis/Rule>", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
         self.reference = reference
+        self.rule = rule
         self.antecedent = antecedent
         self.consequent = consequent
         self.explanation = explanation
@@ -42,8 +43,8 @@ class BackTracer(GlobalChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
-        return '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT DISTINCT %s WHERE {\n GRAPH ?g1 { %s } GRAPH ?g2 { %s }\nFILTER NOT EXISTS {\n ?g2 whyis:hypothesis [ a whyis:Hypothesis ; rdfs:label "%s" ] . \n\t}\n}''' % (
-        self.resource, self.antecedent, self.consequent, self.reference)
+        return '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT DISTINCT %s WHERE {\n GRAPH ?g1 { %s } GRAPH ?g2 { %s }\nFILTER NOT EXISTS {\n ?g2 whyis:hypothesis [ a whyis:Hypothesis , %s ; rdfs:label "%s" ] . \n\t}\n}''' % (
+        self.resource, self.antecedent, self.consequent, self.rule, self.reference)
 
     def get_context(self, i):
         context = {}
@@ -58,8 +59,8 @@ class BackTracer(GlobalChangeService):
             if self.reference in self.app.config["reasoning_profiles"][profile] :
                 npub = Nanopublication(store=o.graph.store)
                 triples = self.app.db.query(
-                    '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> CONSTRUCT {\n?g2 whyis:hypothesis [ a whyis:Hypothesis ; rdfs:label "%s" ]  . \n} WHERE {\nGRAPH ?g1 { %s } GRAPH ?g2 { %s } \nFILTER NOT EXISTS {\n?g2 whyis:hypothesis [ a whyis:Hypothesis ; rdfs:label "%s" ] . \n\t}\nFILTER (regex(str(%s), "^(%s)")) \n}''' % (
-                    self.reference, self.antecedent, self.consequent, self.reference, self.resource, i.identifier), initNs=self.prefixes)
+                    '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> CONSTRUCT {\n?g2 whyis:hypothesis [ a whyis:Hypothesis ; rdfs:label "%s" ]  . \n} WHERE {\nGRAPH ?g1 { %s } GRAPH ?g2 { %s } \nFILTER NOT EXISTS {\n?g2 whyis:hypothesis [ a whyis:Hypothesis , %s ; rdfs:label "%s" ] . \n\t}\nFILTER (regex(str(%s), "^(%s)")) \n}''' % (
+                    self.reference, self.antecedent, self.consequent, self.rule, self.reference, self.resource, i.identifier), initNs=self.prefixes)
                 try :
                     for s, p, o in triples:
                         print("BackTracer Adding ", s, p, o)

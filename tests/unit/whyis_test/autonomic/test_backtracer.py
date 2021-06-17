@@ -15,8 +15,8 @@ from whyis import autonomic
 from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
 SIO = Namespace("http://semanticscience.org/resource/")
-ONT = Namespace("http://example.com/ont/example#")
-KB = Namespace("http://example.com/kb/example#")
+ONT = Namespace("http://purl.org/ontology/sets/ont#")
+KB = Namespace("http://purl.org/ontology/sets/kb#")
 WHYIS = Namespace("http://vocab.rpi.edu/whyis/")
 
 prefixes = '''@prefix uo: <http://purl.obolibrary.org/obo/UO_> .
@@ -30,8 +30,8 @@ prefixes = '''@prefix uo: <http://purl.obolibrary.org/obo/UO_> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
-@prefix ex: <http://example.com/ont/example#> .
-@prefix ex-kb: <http://example.com/kb/example#> .
+@prefix sets: <http://purl.org/ontology/sets/ont#> .
+@prefix sets-kb: <http://purl.org/ontology/sets/kb#> .
 '''
 class BackTracerAgentTestCase(AgentUnitTestCase):
     def test_class_disjointness_back_tracer(self):
@@ -40,7 +40,7 @@ class BackTracerAgentTestCase(AgentUnitTestCase):
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Class Disjointness -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Entity rdf:type owl:Class ;
         rdfs:label "entity" ;
         dct:description "Every thing is an entity." .
@@ -98,21 +98,21 @@ ex-kb:Assertion_1 {
         dct:description "fictional is the quality of an entity that exists only in a creative work of fiction." ;
         rdfs:label "fictional" .
 
-    ex-kb:ImaginaryFriend
+    sets-kb:ImaginaryFriend
         rdfs:label "my imaginary friend" ;
         rdf:type sio:Real ;
         rdf:type sio:Fictional .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:ImaginaryFriend rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:ImaginaryFriend rdf:type owl:Nothing .
 }
 # ------- Class Disjointness ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Disjointness Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassDisjointnessRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -122,7 +122,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Transitivity -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -161,20 +161,20 @@ ex-kb:Assertion_1 {
         rdfs:label "is part of" ;
         dct:description "is part of is a transitive, reflexive and anti-symmetric mereological relation between a whole and itself or a part and its whole." .
 
-    ex-kb:Fingernail rdf:type owl:Individual ;
+    sets-kb:Fingernail rdf:type owl:Individual ;
         rdfs:label "finger nail" ;
-        sio:isPartOf ex-kb:Finger .
+        sio:isPartOf sets-kb:Finger .
 
-    ex-kb:Finger rdf:type owl:Individual ;
+    sets-kb:Finger rdf:type owl:Individual ;
         rdfs:label "finger" ;
-        sio:isPartOf ex-kb:Hand . 
+        sio:isPartOf sets-kb:Hand . 
 
-    ex-kb:Hand rdf:type owl:Individual ;
+    sets-kb:Hand rdf:type owl:Individual ;
         rdfs:label "hand" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Fingernail sio:isPartOf ex-kb:Hand .
+sets-kb:Assertion_2 {
+    sets-kb:Fingernail sio:isPartOf sets-kb:Hand .
 }
 # ------- Object Property Transitivity ------->
 
@@ -182,7 +182,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Transitivity Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Transitivity Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyTransitivityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -192,7 +192,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Reflexivity  -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasPart rdf:type owl:ObjectProperty ,
                                     owl:TransitiveProperty ,
                                     owl:ReflexiveProperty ;
@@ -208,23 +208,23 @@ ex-kb:Assertion_1 {
         dct:description "A process is an entity that is identifiable only through the unfolding of time, has temporal parts, and unless otherwise specified/predicted, cannot be identified from any instant of time in which it exists." ;
         rdfs:label "process" .
 
-    ex-kb:Workflow rdf:type sio:Process ;
+    sets-kb:Workflow rdf:type sio:Process ;
         rdfs:label "workflow" ;
-        sio:hasPart ex-kb:Step .
+        sio:hasPart sets-kb:Step .
 
-    ex-kb:Step rdf:type sio:Process ;
+    sets-kb:Step rdf:type sio:Process ;
         rdfs:label "step" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Workflow sio:hasPart ex-kb:Workflow .
+sets-kb:Assertion_2 {
+    sets-kb:Workflow sio:hasPart sets-kb:Workflow .
 }
 # ------- Object Property Reflexivity  ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Reflexivity Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Reflexivity Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyReflexivityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -234,7 +234,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Irreflexivity  -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasMember rdf:type owl:ObjectProperty ,
                                     owl:IrreflexiveProperty ;
         rdfs:subPropertyOf sio:hasAttribute ;
@@ -276,20 +276,20 @@ ex-kb:Assertion_1 {
         rdfs:label "collection" ;
         dct:description "A collection is a set for which there exists at least one member, although any member need not to exist at any point in the collection's existence." .
 
-    ex-kb:Group rdf:type sio:Collection ;
+    sets-kb:Group rdf:type sio:Collection ;
         rdfs:label "group" ;
-        sio:hasMember ex-kb:Group .
+        sio:hasMember sets-kb:Group .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Group rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Group rdf:type owl:Nothing .
 }
 # ------- Object Property Irreflexivity  ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Irreflexivity Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Irreflexivity Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyIrreflexivityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -299,7 +299,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Functional Object Property -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Role rdf:type owl:Class ;
         rdfs:label "role" ;
         rdfs:subClassOf sio:RealizableEntity ;
@@ -347,26 +347,26 @@ ex-kb:Assertion_1 {
         dct:description "is role of is a relation between a role and the entity that it is a property of." ;
         owl:inverseOf sio:hasRole .
 
-    ex-kb:Tutor rdf:type sio:Human ;
+    sets-kb:Tutor rdf:type sio:Human ;
         rdfs:label "tutor" .
 
-    ex-kb:Teacher rdf:type sio:Human ;
+    sets-kb:Teacher rdf:type sio:Human ;
         rdfs:label "teacher" .
 
-    ex-kb:TeachingRole rdf:type sio:Role ;
+    sets-kb:TeachingRole rdf:type sio:Role ;
         rdfs:label "teaching role" ;
-        sio:isRoleOf ex-kb:Teacher , ex-kb:Tutor .
+        sio:isRoleOf sets-kb:Teacher , sets-kb:Tutor .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Teacher owl:sameAs ex-kb:Tutor .
+sets-kb:Assertion_2 {
+    sets-kb:Teacher owl:sameAs sets-kb:Tutor .
 }
 # ------- Functional Object Property ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Functional Object Property Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.FunctionalObjectPropertyRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -376,7 +376,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Domain -------   
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Role rdf:type owl:Class ;
         rdfs:label "role" ;
         rdfs:subClassOf sio:RealizableEntity ;
@@ -489,27 +489,27 @@ ex-kb:Assertion_1 {
         rdfs:subClassOf sio:MulticellularOrganism ;
         dct:description "A human is a primates of the family Hominidae and are characterized by having a large brain relative to body size, with a well developed neocortex, prefrontal cortex and temporal lobes, making them capable of abstract reasoning, language, introspection, problem solving and culture through social learning." .
 
-    ex-kb:Mother rdf:type owl:Individual ;
+    sets-kb:Mother rdf:type owl:Individual ;
         rdfs:label "mother" ;
-        sio:isRoleOf ex-kb:Sarah ;
-        sio:inRelationTo ex-kb:Tim .
+        sio:isRoleOf sets-kb:Sarah ;
+        sio:inRelationTo sets-kb:Tim .
 
-    ex-kb:Sarah rdf:type sio:Human ;
+    sets-kb:Sarah rdf:type sio:Human ;
         rdfs:label "Sarah" .
 
-    ex-kb:Tim rdf:type sio:Human ;
+    sets-kb:Tim rdf:type sio:Human ;
         rdfs:label "Tim" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Mother rdf:type sio:Role .
+sets-kb:Assertion_2 {
+    sets-kb:Mother rdf:type sio:Role .
 }
 # ------- Property Domain ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Domain Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Domain Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyDomainRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -519,7 +519,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Range -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:UnitOfMeasurement rdf:type owl:Class ;
         rdfs:label "unit of measurement" ;
         rdfs:subClassOf sio:Quantity ;
@@ -565,26 +565,26 @@ ex-kb:Assertion_1 {
                 owl:someValuesFrom sio:UnitOfMeasurement ] ;
         dct:description "A dimensional quantity is a quantity that has an associated unit." .
 
-    ex-kb:Tom rdf:type sio:Human ;
+    sets-kb:Tom rdf:type sio:Human ;
         rdfs:label "Tom" ;
-        sio:hasAttribute ex-kb:HeightOfTom .
+        sio:hasAttribute sets-kb:HeightOfTom .
 
-    ex-kb:HeightOfTom rdf:type sio:Height ;
-        sio:hasUnit ex-kb:Meter .
+    sets-kb:HeightOfTom rdf:type sio:Height ;
+        sio:hasUnit sets-kb:Meter .
 
-    ex-kb:Meter rdf:type owl:Individual ;
+    sets-kb:Meter rdf:type owl:Individual ;
         rdfs:label "meter" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Meter rdf:type sio:UnitOfMeasurement .
+sets-kb:Assertion_2 {
+    sets-kb:Meter rdf:type sio:UnitOfMeasurement .
 }
 # ------- Property Range ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Range Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Range Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyRangeRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -594,7 +594,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Inverse Functional Object Property -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasAttribute rdf:type owl:ObjectProperty ;
         rdfs:label "has attribute" ;
         dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
@@ -632,28 +632,28 @@ ex-kb:Assertion_1 {
         dct:description "A symbol is a proposition about what an entity represents." ;
         rdfs:label "symbol" .
 
-    ex:MolecularFormula rdfs:subClassOf sio:Symbol ;
+    sets:MolecularFormula rdfs:subClassOf sio:Symbol ;
         rdfs:label "molecular formula" .
 
-    ex-kb:Water sio:hasProperty ex-kb:H2O ;
+    sets-kb:Water sio:hasProperty sets-kb:H2O ;
         rdfs:label "water" .
 
-    ex-kb:HyrdogenDioxide sio:hasProperty ex-kb:H2O ;
+    sets-kb:HyrdogenDioxide sio:hasProperty sets-kb:H2O ;
         rdfs:label "hydrogen dioxide" .
 
-    ex-kb:H2O rdf:type ex:MolecularFormula ;
+    sets-kb:H2O rdf:type sets:MolecularFormula ;
         rdfs:label "H2O" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Water owl:sameAs ex-kb:HyrdogenDioxide .
+sets-kb:Assertion_2 {
+    sets-kb:Water owl:sameAs sets-kb:HyrdogenDioxide .
 }
 # ------- Inverse Functional Object Property ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Inverse Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Inverse Functional Object Property Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.InverseFunctionalObjectPropertyRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -663,25 +663,25 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Functional Data Property -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex-kb:HeightOfTom sio:hasValue "5"^^xsd:integer .
-    ex-kb:HeightOfTom sio:hasValue "6"^^xsd:integer .
+    sets-kb:HeightOfTom sio:hasValue "5"^^xsd:integer .
+    sets-kb:HeightOfTom sio:hasValue "6"^^xsd:integer .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:HeightOfTom rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:HeightOfTom rdf:type owl:Nothing .
 }
 # ------- Functional Data Property ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Functional Data Property Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Functional Data Property Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.FunctionalDataPropertyRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -691,33 +691,33 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Disjointness -------
-ex-kb:Assertion_1 {
-    ex:hasMother rdf:type owl:ObjectProperty ;
+sets-kb:Assertion_1 {
+    sets:hasMother rdf:type owl:ObjectProperty ;
         rdfs:subPropertyOf sio:hasAttribute ;
         rdfs:label "has mother" ;
-        owl:propertyDisjointWith ex:hasFather .
+        owl:propertyDisjointWith sets:hasFather .
 
-    ex:hasFather rdf:type owl:ObjectProperty ;
+    sets:hasFather rdf:type owl:ObjectProperty ;
         rdfs:label "has father" .
 
-    ex-kb:Jordan rdf:type sio:Human ;
+    sets-kb:Jordan rdf:type sio:Human ;
         rdfs:label "Jordan" .
 
-    ex-kb:Susan rdf:type sio:Human ;
+    sets-kb:Susan rdf:type sio:Human ;
         rdfs:label "Susan" ;
-        ex:hasFather ex-kb:Jordan ;
-        ex:hasMother ex-kb:Jordan .
+        sets:hasFather sets-kb:Jordan ;
+        sets:hasMother sets-kb:Jordan .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Susan rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Susan rdf:type owl:Nothing .
 }
 # ------- Property Disjointness ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Disjointness Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyDisjointnessRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -727,29 +727,29 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Symmetry -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
         dct:description "A is related to B iff there is some relation between A and B." .
 
-    ex-kb:Peter rdf:type sio:Human ;
+    sets-kb:Peter rdf:type sio:Human ;
         rdfs:label "Peter" ;
-        sio:isRelatedTo ex-kb:Samantha .
+        sio:isRelatedTo sets-kb:Samantha .
 
-    ex-kb:Samantha rdf:type sio:Human ;
+    sets-kb:Samantha rdf:type sio:Human ;
         rdfs:label "Samantha" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Samantha sio:isRelatedTo ex-kb:Peter .
+sets-kb:Assertion_2 {
+    sets-kb:Samantha sio:isRelatedTo sets-kb:Peter .
 }
 # ------- Object Property Symmetry ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Symmetry Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Symmetry Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertySymmetryRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -759,7 +759,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Asymmetry -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isProperPartOf rdf:type owl:ObjectProperty ,
                                     owl:AsymmetricProperty ,
                                     owl:IrreflexiveProperty ;
@@ -767,24 +767,24 @@ ex-kb:Assertion_1 {
         rdfs:subPropertyOf sio:isPartOf ;
         dct:description "is proper part of is an asymmetric, irreflexive (normally transitive) relation between a part and its distinct whole." .
 
-    ex-kb:Nose rdf:type owl:Individual ;
+    sets-kb:Nose rdf:type owl:Individual ;
         rdfs:label "nose" ;
-        sio:isProperPartOf ex-kb:Face .
+        sio:isProperPartOf sets-kb:Face .
 
-    ex-kb:Face rdf:type owl:Individual ;
-        sio:isProperPartOf ex-kb:Nose ;
+    sets-kb:Face rdf:type owl:Individual ;
+        sio:isProperPartOf sets-kb:Nose ;
         rdfs:label "face" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Face rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Face rdf:type owl:Nothing .
 }
 # ------- Object Property Asymmetry ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Asymmetry Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Asymmetry Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyAsymmetryRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -794,7 +794,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Class Inclusion ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Entity rdf:type owl:Class ;
         rdfs:label "entity" ;
         dct:description "Every thing is an entity." .
@@ -813,7 +813,7 @@ ex-kb:Assertion_1 {
         dct:description "A material entity is a physical entity that is spatially extended, exists as a whole at any point in time and has mass." .
 }
 
-ex-kb:Assertion_2 {
+sets-kb:Assertion_2 {
     sio:MaterialEntity rdfs:subClassOf sio:Entity .
 }
 # ------- Class Inclusion ------->
@@ -821,7 +821,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Inclusion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassInclusionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -831,7 +831,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Inclusion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -905,21 +905,21 @@ ex-kb:Assertion_1 {
         rdfs:label "information content entity" ;
         dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
-    ex-kb:Samantha sio:hasProperty ex-kb:AgeOfSamantha .
+    sets-kb:Samantha sio:hasProperty sets-kb:AgeOfSamantha .
 
-    ex-kb:AgeOfSamantha rdf:type sio:Age ;
+    sets-kb:AgeOfSamantha rdf:type sio:Age ;
         rdfs:label "Samantha's age" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Samantha sio:hasAttribute ex-kb:AgeOfSamantha .
+sets-kb:Assertion_2 {
+    sets-kb:Samantha sio:hasAttribute sets-kb:AgeOfSamantha .
 }
 # ------- Object Property Inclusion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Inclusion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyInclusionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -929,31 +929,31 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Data Property Inclusion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex-kb:AgeOfSamantha rdf:type sio:Age ;
+    sets-kb:AgeOfSamantha rdf:type sio:Age ;
         rdfs:label "Samantha's age" .
 
-    ex:hasExactValue rdf:type owl:DatatypeProperty ;
+    sets:hasExactValue rdf:type owl:DatatypeProperty ;
         rdfs:label "has exact value" ;
         rdfs:subPropertyOf sio:hasValue .
 
-    ex-kb:AgeOfSamantha ex:hasExactValue "25.82"^^xsd:decimal .
+    sets-kb:AgeOfSamantha sets:hasExactValue "25.82"^^xsd:decimal .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:AgeOfSamantha sio:hasValue "25.82"^^xsd:decimal .
+sets-kb:Assertion_2 {
+    sets-kb:AgeOfSamantha sio:hasValue "25.82"^^xsd:decimal .
 }
 # ------- Data Property Inclusion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Property Inclusion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataPropertyInclusionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -963,7 +963,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Chain Inclusion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -983,27 +983,27 @@ ex-kb:Assertion_1 {
         dct:description "A overlaps with B iff there is some C that is part of both A and B." ;
         rdfs:label "overlaps with" .
 
-    ex-kb:Rug rdf:type sio:Object ;
+    sets-kb:Rug rdf:type sio:Object ;
         rdfs:label "rug" ;
-        sio:overlapsWith ex-kb:FloorPanel .
+        sio:overlapsWith sets-kb:FloorPanel .
 
-    ex-kb:FloorPanel rdf:type sio:Object ;
+    sets-kb:FloorPanel rdf:type sio:Object ;
         rdfs:label "floor panel" ;
-        sio:isPartOf ex-kb:Floor .
+        sio:isPartOf sets-kb:Floor .
 
-    ex-kb:Floor rdf:type sio:Object ;
+    sets-kb:Floor rdf:type sio:Object ;
         rdfs:label "floor" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Rug sio:overlapsWith ex-kb:Floor .
+sets-kb:Assertion_2 {
+    sets-kb:Rug sio:overlapsWith sets-kb:Floor .
 }
 # ------- Object Property Chain Inclusion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Chain Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Chain Inclusion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyChainInclusionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1013,24 +1013,24 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Class Equivalence -------
-ex-kb:Assertion_1 {
-    ex:Fake rdf:type owl:Class ;
+sets-kb:Assertion_1 {
+    sets:Fake rdf:type owl:Class ;
         owl:equivalentClass sio:Fictional ;
         rdfs:label "fake" .
 
-    ex-kb:Hubert rdf:type ex:Fake ;
+    sets-kb:Hubert rdf:type sets:Fake ;
         rdfs:label "Hubert" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Hubert rdf:type sio:Fictional .
+sets-kb:Assertion_2 {
+    sets-kb:Hubert rdf:type sio:Fictional .
 }
 # ------- Class Equivalence ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Equivalence Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassEquivalenceRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1040,30 +1040,30 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Property Equivalence -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex-kb:AgeOfSamantha rdf:type sio:Age ;
+    sets-kb:AgeOfSamantha rdf:type sio:Age ;
         rdfs:label "Samantha's age" ;
         sio:hasValue "25.82"^^xsd:decimal .
 
-    ex:hasValue rdf:type owl:DatatypeProperty ;
+    sets:hasValue rdf:type owl:DatatypeProperty ;
         rdfs:label "has value" ;
         owl:equivalentProperty sio:hasValue .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:AgeOfSamantha ex:hasValue "25.82"^^xsd:decimal .
+sets-kb:Assertion_2 {
+    sets-kb:AgeOfSamantha sets:hasValue "25.82"^^xsd:decimal .
 }
 # ------- Property Equivalence ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Property Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Property Equivalence Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyEquivalenceRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1073,25 +1073,25 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Individual Inclusion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Role rdf:type owl:Class ;
         rdfs:label "role" ;
         rdfs:subClassOf sio:RealizableEntity ;
         dct:description "A role is a realizable entity that describes behaviours, rights and obligations of an entity in some particular circumstance." .
 
-    ex-kb:Farmer rdf:type sio:Role ;
+    sets-kb:Farmer rdf:type sio:Role ;
         rdfs:label "farmer" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Farmer rdf:type sio:RealizableEntity .
+sets-kb:Assertion_2 {
+    sets-kb:Farmer rdf:type sio:RealizableEntity .
 }
 # ------- Individual Inclusion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Individual Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Individual Inclusion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.IndividualInclusionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1101,7 +1101,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Property Inversion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -1140,20 +1140,20 @@ ex-kb:Assertion_1 {
         rdfs:label "is part of" ;
         dct:description "is part of is a transitive, reflexive and anti-symmetric mereological relation between a whole and itself or a part and its whole." .
 
-    ex-kb:Fingernail rdf:type owl:Individual ;
+    sets-kb:Fingernail rdf:type owl:Individual ;
         rdfs:label "finger nail" ;
-        sio:isPartOf ex-kb:Finger .
+        sio:isPartOf sets-kb:Finger .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Finger sio:hasPart ex-kb:Fingernail .
+sets-kb:Assertion_2 {
+    sets-kb:Finger sio:hasPart sets-kb:Fingernail .
 }
 # ------- Object Property Inversion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Inversion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Inversion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyInversionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1163,28 +1163,28 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Same Individual -------
-ex-kb:Assertion_1 {
-    ex-kb:Peter rdf:type sio:Human ;
+sets-kb:Assertion_1 {
+    sets-kb:Peter rdf:type sio:Human ;
         rdfs:label "Peter" ;
-        sio:isRelatedTo ex-kb:Samantha .
+        sio:isRelatedTo sets-kb:Samantha .
 
-    ex-kb:Samantha rdf:type sio:Human ;
+    sets-kb:Samantha rdf:type sio:Human ;
         rdfs:label "Samantha" .
 
-    ex-kb:Peter owl:sameAs ex-kb:Pete .
+    sets-kb:Peter owl:sameAs sets-kb:Pete .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Pete rdf:type sio:Human ;
+sets-kb:Assertion_2 {
+    sets-kb:Pete rdf:type sio:Human ;
         rdfs:label "Peter" ;
-        sio:isRelatedTo ex-kb:Samantha .
+        sio:isRelatedTo sets-kb:Samantha .
 }
 # -------  Same Individual ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Same Individual Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Same Individual Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.SameIndividualRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1194,20 +1194,20 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Different Individuals ------- 
-ex-kb:Assertion_1 {
-    ex-kb:Sam owl:differentFrom ex-kb:Samantha .
-    ex-kb:Sam owl:sameAs ex-kb:Samantha .
+sets-kb:Assertion_1 {
+    sets-kb:Sam owl:differentFrom sets-kb:Samantha .
+    sets-kb:Sam owl:sameAs sets-kb:Samantha .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Sam rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Sam rdf:type owl:Nothing .
 }
 # -------  Different Individuals ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Different Individuals Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DifferentIndividualsRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1218,7 +1218,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Class Assertion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Entity rdf:type owl:Class ;
         rdfs:label "entity" ;
         dct:description "Every thing is an entity." .
@@ -1239,19 +1239,19 @@ ex-kb:Assertion_1 {
         dct:description "A quality is an attribute that is intrinsically associated with its bearer (or its parts), but whose presence/absence and observed/measured value may vary." ;
         rdfs:label "quality" .
 
-    ex-kb:Reliable rdf:type sio:Quality ;
+    sets-kb:Reliable rdf:type sio:Quality ;
         rdfs:label "reliable" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Reliable rdf:type sio:Attribute , sio:Entity .
+sets-kb:Assertion_2 {
+    sets-kb:Reliable rdf:type sio:Attribute , sio:Entity .
 }
 # -------  Class Assertion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Class Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Class Assertion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassAssertionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1297,7 +1297,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Negative Object Property Assertion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasAttribute rdf:type owl:ObjectProperty ;
         rdfs:label "has attribute" ;
         dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
@@ -1311,26 +1311,26 @@ ex-kb:Assertion_1 {
         rdfs:subPropertyOf sio:hasAttribute ;
         dct:description "has unit is a relation between a quantity and the unit it is a multiple of." .
 
-    ex-kb:AgeOfSamantha rdf:type sio:Age ;
+    sets-kb:AgeOfSamantha rdf:type sio:Age ;
         rdfs:label "Samantha's age" .
 
-    ex-kb:NOPA rdf:type owl:NegativePropertyAssertion ; 
-        owl:sourceIndividual ex-kb:AgeOfSamantha ; 
+    sets-kb:NOPA rdf:type owl:NegativePropertyAssertion ; 
+        owl:sourceIndividual sets-kb:AgeOfSamantha ; 
         owl:assertionProperty sio:hasUnit ; 
-        owl:targetIndividual ex-kb:Meter .
+        owl:targetIndividual sets-kb:Meter .
 
-    ex-kb:AgeOfSamantha sio:hasUnit ex-kb:Meter .
+    sets-kb:AgeOfSamantha sio:hasUnit sets-kb:Meter .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:AgeOfSamantha rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:AgeOfSamantha rdf:type owl:Nothing .
 }
 # -------  Negative Object Property Assertion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Negative Object Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Negative Object Property Assertion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.NegativeObjectPropertyAssertionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1340,31 +1340,31 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Negative DataPropertyAssertion -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex-kb:NDPA rdf:type owl:NegativePropertyAssertion ; 
-        owl:sourceIndividual ex-kb:AgeOfPeter ; 
+    sets-kb:NDPA rdf:type owl:NegativePropertyAssertion ; 
+        owl:sourceIndividual sets-kb:AgeOfPeter ; 
         owl:assertionProperty sio:hasValue ; 
         owl:targetValue "10" .
 
-    ex-kb:AgeOfPeter rdf:type sio:Age;
+    sets-kb:AgeOfPeter rdf:type sio:Age;
         rdfs:label "Peter's age" ;
         sio:hasValue "10" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:AgeOfPeter rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:AgeOfPeter rdf:type owl:Nothing .
 }
 # -------  Negative DataProperty Assertion ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Negative Data Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Negative Data Property Assertion Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.NegativeDataPropertyAssertionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1374,33 +1374,33 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Keys -------
-ex-kb:Assertion_1 {
-    ex:uniqueID rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:uniqueID rdf:type owl:DatatypeProperty ;
         rdfs:label "unique identifier" .
 
-    ex:Person rdf:type owl:Class ;
+    sets:Person rdf:type owl:Class ;
         rdfs:subClassOf sio:Human ;
         rdfs:label "person" ;
-        owl:hasKey ( ex:uniqueID ) .
+        owl:hasKey ( sets:uniqueID ) .
 
-    ex-kb:John rdf:type ex:Person ;
+    sets-kb:John rdf:type sets:Person ;
         rdfs:label "John" ;
-        ex:uniqueID "101D" .
+        sets:uniqueID "101D" .
 
-    ex-kb:Jack rdf:type ex:Person ;
+    sets-kb:Jack rdf:type sets:Person ;
         rdfs:label "Jack" ;
-        ex:uniqueID "101D" .
+        sets:uniqueID "101D" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:John owl:sameAs ex-kb:Jack .
+sets-kb:Assertion_2 {
+    sets-kb:John owl:sameAs sets-kb:Jack .
 }
 # ------- Keys ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Keys Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Keys Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.KeysRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1410,7 +1410,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Some Values From -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -1468,22 +1468,22 @@ ex-kb:Assertion_1 {
         rdfs:label "object quality" ;
         dct:description "An object quality is quality of an object." .
 
-    ex-kb:MolecularCollection rdf:type owl:Individual ;
+    sets-kb:MolecularCollection rdf:type owl:Individual ;
         rdfs:label "molecular collection" ;
-        sio:hasMember ex-kb:WaterMolecule .
+        sio:hasMember sets-kb:WaterMolecule .
 
-    ex-kb:WaterMolecule rdf:type sio:3dStructureModel  .
+    sets-kb:WaterMolecule rdf:type sio:3dStructureModel  .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:MolecularCollection rdf:type sio:CollectionOf3dMolecularStructureModels .
+sets-kb:Assertion_2 {
+    sets-kb:MolecularCollection rdf:type sio:CollectionOf3dMolecularStructureModels .
 }
 # -------  Object Some Values From ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Some Values From Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectSomeValuesFromRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1493,31 +1493,31 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Some Values From -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex:Text rdf:type owl:Class ;
+    sets:Text rdf:type owl:Class ;
         rdfs:subClassOf
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasValue  ;
                 owl:someValuesFrom xsd:string ] .
 
-    ex-kb:Question rdf:type ex:Text ;
+    sets-kb:Question rdf:type sets:Text ;
         sio:hasValue "4"^^xsd:integer .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Question rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Question rdf:type owl:Nothing .
 }
 # -------  Data Some Values From ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Some Values From Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataSomeValuesFromRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1527,7 +1527,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Has Self -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -1538,24 +1538,24 @@ ex-kb:Assertion_1 {
         dct:description "has attribute is a relation that associates a entity with an attribute where an attribute is an intrinsic characteristic such as a quality, capability, disposition, function, or is an externally derived attribute determined from some descriptor (e.g. a quantity, position, label/identifier) either directly or indirectly through generalization of entities of the same type." ;
         rdfs:subPropertyOf sio:isRelatedTo .
 
-    ex:SelfAttributing rdf:type owl:Class ;
+    sets:SelfAttributing rdf:type owl:Class ;
         rdfs:subClassOf 
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasAttribute ;
                 owl:hasSelf "true"^^xsd:boolean ] .
 
-    ex-kb:Blue rdf:type ex:SelfAttributing .
+    sets-kb:Blue rdf:type sets:SelfAttributing .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Blue sio:hasAttribute ex-kb:Blue .
+sets-kb:Assertion_2 {
+    sets-kb:Blue sio:hasAttribute sets-kb:Blue .
 }
 # -------  Object Has Self ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Has Self Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Has Self Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectHasSelfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1565,7 +1565,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Has Value -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -1591,27 +1591,27 @@ ex-kb:Assertion_1 {
         rdfs:label "has part" ;
         dct:description "has part is a transitive, reflexive and antisymmetric relation between a whole and itself or a whole and its part" .
 
-    ex:Vehicle rdf:type owl:Class ;
+    sets:Vehicle rdf:type owl:Class ;
         rdfs:subClassOf 
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasPart ;
-                owl:hasValue ex-kb:Wheel ] .
+                owl:hasValue sets-kb:Wheel ] .
 
-    ex-kb:Car rdf:type ex:Vehicle ;
-        sio:hasPart ex-kb:Mirror .
+    sets-kb:Car rdf:type sets:Vehicle ;
+        sio:hasPart sets-kb:Mirror .
 
-    ex-kb:Mirror owl:differentFrom ex-kb:Wheel .
+    sets-kb:Mirror owl:differentFrom sets-kb:Wheel .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Car sio:hasPart ex-kb:Wheel .
+sets-kb:Assertion_2 {
+    sets-kb:Car sio:hasPart sets-kb:Wheel .
 }
 # -------  Object Has Value ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Has Value Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Has Value Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectHasValueRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1621,36 +1621,36 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Has Value -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
 
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
     
-    ex:hasAge rdf:type owl:DatatypeProperty ;
+    sets:hasAge rdf:type owl:DatatypeProperty ;
         rdfs:label "has age" ;
         rdfs:subPropertyOf sio:hasValue .
     
     
-    ex:Unliked rdf:type owl:Class ;
+    sets:Unliked rdf:type owl:Class ;
         owl:equivalentClass
             [ rdf:type owl:Restriction ;
-                owl:onProperty ex:hasAge ;
+                owl:onProperty sets:hasAge ;
                 owl:hasValue "23"^^xsd:integer ] .
 
-    ex-kb:Tom ex:hasAge "23"^^xsd:integer .
+    sets-kb:Tom sets:hasAge "23"^^xsd:integer .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Tom rdf:type ex:Unliked .
+sets-kb:Assertion_2 {
+    sets-kb:Tom rdf:type sets:Unliked .
 }
 # -------  Data Has Value ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Has Value Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Has Value Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataHasValueRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1660,7 +1660,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Disjoint Classes-------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Entity rdf:type owl:Class ;
         rdfs:label "entity" ;
         dct:description "Every thing is an entity." .
@@ -1683,11 +1683,11 @@ ex-kb:Assertion_1 {
         #<rdfs:subClassOf rdf:nodeID="arc703eb381"/>
         dct:description "An object is an entity that is wholly identifiable at any instant of time during which it exists." .
 
-    ex-kb:DisjointClassesRestriction rdf:type owl:AllDisjointClasses ;
+    sets-kb:DisjointClassesRestriction rdf:type owl:AllDisjointClasses ;
         owl:members ( sio:Process sio:Attribute sio:Object ) .
 }
 
-ex-kb:Assertion_2 {
+sets-kb:Assertion_2 {
     sio:Process owl:disjointWith sio:Attribute , sio:Object .
     sio:Attribute owl:disjointWith sio:Process , sio:Object .
     sio:Object owl:disjointWith sio:Process , sio:Attribute .
@@ -1697,7 +1697,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Classes Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Disjoint Classes Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDisjointClassesRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1707,31 +1707,31 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Disjoint Properties-------
-ex-kb:Assertion_1 {
-    ex-kb:DisjointPropertiesRestriction rdf:type owl:AllDisjointProperties ;
-        owl:members ( ex:hasMother ex:hasFather ex:hasSibling ) .
+sets-kb:Assertion_1 {
+    sets-kb:DisjointPropertiesRestriction rdf:type owl:AllDisjointProperties ;
+        owl:members ( sets:hasMother sets:hasFather sets:hasSibling ) .
 
-    ex:hasMother rdf:type owl:ObjectProperty ;
+    sets:hasMother rdf:type owl:ObjectProperty ;
         rdfs:label "has mother" .
 
-    ex:hasFather rdf:type owl:ObjectProperty ;
+    sets:hasFather rdf:type owl:ObjectProperty ;
         rdfs:label "has father" .
 
-    ex:hasSibling rdf:type owl:ObjectProperty ;
+    sets:hasSibling rdf:type owl:ObjectProperty ;
         rdfs:label "has sibling" .
 }
 
-ex-kb:Assertion_2 {
-    ex:hasMother owl:propertyDisjointWith ex:hasFather , ex:hasSibling .
-    ex:hasFather owl:propertyDisjointWith ex:hasMother , ex:hasSibling .
-    ex:hasSibling owl:propertyDisjointWith ex:hasMother, ex:hasFather .
+sets-kb:Assertion_2 {
+    sets:hasMother owl:propertyDisjointWith sets:hasFather , sets:hasSibling .
+    sets:hasFather owl:propertyDisjointWith sets:hasMother , sets:hasSibling .
+    sets:hasSibling owl:propertyDisjointWith sets:hasMother, sets:hasFather .
 }
 # -------  All Disjoint Properties ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Disjoint Properties Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Disjoint Properties Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDisjointPropertiesRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1741,32 +1741,32 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  All Different Individuals-------
-ex-kb:Assertion_1 {
-    ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
+sets-kb:Assertion_1 {
+    sets-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
         owl:distinctMembers
-            ( ex-kb:Integer
-            ex-kb:String 
-            ex-kb:Boolean
-            ex-kb:Double 
-            ex-kb:Float 
-            ex-kb:Tuple 
+            ( sets-kb:Integer
+            sets-kb:String 
+            sets-kb:Boolean
+            sets-kb:Double 
+            sets-kb:Float 
+            sets-kb:Tuple 
             ) .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Integer owl:differentFrom ex-kb:String , ex-kb:Boolean, ex-kb:Double , ex-kb:Float , ex-kb:Tuple .
-    ex-kb:String owl:differentFrom ex-kb:Integer , ex-kb:Boolean, ex-kb:Double, ex-kb:Float , ex-kb:Tuple .
-    ex-kb:Boolean owl:differentFrom ex-kb:Integer , ex-kb:String, ex-kb:Double, ex-kb:Float , ex-kb:Tuple .
-    ex-kb:Double owl:differentFrom ex-kb:Integer , ex-kb:String , ex-kb:Boolean, ex-kb:Float , ex-kb:Tuple .
-    ex-kb:Float owl:differentFrom ex-kb:Integer , ex-kb:String , ex-kb:Boolean, ex-kb:Double , ex-kb:Tuple .
-    ex-kb:Tuple owl:differentFrom ex-kb:Integer , ex-kb:String , ex-kb:Boolean, ex-kb:Double, ex-kb:Float .
+sets-kb:Assertion_2 {
+    sets-kb:Integer owl:differentFrom sets-kb:String , sets-kb:Boolean, sets-kb:Double , sets-kb:Float , sets-kb:Tuple .
+    sets-kb:String owl:differentFrom sets-kb:Integer , sets-kb:Boolean, sets-kb:Double, sets-kb:Float , sets-kb:Tuple .
+    sets-kb:Boolean owl:differentFrom sets-kb:Integer , sets-kb:String, sets-kb:Double, sets-kb:Float , sets-kb:Tuple .
+    sets-kb:Double owl:differentFrom sets-kb:Integer , sets-kb:String , sets-kb:Boolean, sets-kb:Float , sets-kb:Tuple .
+    sets-kb:Float owl:differentFrom sets-kb:Integer , sets-kb:String , sets-kb:Boolean, sets-kb:Double , sets-kb:Tuple .
+    sets-kb:Tuple owl:differentFrom sets-kb:Integer , sets-kb:String , sets-kb:Boolean, sets-kb:Double, sets-kb:Float .
 }
 # -------  All Different Individuals------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["All Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('All Different Individuals Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDifferentIndividualsRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1776,27 +1776,27 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object One Of -------
-ex-kb:Assertion_1 {
-    ex:Type rdf:type owl:Class ;
-        owl:oneOf (ex-kb:Integer ex-kb:String ex-kb:Boolean ex-kb:Double ex-kb:Float) .
+sets-kb:Assertion_1 {
+    sets:Type rdf:type owl:Class ;
+        owl:oneOf (sets-kb:Integer sets-kb:String sets-kb:Boolean sets-kb:Double sets-kb:Float) .
 
-    ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
+    sets-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
         owl:distinctMembers
-            ( ex-kb:Integer
-            ex-kb:String 
-            ex-kb:Boolean
-            ex-kb:Double 
-            ex-kb:Float 
-            ex-kb:Tuple 
+            ( sets-kb:Integer
+            sets-kb:String 
+            sets-kb:Boolean
+            sets-kb:Double 
+            sets-kb:Float 
+            sets-kb:Tuple 
             ) .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Integer rdf:type ex:Type .
-    ex-kb:String rdf:type ex:Type .
-    ex-kb:Boolean rdf:type ex:Type .
-    ex-kb:Double rdf:type ex:Type .
-    ex-kb:Float rdf:type ex:Type .
+sets-kb:Assertion_2 {
+    sets-kb:Integer rdf:type sets:Type .
+    sets-kb:String rdf:type sets:Type .
+    sets-kb:Boolean rdf:type sets:Type .
+    sets-kb:Double rdf:type sets:Type .
+    sets-kb:Float rdf:type sets:Type .
 }
 # -------  Object One Of Membership ------->
 ''', format="trig")
@@ -1805,7 +1805,7 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Membership Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object One Of Membership Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectOneOfMembershipRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1815,25 +1815,25 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object One Of Inconsistency-------
-ex-kb:Assertion_1 {
-    ex:Type rdf:type owl:Class ;
-        owl:oneOf (ex-kb:Integer ex-kb:String ex-kb:Boolean ex-kb:Double ex-kb:Float) .
+sets-kb:Assertion_1 {
+    sets:Type rdf:type owl:Class ;
+        owl:oneOf (sets-kb:Integer sets-kb:String sets-kb:Boolean sets-kb:Double sets-kb:Float) .
 
-    ex-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
+    sets-kb:DistinctTypesRestriction rdf:type owl:AllDifferent ;
         owl:distinctMembers
-            ( ex-kb:Integer
-            ex-kb:String 
-            ex-kb:Boolean
-            ex-kb:Double 
-            ex-kb:Float 
-            ex-kb:Tuple 
+            ( sets-kb:Integer
+            sets-kb:String 
+            sets-kb:Boolean
+            sets-kb:Double 
+            sets-kb:Float 
+            sets-kb:Tuple 
             ) .
 
-    ex-kb:Tuple rdf:type ex:Type .
+    sets-kb:Tuple rdf:type sets:Type .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Tuple rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Tuple rdf:type owl:Nothing .
 }
 # -------  Object One Of Inconsistency ------->
 ''', format="trig")
@@ -1842,7 +1842,7 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object One Of Inconsistency Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object One Of Inconsistency Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectOneOfInconsistencyRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1852,25 +1852,25 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data One Of -------
-ex-kb:Assertion_1 {
-    ex:hasTeenAge rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:hasTeenAge rdf:type owl:DatatypeProperty ;
         rdfs:label "has age" ;
         rdfs:range [ rdf:type owl:DataRange ;
             owl:oneOf ("13"^^xsd:integer "14"^^xsd:integer "15"^^xsd:integer "16"^^xsd:integer "17"^^xsd:integer "18"^^xsd:integer "19"^^xsd:integer )].
 
-    ex-kb:Sarah ex:hasTeenAge "12"^^xsd:integer .
+    sets-kb:Sarah sets:hasTeenAge "12"^^xsd:integer .
     # Note that we need to update range rule to account for data ranges
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Sarah rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Sarah rdf:type owl:Nothing .
 }
 # -------  Data One Of ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data One Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data One Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataOneOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1880,7 +1880,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Datatype Restriction -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
@@ -1906,20 +1906,20 @@ ex-kb:Assertion_1 {
         #<sio:hasSynonym xml:lang="en">p-value</sio:hasSynonym>
         rdfs:label "probability value" .
 
-    ex-kb:EffortExerted rdf:type sio:ProbabilityValue ;
+    sets-kb:EffortExerted rdf:type sio:ProbabilityValue ;
         rdfs:label "effort exerted" ;
         sio:hasValue "1.1"^^xsd:double .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:EffortExerted rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:EffortExerted rdf:type owl:Nothing .
 }
 # ------- Datatype Restriction ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Datatype Restriction Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Datatype Restriction Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DatatypeRestrictionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1929,7 +1929,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object All Values From -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -1966,19 +1966,19 @@ ex-kb:Assertion_1 {
         rdfs:label "namespace" ;
         dct:description "A namespace is an informational entity that defines a logical container for a set of symbols or identifiers." .
 
-    ex-kb:NamespaceInstance rdf:type sio:Namespace ;
-        sio:hasMember ex-kb:NamespaceID .
+    sets-kb:NamespaceInstance rdf:type sio:Namespace ;
+        sio:hasMember sets-kb:NamespaceID .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:NamespaceID rdf:type sio:Identifier .
+sets-kb:Assertion_2 {
+    sets-kb:NamespaceID rdf:type sio:Identifier .
 }
 # -------  Object All Values From ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object All Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object All Values From Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectAllValuesFromRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -1988,32 +1988,32 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data All Values From -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex:Integer rdf:type owl:Class ;
+    sets:Integer rdf:type owl:Class ;
         rdfs:subClassOf sio:ComputationalEntity ,
             [ rdf:type owl:Restriction ;
             owl:onProperty sio:hasValue ;
             owl:allValuesFrom xsd:integer ] ;
         rdfs:label "integer" .
 
-    ex-kb:Ten rdf:type ex:Integer ;
+    sets-kb:Ten rdf:type sets:Integer ;
         sio:hasValue "ten"^^xsd:string .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Ten rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Ten rdf:type owl:Nothing .
 }
 # -------  Data All Values From ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data All Values From Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data All Values From Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataAllValuesFromRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2023,7 +2023,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Max Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -2041,7 +2041,7 @@ ex-kb:Assertion_1 {
         rdfs:label "has member" ;
         dct:description "has member is a mereological relation between a collection and an item." .
 
-    ex:DeadlySins rdf:type owl:Class ;
+    sets:DeadlySins rdf:type owl:Class ;
         rdfs:subClassOf sio:Collection ;
         rdfs:subClassOf 
             [ rdf:type owl:Restriction ;
@@ -2049,31 +2049,31 @@ ex-kb:Assertion_1 {
                 owl:maxCardinality "7"^^xsd:integer ] ;
         rdfs:label "seven deadly sins" .
 
-    ex-kb:SevenDeadlySins rdf:type ex:DeadlySins ;
+    sets-kb:SevenDeadlySins rdf:type sets:DeadlySins ;
         sio:hasMember 
-            ex-kb:Pride ,
-            ex-kb:Envy ,
-            ex-kb:Gluttony ,
-            ex-kb:Greed ,
-            ex-kb:Lust ,
-            ex-kb:Sloth ,
-            ex-kb:Wrath ,
-            ex-kb:Redundancy .
+            sets-kb:Pride ,
+            sets-kb:Envy ,
+            sets-kb:Gluttony ,
+            sets-kb:Greed ,
+            sets-kb:Lust ,
+            sets-kb:Sloth ,
+            sets-kb:Wrath ,
+            sets-kb:Redundancy .
 
-    ex-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
+    sets-kb:DistinctSinsRestriction rdf:type owl:AllDifferent ;
         owl:distinctMembers
-            (ex-kb:Pride 
-            ex-kb:Envy 
-            ex-kb:Gluttony 
-            ex-kb:Greed 
-            ex-kb:Lust 
-            ex-kb:Sloth 
-            ex-kb:Wrath 
-            ex-kb:Redundancy ) .
+            (sets-kb:Pride 
+            sets-kb:Envy 
+            sets-kb:Gluttony 
+            sets-kb:Greed 
+            sets-kb:Lust 
+            sets-kb:Sloth 
+            sets-kb:Wrath 
+            sets-kb:Redundancy ) .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:SevenDeadlySins rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:SevenDeadlySins rdf:type owl:Nothing .
 }
 # -------  Object Max Cardinality ------->
 ''', format="trig")
@@ -2082,7 +2082,7 @@ ex-kb:Assertion_2 {
         agent.process_graph(self.app.db)
         agent =  config.Config["inferencers"]["Object Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Max Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectMaxCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2092,7 +2092,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Max Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasComponentPart rdf:type owl:ObjectProperty ;
         rdfs:subPropertyOf sio:hasDirectPart ;
         rdfs:label "has component part" ;
@@ -2127,36 +2127,36 @@ ex-kb:Assertion_1 {
         dct:description "An arrowed line is a directed line segment in which one or both endpoints is tangentially part of a triangle that bisects the line." ;
         rdfs:label "arrowed line segment" .
 
-    ex-kb:TripleArrowLineSegment rdf:type sio:ArrowedLineSegment ;
+    sets-kb:TripleArrowLineSegment rdf:type sio:ArrowedLineSegment ;
         rdfs:label "triple arrow line segment" ;
         sio:hasComponentPart
-            ex-kb:LineSegment ,
-            ex-kb:FirstArrow ,
-            ex-kb:SecondArrow ,
-            ex-kb:ThirdArrow .
+            sets-kb:LineSegment ,
+            sets-kb:FirstArrow ,
+            sets-kb:SecondArrow ,
+            sets-kb:ThirdArrow .
 
-    ex-kb:FirstArrow rdf:type sio:Triangle ;
+    sets-kb:FirstArrow rdf:type sio:Triangle ;
         rdfs:label "first arrow" .
 
-    ex-kb:SecondArrow rdf:type sio:Triangle ;
+    sets-kb:SecondArrow rdf:type sio:Triangle ;
         rdfs:label "second arrow" .
 
-    ex-kb:ThirdArrow rdf:type sio:Triangle ;
+    sets-kb:ThirdArrow rdf:type sio:Triangle ;
         rdfs:label "third arrow" .
 
-    ex-kb:LineSegment rdf:type sio:LineSegment ;
+    sets-kb:LineSegment rdf:type sio:LineSegment ;
         rdfs:label "line segment " .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:TripleArrowLineSegment rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:TripleArrowLineSegment rdf:type owl:Nothing .
 }
 # -------  Object Qualified Max Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Max Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedMaxCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2166,7 +2166,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Min Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -2184,38 +2184,38 @@ ex-kb:Assertion_1 {
         rdfs:label "has member" ;
         dct:description "has member is a mereological relation between a collection and an item." .
 
-    ex:StudyGroup rdf:type owl:Class ;
+    sets:StudyGroup rdf:type owl:Class ;
         rdfs:subClassOf sio:Collection ,
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasMember ;
                 owl:minCardinality "3"^^xsd:integer ] ; 
         rdfs:label "study group" .
 
-    ex-kb:StudyGroupInstance rdf:type ex:StudyGroup ;
+    sets-kb:StudyGroupInstance rdf:type sets:StudyGroup ;
         sio:hasMember 
-            ex-kb:Steve .#,
-            #ex-kb:Luis ,
-    #        ex-kb:Ali .
+            sets-kb:Steve .#,
+            #sets-kb:Luis ,
+    #        sets-kb:Ali .
 
-    ex-kb:Steve rdf:type sio:Human .
-    #ex-kb:Luis rdf:type sio:Human .
-    #ex-kb:Ali rdf:type sio:Human .
+    sets-kb:Steve rdf:type sio:Human .
+    #sets-kb:Luis rdf:type sio:Human .
+    #sets-kb:Ali rdf:type sio:Human .
 
-    #ex-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
+    #sets-kb:DistinctStudentsRestriction rdf:type owl:AllDifferent ;
     #    owl:distinctMembers
-    #        (ex-kb:Steve 
-    #        #ex-kb:Luis 
-    #        ex-kb:Ali ) .
+    #        (sets-kb:Steve 
+    #        #sets-kb:Luis 
+    #        sets-kb:Ali ) .
 }
-ex-kb:Assertion_2 {
-    ex-kb:StudyGroupInstance sio:hasMember [ rdf:type owl:Individual ; owl:differentFrom ex-kb:Steve ] .
+sets-kb:Assertion_2 {
+    sets-kb:StudyGroupInstance sio:hasMember [ rdf:type owl:Individual ; owl:differentFrom sets-kb:Steve ] .
 }
 # -------  Object Min Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Min Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectMinCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2226,7 +2226,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Min Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasComponentPart rdf:type owl:ObjectProperty ;
         rdfs:subPropertyOf sio:hasDirectPart ;
         rdfs:label "has component part" ;
@@ -2247,22 +2247,22 @@ ex-kb:Assertion_1 {
         dct:description "A line segment is a line and a part of a curve that is (inclusively) bounded by two terminal points." ;
         rdfs:label "line segment" .
 
-    ex-kb:PolylineSegment rdf:type sio:Polyline ;
+    sets-kb:PolylineSegment rdf:type sio:Polyline ;
         rdfs:label "polyline segment " ;
-        sio:hasComponentPart ex-kb:LineSegmentInstance .
+        sio:hasComponentPart sets-kb:LineSegmentInstance .
 
-    ex-kb:LineSegmentInstance rdf:type sio:LineSegment ;
+    sets-kb:LineSegmentInstance rdf:type sio:LineSegment ;
         rdfs:label "line segment instance" .
 }
-ex-kb:Assertion_2 {
-    ex-kb:PolylineSegment sio:hasComponentPart [ rdf:type owl:Individual ; owl:differentFrom ex-kb:LineSegmentInstance ] .
+sets-kb:Assertion_2 {
+    sets-kb:PolylineSegment sio:hasComponentPart [ rdf:type owl:Individual ; owl:differentFrom sets-kb:LineSegmentInstance ] .
 }
 # -------  Object Qualified Min Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Min Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedMinCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2272,7 +2272,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Exact Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:isRelatedTo rdf:type owl:ObjectProperty ,
                                     owl:SymmetricProperty ;
         rdfs:label "is related to" ;
@@ -2290,41 +2290,41 @@ ex-kb:Assertion_1 {
         rdfs:label "has member" ;
         dct:description "has member is a mereological relation between a collection and an item." .
 
-    ex:Duo rdf:type owl:Class ;
+    sets:Duo rdf:type owl:Class ;
         rdfs:subClassOf 
             [ rdf:type owl:Restriction ;
                 owl:onProperty sio:hasMember ;
                 owl:cardinality "2"^^xsd:integer
             ] .
 
-    ex-kb:Stooges rdf:type ex:Duo ;
+    sets-kb:Stooges rdf:type sets:Duo ;
         sio:hasMember 
-            ex-kb:Larry ,
-            ex-kb:Moe ,
-            ex-kb:Curly .
+            sets-kb:Larry ,
+            sets-kb:Moe ,
+            sets-kb:Curly .
 
-    ex-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
+    sets-kb:DistinctStoogesRestriction rdf:type owl:AllDifferent ;
         owl:distinctMembers
-            ( ex-kb:Larry 
-            ex-kb:Moe 
-            ex-kb:Curly ) .
+            ( sets-kb:Larry 
+            sets-kb:Moe 
+            sets-kb:Curly ) .
 
-    ex-kb:BonnieAndClyde rdf:type ex:Duo ;
+    sets-kb:BonnieAndClyde rdf:type sets:Duo ;
         rdfs:label "Bonnie and Clyde" ;
-        sio:hasMember ex-kb:Bonnie .
+        sio:hasMember sets-kb:Bonnie .
 
-    ex-kb:Bonnie rdf:type sio:Human ;
+    sets-kb:Bonnie rdf:type sio:Human ;
         rdfs:label "Bonnie" .
 }
-ex-kb:Assertion_2 {
-    ex-kb:Stooges rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Stooges rdf:type owl:Nothing .
 }
 # -------  Object Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Exact Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectExactCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2334,7 +2334,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Qualified Exact Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasComponentPart rdf:type owl:ObjectProperty ;
         rdfs:subPropertyOf sio:hasDirectPart ;
         rdfs:label "has component part" ;
@@ -2354,32 +2354,32 @@ ex-kb:Assertion_1 {
         dct:description "A polygon edge is a line segment joining two polygon vertices." ;
         rdfs:label "polygon edge" .
 
-    ex-kb:TripleVertexPolyEdge rdf:type sio:PolygonEdge ;
+    sets-kb:TripleVertexPolyEdge rdf:type sio:PolygonEdge ;
         rdfs:label "triple vertex polygon edge" ;
-        sio:hasComponentPart ex-kb:VertexOne , ex-kb:VertexTwo , ex-kb:VertexThree .
+        sio:hasComponentPart sets-kb:VertexOne , sets-kb:VertexTwo , sets-kb:VertexThree .
 
-    ex-kb:VertexOne rdf:type sio:PolygonVertex ;
+    sets-kb:VertexOne rdf:type sio:PolygonVertex ;
         rdfs:label "vertex one" .
 
-    ex-kb:VertexTwo rdf:type sio:PolygonVertex ;
+    sets-kb:VertexTwo rdf:type sio:PolygonVertex ;
         rdfs:label "vertex two" .
 
-    ex-kb:VertexThree rdf:type sio:PolygonVertex ;
+    sets-kb:VertexThree rdf:type sio:PolygonVertex ;
         rdfs:label "vertex three" .
 
-    ex-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
+    sets-kb:SingleVertexPolyEdge rdf:type sio:PolygonEdge ;
         rdfs:label "triple vertexed polygon edge" ;
-        sio:hasComponentPart ex-kb:VertexOne .
+        sio:hasComponentPart sets-kb:VertexOne .
 }
-ex-kb:Assertion_2 {
-    ex-kb:TripleVertexPolyEdge rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:TripleVertexPolyEdge rdf:type owl:Nothing .
 }
 # -------  Object Qualified Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Qualified Exact Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedExactCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2389,37 +2389,37 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Max Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex:hasAge rdf:type owl:DatatypeProperty ;
+    sets:hasAge rdf:type owl:DatatypeProperty ;
         rdfs:label "has age" ;
         rdfs:subPropertyOf sio:hasValue .
 
-    ex:Person rdf:type owl:Class ;
+    sets:Person rdf:type owl:Class ;
         rdfs:label "person" ;
         rdfs:subClassOf
             [ rdf:type owl:Restriction ;
-                owl:onProperty ex:hasAge ;
+                owl:onProperty sets:hasAge ;
                 owl:maxCardinality "1"^^xsd:integer ] . 
 
-    ex-kb:Katie rdf:type ex:Person ;
+    sets-kb:Katie rdf:type sets:Person ;
         rdfs:label "Katie" ;
-        ex:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
+        sets:hasAge "31"^^xsd:integer , "34"^^xsd:integer .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Katie rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Katie rdf:type owl:Nothing .
 }
 # -------  Data Max Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Max Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataMaxCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2430,7 +2430,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Max Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
 
     sio:InformationContentEntity rdf:type owl:Class ;
         rdfs:subClassOf sio:Object ;
@@ -2442,29 +2442,29 @@ ex-kb:Assertion_1 {
         rdfs:label "mathematical entity" ;
         dct:description "A mathematical entity is an information content entity that are components of a mathematical system or can be defined in mathematical terms." .
 
-    ex:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
+    sets:hasPolynomialRoot rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "has polynomial root" .
 
-    ex-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
-        owl:onProperty ex:hasPolynomialRoot ;
+    sets-kb:QuadraticPolynomialRootRestriction rdf:type owl:Restriction ;
+        owl:onProperty sets:hasPolynomialRoot ;
         owl:maxQualifiedCardinality "2"^^xsd:integer ;
         owl:onDataRange xsd:decimal .
 
-    ex-kb:QuadraticPolynomialInstance rdf:type sio:Human ;
+    sets-kb:QuadraticPolynomialInstance rdf:type sio:Human ;
         rdfs:label "quadratic polynomial instance" ;
-        ex:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
+        sets:hasPolynomialRoot "1.23"^^xsd:decimal , "3.45"^^xsd:decimal , "5.67"^^xsd:decimal .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:QuadraticPolynomialInstance rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:QuadraticPolynomialInstance rdf:type owl:Nothing .
 }
 # -------  Data Qualified Max Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Max Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedMaxCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2475,31 +2475,31 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Min Cardinality -------
-ex-kb:Assertion_1 {
-    ex:hasDiameterValue rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:hasDiameterValue rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "has diameter value" .
 
-    ex:ConicalCylinder rdf:type owl:Class ;
+    sets:ConicalCylinder rdf:type owl:Class ;
         rdfs:subClassOf
             [ rdf:type owl:Restriction ;
-                owl:onProperty ex:hasDiameterValue ;
+                owl:onProperty sets:hasDiameterValue ;
                 owl:minCardinality "3"^^xsd:integer ] ;
         rdfs:label "conical cylinder" .
 
-    ex-kb:CoffeeContainer rdf:type ex:ConicalCylinder ;
-        ex:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
+    sets-kb:CoffeeContainer rdf:type sets:ConicalCylinder ;
+        sets:hasDiameterValue "1"^^xsd:integer ;#, "2"^^xsd:integer  ;
         rdfs:label "coffee container" .
 }
-ex-kb:Assertion_2 {
-    ex-kb:CoffeeContainer ex:hasDiameterValue [ rdf:type rdfs:Datatype ] .
+sets-kb:Assertion_2 {
+    sets-kb:CoffeeContainer sets:hasDiameterValue [ rdf:type rdfs:Datatype ] .
 }
 # -------  Data Min Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Min Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataMinCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2509,29 +2509,29 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Min Cardinality -------
-ex-kb:Assertion_1 {
-    ex:hasName rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:hasName rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "has name" .
 
-    ex-kb:NameRestriction rdf:type owl:Restriction ;
-        owl:onProperty ex:hasName ;
+    sets-kb:NameRestriction rdf:type owl:Restriction ;
+        owl:onProperty sets:hasName ;
         owl:minQualifiedCardinality "2"^^xsd:integer ;
         owl:onDataRange xsd:string .
 
-    ex-kb:Jackson rdf:type sio:Human ;
+    sets-kb:Jackson rdf:type sio:Human ;
         rdfs:label "Jackson" ;
-        ex:hasName "Jackson"^^xsd:string .
+        sets:hasName "Jackson"^^xsd:string .
 }
-ex-kb:Assertion_2 {
-    ex-kb:Jackson ex:hasName [ rdf:type rdfs:Datatype ] .
+sets-kb:Assertion_2 {
+    sets-kb:Jackson sets:hasName [ rdf:type rdfs:Datatype ] .
 }
 # -------  Data Qualified Min Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Min Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedMinCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2541,33 +2541,33 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Exact Cardinality -------
-ex-kb:Assertion_1 {
-    ex:hasBirthYear rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:hasBirthYear rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "has birth year" .
 
-    ex:Person rdf:type owl:Class ;
+    sets:Person rdf:type owl:Class ;
         rdfs:label "person" ;
         rdfs:subClassOf sio:Human ;
         rdfs:subClassOf
             [ rdf:type owl:Restriction ;
-                owl:onProperty ex:hasBirthYear ;
+                owl:onProperty sets:hasBirthYear ;
                 owl:cardinality "1"^^xsd:integer ] . 
 
-    ex-kb:Erik rdf:type ex:Person ;
+    sets-kb:Erik rdf:type sets:Person ;
         rdfs:label "Erik" ;
-        ex:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
+        sets:hasBirthYear "1988"^^xsd:integer , "1998"^^xsd:integer .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Erik rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Erik rdf:type owl:Nothing .
 }
 # -------  Data Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Exact Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataExactCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2577,35 +2577,35 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Qualified Exact Cardinality -------
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex:uniqueUsername rdf:type owl:DatatypeProperty ;
+    sets:uniqueUsername rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf sio:hasValue ;
         rdfs:label "unique username" .
 
-    ex-kb:UsernameRestriction rdf:type owl:Restriction ;
-        owl:onProperty ex:uniqueUsername ;
+    sets-kb:UsernameRestriction rdf:type owl:Restriction ;
+        owl:onProperty sets:uniqueUsername ;
         owl:qualifiedCardinality "1"^^xsd:integer ;
         owl:onDataRange xsd:string .
 
-    ex-kb:Stephen rdf:type sio:Human ;
+    sets-kb:Stephen rdf:type sio:Human ;
         rdfs:label "Steve" ;
-        ex:uniqueUsername "SteveTheGamer"^^xsd:string , "ScubaSteve508"^^xsd:string .
+        sets:uniqueUsername "SteveTheGamer"^^xsd:string , "ScubaSteve508"^^xsd:string .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Stephen rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Stephen rdf:type owl:Nothing .
 }
 # -------  Data Qualified Exact Cardinality ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Qualified Exact Cardinality Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedExactCardinalityRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2615,36 +2615,36 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Complement Of ------- 
-ex-kb:Assertion_1 {
-    ex:VitalStatus rdfs:subClassOf sio:Attribute ;
+sets-kb:Assertion_1 {
+    sets:VitalStatus rdfs:subClassOf sio:Attribute ;
         rdfs:label "vital status" .
 
-    ex:Dead rdf:type owl:Class ;
-        rdfs:subClassOf ex:VitalStatus ;
+    sets:Dead rdf:type owl:Class ;
+        rdfs:subClassOf sets:VitalStatus ;
         rdfs:label "dead" .
 
-    ex:Alive rdf:type owl:Class ;
-        rdfs:subClassOf ex:VitalStatus ;
+    sets:Alive rdf:type owl:Class ;
+        rdfs:subClassOf sets:VitalStatus ;
         rdfs:label "alive" ;
-        owl:complementOf ex:Dead .
+        owl:complementOf sets:Dead .
 
-    ex-kb:VitalStatusOfPat rdf:type ex:Alive , ex:Dead ;
+    sets-kb:VitalStatusOfPat rdf:type sets:Alive , sets:Dead ;
         rdfs:label "Pat's Vital Status" ;
-        sio:isAttributeOf ex-kb:Pat .
+        sio:isAttributeOf sets-kb:Pat .
 
-    ex-kb:Pat rdf:type sio:Human ;
+    sets-kb:Pat rdf:type sio:Human ;
         rdfs:label "Pat" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:VitalStatusOfPat rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:VitalStatusOfPat rdf:type owl:Nothing .
 }
 # -------  Object Complement Of ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Complement Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectComplementOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2654,7 +2654,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Property Complement Of ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasUnit rdf:type owl:ObjectProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has unit" ;
@@ -2705,23 +2705,23 @@ ex-kb:Assertion_1 {
         rdfs:label "information content entity" ;
         dct:description "An information content entity is an object that requires some background knowledge or procedure to correctly interpret." .
 
-    ex-kb:Efficiency rdf:type sio:DimensionlessQuantity  ;
-        sio:hasUnit [ rdf:type ex:Percentage ] ;
+    sets-kb:Efficiency rdf:type sio:DimensionlessQuantity  ;
+        sio:hasUnit [ rdf:type sets:Percentage ] ;
         rdfs:label "efficiency" .
 
-    ex:Percentage rdfs:subClassOf sio:UnitOfMeasurement ;
+    sets:Percentage rdfs:subClassOf sio:UnitOfMeasurement ;
         rdfs:label "percentage" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Efficiency rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Efficiency rdf:type owl:Nothing .
 }
 # -------  Object Property Complement Of ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Property Complement Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyComplementOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2731,29 +2731,29 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Complement Of ------- 
-ex-kb:Assertion_1 {
-    ex:nonTextValue rdf:type owl:DatatypeProperty ;
+sets-kb:Assertion_1 {
+    sets:nonTextValue rdf:type owl:DatatypeProperty ;
         rdfs:subClassOf sio:hasValue ;
         rdfs:label "non-text value" ;
-        rdfs:range ex:NotAString .
+        rdfs:range sets:NotAString .
 
-    ex:NotAString rdf:type rdfs:Datatype ; 
+    sets:NotAString rdf:type rdfs:Datatype ; 
         owl:datatypeComplementOf xsd:string .
 
-    ex-kb:SamplePhrase rdf:type sio:TextualEntity ;
+    sets-kb:SamplePhrase rdf:type sio:TextualEntity ;
         rdfs:label "sample phrase" ;
-        ex:nonTextValue "To be, or not to be?"^^xsd:string .
+        sets:nonTextValue "To be, or not to be?"^^xsd:string .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:SamplePhrase rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:SamplePhrase rdf:type owl:Nothing .
 }
 # -------  Data Complement Of ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Complement Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataComplementOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2763,13 +2763,13 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Property Complement Of ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
         dct:description "A relation between a informational entity and its actual value (numeric, date, text, etc)." .
 
-    ex:NumericalValue rdf:type owl:Class ;
+    sets:NumericalValue rdf:type owl:Class ;
         rdfs:label "numerical value" ;
         rdfs:subClassOf sio:ConceptualEntity ;
         rdfs:subClassOf
@@ -2780,19 +2780,19 @@ ex-kb:Assertion_1 {
                         owl:someValuesFrom xsd:string ] 
             ] .
 
-    ex-kb:Number rdf:type ex:NumericalValue ;
+    sets-kb:Number rdf:type sets:NumericalValue ;
         sio:hasValue "Fifty"^^xsd:string .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:Number rdf:type owl:Nothing .
+sets-kb:Assertion_2 {
+    sets-kb:Number rdf:type owl:Nothing .
 }
 # -------  Data Property Complement Of ------->
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Property Complement Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataPropertyComplementOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2802,7 +2802,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Object Union Of ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:InformationContentEntity rdf:type owl:Class ;
         rdfs:subClassOf sio:Object ;
     #    rdfs:subClassOf rdf:nodeID="arc0158b21" ;
@@ -2828,7 +2828,7 @@ ex-kb:Assertion_1 {
         dct:description "A line is curve that extends in a single dimension (e.g. straight line; exhibits no curvature), and is composed of at least two fully connected points." .
 }
 
-ex-kb:Assertion_2 {
+sets-kb:Assertion_2 {
     sio:LineSegment rdfs:subClassOf sio:Line .
     sio:Ray rdfs:subClassOf sio:Line .
     sio:InfiniteLine rdfs:subClassOf sio:Line .
@@ -2838,7 +2838,7 @@ ex-kb:Assertion_2 {
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Union Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Union Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectUnionOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2848,7 +2848,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Data Union Of ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:hasValue rdf:type owl:DatatypeProperty ,
                                     owl:FunctionalProperty;
         rdfs:label "has value" ;
@@ -2891,35 +2891,35 @@ ex-kb:Assertion_1 {
                 ) ] ;
         dct:description "A measurement value is a quantitative description that reflects the magnitude of some attribute." .
 
-    ex-kb:DateTimeMeasurement rdf:type owl:Individual ;
+    sets-kb:DateTimeMeasurement rdf:type owl:Individual ;
         rdfs:label "date time measurement" ;
         sio:hasValue "1990-10-14T21:32:52"^^xsd:dateTime .
 
-    ex-kb:IntegerMeasurement rdf:type owl:Individual ;
+    sets-kb:IntegerMeasurement rdf:type owl:Individual ;
         rdfs:label "integer measurement" ;
         sio:hasValue "12"^^xsd:integer .
 
-    ex-kb:DoubleMeasurement rdf:type owl:Individual ;
+    sets-kb:DoubleMeasurement rdf:type owl:Individual ;
         rdfs:label "double measurement" ;
         sio:hasValue "6.34"^^xsd:double .
 
-    ex-kb:FloatMeasurement rdf:type owl:Individual ;
+    sets-kb:FloatMeasurement rdf:type owl:Individual ;
         rdfs:label "float measurement" ;
         sio:hasValue "3.14"^^xsd:float .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:DateTimeMeasurement rdf:type sio:MeasurementValue .
-    ex-kb:IntegerMeasurement rdf:type sio:MeasurementValue .
-    ex-kb:DoubleMeasurement rdf:type sio:MeasurementValue .
-    ex-kb:FloatMeasurement rdf:type sio:MeasurementValue .
+sets-kb:Assertion_2 {
+    sets-kb:DateTimeMeasurement rdf:type sio:MeasurementValue .
+    sets-kb:IntegerMeasurement rdf:type sio:MeasurementValue .
+    sets-kb:DoubleMeasurement rdf:type sio:MeasurementValue .
+    sets-kb:FloatMeasurement rdf:type sio:MeasurementValue .
 }
 # -------  Data Union Of -------> 
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Data Union Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Data Union Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataUnionOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2929,7 +2929,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <-------  Disjoint Union ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:BiologicalEntity  rdf:type owl:Class ;
         rdfs:label "biological entity" ;
         rdfs:subClassOf sio:HeterogeneousSubstance ;
@@ -2955,37 +2955,37 @@ ex-kb:Assertion_1 {
     #    <sio:equivalentTo>CHEBI:23367</sio:equivalentTo>
         dct:description "A chemical entity is a material entity that pertains to chemistry." .
 
-    ex:Lobe rdf:type owl:Class ;
+    sets:Lobe rdf:type owl:Class ;
         rdfs:subClassOf sio:BiologicalEntity ;
         rdfs:label "lobe" ;
         dct:description "A lobe that is part the brain." ;
         owl:equivalentClass 
             [ rdf:type owl:Class ;
-                owl:disjointUnionOf ( ex:FrontalLobe ex:ParietalLobe ex:TemporalLobe ex:OccipitalLobe ex:LimbicLobe ) ] .
+                owl:disjointUnionOf ( sets:FrontalLobe sets:ParietalLobe sets:TemporalLobe sets:OccipitalLobe sets:LimbicLobe ) ] .
 }
 
-ex-kb:Assertion_2 {
-    ex:FrontalLobe rdfs:subClassOf ex:Lobe ;
-        owl:disjointWith ex:ParietalLobe , ex:TemporalLobe , ex:OccipitalLobe , ex:LimbicLobe .
+sets-kb:Assertion_2 {
+    sets:FrontalLobe rdfs:subClassOf sets:Lobe ;
+        owl:disjointWith sets:ParietalLobe , sets:TemporalLobe , sets:OccipitalLobe , sets:LimbicLobe .
 
-    ex:ParietalLobe rdfs:subClassOf ex:Lobe ;
-        owl:disjointWith ex:FrontalLobe , ex:TemporalLobe , ex:OccipitalLobe , ex:LimbicLobe .
+    sets:ParietalLobe rdfs:subClassOf sets:Lobe ;
+        owl:disjointWith sets:FrontalLobe , sets:TemporalLobe , sets:OccipitalLobe , sets:LimbicLobe .
 
-    ex:TemporalLobe rdfs:subClassOf ex:Lobe ;
-        owl:disjointWith ex:FrontalLobe , ex:ParietalLobe , ex:OccipitalLobe , ex:LimbicLobe .
+    sets:TemporalLobe rdfs:subClassOf sets:Lobe ;
+        owl:disjointWith sets:FrontalLobe , sets:ParietalLobe , sets:OccipitalLobe , sets:LimbicLobe .
 
-    ex:OccipitalLobe rdfs:subClassOf ex:Lobe ;
-        owl:disjointWith ex:FrontalLobe , ex:ParietalLobe , ex:TemporalLobe , ex:LimbicLobe .
+    sets:OccipitalLobe rdfs:subClassOf sets:Lobe ;
+        owl:disjointWith sets:FrontalLobe , sets:ParietalLobe , sets:TemporalLobe , sets:LimbicLobe .
 
-    ex:LimbicLobe rdfs:subClassOf ex:Lobe ;
-        owl:disjointWith ex:FrontalLobe , ex:ParietalLobe , ex:TemporalLobe , ex:OccipitalLobe .
+    sets:LimbicLobe rdfs:subClassOf sets:Lobe ;
+        owl:disjointWith sets:FrontalLobe , sets:ParietalLobe , sets:TemporalLobe , sets:OccipitalLobe .
 }
 # -------  Disjoint Union -------> 
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Disjoint Union Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Disjoint Union Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.DisjointUnionRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -2995,7 +2995,7 @@ ex-kb:Assertion_2 {
         np = nanopub.Nanopublication()
         np.assertion.parse(data=prefixes+'''
 # <------- Object Intersection Of ------- 
-ex-kb:Assertion_1 {
+sets-kb:Assertion_1 {
     sio:Molecule rdf:type owl:Class ;
         rdfs:label "molecule" .
 
@@ -3010,23 +3010,23 @@ ex-kb:Assertion_1 {
                 owl:someValuesFrom sio:Process ] ) ;
         rdfs:label "target" .
 
-    ex-kb:ProteinReceptor rdf:type sio:Molecule ;
+    sets-kb:ProteinReceptor rdf:type sio:Molecule ;
         rdfs:label "protein receptor" ;
-        sio:isTargetIn ex-kb:Therapy .
+        sio:isTargetIn sets-kb:Therapy .
 
-    ex-kb:Therapy rdf:type sio:Process ;
+    sets-kb:Therapy rdf:type sio:Process ;
         rdfs:label "therapy" .
 }
 
-ex-kb:Assertion_2 {
-    ex-kb:ProteinReceptor rdf:type sio:Target .
+sets-kb:Assertion_2 {
+    sets-kb:ProteinReceptor rdf:type sio:Target .
 }
 # ------- Object Intersection Of -------> 
 ''', format="trig")
         self.app.nanopub_manager.publish(*[np])
         agent =  config.Config["inferencers"]["Object Intersection Of Back Tracer"]
         agent.process_graph(self.app.db)
-        hypothesis = list(self.app.db.subjects(RDFS.label, Literal('Object Intersection Of Back Tracer') ))
+        hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectIntersectionOfRule) )
         for hyp in hypothesis :
             self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
 
@@ -3037,11 +3037,11 @@ ex-kb:Assertion_2 {
 #        np.assertion.parse(data=prefixes+'''
 ## <------- Data Intersection Of ------- 
 ## Need to come back to this --> can't assign multiple datatypes to a literal. However, can assign a datatype and a restriction on that datatype.. but what would be constructed?
-#ex:Zero rdf:type rdfs:Datatype ; 
+#sets:Zero rdf:type rdfs:Datatype ; 
 #    rdfs:label "zero" ;
 #    owl:intersectionOf ( xsd:nonNegativeInteger xsd:nonPositiveInteger ) .
 #
-#ex:TeenageValue rdf:type rdfs:Datatype ; 
+#sets:TeenageValue rdf:type rdfs:Datatype ; 
 #    rdfs:label "teenage value" ;
 #    owl:intersectionOf ( 
 #        xsd:integer 

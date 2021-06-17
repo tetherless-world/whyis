@@ -13,11 +13,6 @@ from flask import render_template
 from flask import render_template_string
 import logging
 
-#try:
-#    import config.Config as Config
-#except:
-#    from whyis import config_defaults.Config as Config
-
 import sys, traceback
 
 import database
@@ -29,13 +24,14 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 class Deductor(GlobalChangeService):
-    def __init__(self, reference, antecedent, consequent, explanation, resource="?resource", prefixes=None): 
+    def __init__(self, reference, antecedent, consequent, explanation, resource="?resource", rule="<http://vocab.rpi.edu/whyis/Rule>", prefixes=None): 
         if resource is not None:
             self.resource = resource
         self.prefixes = {}
         if prefixes is not None:
             self.prefixes = prefixes
         self.reference = reference
+        self.rule = rule
         self.antecedent = antecedent
         self.consequent = consequent
         self.explanation = explanation
