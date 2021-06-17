@@ -6,4 +6,5 @@
     optional {
         ?identifier dc:description ?description.
     }
+    filter (!isBlank(?identifier))
 }''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label")| tojson }}
