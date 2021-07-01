@@ -20,7 +20,7 @@ class Manager(script.Manager):
         self.add_command("createuser", commands.CreateUser())
         self.add_command("interpret", commands.RunInterpreter())
         self.add_command("listroutes", commands.ListRoutes())
-        self.add_command("runabductor", commands.RunAbductor())
+        self.add_command("runhybridreasoner", commands.RunHybridReasoner())
         self.add_command("load", commands.LoadNanopub())
         self.add_command("retire", commands.RetireNanopub())
         self.add_command("runserver", commands.WhyisServer())
