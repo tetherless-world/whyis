@@ -17,6 +17,7 @@ from whyis.test.agent_unit_test_case import AgentUnitTestCase
 SIO = Namespace("http://semanticscience.org/resource/")
 ONT = Namespace("http://purl.org/twc/HEALS/ont/")
 KB = Namespace("http://purl.org/twc/HEALS/kb/")
+SETS = Namespace("http://purl.org/ontology/sets/ont#")
 WHYIS = Namespace("http://vocab.rpi.edu/whyis/")
 
 prefixes = '''
@@ -812,8 +813,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Decreased Activity Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DecreasedActivityRule))
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_biological_effect_back_tracer(self):
         self.dry_run = False
@@ -833,8 +835,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Biological Effect Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.BiologicalEffectRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_medicinal_effect_back_tracer(self):
         self.dry_run = False
@@ -854,8 +857,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Medicinal Effect Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects( RDF.type, ONT.MedicinalEffectRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_change_of_diet_back_tracer(self):
         self.dry_run = False
@@ -875,8 +879,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Change Of Diet Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ChangeOfDietRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_metabolism_decrease_back_tracer(self):
         self.dry_run = False
@@ -896,8 +901,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Metabolism Decrease Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.MetabolismDecreaseRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_hypothyroidism_back_tracer(self):
         self.dry_run = False
@@ -917,8 +923,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Hypothyroidism Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.HypothyroidismRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_single_drug_side_effect_back_tracer(self):
         self.dry_run = False
@@ -938,8 +945,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Single Drug Side Effect Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.SingleDrugSideEffectRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_multiple_drug_contraindication_back_tracer(self):
         self.dry_run = False
@@ -959,8 +967,9 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Multiple Drug Contraindication Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.MultipleDrugContraindicationRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
 
     def test_reduction_in_steps_back_tracer(self):
         self.dry_run = False
@@ -980,5 +989,6 @@ heals-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Reduction In Steps Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ReductionInStepsRule ) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, SETS.hypothesis, hyp), self.app.db)
