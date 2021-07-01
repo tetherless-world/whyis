@@ -113,8 +113,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Class Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassDisjointnessRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_transitivity_back_tracer(self):
         self.dry_run = False
@@ -183,8 +184,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Transitivity Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyTransitivityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_reflexivity_back_tracer(self):
         self.dry_run = False
@@ -225,8 +227,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Reflexivity Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyReflexivityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_irreflexivity_back_tracer(self):
         self.dry_run = False
@@ -290,8 +293,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Irreflexivity Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyIrreflexivityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_functional_object_property_back_tracer(self):
         self.dry_run = False
@@ -367,8 +371,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.FunctionalObjectPropertyRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_property_domain_back_tracer(self):
         self.dry_run = False
@@ -510,8 +515,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Property Domain Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyDomainRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_property_range_back_tracer(self):
         self.dry_run = False
@@ -585,8 +591,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Property Range Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyRangeRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_inverse_functional_object_property_back_tracer(self):
         self.dry_run = False
@@ -654,8 +661,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Inverse Functional Object Property Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.InverseFunctionalObjectPropertyRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_functional_data_property_back_tracer(self):
         self.dry_run = False
@@ -682,8 +690,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Functional Data Property Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.FunctionalDataPropertyRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_property_disjointness_back_tracer(self):
         self.dry_run = False
@@ -718,8 +727,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Property Disjointness Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyDisjointnessRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_symmetry_back_tracer(self):
         self.dry_run = False
@@ -750,8 +760,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Symmetry Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertySymmetryRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_asymmetry_back_tracer(self):
         self.dry_run = False
@@ -785,8 +796,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Asymmetry Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyAsymmetryRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_class_inclusion_back_tracer(self):
         self.dry_run = False
@@ -822,8 +834,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Class Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassInclusionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_inclusion_back_tracer(self):
         self.dry_run = False
@@ -920,8 +933,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyInclusionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_property_inclusion_back_tracer(self):
         self.dry_run = False
@@ -954,8 +968,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Property Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataPropertyInclusionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_property_chain_inclusion_back_tracer(self):
         self.dry_run = False
@@ -1004,8 +1019,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Chain Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyChainInclusionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_class_equivalence_back_tracer(self):
         self.dry_run = False
@@ -1031,8 +1047,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Class Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassEquivalenceRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_property_equivalence_back_tracer(self):
         self.dry_run = False
@@ -1064,8 +1081,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Property Equivalence Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.PropertyEquivalenceRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_individual_inclusion_back_tracer(self):
         self.dry_run = False
@@ -1092,8 +1110,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Individual Inclusion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.IndividualInclusionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_inversion_back_tracer(self):
         self.dry_run = False
@@ -1154,8 +1173,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Inversion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyInversionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_same_individual_back_tracer(self):
         self.dry_run = False
@@ -1185,8 +1205,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Same Individual Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.SameIndividualRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_different_individuals_back_tracer(self):
         self.dry_run = False
@@ -1208,8 +1229,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DifferentIndividualsRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 
     def test_class_assertion_back_tracer(self):
@@ -1252,8 +1274,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Class Assertion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ClassAssertionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 #    def test_positive_object_property_assertion_back_tracer(self):
 #        self.dry_run = False
@@ -1331,8 +1354,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Negative Object Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.NegativeObjectPropertyAssertionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_negative_data_property_assertion_back_tracer(self):
         self.dry_run = False
@@ -1365,8 +1389,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Negative Data Property Assertion Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.NegativeDataPropertyAssertionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_keys_back_tracer(self):
         self.dry_run = False
@@ -1401,8 +1426,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Keys Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.KeysRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_some_values_from_back_tracer(self):
         self.dry_run = False
@@ -1484,8 +1510,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectSomeValuesFromRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_some_values_from_back_tracer(self):
         self.dry_run = False
@@ -1518,8 +1545,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Some Values From Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataSomeValuesFromRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_has_self_back_tracer(self):
         self.dry_run = False
@@ -1556,8 +1584,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Has Self Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectHasSelfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_has_value_back_tracer(self):
         self.dry_run = False
@@ -1612,8 +1641,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Has Value Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectHasValueRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_has_value_back_tracer(self):
         self.dry_run = False
@@ -1651,8 +1681,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Has Value Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataHasValueRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_all_disjoint_classes_back_tracer(self):
         self.dry_run = False
@@ -1698,8 +1729,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["All Disjoint Classes Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDisjointClassesRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_all_disjoint_properties_back_tracer(self):
         self.dry_run = False
@@ -1732,8 +1764,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["All Disjoint Properties Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDisjointPropertiesRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_all_different_individuals_back_tracer(self):
         self.dry_run = False
@@ -1767,8 +1800,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["All Different Individuals Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.AllDifferentIndividualsRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_one_of_membership_back_tracer(self):
         self.dry_run = False
@@ -1806,8 +1840,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object One Of Membership Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectOneOfMembershipRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_one_of_inconsistency_back_tracer(self):
         self.dry_run = False
@@ -1843,8 +1878,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object One Of Inconsistency Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectOneOfInconsistencyRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_one_of_back_tracer(self):
         self.dry_run = False
@@ -1871,8 +1907,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data One Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataOneOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_datatype_restriction_back_tracer(self):
         self.dry_run = False
@@ -1920,8 +1957,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Datatype Restriction Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DatatypeRestrictionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_all_values_from_back_tracer(self):
         self.dry_run = False
@@ -1979,8 +2017,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object All Values From Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectAllValuesFromRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_all_values_from_back_tracer(self):
         self.dry_run = False
@@ -2014,8 +2053,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data All Values From Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataAllValuesFromRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2083,8 +2123,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectMaxCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_qualified_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2157,8 +2198,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedMaxCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_min_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2216,8 +2258,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectMinCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 
     def test_object_qualified_min_cardinality_back_tracer(self):
@@ -2263,8 +2306,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedMinCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2316,6 +2360,7 @@ sets-kb:Assertion_1 {
     sets-kb:Bonnie rdf:type sio:Human ;
         rdfs:label "Bonnie" .
 }
+
 sets-kb:Assertion_2 {
     sets-kb:Stooges rdf:type owl:Nothing .
 }
@@ -2325,8 +2370,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectExactCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2380,8 +2426,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectQualifiedExactCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_max_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2420,8 +2467,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataMaxCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 
     def test_data_qualified_max_cardinality_back_tracer(self):
@@ -2465,8 +2513,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Qualified Max Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedMaxCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 
     def test_data_min_cardinality_back_tracer(self):
@@ -2500,8 +2549,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataMinCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_qualified_min_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2532,8 +2582,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Qualified Min Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedMinCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2568,8 +2619,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataExactCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_qualified_exact_cardinality_back_tracer(self):
         self.dry_run = False
@@ -2606,8 +2658,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Qualified Exact Cardinality Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataQualifiedExactCardinalityRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2645,8 +2698,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectComplementOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_property_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2722,8 +2776,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectPropertyComplementOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2754,8 +2809,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataComplementOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_property_complement_of_back_tracer(self):
         self.dry_run = False
@@ -2793,8 +2849,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Property Complement Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataPropertyComplementOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_union_of_back_tracer(self):
         self.dry_run = False
@@ -2839,8 +2896,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Union Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectUnionOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_data_union_of_back_tracer(self):
         self.dry_run = False
@@ -2920,8 +2978,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Data Union Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DataUnionOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_disjoint_union_back_tracer(self):
         self.dry_run = False
@@ -2986,8 +3045,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Disjoint Union Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.DisjointUnionRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
     def test_object_intersection_of_back_tracer(self):
         self.dry_run = False
@@ -3027,8 +3087,9 @@ sets-kb:Assertion_2 {
         agent =  config.Config["inferencers"]["Object Intersection Of Back Tracer"]
         agent.process_graph(self.app.db)
         hypothesis = list( self.app.db.subjects(RDF.type, ONT.ObjectIntersectionOfRule) )
+        self.assertEquals(len(hypothesis), 1)
         for hyp in hypothesis :
-            self.assertIn((KB.Assertion_2, WHYIS.hypothesis, hyp), self.app.db)
+            self.assertIn((KB.Assertion_2, ONT.hypothesis, hyp), self.app.db)
 
 #    def test_data_intersection_of_back_tracer(self):
 #        self.dry_run = False

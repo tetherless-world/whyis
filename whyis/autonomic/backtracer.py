@@ -18,6 +18,7 @@ import sys, traceback
 import database
 
 import tempfile
+import re
 
 from depot.io.interfaces import StoredFile
 
@@ -43,13 +44,44 @@ class BackTracer(GlobalChangeService):
 
     def get_query(self):
         self.app.db.store.nsBindings = {}
-        return '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT DISTINCT %s WHERE {\n GRAPH ?g1 { %s } GRAPH ?g2 { %s }\nFILTER NOT EXISTS {\n ?g2 whyis:hypothesis [ a whyis:Hypothesis , %s ; rdfs:label "%s" ] . \n\t}\n}''' % (
-        self.resource, self.antecedent, self.consequent, self.rule, self.reference)
+        return '''
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sets: <http://purl.org/ontology/sets/ont#>
+SELECT DISTINCT %s WHERE {
+    GRAPH ?g1 { %s }
+    GRAPH ?g2 { %s }
+    FILTER NOT EXISTS {
+    GRAPH ?g1 { %s }
+    GRAPH ?g2 { %s }
+        ?g2 sets:hypothesis 
+            [ a sets:Hypothesis , %s ; 
+                rdfs:label "%s" ; 
+                sets:antecedentGraph ?g1 ] .
+    }
+}''' % ( self.resource, self.antecedent, self.consequent, self.antecedent, self.consequent, self.rule, self.reference )
+
+    def query_to_context(self, query_string) :
+        string_list = re.split("\s+",query_string)
+
+        new_list = []
+        for word in string_list :
+            if len(word) > 0 :
+                if word[0]=='?':
+                    new_list.append("{{"+word[1:]+"}}")
+                else :
+                    new_list.append(word)
+
+        updated_query_string = ' '.join(new_list)
+        return updated_query_string
 
     def get_context(self, i):
         context = {}
-        context_vars = self.app.db.query('''SELECT DISTINCT * WHERE {\n%s \nFILTER(regex(str(%s), "^(%s)")) . }''' % (
-        self.antecedent, self.resource, i.identifier), initNs=self.prefixes)
+        context_vars = self.app.db.query('''
+SELECT DISTINCT * WHERE {
+    GRAPH ?g1 { %s }
+    GRAPH ?g2 { %s }
+    FILTER(regex(str(%s), "^(%s)")) .
+}''' % ( self.antecedent, self.consequent, self.resource, i.identifier), initNs=self.prefixes)
         for key in context_vars.vars :
             context[key] = context_vars.bindings[0][key]
         return context
@@ -59,8 +91,27 @@ class BackTracer(GlobalChangeService):
             if self.reference in self.app.config["reasoning_profiles"][profile] :
                 npub = Nanopublication(store=o.graph.store)
                 triples = self.app.db.query(
-                    '''PREFIX whyis: <http://vocab.rpi.edu/whyis/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> CONSTRUCT {\n?g2 whyis:hypothesis [ a whyis:Hypothesis ; rdfs:label "%s" ]  . \n} WHERE {\nGRAPH ?g1 { %s } GRAPH ?g2 { %s } \nFILTER NOT EXISTS {\n?g2 whyis:hypothesis [ a whyis:Hypothesis , %s ; rdfs:label "%s" ] . \n\t}\nFILTER (regex(str(%s), "^(%s)")) \n}''' % (
-                    self.reference, self.antecedent, self.consequent, self.rule, self.reference, self.resource, i.identifier), initNs=self.prefixes)
+                    '''
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sets: <http://purl.org/ontology/sets/ont#>
+CONSTRUCT {
+    ?g2 sets:hypothesis
+        [ a sets:Hypothesis , %s ; 
+            rdfs:label "%s" ; 
+            sets:antecedentGraph ?g1 
+        ]  .
+} WHERE {
+    GRAPH ?g1 { %s }
+    GRAPH ?g2 { %s }
+    FILTER NOT EXISTS {
+        ?g2 sets:hypothesis 
+            [ a sets:Hypothesis , %s ; 
+                rdfs:label "%s" ; 
+                sets:antecedentGraph ?g1 
+            ] .
+    }
+    FILTER (regex(str(%s), "^(%s)"))
+}''' % ( self.rule, self.reference, self.antecedent, self.consequent, self.rule, self.reference, self.resource, i.identifier), initNs=self.prefixes)
                 try :
                     for s, p, o in triples:
                         print("BackTracer Adding ", s, p, o)
