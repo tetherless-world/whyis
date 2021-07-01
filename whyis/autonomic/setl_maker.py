@@ -34,7 +34,6 @@ class SETLMaker(GlobalChangeService):
 
     def get_query(self):
         return '''
-prefix setl: <http://purl.org/twc/vocab/setl/>
 select distinct ?resource where {
     graph ?type_assertion {
       ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
@@ -68,7 +67,6 @@ select distinct ?resource where {
         print(i.identifier)
         p = self.app.NS.prov.used
         for script, np, parameterized_type, type_assertion in self.app.db.query('''
-prefix setl: <http://purl.org/twc/vocab/setl/>
 select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;

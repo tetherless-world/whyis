@@ -155,10 +155,21 @@ methods: {
           alert(`${curFile.name} has already been uploaded`)
         } else {
           this.isInvalidUpload = false;
+          curFile['label'] = this.createDefaultLabel(curFile.name);
           this.uploadedFiles.push( curFile );
         }
       } 
     }, 
+    /* 
+      Helper to generate a default rdfs:label for distributions
+    */
+    createDefaultLabel(fileName){
+      var fileNameSplit = fileName.split(".");  
+      fileNameSplit.pop();
+      var rejoined = fileNameSplit.join(".");
+      var underscore2Space = rejoined.replace(/_/g, ' ');
+      return underscore2Space.replace(/[^a-zA-Z0-9 ]/g, "")
+    },
 
     handleImgUpload(files) {   
       this.uploadedImg = files;  
