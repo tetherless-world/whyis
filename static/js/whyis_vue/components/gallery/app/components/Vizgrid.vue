@@ -10,11 +10,6 @@
                 <span v-else>No result (0.59 seconds)</span>
             </div>
             <div class="viz-content">
-                <ul>
-                    <li v-for="(result, index) in newResults">
-                        {{result.label}}
-                    </li>
-                </ul>
                 <md-card v-for="(result, index) in newResults" :key="index" class="btn--animated">
                     <!--<div class="utility-gridicon" v-if="authenticated && authenticated.admin=='True'">
                         <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
@@ -25,9 +20,10 @@
                         <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
                         <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
                     </div>-->
-                    <md-card-media-cover md-solid @click.native.prevent="navigate(result)">
-                        <md-card-media md-ratio="4:3" v-if="result.depiction">
-                        <img :src="result.depiction" :alt="result.label">
+                    <md-card-media-cover md-solid @click.native.prevent="navigate(result)" >
+                        <md-card-media md-ratio="4:3" >
+                        <img :src="getViewUrl(result.thumbnail)" :alt="result.label" v-if="result.thumbnail">
+                        <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" :alt="result.label" v-else>
                         </md-card-media>
                         <md-card-area class="utility-gridbg">
                             <md-card-header class="utility-show_hide">
@@ -47,6 +43,7 @@
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
     import { EventServices, Slug } from '../../../../modules'
+    import { getViewUrl } from '../../../../utilities/views'
     import pagination from './Pagination'
     import axios from 'axios'
     export default {
@@ -111,6 +108,7 @@
                 })
                 return this.newResults = newArr;
             },
+            getViewUrl(uri, view) { return getViewUrl(uri, view) },
             navigate(args) {
                 return window.location = args.identifier
             },
@@ -128,32 +126,32 @@
             deleteChart(chart){
                 return EventServices.$emit("dialoguebox", {status: true, delete: true, title: "Delete", message: `Are you sure you want to delete this chart?`, chart})
             },
-            async loadAllInstances(){
-                this.loading = true
-                // Commenting out VOTD until we can figure out how to do it generically.
-                //const vvodd = false // await EventServices.getVizOfTheDayStatus()
-                //const result = await EventServices.fetchInstances(this.type)
-                console.log(this.instancetype)
-                const result = await axios.get(`${ROOT_URL}about`,
-                                               { params: {
-                                                   view: "instances",
-                                                   uri: this.instancetype
-                                                 }
-                                               })
-                this.results = result.data
-                //if(result.length > 0 && vvodd.status == true){
-                //    let viz = result[0];
-                //    if("backup" in viz){
-                //        this.loading = false
-                //        // return window.location = viz.backup.uri
-                //    }
-                //}
-                return this.loading = false
-            }
+
         },
-        beforeMount(){
-            return this.loadAllInstances()
+        async mounted (){
+            this.loading = true
+            // Commenting out VOTD until we can figure out how to do it generically.
+            //const vvodd = false // await EventServices.getVizOfTheDayStatus()
+            //const result = await EventServices.fetchInstances(this.type)
+            const result = await axios.get(`${ROOT_URL}about`,
+                                           { params: {
+                                               view: "instances",
+                                               uri: this.instancetype
+                                             }
+                                           })
+            this.results = result.data
+            //if(result.length > 0 && vvodd.status == true){
+            //    let viz = result[0];
+            //    if("backup" in viz){
+            //        this.loading = false
+            //        // return window.location = viz.backup.uri
+            //    }
+            //}
+            this.loading = false
         },
+        //beforeMount(){
+        //    return this.loadAllInstances()
+        //},
         created(){
             EventServices
             .$on("appstate", (data) => {
