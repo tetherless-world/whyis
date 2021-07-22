@@ -110,7 +110,7 @@
             },
             getViewUrl(uri, view) { return getViewUrl(uri, view) },
             navigate(args) {
-                return window.location = args.identifier
+                return window.location = getViewUrl(args.identifier,"view")
             },
             reduceDescription(args) {
                 let arr, arrSplice, res
