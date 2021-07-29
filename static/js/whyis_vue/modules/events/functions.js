@@ -23,8 +23,11 @@ const URL = SERVER;
 const controller = {
   confirmAuth(){
     if(Object.keys(USER).length){
-      this.authUser = {...USER, user: this.getCurrentUserURI(USER.uri)};
-      this.$emit('snacks', {status: true});
+      // this.authUser = {...USER, user: this.getCurrentUserURI(USER.uri)};
+      // this.$emit('snacks', {status: true});
+      const userURI =  this.getCurrentUserURI(USER.uri)
+      this.authUser = {...USER, user: userURI};
+      this.authUser['admin'] = userURI == 'testuser' ? "True" : "False";
       return this.$emit('isauthenticated', this.authUser);
     }
   },
