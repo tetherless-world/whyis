@@ -4,7 +4,7 @@
       <spinner :loading="loading" :text='loadingText'/>
     </div>
     <div v-else>
-      <viz-grid :authenticated="authenticated" :instancetype="instancetype"/>
+      <viz-grid :authenticated="authenticated" :chart-list="charts"/>
       <md-speed-dial :class="bottomPosition">
         <md-speed-dial-target class="utility-float-icon">
           <md-icon>menu</md-icon>
@@ -31,9 +31,12 @@
   import vizGrid from './components/Vizgrid'
   export default Vue.component('viz-gallery', {
     props:{
-      instancetype: {
+      instances: {
         type: String,
         require: true,
+        default: () => {
+          return "http://semanticscience.org/resource/Chart"
+        }
       }
     },
     data() {

@@ -4,7 +4,7 @@
       <spinner :loading="existingBkmk.status" :text='existingBkmk.text'/>
     </div>
     <div v-else>
-      <viz-grid :authenticated="authenticated" :instancetype="'http://semanticscience.org/resource/Chart'"/>
+      <viz-grid :authenticated="authenticated" :chart-list="charts"/>
       <md-speed-dial :class="bottomPosition" v-if="speedDials">
         <md-speed-dial-target class="utility-float-icon">
           <md-icon>menu</md-icon>
@@ -46,7 +46,8 @@
         authenticated: EventServices.authUser,
         existingBkmk: {
           status: false
-        }
+        },
+        charts:[]
       }
     },
     components: {

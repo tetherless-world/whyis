@@ -411,7 +411,8 @@ bibo:AcademicArticle whyis:hasView "article_view.html".
 
 whyis:hasFacetValues a whyis:CachedView.
 
-owl:Class rdfs:label "Class";
+owl:Class a rdfs:Class;
+  rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasFacets "class_facets.json";
   whyis:hasFacetValues "facet_values.json";
@@ -419,6 +420,16 @@ owl:Class rdfs:label "Class";
   whyis:hasOutgoing "outgoing_class.json";
   whyis:hasIncoming "incoming_class.json";
   whyis:newInstanceView "new_instance_view.html";
+  whyis:hasInstances "instances.json";
+  whyis:hasGallery "gallery.html";
+  whyis:hasView "class_view.html".
+
+rdfs:Class rdfs:label "Class";
+  whyis:hasFacets "class_facets.json";
+  whyis:hasFacetValues "facet_values.json";
+  whyis:hasInstanceData "class_instance_data.rq";
+  whyis:hasOutgoing "outgoing_class.json";
+  whyis:hasIncoming "incoming_class.json";
   whyis:hasInstances "instances.json";
   whyis:hasGallery "gallery.html";
   whyis:hasView "class_view.html".

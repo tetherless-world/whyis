@@ -45,7 +45,7 @@ const controller = {
 
   navTo(args, uri){
     if(uri){
-      return window.location = `${window.location.origin}/about?view=${args}&uri=${encodeURIComponent(uri)}`;
+      return window.location = `${window.location.origin}/about?view=${args}&uri=http:%2F%2Fsemanticscience.org%2Fresource%2FChart`;
     }
     return window.location=args
   },
