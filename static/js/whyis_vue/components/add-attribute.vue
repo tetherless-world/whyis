@@ -339,15 +339,16 @@ export default Vue.component('add-attribute', {
         },
 
         async getAttributeList (query) {
+	    var combinedList = [];
             const [rdfsProperty, owlDatatypeProperty] = await axios.all([
                 axios.get(
-                `/?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
+                `/about?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
                 axios.get(
-                `/?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23DatatypeProperty`)
+                `/about?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23DatatypeProperty`)
             ]).catch((err) => {
                 throw(err)
             })
-            var combinedList = owlDatatypeProperty.data.concat(rdfsProperty.data)
+            combinedList = owlDatatypeProperty.data.concat(rdfsProperty.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
             return grouped
