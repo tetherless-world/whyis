@@ -27,6 +27,7 @@
         <div class="viz-editor viz-editor-show" id="sparqlc">
           <yasqe v-if="chart.query"
             v-model="chart.query"
+            :edit="allowEditing"
             v-on:query-success="onQuerySuccess">
           </yasqe>
         </div>
