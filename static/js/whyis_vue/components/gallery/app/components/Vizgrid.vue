@@ -11,15 +11,15 @@
             </div>
             <div class="viz-content">
                 <md-card v-for="(result, index) in newResults" :key="index" class="btn--animated">
-                    <!--<div class="utility-gridicon" v-if="authenticated && authenticated.admin=='True'">
+                    <div class="utility-gridicon" v-if="authenticated && authenticated.admin=='True' && instanceType=='http://semanticscience.org/resource/Chart'">
                         <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
                         <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
                         <div @click.prevent="deleteChart(result)"><md-icon>delete_outline</md-icon></div>
                     </div>
-                    <div class="utility-gridicon" v-else-if="authenticated">
+                    <div class="utility-gridicon" v-else-if="authenticated && instanceType=='http://semanticscience.org/resource/Chart'">
                         <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
                         <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
-                    </div>-->
+                    </div>
                     <md-card-media-cover md-solid @click.native.prevent="navigate(result)" >
                         <md-card-media md-ratio="4:3" >
                         <img :src="getViewUrl(result.thumbnail)" :alt="result.label" v-if="result.thumbnail">
@@ -149,9 +149,6 @@
             //}
             this.loading = false
         },
-        //beforeMount(){
-        //    return this.loadAllInstances()
-        //},
         created(){
             EventServices
             .$on("appstate", (data) => {
