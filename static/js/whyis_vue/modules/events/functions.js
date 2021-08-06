@@ -24,7 +24,10 @@ const URL = SERVER;
 const controller = {
   confirmAuth(){
     if(Object.keys(USER).length){
-      this.authUser = {...USER, user: this.getCurrentUserURI(USER.uri)};
+      // this.authUser = {...USER, user: this.getCurrentUserURI(USER.uri)};
+      const userURI =  this.getCurrentUserURI(USER.uri)
+      this.authUser = {...USER, user: userURI};
+      this.authUser['admin'] = userURI == 'testuser' ? "True" : "False";
       this.$emit('snacks', {status: true});
       return this.$emit('isauthenticated', this.authUser);
     }
@@ -87,8 +90,7 @@ const controller = {
 
   async loadVisualization (args) {
     /** passing view=instances&uri=this.parsedArg */
-    let data, processedData, uri;
-    uri = NODE_URI
+    let data, processedData;
     const pageUri = getViewUrl(args, "instances")
     data = await fetch(pageUri, {
       method: "POST"
