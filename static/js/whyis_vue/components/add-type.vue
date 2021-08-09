@@ -200,7 +200,7 @@ export default Vue.component('add-type', {
 
         async getSuggestedTypes (uri){
             const suggestedTypes = await axios.get(
-                `/about?view=suggested_types&uri=${uri}`)
+                `${ROOT_URL}about?view=suggested_types&uri=${uri}`)
             return suggestedTypes.data
         },
 
@@ -208,9 +208,9 @@ export default Vue.component('add-type', {
             var combinedList = [];
             const [rdfsClass, owlClass] = await axios.all([
                 axios.get(
-                `/about?term=${query}*&view=resolve&type=http://www.w3.org/2000/01/rdf-schema%23Class`),
+                `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2000/01/rdf-schema%23Class`),
                 axios.get(
-                `/about?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
+                `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
             ]).catch((err) => {
                 throw(err)
             })

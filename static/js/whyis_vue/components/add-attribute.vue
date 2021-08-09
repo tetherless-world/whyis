@@ -334,7 +334,7 @@ export default Vue.component('add-attribute', {
 
         async getSuggestedAttributes (uri){
             const suggestedTypes = await axios.get(
-                `/about?view=suggested_attributes&uri=${uri}`)
+                `${ROOT_URL}about?view=suggested_attributes&uri=${uri}`)
             return suggestedTypes.data
         },
 
@@ -342,9 +342,9 @@ export default Vue.component('add-attribute', {
 	    var combinedList = [];
             const [rdfsProperty, owlDatatypeProperty] = await axios.all([
                 axios.get(
-                `/about?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
+                `${ROOT_URL}about?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
                 axios.get(
-                `/about?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23DatatypeProperty`)
+                `${ROOT_URL}about?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23DatatypeProperty`)
             ]).catch((err) => {
                 throw(err)
             })
