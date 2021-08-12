@@ -5,28 +5,28 @@
     </div>
     <div class="viz-setting">
       <div class="viz-setting-links">
-        <md-list id="restore" class="utility-gridborder">
-          <md-list-item v-on:click.prevent="actionManager('restore')">
+        <md-list>
+          <md-list-item id="restore" class="utility-gridborder" v-on:click.prevent="actionManager('restore')">
             <md-icon class="utility-navfonticon">sync</md-icon>
-            <span class="md-list-item-text utility-navfont">Restore From Backup</span>
+            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Restore From Backup</span>
           </md-list-item>
         </md-list>
-        <md-list id="enable">
-          <md-list-item v-on:click.prevent="actionManager('enable')">
+        <md-list>
+          <md-list-item id="enable" v-on:click.prevent="actionManager('enable')">
             <md-icon class="utility-navfonticon">visibility</md-icon>
-            <span class="md-list-item-text utility-navfont">Enable Charts</span>
+            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Enable Charts</span>
           </md-list-item>
         </md-list>
-        <md-list id="disable">
-          <md-list-item v-on:click.prevent="actionManager('disable')">
+        <md-list>
+          <md-list-item id="disable" v-on:click.prevent="actionManager('disable')">
             <md-icon class="utility-navfonticon">visibility_off</md-icon>
-            <span class="md-list-item-text utility-navfont">Hide Charts</span>
+            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Hide Charts</span>
           </md-list-item>
         </md-list>
         <md-list>
           <md-list-item v-on:click.prevent="navBack">
             <md-icon class="utility-navfonticon">domain</md-icon>
-            <span class="md-list-item-text utility-navfont">Return Home</span>
+            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Return Home</span>
           </md-list-item>
         </md-list>
       </div>
@@ -155,7 +155,7 @@
     },
     methods: {
       navBack(){
-        return EventServices.navTo('view', true)
+        return EventServices.navTo('view', 'http://semanticscience.org/resource/Chart')
       },
       restoreAllChart(){
         return EventServices.$emit("dialoguebox", {status: true, diag:true, reset: true, title: "Reset Chart DB", message: `Are you sure you want to reset the chart database?`})
@@ -216,7 +216,7 @@
       restoreChartsBk(args){
         if (typeof(Storage) !== "undefined") {
           sessionStorage.setItem("chart", JSON.stringify(args));
-          return EventServices.navTo("restore", true)
+          return EventServices.navTo("restore", 'http://semanticscience.org/resource/Chart')
         }
         EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'});
       },
