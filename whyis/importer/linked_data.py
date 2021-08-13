@@ -86,7 +86,7 @@ class LinkedData(Importer):
         text = r.text
         for pattern, repl in self.replace:
             text = re.sub(pattern, repl, text)
-        print(text)
+        #print(text)
         local.parse(data=text, format=self.format)
         # print self.postprocess_update
         if self.postprocess_update is not None:

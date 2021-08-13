@@ -257,20 +257,21 @@ export default Vue.component('add-link', {
 
         async getSuggestedProperties (uri){
             const suggestedTypes = await axios.get(
-                `/about?view=suggested_links&uri=${uri}`)
+                `${ROOT_URL}about?view=suggested_links&uri=${uri}`)
             return suggestedTypes.data.outgoing
         },
 
         async getPropertyList (query) {
+	    var combinedList = [];
             const [rdfsProperty, owlObjectProperty] = await axios.all([
                 axios.get(
-                `/?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
+                `${ROOT_URL}about?term=*${query}*&view=resolve&type=http://www.w3.org/1999/02/22-rdf-syntax-ns%23Property`),
                 axios.get(
-                `/?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23ObjectProperty`)
+                `${ROOT_URL}about?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23ObjectProperty`)
             ]).catch((err) => {
                 throw(err)
             })
-            var combinedList = owlObjectProperty.data.concat(rdfsProperty.data)
+            combinedList = owlObjectProperty.data.concat(rdfsProperty.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
             return grouped
@@ -278,13 +279,13 @@ export default Vue.component('add-link', {
 
         async getNeighborEntities (uri) {
             const neighborEntities = await axios.get(
-                `/about?view=neighbors&uri=${uri}`)
+                `${ROOT_URL}about?view=neighbors&uri=${uri}`)
             return neighborEntities.data
         },
 
         async getEntityList (query) {
             const entityList = await axios.get(
-                `/?term=*${query}*&view=resolve`)
+                `${ROOT_URL}about?term=*${query}*&view=resolve`)
             return entityList.data
         },
 

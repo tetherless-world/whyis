@@ -34,7 +34,7 @@ def create_query_store(store):
     return new_store
 
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
-        
+
 def engine_from_config(config, prefix):
     defaultgraph = None
     if prefix+"defaultGraph" in config:
@@ -45,7 +45,7 @@ def engine_from_config(config, prefix):
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
-        
+
         def publish(data):
             s = requests.session()
             s.keep_alive = False
@@ -74,13 +74,13 @@ fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
                            data=prop_file.encode('utf8'),
                            headers={'Content-Type':'text/plain'})
 
-                
+
             else:
                 # result unused
                 r = s.post(store.query_endpoint,
                            data=data,
                            # params={"context-uri":graph.identifier},
-                           headers={'Content-Type':'text/x-nquads'})
+                           headers={'Content-Type':'application/x-trig;charset=utf-8'})
             #print(r.content)
 
         store.publish = publish
@@ -92,11 +92,11 @@ fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
         graph.store.open(config[prefix+"store"], create=True)
     else:
         graph = ConjunctiveGraph() # memory_graphs[prefix]
-        
+
         def publish(data):
             graph.parse(data, format='nquads')
-                
+
         graph.store.publish = publish
 
-        
+
     return graph
