@@ -35,12 +35,26 @@
                 <label v-else md-term="term" md-fuzzy-search="true">
                     {{item.label}}
                 </label>
+                <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
                 </template>
             
                 <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
-                <p>No types or classes matching "{{ term }}" were found.</p>
+                <p v-if="term">No types or classes matching "{{ term }}" were found.</p>
+                <p v-else> Enter a type name.</p>
+                <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom type URI</a>         
                 </template>
             </md-autocomplete>
+            <div v-if="useCustom" class="md-layout md-gutter">
+                <div class="md-layout-item">
+                    <md-field>
+                        <label>Full URI of type</label>
+                        <md-input v-model="customTypeURI"></md-input>
+                    <md-button v-on:click="submitCustomURI" class="md-raised">
+                        Confirm URI
+                    </md-button>
+                    </md-field>
+                </div>
+            </div>
             <div
                 v-for="(chip, key) in typeChips" 
                 v-bind:key="key + 'chips'">
@@ -88,11 +102,15 @@ export default Vue.component('add-type', {
     data: function() {
         return {
             id: null,
+            useCustom: false,
+            customTypeURI: null,
             typeList: [],
             selectedType: null,
             typeChips: [],
             status: false,
             active: false,
+            query: null,
+            awaitingResolve: false,
         };
     },
     methods: {
@@ -100,8 +118,29 @@ export default Vue.component('add-type', {
             this.processAutocompleteMenu();
             this.typeList = this.getSuggestedTypes(this.uri);
         },
+        useCustomURI(){
+            this.useCustom = true;
+        },
+        submitCustomURI(){
+            var newChip = {
+                label: this.customTypeURI,
+                node: this.customTypeURI, 
+            }
+            this.typeChips.push(newChip);
+            this.customTypeURI = "";
+            this.useCustom = false
+        },
         resolveEntityType(query){
-            this.typeList = this.getTypeList(query);
+            var thisVue = this;
+            this.query = query
+            if (!thisVue.awaitingResolve) {
+                setTimeout(function () {
+                    console.log(thisVue.query)
+                    thisVue.typeList = thisVue.getTypeList(thisVue.query);
+                    thisVue.awaitingResolve = false;
+                }, 1000); 
+            }
+            thisVue.awaitingResolve = true;
         },
         selectedTypeChange(item){
             this.typeChips.push(item);
@@ -115,7 +154,9 @@ export default Vue.component('add-type', {
         },
         resetDialogBox(){
             this.active = !this.active;
-            this.typeChips = []
+            this.typeChips = [];
+            this.customTypeURI = "";
+            this.useCustom = false;
         },
         onCancel() {
             return this.resetDialogBox();
@@ -159,20 +200,21 @@ export default Vue.component('add-type', {
 
         async getSuggestedTypes (uri){
             const suggestedTypes = await axios.get(
-                `/about?view=suggested_types&uri=${uri}`)
+                `${ROOT_URL}about?view=suggested_types&uri=${uri}`)
             return suggestedTypes.data
         },
 
         async getTypeList (query) {
+            var combinedList = [];
             const [rdfsClass, owlClass] = await axios.all([
                 axios.get(
-                `/?term=${query}*&view=resolve&type=http://www.w3.org/2000/01/rdf-schema%23Class`),
+                `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2000/01/rdf-schema%23Class`),
                 axios.get(
-                `/?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
+                `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
             ]).catch((err) => {
                 throw(err)
             })
-            var combinedList = owlClass.data.concat(rdfsClass.data)
+            combinedList = owlClass.data.concat(rdfsClass.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
             return grouped

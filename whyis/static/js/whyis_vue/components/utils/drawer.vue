@@ -25,7 +25,7 @@
         </md-list-item>
       </div>
       <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" @click="navTo('view', true)">
+        <md-list-item class="utility-navadjust" @click="navTo('gallery', 'http://semanticscience.org/resource/Chart')">
           <md-icon class="utility-navfonticon">view_comfy</md-icon>
           <span class="md-list-item-text utility-navfont">Browse Visualization</span>
           <md-tooltip md-direction="bottom">Visualization Gallery</md-tooltip>
@@ -46,7 +46,7 @@
 
       <md-divider v-if="authenticated.email !== undefined"></md-divider>
       <div class="md-drawer-div" v-if="authenticated.email !== undefined">
-        <md-list-item class="utility-navadjust"  @click="navTo('new', true)">
+        <md-list-item class="utility-navadjust"  @click="navTo('new', 'http://semanticscience.org/resource/Chart')">
           <md-icon class="utility-navfonticon">add</md-icon>
           <span class="md-list-item-text utility-navfont">Create New Visualization</span>
         </md-list-item>
@@ -72,7 +72,7 @@
 
       <md-divider v-if="authenticated.admin"></md-divider>
        <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
-        <md-list-item class="utility-navadjust" @click="navTo('manage', true)">
+        <md-list-item class="utility-navadjust" @click="navTo('manage', 'http://semanticscience.org/resource/Chart')">
           <md-icon class="utility-navfonticon">restore</md-icon>
           <span class="md-list-item-text utility-navfont">Restore Chart</span>
         </md-list-item>
@@ -134,4 +134,3 @@ export default Vue.component('Drawer', {
   }
 })
 </script>
-

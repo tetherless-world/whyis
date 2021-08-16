@@ -38,7 +38,7 @@ class SDDAgent(GlobalChangeService):
 
     def process(self, i, o):
         values = self.app.db.query('''
-SELECT ?prefix ?sdd_file ?data_file ?content_type ?delimiter
+SELECT ?prefix ?sdd_file ?data_file ?content_type ?delimiter ?dataset
 WHERE {
     ?data_file dcterms:conformsTo ?sdd_file ;
        ov:hasContentType ?content_type ;
@@ -58,7 +58,7 @@ WHERE {
     }
 }
 ''', initBindings={"sdd_file": i.identifier}, initNs=NS.prefixes)
-        for prefix, sdd_file, data_file, content_type, delimiter in values:
+        for prefix, sdd_file, data_file, content_type, delimiter, dataset in values:
             resource = self.app.get_resource(sdd_file)
             fileid = resource.value(self.app.NS.whyis.hasFileID)
             if fileid is not None:
@@ -70,7 +70,10 @@ WHERE {
                               prefix.value,
                               data_file,
                               content_type.value,
-                              delimiter.value)
+                              delimiter.value,
+                              None,
+                              None,
+                              dataset)
             npub = Nanopublication()
             npub.assertion.parse(data=output, format="turtle")
 

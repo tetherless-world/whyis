@@ -25,7 +25,7 @@
                       </md-field>
         
                         <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
-                          <label>Upload distributions (multiple allowed)</label>
+                          <label>Select files to upload for this dataset</label>
                           <md-file v-model="distr_upload" id="distrFiles" multiple required isInvalidValue=false
                             v-on:change="handleDistrUpload($event.target.files)"/> 
                           <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
@@ -37,14 +37,23 @@
                             v-bind:key="key + 'listing'"
                             class="file-listing">
                             <div class="md-layout" style="margin-left:10px; align-items: center;">
-                              <div class="md-layout-item">{{ file.name }}  </div>
-                              <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                              <div class="md-layout-item">{{ file.name }} </div>
+                              <div class="md-layout-item">
+                                <md-field style="max-width: 90%;">
+                                  <label>Label</label>
+                                  <md-input v-model=file.label></md-input>
+                                  <md-tooltip md-delay="300">Provide a human-readable label or leave as the default</md-tooltip>
+                                </md-field>
+                              </div>
+                              <div class="md-layout-item">
+                                <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                              </div>
                             </div>
                           </div>
                         </div>  
               
                         <md-field style="max-width: none;">
-                          <label>Upload a representative image to use as thumbnail</label>
+                          <label>Select a representative image to use as thumbnail</label>
                           <md-file 
                             id="repImgUploader" v-model="rep_image" accept="image/*" 
                             v-on:change="handleImgUpload($event.target.files); previewFile()"/>

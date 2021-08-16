@@ -79,11 +79,11 @@ class SETLr(UpdateChangeService):
         old_np_map = {}
         to_retire = []
         for new_np, assertion, orig in self.app.db.query('''select distinct ?np ?assertion ?original_uri where {
-    ?np np:hasAssertion ?assertion.
-    ?assertion a np:Assertion;
-        prov:wasGeneratedBy/a ?setl;
-        prov:wasQuotedFrom ?original_uri.
-}''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
+                ?np np:hasAssertion ?assertion.
+                ?assertion a np:Assertion;
+                prov:wasGeneratedBy/a ?setl;
+                prov:wasQuotedFrom ?original_uri.
+            }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
             old_np_map[orig] = assertion
             to_retire.append(new_np)
             if len(to_retire) > 100:
@@ -92,7 +92,7 @@ class SETLr(UpdateChangeService):
         self.app.nanopub_manager.retire(*to_retire)
         # print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
-            print(output_graph)
+            print("output_graph", output_graph)
             if setl_graph.resource(output_graph)[rdflib.RDF.type:whyis.NanopublicationCollection]:
                 self.app.nanopub_manager.publish(resources[output_graph])
             else:
