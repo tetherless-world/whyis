@@ -81,7 +81,7 @@ fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
                            data=data,
                            # params={"context-uri":graph.identifier},
                            headers={'Content-Type':format})
-                print(r.content)
+                #print(r.text)
 
         store.publish = publish
 
@@ -94,7 +94,7 @@ fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
         graph = ConjunctiveGraph() # memory_graphs[prefix]
 
         def publish(data):
-            graph.parse(data, format='nquads')
+            graph.parse(data, format='trig')
 
         graph.store.publish = publish
 

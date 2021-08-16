@@ -28,7 +28,7 @@ class Backup(Command):
 
     def get_options(self):
         return [
-            Option ('-o', '--output', dest='output_directory', help='Backup path', required=True, type=str),
+            Option ('-a', '--archive', dest='output_directory', help='Backup path', required=True, type=str),
         ]
 
     def run(self, output_directory):
@@ -63,7 +63,7 @@ class Backup(Command):
                 fileid = nanopub_to_fileid.get(nanopub_uri, None)
                 if fileid is None:
                     nanopub = app.nanopub_manager.get(np_uri)
-                    quads = nanopub.serialize(format="nquads")
+                    quads = nanopub.serialize(format="trig")
                     np_uri.split('/')[-1]
                     fileid = backup_nanopubs.create(quads,
                                                     nanopub_uri.split('/')[-1]+'.trig',
