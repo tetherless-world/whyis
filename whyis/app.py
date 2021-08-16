@@ -274,6 +274,8 @@ class App(Empty):
             self._nanopub_depot = DepotManager.get('nanopublications')
         return self._nanopub_depot
 
+    datastore = None
+
     def configure_database(self):
         """
         Database configuration should be set here
@@ -295,9 +297,12 @@ class App(Empty):
         else:
             print("Not loading custom view mappings.")
 
-        self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['LOD_PREFIX'])
-        self.security = Security(self, self.datastore,
-                                 register_form=ExtendedRegisterForm)
+        if self.datastore is None:
+            self.datastore = WhyisUserDatastore(self.admin_db, {}, self.config['LOD_PREFIX'])
+            self.security = Security(self, self.datastore,
+                                     register_form=ExtendedRegisterForm)
+        else:
+            self.datastore.db = self.admin_db
 
     def __weighted_route(self, *args, **kwargs):
         """

@@ -67,7 +67,7 @@ class EmbeddedSystem:
     EMBEDDED_FUSEKI = True
 
     EMBEDDED_CELERY = True
-    CELERY_BROKER_URL = 'memory://'
+    CELERY_BROKER_URL = 'memory'
 
     DEFAULT_ANONYMOUS_READ = True
 
@@ -138,7 +138,7 @@ class Config:
     LOD_PREFIX = LOD_PREFIX
     DEFAULT_LANGUAGE = 'en'
 
-    MULTIUSER = False
+    MULTIUSER = True
 
     NAMESPACES = [
         importer.LinkedData(

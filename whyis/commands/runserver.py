@@ -4,7 +4,6 @@ import subprocess
 import sys
 from multiprocessing import Process
 from threading import Thread, get_ident, main_thread
-from flaskthreads import AppContextThread
 from werkzeug.serving import is_running_from_reloader
 
 from flask_script import Option, Server
@@ -21,10 +20,14 @@ def find_free_port():
         s.bind(('', 0))            # Bind to a free port provided by the host.
         return s.getsockname()[1]  # Return the port number assigned.
 
+fuseki_server = None
+
 class WhyisServer(Server):
     """
     Customized runserver command.
     """
+
+
 
     def get_options(self):
         return \
@@ -39,38 +42,8 @@ class WhyisServer(Server):
             print("Starting Celery worker...")
             self.app.celery_worker.start()
 
-
-    def _run_server(self, app, host, port, use_debugger, use_reloader,
-                 threaded, processes, passthrough_errors, ssl_crt, ssl_key):
-        # we don't need to run the server in request context
-        # so just run it directly
-
-        if use_debugger is None:
-            use_debugger = app.debug
-            if use_debugger is None:
-                use_debugger = True
-                if sys.stderr.isatty():
-                    print("Debugging is on. DANGER: Do not allow random users to connect to this server.", file=sys.stderr)
-        if use_reloader is None:
-            use_reloader = use_debugger
-
-        if None in [ssl_crt, ssl_key]:
-            ssl_context = None
-        else:
-            ssl_context = (ssl_crt, ssl_key)
-
-        app.run(host=host,
-                port=port,
-                debug=use_debugger,
-                use_debugger=use_debugger,
-                use_reloader=use_reloader,
-                threaded=threaded,
-                processes=processes,
-                passthrough_errors=passthrough_errors,
-                ssl_context=ssl_context,
-                **self.server_options)
-
     def __call__(self, app, watch, *args, **kwds):
+        global fuseki_server
         self.app = app
         self.options={
             "threaded": True,
@@ -78,21 +51,26 @@ class WhyisServer(Server):
 
         if not is_running_from_reloader():
             if self.app.config.get('EMBEDDED_CELERY', False):
-                app.celery_worker_process = Process(target=self.run_celery, daemon=True)
+                app.celery_worker_process = Thread(target=self.run_celery, daemon=True)
                 app.celery_worker_process.start()
                 #app.celery_worker.start()
 
-            if app.config.get('EMBEDDED_FUSEKI', False):
-                port = find_free_port()
-                print("Starting Fuseki on port",port)
-                app.fuseki_server = fuseki.FusekiServer(port=port)
-                app.config['FUSEKI_PORT'] = port
-                knowledge_endpoint = app.fuseki_server.get_dataset('/knowledge')
-                print("Knowledge Endpoint:", knowledge_endpoint)
-                app.config['KNOWLEDGE_ENDPOINT'] = knowledge_endpoint
-                admin_endpoint = app.fuseki_server.get_dataset('/admin')
-                app.config['ADMIN_ENDPOINT'] = admin_endpoint
-                print("Admin Endpoint:", admin_endpoint)
+            if app.config.get('EMBEDDED_FUSEKI', False) and fuseki_server is None:
+                self.port = find_free_port()
+                print("Starting Fuseki on port",self.port)
+                fuseki_server = fuseki.FusekiServer(port=self.port)
+
+        if app.config.get('EMBEDDED_FUSEKI', False):
+            app.config['FUSEKI_PORT'] = self.port
+            knowledge_endpoint = fuseki_server.get_dataset('/knowledge')
+            print("Knowledge Endpoint:", knowledge_endpoint)
+            app.config['KNOWLEDGE_ENDPOINT'] = knowledge_endpoint
+            admin_endpoint = fuseki_server.get_dataset('/admin')
+            app.config['ADMIN_ENDPOINT'] = admin_endpoint
+            print("Admin Endpoint:", admin_endpoint)
+            app.configure_database()
+
+        kwds['use_reloader'] = False
 
         if not watch:
             print ("Starting Whyis Webserver...")
@@ -100,7 +78,7 @@ class WhyisServer(Server):
 
         if sys.platform != "win32":
             # Start webpack in the static/ directories if it's configured
-            static_dir_paths = [app.static_folder]
+            static_dir_paths = []
             if 'WHYIS_CDN_DIR' in app.config and app.config['WHYIS_CDN_DIR'] is not None:
                 static_dir_paths.append(app.config["WHYIS_CDN_DIR"])
             webpack_static_dir_paths = []
