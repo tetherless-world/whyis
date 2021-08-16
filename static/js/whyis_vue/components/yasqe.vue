@@ -18,6 +18,10 @@ export default Vue.component('yasqe', {
         showBtns: {
             type: Boolean,
             default: false
+        },
+        edit: {
+            type: Boolean,
+            default: true
         }
     },
     mounted () {
@@ -37,7 +41,7 @@ export default Vue.component('yasqe', {
                     },
                 }
             },
-            readOnly: true,
+            readOnly: this.edit,
         })
         this.yasqe.setValue(this.value)
         this.yasqe.on('changes', () => {
@@ -45,10 +49,10 @@ export default Vue.component('yasqe', {
         })
         this.yasqe.setSize("100%", "100%")
     },
-    watch: {
-        value() {
-            this.yasqe.setValue(this.value)
-        }
-    }
+    // watch: {
+    //     value() {
+    //         this.yasqe.setValue(this.value)
+    //     }
+    // }
 })
 </script>

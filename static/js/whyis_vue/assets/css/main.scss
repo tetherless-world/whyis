@@ -10,7 +10,7 @@ html {
         font-size: 1.5rem;
     }
     &-bg {
-        background: url('/images/random_network.png') no-repeat bottom center !important;
+        background: url('/static/images/random_network.png') no-repeat bottom center !important;
         background-size: "cover" !important;
     }
     &-header-intro {
@@ -98,7 +98,7 @@ html {
     &-color {
         color: $primary-color !important
     }
-    &-navfont {
+    &-navfont#css-adjust-navfont {
         font-size: 1rem !important;
     }
     &-navfonticon {
@@ -280,7 +280,7 @@ html {
         bottom: unset
     }
 
-    &-dialog >>> .md-dialog-container {
+    &-dialog /deep/.md-dialog-container {
         max-width: 90%;
         height: auto;
         @include respond(tab-land) {
