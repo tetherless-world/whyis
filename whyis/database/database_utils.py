@@ -46,7 +46,7 @@ def engine_from_config(config, prefix):
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
 
-        def publish(data):
+        def publish(data, format='application/x-trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
 
@@ -80,8 +80,8 @@ fileOrDirs=%s''' % (config['lod_prefix']+'/pub/'+create_id()+"_assertion",
                 r = s.post(store.query_endpoint,
                            data=data,
                            # params={"context-uri":graph.identifier},
-                           headers={'Content-Type':'application/x-trig;charset=utf-8'})
-            #print(r.content)
+                           headers={'Content-Type':format})
+                print(r.content)
 
         store.publish = publish
 

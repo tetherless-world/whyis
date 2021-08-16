@@ -65,16 +65,18 @@ class Backup(Command):
                     nanopub = app.nanopub_manager.get(np_uri)
                     quads = nanopub.serialize(format="nquads")
                     np_uri.split('/')[-1]
-                    fileid = backup_nanopubs.create(quads, nanopub_uri.split('/')[-1]+'.nq', "application/n-quads")
+                    fileid = backup_nanopubs.create(quads,
+                                                    nanopub_uri.split('/')[-1]+'.trig',
+                                                    "application/trig")
                 else:
                     fileinfo = backup_nanopubs.get(fileid)
                     if last_modified.value > fileinfo.last_modified.replace(tzinfo=utc):
                         # Update if changed.
                         nanopub = app.nanopub_manager.get(np_uri)
-                        quads = nanopub.serialize(format="nquads")
+                        quads = nanopub.serialize(format="trig")
                         np_uri.split('/')[-1]
                         fileid = backup_nanopubs.replace(fileinfo, quads,
-                                        fileinfo.filename, "application/n-quads")
+                                        fileinfo.filename, "application/trig")
                 # Add to the new index one way or another.
                 nanopub_list.writerow([np_uri, fileid])
                 new_nanopubs.add(str(np_uri))
@@ -109,6 +111,6 @@ class Backup(Command):
             backup_files.delete(file_id)
 
         print('Backing up admin database...')
-        app.admin_db.serialize(os.path.join(output_directory,'admin_graph.nq'), format="nquads")
+        app.admin_db.serialize(os.path.join(output_directory,'admin_graph.jsonld'), format="json-ld")
 
         print("Complete!")
