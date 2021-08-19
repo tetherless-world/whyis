@@ -16,20 +16,9 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.s?css$/,
         use: [
-          argv.mode !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          argv.mode !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
+          'vue-style-loader',
           'css-loader',
           'resolve-url-loader',
           'sass-loader'
