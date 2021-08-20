@@ -13,6 +13,8 @@ import './add-link';
 import './add-knowledge-menu';
 import './accordion'
 import './bob-viz-modules'
+import './facet-browser'
+import './facets'
 
 import Vue from 'vue';
 Vue.component('vega-lite', () => import('./vega-lite-wrapper'))

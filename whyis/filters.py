@@ -64,18 +64,12 @@ def configure(app):
             labelize(entry, *args, **kw)
         return entries
 
-    @app.template_filter('map_list')
-    def map_list(entries, source, destination, fn):
-        for entry in entries:
-            entry[destination] = fn(entry[source])
-        return entries
-
     app.labelize = labelize
 
     @app.template_filter('map_list')
-    def map_list(entries, source, destination, fn):
+    def map_list(entries, source, destination, fn, **kw):
         for entry in entries:
-            entry[destination] = fn(entry[source])
+            entry[destination] = fn(entry[source], **kw)
         return entries
 
     @app.template_filter('lang')
@@ -455,11 +449,17 @@ WHERE {
 
     instance_data_template = env.from_string('''SELECT DISTINCT
 ?id
-{%- for variable in variables %}
-?{{variable['field']}}
-{%- for indep_variable in variable['indep_vals'] %}
-?{{indep_variable['field']}}
-{%- endfor %}
+{%- for facet, vars in variables | groupby('facetId') %}
+  {%- if vars[0]['multiType'] == 'union' %}
+    (GROUP_CONCAT(?{{facet}}; separator=', ') AS ?{{facet}})
+  {%- else  %}
+  {%- for variable in vars %}
+    ?{{variable['field']}}
+    {%- for indep_variable in variable['indep_vals'] %}
+    ?{{indep_variable['field']}}
+    {%- endfor %}
+  {%- endfor %}
+  {% endif %}
 {%- endfor %}
 WHERE {
     ?id rdf:type {{this.identifier.n3()}}.
@@ -488,13 +488,43 @@ WHERE {
           ].
         }
         {%- endfor %}
-    {%- else %}
-      {{variable['specifier'].replace('?value', '?'+variable['field']+"_")}}
-      ?{{variable['field']}}_ rdfs:label ?{{variable['field']}}.
+    {%- elif variable['multiType'] != 'union'%}
+        ?id {{variable['predicate']}} ?{{variable['field']}}_.
+        {{variable['specifier'].replace('?value', '?'+variable['field']+"_")}}
+        ?{{variable['field']}}_ rdfs:label ?{{variable['field']}}.
+        {%- if 'value' in variable %}
+            {{variable['specifier'].replace('?value', variable['value'])}}
+            {{'?'+variable['field']+"_"}} rdf:type/rdfs:subClassOf* {{variable['value']}}.
+        {%- endif %}
     {%- endif %}
     {%- if variable.selectionType == 'Show' %}} {% endif %}
   {%- endfor %}
-}''')
+  {%- for facet, vars in variables | groupby('facetId') %}
+    {%- if vars[0]['multiType'] == 'union' %}
+        {%- for variable in vars %}
+        {
+            ?id {{variable['predicate']}} ?{{variable['field']}}_.
+            {{variable['specifier'].replace('?value', '?'+facet+'_')}}
+            ?{{facet}}_ rdfs:label ?{{facet}}.
+            {%- if 'value' in variable %}
+                {{variable['specifier'].replace('?value', variable['value'])}}
+                ?{{facet}}_ rdfs:subClassOf* {{variable['value']}}.
+            {%- endif %}
+        }{% if not loop.last %} UNION {% endif %}
+        {%- endfor %}
+    {%- endif %}
+  {%- endfor %}
+}
+GROUP BY ?id 
+{%- for variable in variables %}
+  {%- if variable['multiType'] != 'union' %}
+    ?{{variable['field']}}
+    {%- for indep_variable in variable['indep_vals'] %}
+      ?{{indep_variable['field']}}
+    {%- endfor %}
+  {%- endif %}
+{%- endfor %}
+''')
     @app.template_filter('instance_data')
     def instance_data(this, variables, constraints):
         if constraints:

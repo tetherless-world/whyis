@@ -30,7 +30,12 @@ export default Vue.component('vega-editor', {
         mainMenuBar: false
       },
       actionType: 'Save Chart',
-      queryEditorReadOnly: false
+      queryEditorReadOnly: false,
+      facetBrowserData: {
+        uriInput: "http://materialsmine.org/ns/Metamaterial",
+        facetClassUri: "http://materialsmine.org/ns/Metamaterial",
+        facetQuery: null,
+      },
     }
   },
   computed: {
@@ -66,6 +71,7 @@ export default Vue.component('vega-editor', {
     async tabNavigation(e){
       const sparql = document.getElementById('sparqlc')
       const vega = document.getElementById('vegac')
+      const facets = document.getElementById('facetc')
       const save = document.getElementById('savec')
       const tabs = await document.querySelectorAll('.viz-editor-tabs-item')
       if(tabs.length){
@@ -74,15 +80,23 @@ export default Vue.component('vega-editor', {
       e.srcElement.classList.add('tabselected')
       if(e.srcElement.id == 'vegaE'){
         sparql.classList.remove('viz-editor-show')
+        facets.classList.remove('viz-editor-show')
         save.classList.remove('viz-editor-show')
         vega.classList.add('viz-editor-show')
       } else if(e.srcElement.id == 'saveE') {
         sparql.classList.remove('viz-editor-show')
         vega.classList.remove('viz-editor-show')
+        facets.classList.remove('viz-editor-show')
         save.classList.add('viz-editor-show')
+      } else if(e.srcElement.id == 'facetE') {
+        sparql.classList.remove('viz-editor-show')
+        vega.classList.remove('viz-editor-show')
+        save.classList.remove('viz-editor-show')
+        facets.classList.add('viz-editor-show')
       } else {
         save.classList.remove('viz-editor-show')
         vega.classList.remove('viz-editor-show')
+        facets.classList.remove('viz-editor-show')
         sparql.classList.add('viz-editor-show')
       }
     },
@@ -198,6 +212,12 @@ export default Vue.component('vega-editor', {
     },
     goToDataVoyager() {
       goToView(VIEW_URIS.CHART_EDITOR, 'voyager')
+    },
+    onFacetBrowserUpdated(browserData) {
+      this.facetBrowserData.facetQuery = browserData.fbquery;
+    },
+    setBrowserUri(){
+      this.facetBrowserData.facetClassUri = this.facetBrowserData.uriInput;
     },
   },
   async created () {

@@ -19,6 +19,10 @@
             Vega
             <md-tooltip md-direction="bottom">Enter Vega Specs</md-tooltip>
           </div>
+          <div class="viz-editor-tabs-item" id="facetE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
+            Facets
+            <md-tooltip md-direction="bottom">Use the Faceted Browser</md-tooltip>
+          </div>
           <div class="viz-editor-tabs-item" id="saveE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
             {{actionType}}
             <md-tooltip md-direction="bottom">{{actionType}}</md-tooltip>
@@ -54,6 +58,33 @@
               :options="specJsonEditorOpts"
               :error="onSpecJsonError" style="height: 98%">
             </v-jsoneditor>
+          </div>
+        </div>
+        <div class="viz-editor" id="facetc">
+          <div>
+            <md-card>
+              <md-card-header>
+                <div class="md-title">Select a class to browse</div>
+              </md-card-header>
+              <md-card-content>
+                <md-field>
+                  <label>Class URI</label>
+                  <md-input name="class-uri" id="class-uri" v-model="facetBrowserData.uriInput"/>
+                </md-field>                
+              </md-card-content>
+              <md-card-actions>
+                <md-button @click="setBrowserUri">Submit URI to browser</md-button>
+              </md-card-actions>
+            </md-card>
+            <div style="padding: 20;">
+              <facet-browser v-bind:class_uri="facetBrowserData.facetClassUri" :key="facetBrowserData.facetClassUri" v-bind:show_yasr="false" @facet-browser-update="onFacetBrowserUpdated"></facet-browser>
+            </div>
+            <yasqe v-if="facetBrowserData.facetQuery"
+              :value="facetBrowserData.facetQuery"
+              @input="setQuery"
+              @query-success="onQuerySuccess"
+              @query-error="onQueryError"
+            />
           </div>
         </div>
         <div class="viz-editor" id="savec">

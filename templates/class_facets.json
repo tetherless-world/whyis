@@ -7,4 +7,4 @@
   }
   bind(?property as ?facetId)
 }
-LIMIT 100'''|query(values={"class":this.identifier}) | iter_labelize('property','label') | map_list('property','facetId',g.slugify) | tojson }}
+LIMIT 100'''|query(values={"class":this.identifier}) | iter_labelize('property','label') | map_list('property','facetId',g.slugify,separator='_') | tojson }}
