@@ -13,6 +13,7 @@ sioc = rdflib.Namespace("http://rdfs.org/sioc/ns#")
 sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
 skos = rdflib.Namespace("http://www.w3.org/2008/05/skos#")
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
+owl = rdflib.Namespace("http://www.w3.org/2002/07/owl#")
 
 
 class NamespaceContainer(object):
@@ -20,7 +21,7 @@ class NamespaceContainer(object):
     RDF = rdflib.RDF
     rdfs = rdflib.Namespace(rdflib.RDFS)
     rdf = rdflib.Namespace(rdflib.RDF)
-    owl = rdflib.Namespace(rdflib.OWL)
+    owl = rdflib.Namespace("http://www.w3.org/2002/07/owl#")
     xsd = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
     dc = rdflib.Namespace("http://purl.org/dc/terms/")
     dcterms = rdflib.Namespace("http://purl.org/dc/terms/")

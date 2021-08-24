@@ -1,6 +1,6 @@
 #!/bin/bash
 WHYIS_FORK="${WHYIS_FORK:-tetherless-world}"
-WHYIS_BRANCH="${WHYIS_BRANCH:-release}"
+WHYIS_BRANCH="${WHYIS_BRANCH:release}"
 
 curl -s -O https://apt.puppetlabs.com/puppet-release-xenial.deb
 sudo dpkg -i puppet-release-xenial.deb
@@ -22,7 +22,7 @@ sudo /opt/puppetlabs/bin/puppet module install puppetlabs-vcsrepo
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apt
 sudo /opt/puppetlabs/bin/puppet module install richardc-datacat
 sudo /opt/puppetlabs/bin/puppet module install puppetlabs-java
-sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 7.0.1
+sudo /opt/puppetlabs/bin/puppet module install puppet-nodejs --version 9.0.0
 
 if [ -f /vagrant/manifests/install.pp ]; then
      cp /vagrant/manifests/install.pp /tmp/install_whyis.pp
@@ -46,6 +46,3 @@ echo "  > source venv/bin/activate"
 echo "  > python manage.py runserver"
 echo ""
 echo "Follow the instructions for 'Configure Whyis' at http://tetherless-world.github.io/whyis/install."
-
-
-
