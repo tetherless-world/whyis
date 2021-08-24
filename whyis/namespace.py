@@ -20,7 +20,7 @@ class NamespaceContainer(object):
     RDF = rdflib.RDF
     rdfs = rdflib.Namespace(rdflib.RDFS)
     rdf = rdflib.Namespace(rdflib.RDF)
-    owl = rdflib.OWL
+    owl = rdflib.Namespace(rdflib.OWL)
     xsd = rdflib.Namespace("http://www.w3.org/2001/XMLSchema#")
     dc = rdflib.Namespace("http://purl.org/dc/terms/")
     dcterms = rdflib.Namespace("http://purl.org/dc/terms/")
