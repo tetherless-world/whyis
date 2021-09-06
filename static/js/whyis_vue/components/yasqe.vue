@@ -40,6 +40,7 @@ export default Vue.component("yasqe", {
         callbacks: {
           error() {
             console.error("YASQE query error", arguments);
+            yasqeContext.$emit('query-error', error)
           },
           success(resp) {
             yasqeContext.$emit("query-success", resp);
