@@ -31,7 +31,7 @@ export default Vue.component('vega-editor', {
         mainMenuBar: false
       },
       actionType: 'Save Chart',
-      allowEditing: true
+      queryEditorReadOnly: false
     }
   },
   computed: {
@@ -178,10 +178,10 @@ export default Vue.component('vega-editor', {
       const thisView = getCurrentView();
       if(thisView == 'restore'){
         this.actionType = 'Restore';
-        this.allowEditing = false
+        this.queryEditorReadOnly = true
       } else if (thisView == 'edit'){
         this.actionType = 'Editing';
-        this.allowEditing = false
+        this.queryEditorReadOnly = false
       } else {
         this.actionType = 'Save Chart';
       }

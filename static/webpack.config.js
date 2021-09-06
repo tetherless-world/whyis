@@ -3,7 +3,7 @@ const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = (env, argv) => ({
-  devtool: argv.mode === 'production' ? 'hidden-source-map' : 'cheap-module-eval-source-map',
+  devtool: argv.mode === 'production' ? 'hidden-source-map' : 'eval-cheap-module-source-map',
   entry: {
     app: ['./js/whyis_vue/main.js']
   },
@@ -16,21 +16,11 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.s?css$/,
         use: [
-          process.env.NODE_ENV !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          process.env.NODE_ENV !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
+          'vue-style-loader',
           'css-loader',
+          'resolve-url-loader',
           'sass-loader'
         ]
       },
@@ -58,18 +48,29 @@ module.exports = (env, argv) => ({
         test: /\.ya?ml$/,
         loader: 'raw-loader',
       },
+      {
+        test:/\.png$/,
+        use: [{
+          loader:'file-loader',
+          options: {
+            esModule: false
+          }
+        }],
+      },
     ]
   },
   name: 'whyis',
   output: {
-    filename: 'js/whyis_vue_bundle.js',
+    filename: 'whyis_vue_bundle.js',
+    chunkFilename: 'whyis_vue_bundle.[name].js',
     libraryTarget: 'umd',
-    path: __dirname,
-    publicPath: path.basename(__dirname) + '/',
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: 'static/dist/'
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/whyis_vue_bundle.css'
+      filename: 'whyis_vue_bundle.css',
+      chunkFilename: 'whyis_vue_bundle.[name].css'
     }),
     new VueLoaderPlugin()
   ],
