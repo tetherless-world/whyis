@@ -551,7 +551,11 @@ whyis:ChartClass a owl:Class;
   whyis:newInstanceView "chart_new.html";
   whyis:manageInstanceView "chart_manage.html";
   whyis:restoreInstanceView "chart_restore.html";
-  whyis:voyagerView "chart_voyager.html".
+  whyis:voyagerView "chart_voyager.html";
+  whyis:modularView "modular_viz_tool.html".
+
+whyis:modularView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "modular".
 
 whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
   rdfs:domain whyis:ChartClass;

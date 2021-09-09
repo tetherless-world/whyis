@@ -1,0 +1,32 @@
+<div>
+    <template>
+        <div class="modular-viz-tool">
+            <!-- <split-pane :min-percent='paneResize' v-on:resize="resize" :default-percent='50' split="vertical"> -->
+            <split-pane :default-percent='50' split="vertical">
+                <template slot="paneL">
+                    <div>
+                        Sparql Query Generator
+                        <slot name="sparqlGenerator">
+                            <yasqe
+                            :value="sparqlQuery"
+                            @query-success="onQuerySuccess"
+                            @query-error="onQueryError"
+                            />
+                        </slot>
+                    </div>
+                </template>
+                <template slot="paneR">
+                    <div>
+                        JSON interpreter
+                        <slot name="jsonInterpreter">
+                            <yasr v-bind:results="jsonResults"></yasr>
+                        </slot>
+                    </div>
+                </template>
+            </split-pane>
+        </div>
+    </template>
+</div>
+
+  
+  
