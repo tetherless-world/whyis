@@ -1,7 +1,11 @@
-{{''' select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
+{{''' 
+ select ?identifier (sample(?t) as ?thumbnail) (sample(?l) as ?label) (sample(?d) as ?description) where {
     ?identifier a ?type.
     optional {
         ?identifier foaf:depiction ?depiction.
+    }
+    optional {
+        ?label rdfs:label ?l.
     }
     optional {
         ?identifier dc:description|skos:definition|rdfs:comment ?d.
@@ -11,4 +15,5 @@
         ?identifier a [ foaf:depiction ?type_thumbnail]
     }
     bind (coalesce(?depiction, ?type_thumbnail) as ?t)
-} group by ?identifier''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label")| tojson }}
+} group by ?identifier order by ?label
+''' | query(values={"type":this.identifier}) | tojson }}
