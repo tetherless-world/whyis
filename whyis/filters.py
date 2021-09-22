@@ -97,12 +97,15 @@ def configure(app):
 
     @app.template_filter('query')
     def query_filter(query, graph=app.db, prefixes=None, values=None):
-        if prefixes is None: # default arguments are evaluated once, ever
-            prefixes = {}
+        if prefixes == {}:
+            params = { 'initNs': {}}
+        else:
+            if prefixes is None: 
+                prefixes = {}
 
-        namespaces = dict(app.NS.prefixes)
-        namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
-        params = { 'initNs': namespaces}
+            namespaces = dict(app.NS.prefixes)
+            namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
+            params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
         return [x.asdict() for x in graph.query(query, **params)]
@@ -133,7 +136,10 @@ def configure(app):
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        return graph.serialize(**kwargs).decode()
+        serialized = graph.serialize(**kwargs)
+        if hasattr(serialized, 'decode'):
+            return serialized.decode()
+        return serialized
 
     @app.template_filter('attributes')
     def attributes(query, this):

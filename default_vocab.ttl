@@ -534,6 +534,9 @@ whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
 whyis:resolveView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "resolve".
 
+whyis:resultsView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "results".
+
 whyis:hasExplore rdfs:subPropertyOf whyis:hasView;
   dc:identifier "explore".
 whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
@@ -559,6 +562,7 @@ whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
 
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
+  whyis:resultsView "chart_results.json";
   whyis:editInstanceView "chart_edit.html";
   whyis:voyagerView "chart_voyager.html".
 

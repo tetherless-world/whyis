@@ -21,6 +21,12 @@
           </md-button>
         </div>
         <div>
+          <md-button class="md-icon-button" @click.native.prevent="tableView">
+            <md-tooltip class="utility-bckg" md-direction="bottom"> View Data as Table </md-tooltip>
+            <md-icon>table_view</md-icon>
+          </md-button>
+        </div>
+        <div>
           <md-button class="md-icon-button" @click.native.prevent="specViewer.show = true">
             <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Spec </md-tooltip>
             <md-icon>integration_instructions</md-icon>
@@ -199,7 +205,25 @@
       },
       chartQuery(){
         if(this.chart.query){
-          return EventServices.$emit("dialoguebox", {status: true, query: true, title: "Chart Query", message: "Copy and rerun query on a sparql endpoint", chart: this.chart.query})
+          return EventServices.$emit("dialoguebox", {status: true, query: true, 
+          title: "Chart Query", 
+          message: "Copy and rerun query on a sparql endpoint", 
+          chart: this.chart.query})
+        }
+      },
+      slugify(args){
+        return Slug(args)
+      },
+      tableView(){
+        if(this.chart.query){
+          querySparql(this.chart.query)
+          .then(sparqlResults => {
+            console.log(sparqlResults)
+            return EventServices.$emit("dialoguebox", {status: true, 
+              tableview: sparqlResults, 
+              title: "Table View of Chart Data",
+              chart: this.chart.query})
+          })
         }
       },
       slugify(args){
