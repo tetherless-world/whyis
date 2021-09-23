@@ -1,5 +1,5 @@
 {% extends "base_vue.html" %}
-{% from "elements/upload.html" import upload_button_tab_modal %}
+{% from "elements/upload.html" import vue_upload_button_tab_modal %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
@@ -27,7 +27,7 @@
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    {{ upload_button_tab_modal(this) }}
+                    {{ vue_upload_button_tab_modal(this) }}
                 </li>
                 {% if not this.identifier.startswith(ns.local) %}
                 <li class="nav-item">
@@ -39,17 +39,17 @@
                 {% endif %}
             </ul>
             <div class="md-layout md-gutter md-alignment-center-left" style = "margin-top: 6px;">
-                <div class = "md-layout-item"> 
+                <div class = "md-layout-item">
                     <div class="md-title">{{attributes.label}}</div>
                     {% if attributes.type | length > 0 %}<div class="md-subhead" style="max-width: fit-content;">
                         {% for type in attributes.type %}{{type.label}}{% if not loop.last %}, {% endif %} {% endfor %}
                     </div>{% endif %}
                 </div>
-                <add-knowledge-menu class="md-subhead md-layout-item" 
-                    style="max-width: fit-content;" 
+                <add-knowledge-menu class="md-subhead md-layout-item"
+                    style="max-width: fit-content;"
                     uri="{{attributes['@id']}}">
                 </add-knowledge-menu>
-            </div> 
+            </div>
         </md-card-header-text>
         {% if attributes.thumbnail %}<md-card-media md-big >
             <img src="{{url_for('entity.view', uri=attributes.thumbnail)}}" alt="{{attributes.label}}"/>

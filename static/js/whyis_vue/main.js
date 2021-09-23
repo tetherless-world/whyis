@@ -23,6 +23,8 @@ if (typeof (ATTRIBUTES) !== 'undefined') {
     root_url: ROOT_URL,
     base_rate: BASE_RATE,
     lod_prefix: LOD_PREFIX,
+    showUploadDialog: false,
+    window_state: {},
     axios: axios,
   }
 }
