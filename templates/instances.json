@@ -1,4 +1,5 @@
-{{''' select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
+{{''' 
+ select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
     ?identifier a ?type.
     optional {
         ?identifier foaf:depiction ?depiction.
@@ -11,4 +12,5 @@
         ?identifier a [ foaf:depiction ?type_thumbnail]
     }
     bind (coalesce(?depiction, ?type_thumbnail) as ?t)
-} group by ?identifier''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label")| tojson }}
+} group by ?identifier
+''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label") | tojson }}

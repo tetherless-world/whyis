@@ -28,6 +28,7 @@ def node_to_sparql(node):
 
 def create_query_store(store):
     new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
+                                 query_endpoint=store.query_endpoint,
 #                            method="POST",
 #                            returnFormat='json',
                             node_to_sparql=node_to_sparql)
@@ -45,7 +46,7 @@ def engine_from_config(config, prefix):
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
-
+        store.query_endpoint = config[prefix+"queryEndpoint"]
         def publish(data, format='application/x-trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
