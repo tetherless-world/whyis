@@ -1,9 +1,6 @@
 # coding:utf-8
 
 import sys
-app_dir = '/apps/whyis'
-if not app_dir in sys.path:
-    sys.path.insert(0, app_dir)
 
 from whyis.app_factory import app_factory
 

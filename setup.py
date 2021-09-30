@@ -151,7 +151,7 @@ setup(
 #        'certifi==2019.3.9',
 #        'cffi==1.12.3',
 #        'chardet==3.0.4',
-        'Click',
+#        'Click',
         'cookiecutter',
 #        'cryptography==',
 #        'Cython==0.29.10',

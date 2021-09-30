@@ -6,22 +6,13 @@ set -e
 sudo apt-get update
 sudo apt-get install -y software-properties-common
 
-WHYIS_USER=${WHYIS_USER:-whyis}
+WHYIS_USER=`id -u -n`
+
 WHYIS_HOME=${WHYIS_HOME:-/home/$WHYIS_USER}
 
 FUSEKI_SERVER=`which fuseki-server`
 FUSEKI_HOME=$PWD/fuseki
 WHYIS_APP_HOME=$PWD
-
-
-sudo adduser \
-   --system \
-   --shell /bin/bash \
-   --gecos ‘System user for running Whyis services.’ \
-   --group \
-   --disabled-password \
-   --home $WHYIS_HOME \
-   $WHYIS_USER
 
 sudo apt-get install -y apache2-dev \
 			unzip \
@@ -30,7 +21,7 @@ sudo apt-get install -y apache2-dev \
 			build-essential \
 			automake libblas3 \
 			libblas-dev \
-			celeryd \
+			celery \
 			redis-server \
 			apache2 \
 			libffi-dev \
@@ -39,11 +30,10 @@ sudo apt-get install -y apache2-dev \
 			libdb5.3-dev \
 			python3.7-dev
 
-sudo mkdir -p $WHYIS_APP_HOME/data/nanopublications
-sudo mkdir -p $WHYIS_APP_HOME/fuseki
-sudo mkdir -p $WHYIS_APP_HOME/data/files
-
-sudo chown -R $WHYIS_USER:$WHYIS_USER $WHYIS_HOME
+mkdir -p $WHYIS_APP_HOME/data/nanopublications
+mkdir -p $WHYIS_APP_HOME/fuseki
+mkdir -p $WHYIS_APP_HOME/data/files
+mkdir -p $WHYIS_APP_HOME/celery
 
 sudo chown -R $WHYIS_USER:$WHYIS_USER /var/log/celery
 
@@ -53,6 +43,10 @@ sudo chown -R $WHYIS_USER:$WHYIS_USER /var/log/whyis
 # configure celery
 sudo cat < $PWD/install_files/etc/default/celeryd \
 	 > /etc/default/celeryd
+sudo cat < $PWD/install_files/celerybeat.service \
+         > /etc/systemd/system/celerybeat.service
+sudo cat < $PWD/install_files/celery.service \
+         > /etc/systemd/system/celery.service
 
 # enable wsgi
 sudo mod_wsgi-express module-config > /etc/apache2/mods-available/wsgi.load

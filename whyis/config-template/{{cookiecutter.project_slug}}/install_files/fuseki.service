@@ -22,7 +22,7 @@
 # ------
 #
 # 1. Place this file under /etc/systemd/system/
-# 2. Create a system user called "fuseki" and make sure it has permission
+# 2. Create a system user called "$WHYIS_USER" and make sure it has permission
 #    to access the Fuseki configuration and databases
 # 3. Adjust the paths and other settings below if necessary
 # 4. Activate using: sudo systemctl enable fuseki.service
@@ -32,14 +32,14 @@ Description=Fuseki
 
 [Service]
 # Edit environment variables to match your installation
-Environment=FUSEKI_HOME=/opt/fuseki
-Environment=FUSEKI_BASE=/etc/fuseki
+Environment=FUSEKI_HOME=$FUSEKI_HOME
+Environment=FUSEKI_BASE=$WHYIS_HOME/fuseki
 # Edit the line below to adjust the amount of memory allocated to Fuseki
 Environment=JVM_ARGS=-Xmx4G
 # Edit to match your installation
-ExecStart=/opt/fuseki/fuseki-server
-# Run as user "fuseki"
-User=fuseki
+ExecStart=$FUSEKI_SERVER
+# Run as user "$WHYIS_USER"
+User=$WHYIS_USER
 Restart=on-abort
 # Java processes exit with status 143 when terminated by SIGTERM, this
 # should be considered a successful shutdown

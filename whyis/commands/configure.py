@@ -7,6 +7,10 @@ import os
 from cookiecutter.main import cookiecutter
 from pkg_resources import resource_filename, resource_listdir
 
+try:
+    from pip._internal.operations import freeze
+except ImportError:  # pip < 10.0
+    from pip.operations import freeze
 
 class Configure(Command):
     '''Create a Whyis configuration and customization directory, using input parameters from stdin'''
@@ -21,6 +25,7 @@ class Configure(Command):
 
         # Create project from the cookiecutter-pypackage/ template
         extra_context = {
+            'freeze' : freeze.freeze()
         }
         template_path = resource_filename('whyis', 'config-template')
 
