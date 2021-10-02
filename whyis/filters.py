@@ -319,21 +319,29 @@ where {
 
     env = Environment()
     facet_value_template = env.from_string('''
-SELECT DISTINCT (1 as ?count) ?value ?unit ?indep_value ?indep_unit
+SELECT DISTINCT (1 as ?count) ?value ?unit ?indep_value ?indep_unit ?min_value ?max_value ?indep_min_value ?indep_max_value
 WHERE {
-  SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit {
+  SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit ?min_value ?max_value ?indep_min_value ?indep_max_value {
     {
-      SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit {
+      SELECT DISTINCT ?value ?unit ?indep_value ?indep_unit (min(?lit_value) as ?min_value) (max(?lit_value) as ?max_value) 
+      (min(?indep_lit_value) as ?indep_min_value) (max(?indep_lit_value) as ?indep_max_value) 
+      {
         ?id rdf:type/rdfs:subClassOf* <{{facet['class']}}> .
         FILTER (!ISBLANK(?id))
         FILTER ( !strstarts(str(?id), "bnode:") )
         {% if facet['typeProperty']|length %}
         ?id {{facet['predicate']}} ?value_object.
         ?value_object {{facet['typeProperty']}} ?value.
+        {% if 'valuePredicate' in facet %}
+            ?value_object {{facet['valuePredicate']}} ?lit_value.
+        {%endif%}
         {% if 'unitPredicate' in facet %}optional { ?value_object {{facet['unitPredicate']}} ?unit. }{%endif%}
         {% if 'independentVariables' in facet %}optional {
           ?value_object {{facet['independentVariables']}} ?indep.
           ?indep {{facet['typeProperty']}} ?indep_value.
+          {% if 'valuePredicate' in facet %}
+            ?indep {{facet['valuePredicate']}} ?indep_lit_value.
+          {%endif%}
           {% if 'unitPredicate' in facet %}optional {
             ?indep {{facet['unitPredicate']}} ?indep_unit.
           }{%endif%}
@@ -402,6 +410,10 @@ WHERE {
                         values[(value['value'],value.get('unit',None))] = val
                         if 'unit' in value:
                             val['unit'] = value['unit']
+                        if 'min_value' in value:
+                            val['min_value'] = value['min_value']
+                        if 'max_value' in value:
+                            val['max_value'] = value['max_value']
                     val = values[(value['value'],value.get('unit',None))]
                     if 'indep_value' in value:
                         v = { 'value' : value['indep_value'] }
@@ -420,7 +432,8 @@ WHERE {
                                  slugify(value['value'],separator='_',lowercase=False)]
                     if 'unit' in value:
                         fieldName.append(slugify(value['unit'],separator='_',lowercase=False))
-                    value['type'] = 'quantitative'
+                    if 'min_value' in value:
+                        value['type'] = 'quantitative'
                     fieldName = '__'.join(fieldName)
                     value['field'] = fieldName
                     for indep_value in value['indep_vals']:
@@ -430,16 +443,17 @@ WHERE {
                         ]
                         if 'unit' in indep_value:
                             indepFieldName.append(slugify(indep_value['unit'],separator='_',lowercase=False))
-                        indep_value['type'] = 'quantitative'
+                        if 'min_value' in indep_value:
+                            indep_value['type'] = 'quantitative'
                         indepFieldName = '__'.join(indepFieldName)
                         indep_value['field'] = indepFieldName
                     iter_labelize(value['indep_vals'], key='value', label_key='name')
                     iter_labelize(value['indep_vals'], key='unit', label_key='unit_label')
                     results.append(value)
-            else:
-                facet['field'] = facet['facetId']
-                facet['name'] = facet['label']
-                results.append(facet)
+                else:
+                    facet['field'] = facet['facetId']
+                    facet['name'] = facet['label']
+                    results.append(facet)
         iter_labelize(results, key='value', label_key='name')
         iter_labelize(results, key='unit', label_key='unit_label')
         for result in results:
@@ -476,6 +490,21 @@ WHERE {
           {{variable['unitPredicate']}} <{{variable['unit']}}>;
         {%- endif %}
       .
+
+      {%- if (variable['minValue']) or (variable['maxValue']) %}
+            #<http://www.bigdata.com/queryHints#Prior> <http://www.bigdata.com/queryHints#rangesafe> true .
+            FILTER (
+                {%- if variable['minValue'] %}
+                    ?{{variable['field']}} >= {{variable['minValue']}}
+                {%- endif %}
+                {%- if (variable['minValue']) and (variable['maxValue']) %}
+                    &&
+                {%- endif %}
+                {%- if variable['maxValue'] %}
+                    ?{{variable['field']}} <= {{variable['maxValue']}}
+                {%- endif %}
+            )
+        {%- endif %}
 
     {%- for indep_variable in variable['indep_vals'] %}
         optional {

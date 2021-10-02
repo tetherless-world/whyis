@@ -1,5 +1,6 @@
 import './utils/spinner'
 import './utils/dialog'
+import './utils/range-slider'
 import './pages'
 import "./kg-card";
 import "./search-autocomplete";

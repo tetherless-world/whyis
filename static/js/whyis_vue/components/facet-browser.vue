@@ -1,7 +1,7 @@
 <template>
 <div>
   <md-progress-bar v-if="isLoadingResults" md-mode="indeterminate"></md-progress-bar>
-  <span v-if="updateError" class="md-error md-accent" style="color:red">Unable to run query. Please verify selections and remove any duplicated facet values</span>
+  <span v-if="updateError || sparqlError" class="md-error md-accent" style="color:red">Unable to run query. Please verify selections and remove any duplicated facet values</span>
   <!-- <uib-alert flex ng-if="error" type="danger"><span ng-bind="error"></span></uib-alert> -->
   <div layout="row" flex>
     <md-content flex="30" style="overflow:scroll">
@@ -13,8 +13,6 @@
                      v-on:click="updateResults()">
             Update
           </md-button>
-
-          <!-- <md-progress-circular ng-show="vm.isLoadingResults" md-diameter="20px"></md-progress-circular> -->
       </md-subheader>
         <div v-if="facetsLoaded"> 
             <div v-for="(facet, index) in facets" 
@@ -40,7 +38,8 @@
 <style scoped lang="scss" src="../assets/css/main.scss"></style>
 <script>
 import Vue from "vue";
-import axios from 'axios'
+import axios from 'axios';
+import { querySparql } from 'utilities/sparql'
 
 export default Vue.component('facet-browser', {
     props: {
@@ -60,6 +59,7 @@ export default Vue.component('facet-browser', {
             facetsLoaded: false,
             sparqlQuery: "",
             sparqlResults: {},
+            sparqlError: false,
             processedResults: {
                 "data": {
                     "values":[],
@@ -185,6 +185,32 @@ export default Vue.component('facet-browser', {
             })
             
         },
+
+        async getSparqlData (query) {
+            try {
+                const results = await querySparql(query)
+                this.onQuerySuccess(results)
+            } catch (error) {
+                this.onQueryError(error)
+            }
+        },
+        onQuerySuccess (queryResponse) {
+            this.sparqlError = false
+            this.sparqlResults = queryResponse
+            this.processedResults.data = { 
+                values: this.transformSparqlData(queryResponse) 
+            };
+            this.isLoadingResults = false;
+        },
+        onQueryError (error) {
+            this.sparqlError = true;
+            console.warn('SPARQL QUERY ERROR\n', error);
+            this.isLoadingResults = false;
+        },
+        isSparqlError() {
+            return this.sparqlError
+        },
+        
         async runSparqlQuery(){
             let this_vue = this;
             var facetSelections = this.getFacetSelections();
@@ -193,46 +219,13 @@ export default Vue.component('facet-browser', {
                 params: {
                     uri: this.class_uri,
                     view:'instance_data',
-                    // constraints: JSON.stringify(facetSelections.constraint),
                     variables: JSON.stringify(filteredVariables)
                 },
                 responseType:'text'
             })
-            .then(function(response) {
+            .then(function(response){
                 this_vue.sparqlQuery = response.data;
-                console.log("query", this_vue.sparqlQuery);
-                return axios
-                    .get(ROOT_URL+'sparql', {params : {query : this_vue.sparqlQuery, output: 'json'}, responseType: 'json'})
-                    .then(function(response) {
-                        this_vue.sparqlResults = response.data
-                        this_vue.processedResults.data = { values: this_vue.transformSparqlData(response.data) };
-                        filteredVariables.forEach(function(facetValue) {
-                            if (facetValue.type != "nominal") {
-                                // var extent = d3.extent(this_vue.processedResults.data.values,
-                                //                         d => d[facetValue.field]);
-                                var fieldValues = this_vue.processedResults.data.values.map(d => d[facetValue.field])
-                                var minExtent = Math.min(...fieldValues)
-                                var maxExtent = Math.max(...fieldValues)
-                                // facetValue.min = extent[0];
-                                facetValue.min = minExtent
-                                if (facetValue.lower === undefined) {
-                                    facetValue.lower = facetValue.min;
-                                }
-                                // facetValue.max = extent[1];
-                                facetValue.max = maxExtent
-                                if (facetValue.upper === undefined) {
-                                    facetValue.upper = facetValue.max;
-                                }
-                                console.log(facetValue);
-                            }
-                        })
-                        this_vue.isLoadingResults = false;
-                    })
-                    .catch(function(e) {
-                        console.error(e.message);
-                        this_vue.updateError = true;
-                        return e
-                    });
+                this_vue.getSparqlData(response.data)
             });
         },
         transformSparqlData(sparqlResults){
