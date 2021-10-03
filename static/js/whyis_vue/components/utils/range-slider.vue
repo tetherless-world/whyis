@@ -3,13 +3,13 @@
     <div class="md-layout"
         :class="`md-alignment-center-center`"
         style="min-width: max-content">
-        <md-button class="md-layout-item" v-on:click="setMin(rangeMin)">Minimize</md-button>
+        <md-button class="md-layout-item" v-on:click="setMin(rangeMin)">Minimum</md-button>
         <input class="md-layout-item" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
         <input class="md-layout-item" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
-        <md-button class="md-layout-item" v-on:click="setMax(rangeMax)">Maximize</md-button>
+        <md-button class="md-layout-item" v-on:click="setMax(rangeMax)">Maximum</md-button>
     </div>  
-    <input type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
-    <input type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
+    <input class="range-slider" type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
+    <input class="range-slider" type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
   </div>
 </template>
 <script>
@@ -51,7 +51,10 @@ export default Vue.component('range-slider', {
         }
         val = numVal.toExponential(2);
         this.minInput = String(val);
-        this.$emit('minInput', this.minInput)
+        if (this.minInput == this.rangeMin){
+          this.$emit('minInput', null)
+        }
+        else{ this.$emit('minInput', this.minInput) }
       }
     },
     sliderMax: {
@@ -64,29 +67,34 @@ export default Vue.component('range-slider', {
           this.minInput = val;
         }
         val = numVal.toExponential(2);
-        this.maxInput = String(val);
-        this.$emit('maxInput', this.maxInput)
+        this.maxInput = String(val);        
+        if (this.maxInput == this.rangeMax){
+          this.$emit('maxInput', null)
+        }
+        else{ this.$emit('maxInput', this.maxInput) }
       }
     }
   },
   methods: {
     setMin (value) {
-      if (value) {
-        this.minInput = value;
-      }
-      else{
+      if ((!value) || (value == this.rangeMin)){
         this.minInput = this.rangeMin
+        this.$emit('minInput', null)
       }
-      this.$emit('minInput', this.minInput)
+      else {
+        this.minInput = value;
+        this.$emit('minInput', this.minInput)
+      }
     },
     setMax (value) {
-      if (value) {
-        this.maxInput = value;
-      }
-      else{
+      if ((!value) || (value == this.rangeMax)){
         this.maxInput = this.rangeMax
+        this.$emit('maxInput', null)
       }
-      this.$emit('maxInput', this.maxInput)
+      else {
+        this.maxInput = value;
+        this.$emit('maxInput', this.maxInput)
+      }
     }
   },
   mounted: function () {
@@ -104,10 +112,9 @@ export default Vue.component('range-slider', {
 });
 
 </script>
-<style>
+<style scoped lang="scss">
 
 .range-slider {
-  width: 200px;
   margin: auto;
   text-align: center;
   position: relative;
@@ -118,61 +125,44 @@ export default Vue.component('range-slider', {
   position: absolute;
   left: 0;
   bottom: 0;
+  background: transparent;
+  padding-top: 2em;
+  pointer-events: none;
 }
 
-input[type=number] {
-  border: 1px solid #ddd;
-  text-align: center;
-  font-size: 1.6em;
-  -moz-appearance: textfield;
-}
-
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
-
-input[type=number]:invalid,
-input[type=number]:out-of-range {
-  border: 2px solid #ff6347;
+.range-slider-fill {
+  width: 100%;
+  height: 5px;
+  background: #2497e3;
+  border: 0;
+  position: absolute;
 }
 
 input[type=range] {
   -webkit-appearance: none;
+  -moz-appearance: none;
   width: 100%;
+  
+  &:nth-child(3){
+    &::-webkit-slider-runnable-track{
+      background-color: transparent;
+    }
+    &::-moz-range-track {
+      background-color: transparent;
+    }
+  }
 }
-
-input[type=range]:focus {
-  outline: none;
-}
-
-input[type=range]:focus::-webkit-slider-runnable-track {
-  background: #2497e3;
-}
-
-input[type=range]:focus::-ms-fill-lower {
-  background: #2497e3;
-}
-
-input[type=range]:focus::-ms-fill-upper {
-  background: #2497e3;
-} 
 
 input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
   height: 5px;
   cursor: pointer;
-  /* animate: 0.2s; */
   background: #2497e3;
   border-radius: 1px;
-  box-shadow: none;
   border: 0;
 }
-
 input[type=range]::-webkit-slider-thumb {
-  z-index: 2;
   position: relative;
-  box-shadow: 0px 0px 0px #000;
   border: 1px solid #2497e3;
   height: 18px;
   width: 18px;
@@ -181,5 +171,29 @@ input[type=range]::-webkit-slider-thumb {
   cursor: pointer;
   -webkit-appearance: none;
   margin-top: -7px;
+  pointer-events: auto;
 }
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 5px;
+  cursor: pointer;
+  background: #2497e3;
+  border-radius: 1px;
+  box-shadow: none;
+  border: none;
+}
+input[type=range]::-moz-range-thumb {
+  position: relative;
+  border: 1px solid #2497e3;
+  height: 18px;
+  width: 18px;
+  border-radius: 25px;
+  background: #a1d0ff;
+  cursor: pointer;
+
+  -moz-appearance: none;
+  pointer-events: auto;
+}
+
 </style>

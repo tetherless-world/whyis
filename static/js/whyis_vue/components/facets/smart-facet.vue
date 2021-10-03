@@ -42,6 +42,7 @@
                 v-bind:externalMax="facetName.maxValue ? facetName.maxValue : facetName.max_value"
                 @minInput="facetName.minValue = $event"
                 @maxInput="facetName.maxValue = $event"/>
+            <div class="md-layout-item"></div>
         </div>
     </div>
 </div>
