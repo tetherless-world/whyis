@@ -11,7 +11,6 @@
     @query-success="onQuerySuccess"
     @query-error="onQueryError"
   /> -->
-  <h1>wat</h1>
 </div>
 </template>
 <script>
