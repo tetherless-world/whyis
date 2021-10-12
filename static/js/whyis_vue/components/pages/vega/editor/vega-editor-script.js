@@ -6,7 +6,7 @@ import { load } from 'js-yaml';
 
 import { EventServices } from '../../../../modules'
 import { goToView, VIEW_URIS, DEFAULT_VIEWS } from "../../../../utilities/views";
-import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart, loadData } from 'utilities/vega-chart'
 import { getCurrentView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
 
@@ -37,7 +37,7 @@ export default Vue.component('vega-editor', {
     ...mapState('vizEditor', ['uri', 'baseSpec', 'query', 'title', 'description', 'depiction']),
     ...mapGetters('vizEditor', ['chart']),
     spec () {
-      const spec = buildSparqlSpec(this.baseSpec, this.results)
+      const spec = generateFullSpec(this.baseSpec, this.results)
       return spec
     }
   },
@@ -46,8 +46,8 @@ export default Vue.component('vega-editor', {
     VJsoneditor
   },
   methods: {
-    ...mapActions('vizEditor', ['loadChart']),
-    ...mapMutations('vizEditor', ['setBaseSpec', 'setQuery', 'setTitle', 'setDescription', 'setDepiction', 'setChart']),
+    ...mapActions('vizEditor', ['loadChart', 'setChart']),
+    ...mapMutations('vizEditor', ['setBaseSpec', 'setQuery', 'setTitle', 'setDescription', 'setDepiction']),
     navBack() {
       return EventServices.navTo('view', true)
     },
@@ -120,11 +120,13 @@ export default Vue.component('vega-editor', {
     },
     async initializeChart () {
       this.loading = true
-      if (this.pageView === 'edit') {
+      if (this.pageView === DEFAULT_VIEWS.EDIT) {
         await loadChart(this.pageUri)
       } else if (this.pageView === 'restore'){
 	      await this.postChartBk()
 	      return this.getSparqlData()
+      } else if (this.pageView === DEFAULT_VIEWS.NEW) {
+
       }
       await this.getSparqlData()
       this.loading = false

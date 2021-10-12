@@ -123,7 +123,7 @@
 
   import { EventServices, Slug } from '../../../../modules'
   import tempFiller from '../../../utils/temporary_filler'
-  import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
+  import { loadChart, loadAndBuildChartSpec } from '../../../../utilities/vega-chart'
   import { querySparql } from '../../../../utilities/sparql'
   import { goToView } from '../../../../utilities/views'
 
@@ -167,16 +167,7 @@
       async loadVisualization () {
         this.chart = await loadChart(this.pageUri)
         EventServices.checkIfEditable(this.chart.uri)
-        if (this.chart.query) {
-          const sparqlResults = await querySparql(this.chart.query)
-          this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
-        } else {
-          this.spec = this.chart.baseSpec
-        }
-        if (this.chart.dataset) {
-          this.spec = this.chart.baseSpec
-          this.spec.data = {url: `/about?uri=${this.chart.dataset}`}
-        }
+        this.spec = await loadAndBuildChartSpec(this.chart)
         this.loading = false
       },
       navBack(args){

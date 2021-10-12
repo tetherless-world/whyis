@@ -2,6 +2,7 @@
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 import axios from 'axios'
+import Papa from 'papaparse'
 
 import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
 import { querySparql } from 'utilities/sparql'
@@ -202,13 +203,68 @@ function transformSparqlData (sparqlResults) {
   return data
 }
 
-function buildSparqlSpec (baseSpec, sparqlResults) {
-  if (!baseSpec) {
+async function loadDatasetResults(datasetUri) {
+  if (!/\.csv$/.test(datasetUri)) {
+    throw "dataset upload only works with csv right now"
+  }
+  const parsedData = await (new Promise(resolve => {
+    Papa.parse(`/about?uri=${datasetUri}`, {
+      download: true,
+      complete: results => resolve(results.data)
+    })
+  }))
+  const results = {
+    head: {
+      vars: parsedData[0]
+    },
+    results: {
+      bindings: parsedData.slice(1).map(row => {
+        const binding = {}
+        for (let i = 0; i < row.length; i++) {
+          binding[parsedData[0][i]] = {
+            type: "literal",
+            value: row[i]
+          }
+        }
+        return binding
+      })
+    }
+  }
+  console.log('PARSED', results)
+  return results
+}
+
+async function loadData(chart) {
+  if (chart.query) {
+    return await querySparql(chart.query)
+  } else if (chart.dataset) {
+    return await loadDatasetResults(chart.dataset)
+  }
+  console.error("chart has no query or dataset", chart)
+  throw "Chart has no query or dataset"
+}
+
+function buildChartSpec(chart, sparqlResults) {
+  if (!chart.baseSpec) {
     return null
   }
-  const spec = Object.assign({}, baseSpec)
+  const spec = JSON.parse(JSON.stringify(chart.baseSpec))
   spec.data = { values: transformSparqlData(sparqlResults) }
   return spec
 }
 
-export { getDefaultChart, loadChart, saveChart, copyChart, getCharts, buildSparqlSpec, transformSparqlData}
+async function loadAndBuildChartSpec(chart) {
+  const sparqlResults = await loadData(chart)
+  return buildChartSpec(chart, sparqlResults)
+}
+
+export {
+  getDefaultChart,
+  loadChart,
+  saveChart,
+  copyChart,
+  getCharts,
+  loadData,
+  buildChartSpec,
+  loadAndBuildChartSpec,
+}

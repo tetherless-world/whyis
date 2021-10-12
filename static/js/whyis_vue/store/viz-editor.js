@@ -1,14 +1,23 @@
-import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from '../utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart, generateFullSpec } from '../utilities/vega-chart'
 
 const state = () => getDefaultChart()
 
 const actions = {
-  resetChart({commit}) {
-    commit('setChart', getDefaultChart())
+  resetChart({dispatch}) {
+    dispatch('setChart', getDefaultChart())
   },
-  async loadChart({commit}, uri) {
+  async loadChart({dispatch}, uri) {
     const chart = await loadChart(uri)
-    commit('setChart', chart)
+    dispatch('setChart', chart)
+  },
+  setChart({commit}, chart) {
+    commit('setBaseSpec', chart.baseSpec)
+    commit('setQuery', chart.query)
+    commit('setTitle', chart.title)
+    commit('setDescription', chart.description)
+    commit('setDepiction', chart.depiction)
+    commit('setDownloadUrl', chart.downloadUrl)
+    commit('setDataset', chart.dataset)
   }
 }
 
@@ -34,9 +43,12 @@ const mutations = {
   setDepiction(state, depiction) {
     state.depiction = depiction
   },
-  setChart(state, chart) {
-    Object.assign(state, chart)
+  setDownloadUrl(state, downloadUrl) {
+    state.downloadUrl = downloadUrl
   },
+  setDataset(state, dataset) {
+    state.dataset = dataset
+  }
 }
 
 export default {

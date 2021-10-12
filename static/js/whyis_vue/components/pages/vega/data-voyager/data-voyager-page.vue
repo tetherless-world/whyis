@@ -76,7 +76,7 @@ import { Slug } from "../../../../modules";
 import {
   copyChart,
   saveChart,
-  transformSparqlData
+  loadAndBuildChartSpec,
 } from "../../../../utilities/vega-chart";
 import { querySparql } from "../../../../utilities/sparql";
 import { DEFAULT_VIEWS, VIEW_URIS, goToView } from "../../../../utilities/views";
@@ -105,10 +105,11 @@ export default {
     async loadData() {
       this.loading = true;
       if (!this.isNewChart) {
-        await this.loadChart()
+        await this.loadChart(this.pageUri)
       }
-      const sparqlResults = await querySparql(this.chart.query);
-      this.data = { values: transformSparqlData(sparqlResults) };
+      console.log('CHART', this.chart)
+      const spec = await loadAndBuildChartSpec(this.chart)
+      this.data = spec.data
       this.loading = false
     },
     saveAsChart() {

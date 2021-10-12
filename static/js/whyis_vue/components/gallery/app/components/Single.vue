@@ -22,7 +22,7 @@
 <style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
   import EventServices from '../../../../modules/events/event-services'
-  import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
+  import { loadChart, generateFullSpec } from '../../../../utilities/vega-chart'
   import { querySparql } from '../../../../utilities/sparql'
 
   export default {
@@ -52,7 +52,7 @@
             return querySparql(chart.query)
           })
           .then(sparqlResults => {
-            this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
+            this.spec = generateFullSpec(this.chart.baseSpec, sparqlResults)
           })
           .finally(() => this.loading = false)
       },
@@ -64,7 +64,7 @@
       return this.loadVisualization()
     },
     created () {
-      
+
     }
   }
 </script>
