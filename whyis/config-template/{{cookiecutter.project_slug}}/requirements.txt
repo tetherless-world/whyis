@@ -1,5 +1,5 @@
 {% for package in cookiecutter.packages.split(',') if package.strip()|length > 0 %}"{{package.strip()}}",
 {% endfor %}
-{% for package in freeze %}
-{{ freeze }}
+{% for package in cookiecutter.__freeze %}
+{{ package }}
 {% endfor %}

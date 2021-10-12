@@ -6,5 +6,6 @@
     "email": "j.doe@example.com",
     "linked_data_prefix": "http://purl.org/whyis/local",
     "version": "0.1",
-    "packages": ""
+    "packages" : "",
+    "__freeze" : ""
 }

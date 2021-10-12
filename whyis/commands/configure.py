@@ -25,7 +25,7 @@ class Configure(Command):
 
         # Create project from the cookiecutter-pypackage/ template
         extra_context = {
-            'freeze' : freeze.freeze()
+            '__freeze' : list(freeze.freeze())
         }
         template_path = resource_filename('whyis', 'config-template')
 
