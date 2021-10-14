@@ -12,6 +12,7 @@ import './add-attribute';
 import './add-link';
 import './add-knowledge-menu';
 import './accordion'
+import './bob-viz-modules'
 
 import Vue from 'vue';
 Vue.component('vega-lite', () => import('./vega-lite-wrapper'))

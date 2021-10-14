@@ -1,4 +1,4 @@
-import { getDefaultChart, loadChart, saveChart, generateFullSpec } from '../utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart, generateFullSpec } from 'utilities/vega-chart'
 
 const state = () => getDefaultChart()
 

@@ -3,11 +3,12 @@
 {% block title %}{{g.get_label(this)}}{% endblock %}
 {% block content %}
 <modular-viz-tool>
-  <!-- <div slot="sparqlGenerator">
-    <h1>Here might be a page title</h1>
-  </div> -->
-  <!-- <sparql-template-page slot="sparqlGenerator">test</sparql-template-page> -->
-  <!-- <vega-lite :spec="spec" @new-vega-view="onNewVegaView" style="height: 98%"/> -->
-  <!-- <vega-lite slot="jsonInterpreter">test</vega-lite> -->
+  <template v-slot:sparql>
+    <bob-viz-sparql/>
+  </template>
+  <template v-slot:results>
+    <!-- <bob-viz-results/> -->
+    <bob-viz-vega/>
+  </template>
 </modular-viz-tool>
 {% endblock %}

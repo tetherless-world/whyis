@@ -267,4 +267,5 @@ export {
   loadData,
   buildChartSpec,
   loadAndBuildChartSpec,
+  transformSparqlData
 }
