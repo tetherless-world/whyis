@@ -4,11 +4,12 @@
 {% block content %}
 <modular-viz-tool>
   <template v-slot:sparql>
-    <bob-viz-sparql/>
+    <!-- <bob-viz-sparql/> -->
+    <bob-viz-facets/>
   </template>
   <template v-slot:results>
-    <!-- <bob-viz-results/> -->
-    <bob-viz-vega/>
+    <bob-viz-results/>
+    <!-- <bob-viz-vega/> -->
   </template>
 </modular-viz-tool>
 {% endblock %}

@@ -19,7 +19,8 @@
         :md-options="facetobject.values"
         @md-selected="selectedItemChange"
         @md-opened="processAutocompleteMenu"
-        @md-closed="processAutocompleteMenu(true)">
+        @md-closed="processAutocompleteMenu(true)"
+        style="width:90%">
         <template style="width: 90% !important; left: 1px !important; max-width: 90% !important" slot="md-autocomplete-item" slot-scope="{ item, term }">
             <md-highlight-text :md-term="term">{{ item.name }} {{item.unit_label ? ("(" + item.unit_label + ")") : ""}}</md-highlight-text>
         </template>

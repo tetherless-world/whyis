@@ -102,7 +102,6 @@ export default Vue.component('facet-browser', {
                     if(this_vue.updateError){
                         this.isLoadingResults = false;
                     }
-                    this.$emit('facet-browser-update', {fbquery: this.sparqlQuery, fbresults: this.sparqlResults});
                 })
                 .catch(function(e){console.error(e.message)})
         },
@@ -200,6 +199,8 @@ export default Vue.component('facet-browser', {
             this.processedResults.data = { 
                 values: this.transformSparqlData(queryResponse) 
             };
+            this.$emit('facet-browser-update', {fbquery: this.sparqlQuery, fbresults: this.sparqlResults});
+
             this.isLoadingResults = false;
         },
         onQueryError (error) {

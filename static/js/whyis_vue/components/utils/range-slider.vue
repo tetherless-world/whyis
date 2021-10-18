@@ -1,12 +1,12 @@
 <template>
   <div class="range-slider">
     <div class="md-layout"
-        :class="`md-alignment-center-center`"
-        style="min-width: max-content">
-        <md-button class="md-layout-item" v-on:click="setMin(rangeMin)">Minimum</md-button>
-        <input class="md-layout-item" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
-        <input class="md-layout-item" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
-        <md-button class="md-layout-item" v-on:click="setMax(rangeMax)">Maximum</md-button>
+        :class="`md-alignment-center-center`" 
+        style="min-width: max-content; min-height: fit-content"> 
+        <md-button class="md-layout-item md-medium-size-20 md-small-size-20 md-xsmall-size-40" v-on:click="setMin(rangeMin)">Minimum</md-button>
+        <input class="md-layout-item md-medium-size-20 md-small-size-20 md-xsmall-size-40" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
+        <input class="md-layout-item md-medium-size-20 md-small-size-20 md-xsmall-size-40" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
+        <md-button class="md-layout-item md-medium-size-20 md-small-size-20 md-xsmall-size-40" v-on:click="setMax(rangeMax)">Maximum</md-button>
     </div>  
     <input class="range-slider" type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMin">
     <input class="range-slider" type="range" v-bind:min=rangeMin v-bind:max=rangeMax step="1" v-model="sliderMax">
@@ -128,14 +128,6 @@ export default Vue.component('range-slider', {
   background: transparent;
   padding-top: 2em;
   pointer-events: none;
-}
-
-.range-slider-fill {
-  width: 100%;
-  height: 5px;
-  background: #2497e3;
-  border: 0;
-  position: absolute;
 }
 
 input[type=range] {
