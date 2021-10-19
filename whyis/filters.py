@@ -133,7 +133,11 @@ def configure(app):
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        return graph.serialize(**kwargs).decode()
+        result = graph.serialize(**kwargs)
+        if isinstance(result, bytes):
+            return result.decode('utf8')
+        else:
+            return result
 
     @app.template_filter('attributes')
     def attributes(query, this):

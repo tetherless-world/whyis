@@ -14,46 +14,6 @@ LOD_PREFIX = 'http://purl.org/whyis/local'
 
 # from whyis.namespace import skos
 
-class ProductionSystem:
-    # LOGGING
-    LOGGER_NAME = "whyis_log"
-    LOG_FILENAME = "/var/log/whyis/output-whyis-%s.log" % (str(datetime.now()).replace(' ','_'))
-    LOG_LEVEL = logging.INFO
-    LOG_FORMAT = "%(asctime)s %(levelname)s\t: %(message)s" # used by logging.Formatter
-
-    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
-    # EMAIL CONFIGURATION
-    ## MAIL_SERVER = "smtp.mailgun.org"
-    ## MAIL_PORT = 587
-    ## MAIL_USE_TLS = True
-    ## MAIL_USE_SSL = False
-    ## MAIL_DEBUG = False
-    ## MAIL_USERNAME = ''
-    ## MAIL_PASSWORD = ''
-    ## DEFAULT_MAIL_SENDER = "Whyis Admin <admin@whyis.example.com>"
-    EMBEDDED_FUSEKI = False
-    ADMIN_ENDPOINT = 'http://localhost:8080/blazegraph/namespace/admin/sparql'
-
-    KNOWLEDGE_ENDPOINT = 'http://localhost:8080/blazegraph/namespace/knowledge/sparql'
-
-    EMBEDDED_CELERY = False
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-
-    NANOPUB_ARCHIVE = {
-        'depot.storage_path' : "/data/nanopublications",
-    }
-    FILE_ARCHIVE = {
-        'cache_max_age' : 3600*24*7,
-        'depot.storage_path' : '/data/files'
-    }
-    CACHE_TYPE = "redis" # Flask-Caching related configs
-    CACHE_KEY_PREFIX = 'whyis_cache_'
-    CACHE_REDIS_URL = 'redis://localhost:6379/0'
-    CACHE_DEFAULT_TIMEOUT = 0
-    MULTIUSER = True
-
-
 class EmbeddedSystem:
     DEBUG = True  # we want debug level output
     # LOGGING
@@ -85,6 +45,7 @@ class EmbeddedSystem:
     SECURITY_TRACKABLE = True
     SECURITY_RECOVERABLE = True
     SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = '/register'
     SECURITY_PASSWORD_HASH = 'sha512_crypt'
     SECURITY_PASSWORD_SALT = 'changeme__'
     SECURITY_SEND_REGISTER_EMAIL = False

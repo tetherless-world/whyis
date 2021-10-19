@@ -178,6 +178,7 @@ setup(
         'lxml',
         'Markdown',
 #        'MarkupSafe==1.1.1',
+        'mod-wsgi==4.9.0',
         'nltk',
         'nose',
         'numpy',

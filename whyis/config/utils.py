@@ -18,7 +18,7 @@ def import_config_module(app):
         app.setup_mode = True
         logging.warning("%s, using defaults.", str(e))
 
-    if os.path.exists('whyis_system.conf'):
-        app.config.from_pyfile('whyis_system.conf')
+    if os.path.exists('system.conf'):
+        app.config.from_pyfile('system.conf')
     else:
         app.config.from_object(default.EmbeddedSystem)

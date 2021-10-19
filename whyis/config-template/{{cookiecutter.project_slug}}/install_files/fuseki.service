@@ -32,8 +32,7 @@ Description=Fuseki
 
 [Service]
 # Edit environment variables to match your installation
-Environment=FUSEKI_HOME=$FUSEKI_HOME
-Environment=FUSEKI_BASE=$WHYIS_HOME/fuseki
+Environment=FUSEKI_BASE=$WHYIS_APP_HOME/fuseki
 # Edit the line below to adjust the amount of memory allocated to Fuseki
 Environment=JVM_ARGS=-Xmx4G
 # Edit to match your installation
