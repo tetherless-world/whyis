@@ -63,7 +63,6 @@ export default Vue.component('smart-facet', {
         };
     },
     methods: {
-        //(item in search(vm.facet.searchText, vm.facet.getState() | orderBy:'-count')"
         search(){
             return this.facetobject.values
         },

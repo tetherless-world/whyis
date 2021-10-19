@@ -1,6 +1,6 @@
 <template>
   <div class="bob-viz-facets">
-    <div class="md-layout">
+    <div v-if="class_uri_mod==''" class="md-layout">
         <md-field class="md-layout-item">
             <label>Class URI</label>
             <md-input name="class-uri" id="class-uri" v-model="uriInput"/>
@@ -24,14 +24,20 @@ import Vue from "vue";
 import { mapActions } from 'vuex';
 
 export default Vue.component('bob-viz-facets', {
-  data: () => ({
-    query: null,
-    uriInput: "",
-    facetClassUri: {
-        type: String,
-        default: "http://materialsmine.org/ns/Metamaterial"
+  props: {
+    class_uri_mod: {
+      default: "",
+      type: String
     },
-  }),
+  } ,
+  data: function() {
+    return {
+      query: null,
+      uriInput: "",
+      facetClassUri: this.class_uri_mod,
+    }
+  },
+
   methods: {
     ...mapActions('bobViz', ['setResults', 'setQuery']),
     onQuerySuccess(results) {

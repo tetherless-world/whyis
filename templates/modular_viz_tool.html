@@ -5,7 +5,7 @@
 <modular-viz-tool>
   <template v-slot:sparql>
     <!-- <bob-viz-sparql/> -->
-    <bob-viz-facets/>
+    <bob-viz-facets v-bind:class_uri_mod="'http://materialsmine.org/ns/Metamaterial'" />
   </template>
   <template v-slot:results>
     <bob-viz-results/>
