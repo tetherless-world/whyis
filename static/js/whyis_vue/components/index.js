@@ -19,3 +19,4 @@ import './facets'
 
 import Vue from 'vue';
 Vue.component('vega-lite', () => import('./vega-lite-wrapper'))
+Vue.component('data-voyager', () => import('./data-voyager'))

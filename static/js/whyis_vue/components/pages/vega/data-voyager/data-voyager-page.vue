@@ -157,12 +157,3 @@ export default {
   top: 0.5rem;
 }
 </style>
-
-<style>
-#voyager-embed {
-  background: #fafafa;
-  height: 100%;
-  width: calc(100% - 2.6rem);
-  margin: 30px 1.3rem;
-}
-</style>

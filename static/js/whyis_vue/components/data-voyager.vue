@@ -17,7 +17,8 @@ const voyagerConf = {
 export default {
   data() {
     return {
-      containerId: "voyager-embed"
+      containerId: "voyager-embed",
+      voyagerInstance: null
     };
   },
   props: {
@@ -38,16 +39,31 @@ export default {
       const container = document.getElementById(this.containerId);
       this.voyagerInstance = CreateVoyager(container, voyagerConf, undefined);
       this.voyagerInstance.onStateChange(() => this.updateSpec());
-      this.voyagerInstance.updateData(this.data);
+      // this.voyagerInstance.updateData(this.data)
+    },
+    updateData(data) {
+      if (this.voyagerInstance && data) {
+        this.voyagerInstance.updateData(data)
+      }
     }
   },
   watch: {
-    data() {
-      this.createVoyager();
+    data(data) {
+      this.updateData(data)
     }
   },
   mounted() {
-    this.createVoyager();
+    this.createVoyager()
+    this.updateData(this.data)
   }
 };
 </script>
+
+<style>
+#voyager-embed {
+  background: #fafafa;
+  height: 100%;
+  width: calc(100% - 2.6rem);
+  margin: 30px 1.3rem;
+}
+</style>
