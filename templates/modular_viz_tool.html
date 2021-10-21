@@ -2,14 +2,16 @@
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{g.get_label(this)}}{% endblock %}
 {% block content %}
-<modular-viz-tool>
-  <template v-slot:sparql>
-    <!-- <bob-viz-sparql/> -->
-    <bob-viz-facets v-bind:class_uri_mod="'http://materialsmine.org/ns/Metamaterial'" />
+<modular-viz-tool
+  :default-percent="30"
+>
+  <template v-slot:select>
+    <bob-viz-sparql/>
+    <!-- <bob-viz-facets v-bind:class_uri_mod="'http://materialsmine.org/ns/Metamaterial'" /> -->
   </template>
-  <template v-slot:results>
-    <bob-viz-results/>
-    <!-- <bob-viz-vega/> -->
+  <template v-slot:explore>
+    <!-- <bob-viz-results/> -->
+    <bob-viz-vega/>
   </template>
 </modular-viz-tool>
 {% endblock %}
