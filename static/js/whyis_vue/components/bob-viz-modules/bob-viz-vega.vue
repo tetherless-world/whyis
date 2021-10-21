@@ -5,7 +5,7 @@
       :options="specJsonEditorOpts"
       style="height: 50%"
     />
-    <vega-lite :spec="fullSpec" />
+    <vega-lite v-if="fullSpec" :spec="fullSpec" />
   </div>
 </template>
 
@@ -31,13 +31,14 @@ export default Vue.component("bob-viz-vega", {
     VJsoneditor
   },
   computed: {
-    ...mapGetters("bobViz", ["vegaResults"]),
+    ...mapGetters("bobViz", ["vegaData"]),
     fullSpec() {
+      if (!this.vegaData) {
+        return null
+      }
       return {
         ...this.baseSpec,
-        data: {
-          values: this.vegaResults
-        }
+        data: this.vegaData
       };
     }
   }

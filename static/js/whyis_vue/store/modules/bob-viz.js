@@ -5,7 +5,7 @@ const {query: defaultQuery} = getDefaultChart()
 
 const state = () => ({
   query: defaultQuery,
-  results: {},
+  results: null,
 })
 
 const actions = {
@@ -30,8 +30,13 @@ const getters = {
   /**
    * Get results formatted as a vega dataset
    */
-  vegaResults(state) {
-    return transformSparqlData(state.results)
+  vegaData(state) {
+    if (!state.results) {
+      return null
+    }
+    return {
+      values: transformSparqlData(state.results)
+    }
   }
 }
 

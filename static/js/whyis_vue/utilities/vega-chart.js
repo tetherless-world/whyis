@@ -187,7 +187,7 @@ async function readChartSparqlRow(chartResult) {
 
 function transformSparqlData (sparqlResults) {
   const data = []
-  if (sparqlResults) {
+  if (sparqlResults && sparqlResults.hasOwnProperty('results')) {
     for (const row of sparqlResults.results.bindings) {
       const resultData = {}
       data.push(resultData)
