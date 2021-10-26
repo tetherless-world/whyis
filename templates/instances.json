@@ -13,4 +13,4 @@
     }
     bind (coalesce(?depiction, ?type_thumbnail) as ?t)
 } group by ?identifier
-''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label") | tojson }}
+''' | query(values={"type":this.identifier}, limit=args.get('limit', 100), offset=args.get('offset',0)) | iter_labelize("identifier","label") | tojson }}
