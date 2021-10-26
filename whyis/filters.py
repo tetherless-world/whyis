@@ -96,7 +96,7 @@ def configure(app):
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes=None, values=None):
+    def query_filter(query, graph=app.db, prefixes=None, values=None, limit=None, offset=None):
         if prefixes == {}:
             params = { 'initNs': {}}
         else:
@@ -108,6 +108,10 @@ def configure(app):
             params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
+        if limit is not None:
+            query = query + '\n limit %s' % limit
+            if offset is not None:
+                query = query + '\n offset %s' % offset
         return [x.asdict() for x in graph.query(query, **params)]
 
 
