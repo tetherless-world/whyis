@@ -36,16 +36,16 @@ def create_query_store(store):
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
 
 def engine_from_config(config):
+    print(config)
     defaultgraph = None
     if "DEFAULT_GRAPH" in config:
-        defaultgraph = URIRef(config["DEFAULT_GRAPH"])
-    if "ENDPOINT" in config:
-        store = WhyisSPARQLUpdateStore(queryEndpoint=config["ENDPOINT"],
-                                  update_endpoint=config["ENDPOINT"],
+        defaultgraph = URIRef(config["_default_graph"])
+    if "_endpoint" in config:
+        store = WhyisSPARQLUpdateStore(queryEndpoint=config["_endpoint"],
+                                  update_endpoint=config["_endpoint"],
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
-
         def publish(data):
             s = requests.session()
             s.keep_alive = False
@@ -88,7 +88,7 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
         store.publish = publish
 
         graph = ConjunctiveGraph(store,defaultgraph)
-    elif 'store' in config:
+    elif '_store' in config:
         graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)
         graph.store.batch_unification = False
         graph.store.open(config["STORE"], create=True)
@@ -99,6 +99,5 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
             graph.parse(data, format='nquads')
 
         graph.store.publish = publish
-
 
     return graph

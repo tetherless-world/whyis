@@ -38,22 +38,6 @@ class EmbeddedSystem:
         'cache_max_age' : 3600*24*7,
         'depot.storage_path' : 'files'
     }
-    SECURITY_EMAIL_SENDER = "Name <email@example.com>"
-    SECURITY_FLASH_MESSAGES = True
-    SECURITY_CONFIRMABLE = False
-    SECURITY_CHANGEABLE = True
-    SECURITY_TRACKABLE = True
-    SECURITY_RECOVERABLE = True
-    SECURITY_REGISTERABLE = True
-    SECURITY_REGISTER_URL = '/register'
-    SECURITY_PASSWORD_HASH = 'sha512_crypt'
-    SECURITY_PASSWORD_SALT = 'changeme__'
-    SECURITY_SEND_REGISTER_EMAIL = False
-    SECURITY_POST_LOGIN_VIEW = "/"
-    SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
-    SECURITY_DEFAULT_REMEMBER_ME = True
-    ADMIN_EMAIL_RECIPIENTS = []
-    LOGIN_USER_TEMPLATE = "auth/login.html"
 
     CACHE_TYPE = "simple" # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT = 0
@@ -67,7 +51,7 @@ class EmbeddedSystem:
 # base config class; extend it to your needs.
 class Config:
     # use DEBUG mode?
-    DEBUG = False
+    DEBUG = True
 
     SITE_NAME = "Whyis"
 
@@ -101,6 +85,23 @@ class Config:
 
     MULTIUSER = True
 
+    SECURITY_EMAIL_SENDER = "Name <email@example.com>"
+    SECURITY_FLASH_MESSAGES = True
+    SECURITY_CONFIRMABLE = False
+    SECURITY_CHANGEABLE = True
+    SECURITY_TRACKABLE = True
+    SECURITY_RECOVERABLE = True
+    SECURITY_REGISTERABLE = True
+    SECURITY_REGISTER_URL = '/register'
+    SECURITY_PASSWORD_HASH = 'sha512_crypt'
+    SECURITY_PASSWORD_SALT = 'changeme__'
+    SECURITY_SEND_REGISTER_EMAIL = False
+    SECURITY_POST_LOGIN_VIEW = "/"
+    SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
+    SECURITY_DEFAULT_REMEMBER_ME = True
+    ADMIN_EMAIL_RECIPIENTS = []
+    LOGIN_USER_TEMPLATE = "auth/login.html"
+    
     NAMESPACES = [
         importer.LinkedData(
             prefix = LOD_PREFIX+'/doi/',
