@@ -41,7 +41,7 @@ def engine_from_config(config):
     if "DEFAULT_GRAPH" in config:
         defaultgraph = URIRef(config["_default_graph"])
     if "_endpoint" in config:
-        store = WhyisSPARQLUpdateStore(queryEndpoint=config["_endpoint"],
+        store = WhyisSPARQLUpdateStore(query_endpoint=config["_endpoint"],
                                   update_endpoint=config["_endpoint"],
                                   method="POST",
                                   returnFormat='json',

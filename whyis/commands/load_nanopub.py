@@ -14,7 +14,7 @@ import tempfile
 
 from whyis.namespace import np
 from whyis.blueprint.nanopub.nanopub_utils import load_nanopub_graph
-
+import sys
 
 class LoadNanopub(Command):
     '''Add a nanopublication to the knowledge graph.'''
