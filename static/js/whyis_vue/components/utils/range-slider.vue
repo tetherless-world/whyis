@@ -133,7 +133,8 @@ export default Vue.component('range-slider', {
 input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
-  width: 100%;
+  width: 70%;
+  margin-left: 15%;
   
   &:nth-child(3){
     &::-webkit-slider-runnable-track{
