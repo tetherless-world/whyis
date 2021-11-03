@@ -546,9 +546,7 @@ values (?c ?priority) { %s }
     @app.template_filter('excel_to_tabulator')
     def excel_to_tabulator(this, file_id):
         f = None
-        if current_app.nanopub_depot is not None:
-            f = current_app.nanopub_depot.get(file_id)
-        elif current_app.file_depot.exists(file_id):
+        if current_app.file_depot.exists(file_id):
             f = current_app.file_depot.get(file_id)
         if f is not None:
             xf = pandas.ExcelFile(f)
