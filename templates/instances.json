@@ -1,6 +1,6 @@
 {{''' 
  select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
-    ?identifier a ?type.
+    ?identifier rdf:type/rdfs:subClassOf* ?type.
     optional {
         ?identifier foaf:depiction ?depiction.
     }
@@ -12,5 +12,5 @@
         ?identifier a [ foaf:depiction ?type_thumbnail]
     }
     bind (coalesce(?depiction, ?type_thumbnail) as ?t)
-} group by ?identifier
+} group by ?identifier order by ?identifier
 ''' | query(values={"type":this.identifier}, limit=args.get('limit', 100), offset=args.get('offset',0)) | iter_labelize("identifier","label") | tojson }}
