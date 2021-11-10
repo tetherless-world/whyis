@@ -16,7 +16,7 @@
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
-
+@prefix sdd: <http://purl.org/twc/sdd/> .
 
 dc:description rdf:type owl:DatatypeProperty ,
                         owl:FunctionalProperty .
@@ -578,3 +578,8 @@ whyis:SparqlTemplateClass a owl:Class;
   whyis:hasView "sparql_templates.html".
 
 whyis:SparqlTemplate a whyis:SparqlTemplateClass.
+
+sdd:SemanticDataDictionary a owl:Class ; 
+  rdfs:label "Semantic Data Dictionary";
+  whyis:hasView "sdd_view.html".
+

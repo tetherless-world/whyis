@@ -263,6 +263,10 @@ class App(Empty):
             self._nanopub_depot = DepotManager.get('nanopublications')
         return self._nanopub_depot
 
+    @nanopub_depot.setter
+    def nanopub_depot(self, value):
+        self._nanopub_depot = value
+
     def configure_database(self):
         """
         Database configuration should be set here

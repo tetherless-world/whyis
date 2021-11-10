@@ -19,7 +19,8 @@ cookiecutter==1.6.0
 cryptography==3.2
 Cython==0.29.10
 fabric==2.4.0
-filedepot==0.8.0
+#filedepot==0.8.0
+https://github.com/jimmccusker/depot.git@import_export#egg=filedepot
 Flask==1.0.3
 #Flask-Admin==1.5.3
 #Flask-BabelEx==0.9.3

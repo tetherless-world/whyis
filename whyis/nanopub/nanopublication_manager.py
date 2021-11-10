@@ -170,7 +170,7 @@ class NanopublicationManager(object):
         # self.db.store.nsBindings = {}
         stores = set()
         full_list = []
-        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'a+b') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
+        with open(self.app.config['load_dir']+'/'+create_id()+'.nq', 'w+b') if 'load_dir' in self.app.config else tempfile.NamedTemporaryFile(delete=True) as data:
             to_retire = set([x.identifier for x in nanopubs])
             for npg in nanopubs:
                 stores.add(npg.store)
@@ -222,8 +222,9 @@ class NanopublicationManager(object):
                         s = skolemize(s)
                         o = skolemize(o)
                         # predicates can't be bnodes, and contexts have already been rewritten.
-                    row = nquads._nq_row((s,p,o), c.identifier).encode('utf8')
-                    data.write(row)
+                    row = '%s { %s %s %s . }' % (c.identifier.n3(), s.n3(), p.n3(), o.n3())
+                    #print(row)
+                    data.write(row.encode('utf8'))
                 data.write(b'\n')
                 data.flush()
                 # np_graph.serialize(data, format="trig")

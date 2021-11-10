@@ -66,7 +66,7 @@ whyis$ python manage.py configure
 
 -- Version, packages, secret key, and salt can be left at default values
 
-Once the knowledge graph instance is created, go to that folder:
+Once the knowledge graph instance is created, go to that folder (will only work if your project name is whyis_demo):
 ```shell
 whyis$ cd ../whyis_demo/
 ```
