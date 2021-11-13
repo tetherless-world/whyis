@@ -1,221 +1,181 @@
-{% extends "base.html" %}
+{% extends "base_vue.html" %}
+{% from "elements/upload.html" import upload_button_tab_modal %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
-
-{% macro render_reference(ref) %}
-
-{{ref.value(ns.dc.creator)}}.
-<em>{{ref.value(ns.dc.title)}}</em>,
-{{ref.value(ns.dc.bibliographicCitation)}}
-{% for also in ref[ns.RDFS.seeAlso] %}
-<a href="{{also.identifier}}">
-{% if also[ns.RDF.type:ns.hbgd.PubMedCentralArticle] %}
-<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/3977009"></img>
-{% elif also[ns.RDF.type:ns.hbgd.PubMedArticle] %}
-<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/2318832"></img>
-{% endif %}
-</a>
-{% endfor %}
-
-{% endmacro %}
-
-{% macro render_definition(def) %}
-<div layout="column" layout-fill>
-<div class="panel panel-default {% if def[ns.RDF.type:ns.hbgd.UnreviewedDefinition] %}panel-warning{% endif %} {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}panel-primary{% endif %}" >
-  <div class="panel-body">
-    <blockquote>
-      <p>{{def.value(ns.prov.value)}}</p>
-    </blockquote>
-
-    <dl class="dl-horizontal clearfix">
-      <dt>Status</dt>
-      {% for type in def[ns.RDF.type] %}
-      {% if type[ns.RDFS.subClassOf:ns.sio.definition] %}
-      <dd>{{type.value(ns.RDFS.label)}}</dd>
-      {% endif %}
-      {% endfor %}
-    </dl>
-    <div class="collapse" id="{{def.identifier.split('/')[-1]}}_more">
-    {% if def.value(ns.skos.editorialNote) %}  
-    <dl class="dl-horizontal clearfix">
-      <dt>Editorial Notes</dt>
-      <dd>
-        {% for note in def[ns.skos.editorialNote] %}
-          <p>{{note}}</p>
-        {% endfor %}
-      </dd>
-    </dl>
-    {% endif %}
-    {% if def.value(ns.skos.example) %}  
-    <dl class="dl-horizontal clearfix">
-      <dt>Appears in</dt>
-      <dd>
-        {% for ex in def[ns.skos.example] %}
-          {% if ex.value(ns.dc.title) %} <p>{{render_reference(ex)}}</p>{% endif %}
-        {% endfor %}
-      </dd>
-    </dl>
-    {% endif %}
-    {% if def.value(ns.RDFS.isDefinedBy) %}  
-    <dl class="dl-horizontal clearfix">
-      <dt>Definition Source</dt>
-      <dd>
-        {% for defsource in def[ns.RDFS.isDefinedBy] %}
-        <p><a href="{{defsource.identifier}}">{{defsource.value(ns.RDFS.label) or defsource.identifier}}</a></p>
-        {% endfor %}
-      </dd>
-    </dl>
-    {% endif %}
-    {% if def.value(ns.RDFS.seeAlso) %}  
-    <dl class="dl-horizontal clearfix">
-      <dt>See also</dt>
-      <dd>
-        {% for quoted in def[ns.RDFS.seeAlso] %}
-          <p><a href="{{quoted.identifier}}">{{quoted.value(ns.RDFS.label) or quoted.identifier}}</a></p>
-        {% endfor %}
-      </dd>
-    </dl>
-    {% endif %}
-    {% if def.value(ns.prov.wasAttributedTo) %}  
-    <dl class="dl-horizontal clearfix">
-      <dt>Attributed To</dt>
-      <dd>
-        {% for attrib in def[ns.prov.wasAttributedTo] %}
-          <p><a href="{{url_for('entity.view',uri=attrib.identifier)}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
-        {% endfor %}
-      </dd>
-    </dl>
-    {% endif %}
-  </div>
-<a class="btn pull-right" role="button" data-toggle="collapse" href="#{{def.identifier.split('/')[-1]}}_more" aria-expanded="false" aria-controls="{{def.identifier.split('/')[-1]}}_more">
-  More
-    </a>
-  </div>
-</div>
-{% endmacro %}
-
-
-{% block title %}{{this.description().value(ns.RDFS.label)}}{% endblock %}
-{% block subtitle %}Class{% endblock %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
-<style>
-.HighRatingDefinition span.pull-right span:after {
-  content: " &#9733;&#9733;&#9733;";
-}
-.MediumRatingDefinition span.pull-right span:after {
-  content: " &#9733;&#9733;&#9734;";
-}
-.LowRatingDefinition span.pull-right span:after {
-  content: " &#9733;&#9734;&#9734;";
-}
-.PreferredDefinition span.status:before {
-  content: "Preferred";
-}
-.AlternateDefinition span.status:before {
-  content: "Alternate";
-}
-</style>
-<div class="row" >
-  <div class="col-md-5">
-    {{ summary_panel(this.description()) }}
-    {{ content(this.description()) }}
-              <h2>Super Classes</h2>
-              <p>Super class definitions also apply to this class.</p>
-              <div class="panel panel-default">
-                    <ul class="list-group">
-                      {% for superClass in this.description()[ns.RDFS.subClassOf] %}
-                        <li class="list-group-item">
-                          {{render_resource_link(superClass)}}
-                          {% if superClass.value(ns.skos.definition) %}
-                          <span>{{superClass.value(ns.skos.definition)}}</span>
-                          {% endif %}
-                        </li>
-                      {% endfor %}
-                    </ul>
+{% set attributes = this | include("attributes") | fromjson %}
+{% set incoming = this | include("incoming") | fromjson  %}
+{% set outgoing = this | include("outgoing") | fromjson  %}
+
+    <md-card-header>
+        <md-card-header-text>
+            <ul class="nav nav-tabs">
+                {% for v in this | get_views_list -%}
+                <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
+                    <a class="nav-link {% if v['view'].value == view %}active{% endif %}"
+                       href="{{url_for('entity.view', uri=this.identifier, view=v['view'])}}">
+                        {{v['label']}}
+                    </a>
+                </li>
+                {%- endfor %}
+                {% if this.description().value(ns.whyis.hasFileID) %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{url_for('entity.view',uri=this.identifier)}}">
+                        Download
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    {{ upload_button_tab_modal(this) }}
+                </li>
+                {% if not this.identifier.startswith(ns.local) %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{this.identifier}}"
+                       aria-label="Visit Page" title="Visit Page">
+                       Visit
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            <div class="md-layout md-gutter md-alignment-center-left" style = "margin-top: 6px;">
+                <div class = "md-layout-item"> 
+                    <div class="md-title">{{attributes.label}}</div>
+                    {% if attributes.type | length > 0 %}<div class="md-subhead" style="max-width: fit-content;">
+                        {% for type in attributes.type %}{{type.label}}{% if not loop.last %}, {% endif %} {% endfor %}
+                    </div>{% endif %}
                 </div>
-               <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h2 class="panel-title">Details</h2>
-                    </div>
-                    <div class="panel-body">
-                      <p style="font-weight: bold"><a href="{{url_for('entity.view', uri=this.identifier)}}">{{this.identifier}}</a></p>
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Term</dt>
-                            <dd>{{this.description().value(ns.RDFS.label)}}</dd>
-                        </dl>
-                        {% if this.description().value(ns.skos.altLabel) %}  
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Alternate Labels</dt>
-                            <dd>
-                              {% for term in this.description()[ns.skos.altLabel] %}
-                              <p>{{term}}</p>
-                              {% endfor %}
-                            </dd>
-                        </dl>
+                <add-knowledge-menu class="md-subhead md-layout-item" 
+                    style="max-width: fit-content;" 
+                    uri="{{attributes['@id']}}">
+                </add-knowledge-menu>
+            </div> 
+        </md-card-header-text>
+        {% if attributes.thumbnail %}<md-card-media md-big >
+            <img src="{{url_for('entity.view', uri=attributes.thumbnail)}}" alt="{{attributes.label}}"/>
+        </md-card-media>{% endif %}
+    </md-card-header>
+    <md-card-content>
+        <div class="md-layout md-gutter">
+            <div class="md-layout-item">
+                <dl>
+                {% for desc in attributes.description %}<dt>{{desc.label}}:</dt> <dd>{{desc.value}}</dd>
+                {% endfor %}
+                    <dt>Identifier</dt> <dd>{{ attributes['@id']}}<dd>
+                {% for attribute in attributes.attributes %}
+                    <dt>{{attribute.label}} </dt>
+                    {% for value in attribute['values'] %}
+                    <dd>
+                        {{ value.value}} {% if value.unit_label %}<em>{{value.unit_label}}</em>{% endif %}
+                    </dd>
+                    {% endfor %}
+                {% endfor %}
+                </dl>
+                <div>
+                    <add-attribute uri="{{attributes['@id']}}">
+                        <md-button class="md-raised">Add Attribute
+                            <md-tooltip>Add a new attribute fact.</md-tooltip>
+                        </md-button>
+                    </add-attribute>
+                </div>
+                <div>
+                    <add-link uri="{{attributes['@id']}}">
+                        <md-button class="md-raised">Add Link
+                            <md-tooltip>Link another entity.</md-tooltip>
+                        </md-button>
+                    </add-link>
+                </div>
+                <div>
+                    <add-type uri="{{attributes['@id']}}">
+                        <md-button class="md-raised">Add Type
+                            <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
+                        </md-button>
+                    </add-type>
+                </div>
+            </div>
+            <div class="md-layout-item">
+                {% for link_name, items in outgoing | groupby("link_label") %}
+                <h2>{{link_name.title() }}</h2>
+                <div class="md-layout md-gutter md-alignment-top-left">
+                {% for item in items %}
+                <md-card style="margin-bottom: 1em; width: 300px" class="md-layout-item">
+                    <md-card-header>
+                        <md-card-header-text>
+                            <div class="md-title">{{item.target_label}}</div>
+                        </md-card-header-text>
+                        {% if this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
+                        <md-card-media md-medium>
+                            {% set depiction = this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
+                            {% if depiction.startswith(config['lod_prefix']) %}
+                            <img src="{{url_for('entity.view', uri=rfdlib.URIRef(depiction))}}" alt="{{item.target_label}}">
+                            {% else %}
+                            <img src="{{depiction}}" alt="{{item.target_label}}">
+                            {% endif %}
+                        </md-card-media>
                         {% endif %}
-                        {% if this.description().graph.value(predicate=ns.RDFS.subClassOf, object=this.description().identifier) %}  
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Sub Classes</dt>
-                            <dd>
-                              {% for subClass in this.description().subjects(ns.RDFS.subClassOf) %}
-                              <p>
-                              {{render_resource_link(subClass)}}
-                                {% if subClass.value(ns.skos.definition) %}
-                                <span>{{subClass.value(ns.skos.definition)}}</span>
-                                {% endif %}
-                              </p>
-                              {% endfor %}
-                            </dd>
-                        </dl>
+                    </md-card-header>
+
+                    <md-card-actions>
+                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="md-button-icon">View</md-button>
+                        {% if this.graph.value(rdflib.URIRef(item.target), ns.whyis.hasFileID) %}
+                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="md-button-icon">Download</md-button>
                         {% endif %}
-                        {% if this.description().value(ns.cmo.hasPrimaryConcept) %}  
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Terminology Reference</dt>
-                            <dd>
-                              {% for concept in this.description()[ns.cmo.hasPrimaryConcept] %}
-                              <p>{{render_resource_link(concept)}}</p>
-                              {% endfor %}
-                            </dd>
-                        </dl>
-                        {% endif %}  
-                        {% if this.description().value(ns.owl.equivalentClass) %}  
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Equivalent To</dt>
-                            <dd>
-                              {% for concept in this.description()[ns.owl.equivalentClass] %}
-                              <p>{{render_resource_link(concept)}}</p>
-                              {% endfor %}
-                            </dd>
-                        </dl>
-                        {% endif %}  
-                        {% if this.description().value[ns.prov.wasAttributedTo] %}
-                        {% set attrib = this.description().value(ns.prov.wasAttributedTo) %}
-                        <dl class="dl-horizontal clearfix">
-                            <dt>Attributed to</dt>
-                            <dd>
-                              {{render_resource_link(concept)}}
-                            </dd>
-                        </dl>
-                        {%endif%}
-                    </div>
-                </div>               
+                        <add-knowledge-menu uri="{{item.target}}"></add-knowledge-menu>
+                    </md-card-actions>
+                </md-card>
+                {% endfor %}
+            </div>
+                {% endfor %}
+                {% for link_name, items in incoming | groupby("link_label") %}
+                {% if link_name.title()=="Sub Class Of" %}
+                <h2>Super Class Of</h2>
+                {% else %}
+                <h2>{{link_name.title()}} Of</h2>
+                {% endif %}
+                <div class="md-layout md-gutter md-alignment-top-left">
+                {% for item in items %}
+                <md-card style="margin-bottom: 1em; width: 300px" class="md-layout-item">
+                    <md-card-header>
+                        <md-card-header-text>
+                            <div class="md-title">{{item.source_label}}</div>
+                        </md-card-header-text>
+                        {% if this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
+                        <md-card-media md-medium>
+                            {% set depiction = this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
+                            {% if depiction.startswith(config['lod_prefix']) %}
+                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.source_label}}">
+                            {% else %}
+                            <img src="{{depiction}}" alt="{{item.source_label}}">
+                            {% endif %}
+                        </md-card-media>
+                        {% endif %}
+                    </md-card-header>
 
-  </div>
-  <div class="col-md-7" >
-    <section md-whiteframe="2" layout="column" style="height: 40em; margin-bottom:1em;">
-      <explore flex start="{{this.identifier}}"></explore>
-    </section>
-  </div>
-</div>
-
-<instance-facets title="'Instances'" type="'{{this.identifier}}'">
-    <md-button ng-href="{{url_for('entity.view',view='new',uri=this.identifier)}}" class="md-icon-button" aria-label="Create Instance">
-      <md-icon>add</md-icon>
-    </md-button>
-</instance-facets>
-
-<div md-whiteframe="2">
-  <nanopubs resource="{{this.description().identifier}}"/>
-</div>
-</div>
-{%endblock%}
-
+                    <md-card-actions>
+                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='view')}}" class="md-button-icon">View</md-button>
+                        {% if this.graph.value(rdflib.URIRef(item.source), ns.whyis.hasFileID) %}
+                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.source))}}" class="md-button-icon">Download</md-button>
+                        {% endif %}
+                        <add-knowledge-menu uri="{{item.source}}"></add-knowledge-menu>
+                    </md-card-actions>
+                </md-card>
+                {% endfor %}
+            </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div>
+          <h3>Explore Instances</h3>
+          <modular-viz-tool
+          :default-percent="30"
+          >
+            <template v-slot:select>
+              <bob-viz-facets v-bind:class_uri_mod="'{{this.identifier}}'" />
+            </template>
+            <template v-slot:explore>
+              <bob-viz-tabular-explore/>
+            </template>
+          </modular-viz-tool>
+        </div>
+    </md-card-content>
+{% endblock %}
