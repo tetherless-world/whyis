@@ -6,7 +6,7 @@ import { load } from 'js-yaml';
 
 import { EventServices } from '../../../../modules'
 import { goToView, VIEW_URIS, DEFAULT_VIEWS } from "../../../../utilities/views";
-import { getDefaultChart, loadChart, saveChart, loadData } from 'utilities/vega-chart'
+import { getDefaultChart, loadChart, saveChart, loadData, buildChartSpec } from 'utilities/vega-chart'
 import { getCurrentView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
 
@@ -42,7 +42,7 @@ export default Vue.component('vega-editor', {
     ...mapState('vizEditor', ['uri', 'baseSpec', 'query', 'title', 'description', 'depiction']),
     ...mapGetters('vizEditor', ['chart']),
     spec () {
-      const spec = generateFullSpec(this.baseSpec, this.results)
+      const spec = buildChartSpec({baseSpec: this.baseSpec}, this.results)
       return spec
     }
   },
@@ -51,8 +51,8 @@ export default Vue.component('vega-editor', {
     VJsoneditor
   },
   methods: {
-    ...mapActions('vizEditor', ['loadChart', 'setChart']),
-    ...mapMutations('vizEditor', ['setBaseSpec', 'setQuery', 'setTitle', 'setDescription', 'setDepiction']),
+    ...mapActions('vizEditor', ['loadChart', 'setChart', 'resetChart']),
+    ...mapMutations('vizEditor', ['setUri', 'setBaseSpec', 'setQuery', 'setTitle', 'setDescription', 'setDepiction']),
     navBack() {
       return EventServices.navTo('view', true)
     },
@@ -140,7 +140,11 @@ export default Vue.component('vega-editor', {
 	      await this.postChartBk()
 	      return this.getSparqlData()
       } else if (this.pageView === DEFAULT_VIEWS.NEW) {
-
+        // If there is an existing chart loaded into the store, reset it
+        if (this.uri) {
+          console.log("new view. removing chart uri", this.uri)
+          this.setUri(null)
+        }
       }
       await this.getSparqlData()
       this.loading = false
@@ -174,7 +178,7 @@ export default Vue.component('vega-editor', {
           } else {
             await EventServices.createBackUp(this.chart, null, true, this.selectedTags);
             EventServices.$emit('snacks', {status:true, message: 'Chart Saved Successfully'});
-            return EventServices.navTo('view', true);
+            return EventServices.navTo('view', this.uri);
           }
         })
       } catch(err){

@@ -11,6 +11,7 @@ const actions = {
     dispatch('setChart', chart)
   },
   setChart({commit}, chart) {
+    commit('setUri', chart.uri)
     commit('setBaseSpec', chart.baseSpec)
     commit('setQuery', chart.query)
     commit('setTitle', chart.title)
@@ -28,6 +29,9 @@ const getters = {
 }
 
 const mutations = {
+  setUri(state, uri) {
+    state.uri = uri
+  },
   setBaseSpec(state, baseSpec) {
     state.baseSpec = baseSpec
   },

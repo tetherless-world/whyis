@@ -56,7 +56,7 @@ export default {
     validateSpec () {
       const validation = jsonValidate(this.spec, vegaLiteSchema)
       if (!validation.valid) {
-        console.warn('Invalid spec', validation)
+        console.warn('Invalid spec', this.spec, validation)
       } else {
         console.debug('spec checks out', validation)
       }
