@@ -92,9 +92,13 @@ function buildDatasetLd (dataset) {
   dataset.context = JSON.stringify(dataset.context)
   const datasetLd =  {
     '@id': dataset.uri,
-    '@type': [datasetType], 
+    '@type': [], 
   }
 
+    if (dataset['@type'] != null) {
+	datasetLd['@type'].push(dataset['@type'])
+    }
+    
   Object.entries(dataset)
     // filter out the ones that aren't in our allowed fields
     .filter(([field, value]) => datasetFieldUris[field])
