@@ -70,7 +70,7 @@
                 <md-field>
                   <label>Class URI</label>
                   <md-input name="class-uri" id="class-uri" v-model="facetBrowserData.uriInput"/>
-                </md-field>                
+                </md-field>
               </md-card-content>
               <md-card-actions>
                 <md-button @click="setBrowserUri">Submit URI to browser</md-button>
@@ -127,7 +127,7 @@
         </div>
         <div class="vega-container" v-if="previewPane">
           <keep-alive>
-            <vega-lite :spec="spec" @new-vega-view="onNewVegaView" style="height: 98%"/>
+            <vega-lite :spec="spec" :showSchemaWarning="true" @new-vega-view="onNewVegaView" style="height: 98%"/>
           </keep-alive>
         </div>
         <div style="overflow: scroll;" v-else>
