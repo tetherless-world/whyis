@@ -77,7 +77,6 @@ export default {
       if (!document.body.contains(this.$el)) {
         return
       }
-      this.spec.data = {values: []}
       try {
         const {spec: vegaSpec} = vegaLiteVersions[versionNum].compile(this.spec)
         console.log('vspec', vegaSpec)
