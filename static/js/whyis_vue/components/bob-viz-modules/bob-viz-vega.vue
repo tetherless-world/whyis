@@ -5,7 +5,7 @@
       :options="specJsonEditorOpts"
       style="height: 50%"
     />
-    <vega-lite v-if="fullSpec" :spec="fullSpec" />
+    <vega-lite v-if="fullSpec" :spec="fullSpec" :showSchemaWarning="true"/>
   </div>
 </template>
 
