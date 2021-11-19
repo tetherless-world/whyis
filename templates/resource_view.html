@@ -71,27 +71,6 @@
                     {% endfor %}
                 {% endfor %}
                 </dl>
-                <div>
-                    <add-attribute uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Attribute
-                            <md-tooltip>Add a new attribute fact.</md-tooltip>
-                        </md-button>
-                    </add-attribute>
-                </div>
-                <div>
-                    <add-link uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Link
-                            <md-tooltip>Link another entity.</md-tooltip>
-                        </md-button>
-                    </add-link>
-                </div>
-                <div>
-                    <add-type uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Type
-                            <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
-                        </md-button>
-                    </add-type>
-                </div>
             </div>
             <div class="md-layout-item">
                 {% for link_name, items in outgoing | groupby("link_label") %}
