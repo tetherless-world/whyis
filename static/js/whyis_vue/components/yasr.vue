@@ -37,7 +37,6 @@ export default Vue.component('yasr', {
     },
     watch: {
         results (newVal, oldVal) {
-            console.log('hey', newVal)
             this.setResults(newVal)
         }
     }

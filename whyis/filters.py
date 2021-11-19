@@ -147,7 +147,7 @@ def configure(app):
             result['attributes'][attr['property']]['@id'] = attr['property']
             result['attributes'][attr['property']]['values'].append(attr)
         for attr in list(result['attributes'].values()):
-            values = set(lang_filter([x['value'] for x in attr['values'] if x['value'] != result['label']]))
+            values = set(lang_filter([x['value'] for x in attr['values']]))
             attr['values'] = [x for x in attr['values'] if x['value'] in values]
             labelize(attr, key='@id')
             for value in attr['values']:

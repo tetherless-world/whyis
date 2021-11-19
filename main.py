@@ -745,6 +745,7 @@ construct {
                 view=view,
                 get_entity=get_entity,
                 get_summary=get_summary,
+                lang_filter=self.lang_filter,
                 search = search,
                 rdflib=rdflib,
                 config=self.config,
