@@ -57,8 +57,6 @@
 
 <h2><a href="{{this.description().identifier}}" title="{{this.description().identifier}}">{{get_label(this.description())}}</a></h2>
 
-{{ontology['classes']}}
-
   {{ this | ontology_classes_to_tree_dict(ontology['classes'] ) | safe }}
 
 
