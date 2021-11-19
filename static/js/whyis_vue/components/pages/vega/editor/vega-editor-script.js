@@ -80,10 +80,6 @@ export default Vue.component('vega-editor', {
         sparql.classList.remove('viz-editor-show')
         vega.classList.remove('viz-editor-show')
         save.classList.add('viz-editor-show')
-      } else if(e.srcElement.id == 'facetE') {
-        sparql.classList.remove('viz-editor-show')
-        vega.classList.remove('viz-editor-show')
-        save.classList.remove('viz-editor-show')
       } else {
         save.classList.remove('viz-editor-show')
         vega.classList.remove('viz-editor-show')
