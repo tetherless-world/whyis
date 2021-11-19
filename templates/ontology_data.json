@@ -23,8 +23,8 @@ WHERE {
         ?class a owl:Class .
         OPTIONAL { ?class skos:definition ?def . }
         OPTIONAL { ?class rdfs:comment ?comment .}
-        OPTIONAL { ?class rdfs:subClassOf ?superClass .  ?superClass rdfs:label ?superLabel .}
-        OPTIONAL { ?subClass rdfs:subClassOf ?class ; rdfs:label ?subLabel . }
+        OPTIONAL { ?class rdfs:subClassOf ?superClass . OPTIONAL{ ?superClass rdfs:label ?superLabel . } }
+        OPTIONAL { ?subClass rdfs:subClassOf ?class . OPTIONAL {?subClass  rdfs:label ?subLabel . } }
         OPTIONAL { ?inDomainProperty rdfs:domain ?class ; rdfs:label ?inDomainPropertyLabel .}
         OPTIONAL { ?inRangeProperty rdfs:range ?class ; rdfs:label ?inRangePropertyLabel .}
         OPTIONAL { ?class owl:disjointWith ?disjointClass . ?disjointClass rdfs:label ?disjointClassLabel .}

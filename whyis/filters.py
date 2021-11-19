@@ -97,8 +97,7 @@ def configure(app):
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes=None, values=None, limit=None, offset=None):
-        print(limit, offset, prefixes, values)
+    def query_filter(query, graph=app.db, prefixes=None, values=None):
         if prefixes == {}:
             params = { 'initNs': {}}
         else:
@@ -110,10 +109,6 @@ def configure(app):
             params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
-        if limit is not None:
-            query = query + '\n limit %s' % int(limit)
-            if offset is not None:
-                query = query + '\n offset %s' % int(offset)
         return [x.asdict() for x in graph.query(query, **params)]
 
 
@@ -595,3 +590,76 @@ values (?c ?priority) { %s }
             output_string += "\n\t\t]\n\t});\n</script></md-card>"
         return output_string
 
+
+    @app.template_filter('ontology_classes_to_tree_dict')
+    def ontology_classes_to_tree_dict(this, ontology_classes):
+        # list of unmapped classes
+        unmappedClasses = []
+        # tree object to be returned
+        classHierarchy = { 'owl:Thing' : {} }
+        # populate list of unmapped classes with classes in the ontology_classes 
+        for class_var in ontology_classes : 
+            unmappedClasses.append(class_var['class'])
+
+        # Check if any of the classes have superclasses that are not in the list of unmapped classes (i.e. not in the ontology) and mapping them to owl:Thing . classes without superclasses are also mapped to owl:Thing
+        for class_var in ontology_classes :
+            if class_var['superClasses'] :
+                superClasses = class_var['superClasses'].split('&&')
+                for superClass in superClasses :
+                    if superClass not in unmappedClasses and superClass not in classHierarchy['owl:Thing'].keys():
+                        if superClass[0] is not 't' :#not including blanknodes for now
+                            classHierarchy['owl:Thing'][superClass]={}
+            else :
+                classHierarchy['owl:Thing'][class_var['class']]={}
+
+        while unmappedClasses :
+            for class_var in ontology_classes :
+                class_dict = {class_var['class']:{}}
+                if class_var['subClasses'] :
+                    subClasses = class_var['subClasses'].split('&&')
+                    for subClass in subClasses :
+                        class_dict[class_var['class']][subClass] = {}
+                        for class_var_var in ontology_classes :
+                            if class_var_var['class'] == subClass :
+                                subSubClasses = class_var_var['subClasses'].split('&&')
+                                for subSubClass in subSubClasses :
+                                    if subSubClass :
+                                        class_dict[class_var['class']][subClass].update({subSubClass:{}})
+                if class_var['superClasses'] :
+                    superClasses = class_var['superClasses'].split('&&')
+                    for superClass in superClasses :
+                        if superClass in classHierarchy['owl:Thing'].keys() :
+                            classHierarchy['owl:Thing'][superClass].update( class_dict )
+                else :
+                    if class_var['class'] in classHierarchy['owl:Thing'].keys() :
+                        classHierarchy['owl:Thing'].update(class_dict)
+                        
+                unmappedClasses.remove(class_var['class'])
+
+        #return classHierarchy        
+        tree_html_string = "<ul><li>owl:Thing"
+        if classHierarchy['owl:Thing'] :
+            tree_html_string+="<ul>"
+            for upper_node in classHierarchy['owl:Thing'].keys() :
+                tree_html_string+="<li>" + upper_node
+                if classHierarchy['owl:Thing'][upper_node] :
+                    tree_html_string+="<ul>"
+                    for second_node in classHierarchy['owl:Thing'][upper_node].keys() :
+                        tree_html_string+="<li>" + second_node
+                        if classHierarchy['owl:Thing'][upper_node][second_node] :
+                            tree_html_string+="<ul>"
+                            for third_node in classHierarchy['owl:Thing'][upper_node][second_node].keys() :
+                                tree_html_string+="<li>" + third_node
+                                if classHierarchy['owl:Thing'][upper_node][second_node][third_node] :
+                                    tree_html_string+="<ul>"
+                                    for fourth_node in classHierarchy['owl:Thing'][upper_node][second_node][third_node].keys() :
+                                        tree_html_string+="<li>" + fourth_node + "</li>"
+                                    tree_html_string+="</ul>"
+                                tree_html_string+="</li>"
+                            tree_html_string+="</ul>"
+                        tree_html_string+="</li>"
+                    tree_html_string+="</ul>"
+                tree_html_string+="</li>"
+            tree_html_string+="</ul>"
+        tree_html_string+="</li></ul>"
+        return tree_html_string

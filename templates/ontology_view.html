@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/static/css/resources/primer.css" media="screen" type="text/css"/>    
 <!-- <link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>     -->
 <link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>    
-<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/> 
+<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/>
 {% endblock %}
 
 {% macro render_class(concept) %}
@@ -56,6 +56,12 @@
 {% set ontology = this | include("data") | fromjson %}
 
 <h2><a href="{{this.description().identifier}}" title="{{this.description().identifier}}">{{get_label(this.description())}}</a></h2>
+
+{{ontology['classes']}}
+
+  {{ this | ontology_classes_to_tree_dict(ontology['classes'] ) | safe }}
+
+
 {% for metadata in ontology['metadata']%}
 <dl>
   {% if metadata['title'] %}
@@ -294,7 +300,7 @@
   {% endif %}
 </div>
 
-{% endfor %}
+{% endfor %}    
 
 <!--OVERVIEW SECTION-->
     <div id="overview"><h2 id="overv" class="list">Overview</h2>
