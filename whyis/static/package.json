@@ -17,11 +17,13 @@
     "v-jsoneditor": "^1.2.3",
     "vega": "^5.9.1",
     "vega-embed": "^6.2.2",
-    "vega-lite": "^4.3.1",
+    "vega-lite": "^4.17.0",
     "vue": "^2.6.10",
     "vue-material": "^1.0.0-beta-11",
     "vue-prism-editor": "^0.3.0",
-    "vue-splitpane": "^1.0.6"
+    "vue-splitpane": "^1.0.6",
+    "vuex": "^3.6.2",
+    "vuex-persistedstate": "^3.2.0"
   },
   "devDependencies": {
     "css-loader": "^5.2.4",
@@ -46,6 +48,11 @@
   "scripts": {
     "lint": "eslint",
     "start": "webpack --mode development --watch",
+<<<<<<< HEAD:whyis/static/package.json
     "build": "webpack --mode production"
+=======
+    "build": "webpack --mode production",
+    "build-dev": "webpack --mode development"
+>>>>>>> master:static/package.json
   }
 }

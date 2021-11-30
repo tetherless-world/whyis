@@ -8,13 +8,14 @@
 <script>
 import Vue from 'vue'
 import vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json'
+import embed from 'vega-embed'
 
 import debounce from 'utilities/debounce'
 
 import { validate as jsonValidate } from 'jsonschema'
 
 
-export default Vue.component('vega-lite', {
+export default {
   data () {
     return {
       id: 'vega-lite',
@@ -25,7 +26,15 @@ export default Vue.component('vega-lite', {
     spec: {
       type: Object,
       default: () => null
-    }
+    },
+    dataname: {
+      type: String,
+      default: () => null
+    },
+    data: {
+      type: Array,
+      default: () => null
+    },
   },
   created ()  {
     this.onSpecChange = debounce(this.processSpec, 300)
@@ -33,9 +42,16 @@ export default Vue.component('vega-lite', {
   },
   methods: {
     async plotSpec () {
-      // console.debug('plotting spec', this.spec)
-      let embedResult = await window.vegaEmbed(`#${this.id}`, this.spec)
-      this.$emit('new-vega-view', embedResult.view)
+      // Cancel plotting if the component's element no longer exists in dom
+      if (!document.body.contains(this.$el)) {
+        return
+      }
+      const result = await embed(`#${this.id}`, this.spec, {})
+      if (this.data) {
+        const name = this.dataname || ((this.spec || {}).data || {}).name || 'source'
+        result.view.insert(name, this.data).resize().run()
+      }
+      this.$emit('new-vega-view', result.view)
     },
     validateSpec () {
       const validation = jsonValidate(this.spec, vegaLiteSchema)
@@ -58,7 +74,7 @@ export default Vue.component('vega-lite', {
       this.onSpecChange()
     }
   }
-})
+}
 
 export { vegaLiteSchema }
 

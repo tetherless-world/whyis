@@ -280,7 +280,7 @@ html {
         bottom: unset
     }
 
-    &-dialog >>> .md-dialog-container {
+    &-dialog >>>.md-dialog-container {
         max-width: 90%;
         height: auto;
         @include respond(tab-land) {

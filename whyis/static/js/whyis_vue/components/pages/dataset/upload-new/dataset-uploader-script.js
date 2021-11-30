@@ -13,9 +13,13 @@ const datasetId = uuidv4();
 
 
 export default Vue.component('dataset-uploader', {
+    props: [
+	'datasetType'
+    ],
 data() {
     return {
-      dataset: { 
+      dataset: {
+	"@type": this.datasetType,
         title: "",
         description: "",
         contactpoint: {
@@ -99,6 +103,7 @@ methods: {
         getDatasetPromise
           .then(dataset => {
             this.dataset = dataset;
+	    this.dataset['@type'] = this.datasetType;
             this.loading = false;
           })
       },
@@ -168,7 +173,7 @@ methods: {
       fileNameSplit.pop();
       var rejoined = fileNameSplit.join(".");
       var underscore2Space = rejoined.replace(/_/g, ' ');
-      return underscore2Space.replace(/[^a-zA-Z0-9 ]/g, "")
+      return underscore2Space.replace(/[^a-zA-Z0-9]+/g, " ").trim();
     },
 
     handleImgUpload(files) {   

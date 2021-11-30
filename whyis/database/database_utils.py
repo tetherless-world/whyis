@@ -28,6 +28,7 @@ def node_to_sparql(node):
 
 def create_query_store(store):
     new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
+                                 query_endpoint=store.query_endpoint,
 #                            method="POST",
 #                            returnFormat='json',
                             node_to_sparql=node_to_sparql)
@@ -35,8 +36,7 @@ def create_query_store(store):
 
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
 
-def engine_from_config(config):
-    print(config)
+def engine_from_config(config, prefix):
     defaultgraph = None
     if "DEFAULT_GRAPH" in config:
         defaultgraph = URIRef(config["_default_graph"])
@@ -46,7 +46,8 @@ def engine_from_config(config):
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
-        def publish(data):
+        store.query_endpoint = config[prefix+"queryEndpoint"]
+        def publish(data, format='application/x-trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
 
@@ -82,8 +83,8 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
                 r = s.post(store.query_endpoint,
                            data=data,
                            # params={"context-uri":graph.identifier},
-                           headers={'Content-Type':'text/x-nquads'})
-            #print(r.content)
+                           headers={'Content-Type':format})
+                #print(r.text)
 
         store.publish = publish
 
@@ -93,6 +94,7 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
         graph.store.batch_unification = False
         graph.store.open(config["STORE"], create=True)
     else:
+<<<<<<< HEAD
         graph = ConjunctiveGraph()
 
         def publish(data):
@@ -100,4 +102,14 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
 
         graph.store.publish = publish
 
+=======
+        graph = ConjunctiveGraph() # memory_graphs[prefix]
+
+        def publish(data):
+            graph.parse(data, format='trig')
+
+        graph.store.publish = publish
+
+
+>>>>>>> master
     return graph

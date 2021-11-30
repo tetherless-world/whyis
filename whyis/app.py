@@ -276,6 +276,10 @@ class App(Empty):
 
     datastore = None
 
+    @nanopub_depot.setter
+    def nanopub_depot(self, value):
+        self._nanopub_depot = value
+
     def configure_database(self):
         """
         Database configuration should be set here
@@ -767,6 +771,7 @@ construct {
                 view=view,
                 get_entity=get_entity,
                 get_summary=get_summary,
+                lang_filter=self.lang_filter,
                 search = search,
                 rdflib=rdflib,
                 config=self.config,

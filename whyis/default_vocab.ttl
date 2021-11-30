@@ -16,7 +16,7 @@
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
-
+@prefix sdd: <http://purl.org/twc/sdd/> .
 
 dc:description rdf:type owl:DatatypeProperty ,
                         owl:FunctionalProperty .
@@ -534,6 +534,9 @@ whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
 whyis:resolveView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "resolve".
 
+whyis:resultsView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "results".
+
 whyis:hasExplore rdfs:subPropertyOf whyis:hasView;
   dc:identifier "explore".
 whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
@@ -550,7 +553,8 @@ whyis:ChartClass a owl:Class;
   whyis:hasView "chart_gallery.html";
   whyis:newInstanceView "chart_new.html";
   whyis:manageInstanceView "chart_manage.html";
-  whyis:restoreInstanceView "chart_restore.html".
+  whyis:restoreInstanceView "chart_restore.html";
+  whyis:voyagerView "chart_voyager.html".
 
 whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
   rdfs:domain whyis:ChartClass;
@@ -558,6 +562,7 @@ whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
 
 sio:Chart a whyis:ChartClass;
   whyis:hasView "chart_view.html";
+  whyis:resultsView "chart_results.json";
   whyis:editInstanceView "chart_edit.html";
   whyis:voyagerView "chart_voyager.html".
 
@@ -572,4 +577,9 @@ whyis:SparqlTemplateClass a owl:Class;
   rdfs:subClassOf owl:Class;
   whyis:hasView "sparql_templates.html".
 
-whyis:SparqlTemplates a whyis:SparqlTemplateClass.
+whyis:SparqlTemplate a whyis:SparqlTemplateClass.
+
+sdd:SemanticDataDictionary a owl:Class ; 
+  rdfs:label "Semantic Data Dictionary";
+  whyis:hasView "sdd_view.html".
+

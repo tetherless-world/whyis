@@ -14,10 +14,16 @@
             <md-icon>share</md-icon>
           </md-button>
         </div>
-        <div>
+        <div v-if="chart.query">
           <md-button class="md-icon-button" @click.native.prevent="chartQuery">
             <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Query </md-tooltip>
             <md-icon>preview</md-icon>
+          </md-button>
+        </div>
+        <div>
+          <md-button class="md-icon-button" @click.native.prevent="tableView">
+            <md-tooltip class="utility-bckg" md-direction="bottom"> View Data as Table </md-tooltip>
+            <md-icon>table_view</md-icon>
           </md-button>
         </div>
         <div>
@@ -164,17 +170,20 @@
       }
     },
     methods: {
-      loadVisualization () {
-        loadChart(this.pageUri)
-          .then(chart => {
-            this.chart = chart
-            EventServices.checkIfEditable(this.chart.uri)
-            return querySparql(chart.query)
-          })
-          .then(sparqlResults => {
-            this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
-          })
-          .finally(() => this.loading = false)
+      async loadVisualization () {
+        this.chart = await loadChart(this.pageUri)
+        EventServices.checkIfEditable(this.chart.uri)
+        if (this.chart.query) {
+          const sparqlResults = await querySparql(this.chart.query)
+          this.spec = buildSparqlSpec(this.chart.baseSpec, sparqlResults)
+        } else {
+          this.spec = this.chart.baseSpec
+        }
+        if (this.chart.dataset) {
+          this.spec = this.chart.baseSpec
+          this.spec.data = {url: `/about?uri=${this.chart.dataset}`}
+        }
+        this.loading = false
       },
       navBack(args){
         if(args) {
@@ -196,7 +205,25 @@
       },
       chartQuery(){
         if(this.chart.query){
-          return EventServices.$emit("dialoguebox", {status: true, query: true, title: "Chart Query", message: "Copy and rerun query on a sparql endpoint", chart: this.chart.query})
+          return EventServices.$emit("dialoguebox", {status: true, query: true, 
+          title: "Chart Query", 
+          message: "Copy and rerun query on a sparql endpoint", 
+          chart: this.chart.query})
+        }
+      },
+      slugify(args){
+        return Slug(args)
+      },
+      tableView(){
+        if(this.chart.query){
+          querySparql(this.chart.query)
+          .then(sparqlResults => {
+            console.log(sparqlResults)
+            return EventServices.$emit("dialoguebox", {status: true, 
+              tableview: sparqlResults, 
+              title: "Table View of Chart Data",
+              chart: this.chart.query})
+          })
         }
       },
       slugify(args){

@@ -1,7 +1,11 @@
 import Vue from 'vue'
-import { EventServices } from '../../../../modules'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import splitPane from 'vue-splitpane'
 import VJsoneditor from 'v-jsoneditor'
+import { load } from 'js-yaml';
+
+import { EventServices } from '../../../../modules'
+import { goToView, VIEW_URIS, DEFAULT_VIEWS } from "../../../../utilities/views";
 import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
 import { getCurrentView } from 'utilities/views'
 import { querySparql } from 'utilities/sparql'
@@ -11,6 +15,7 @@ export default Vue.component('vega-editor', {
   data() {
     return {
       loading: false,
+      sparqlError: false,
       showAllTabBtn: false,
       showAllTabs: {display: 'none'},
       paneResize: 18,
@@ -18,12 +23,6 @@ export default Vue.component('vega-editor', {
       previewPane: true,
       authenticated: EventServices.authUser,
       restoredChartId: null,
-      chart: {
-        baseSpec: null,
-        query: null,
-        title: null,
-        description: null
-      },
       results: null,
       chartPub: null,
       specJsonEditorOpts: {
@@ -31,12 +30,14 @@ export default Vue.component('vega-editor', {
         mainMenuBar: false
       },
       actionType: 'Save Chart',
-      allowEditing: true
+      queryEditorReadOnly: false
     }
   },
   computed: {
+    ...mapState('vizEditor', ['uri', 'baseSpec', 'query', 'title', 'description', 'depiction']),
+    ...mapGetters('vizEditor', ['chart']),
     spec () {
-      const spec = buildSparqlSpec(this.chart.baseSpec, this.results)
+      const spec = buildSparqlSpec(this.baseSpec, this.results)
       return spec
     }
   },
@@ -45,7 +46,9 @@ export default Vue.component('vega-editor', {
     VJsoneditor
   },
   methods: {
-    navBack(){
+    ...mapActions('vizEditor', ['loadChart']),
+    ...mapMutations('vizEditor', ['setBaseSpec', 'setQuery', 'setTitle', 'setDescription', 'setDepiction', 'setChart']),
+    navBack() {
       return EventServices.navTo('view', true)
     },
     resize(e){
@@ -83,14 +86,24 @@ export default Vue.component('vega-editor', {
         sparql.classList.add('viz-editor-show')
       }
     },
-    getSparqlData () {
-      const vm = this;
-      querySparql(vm.chart.query)
-        .then(this.onQuerySuccess)
-        .then(() => this.loading = false)
+    async getSparqlData () {
+      try {
+        const results = await querySparql(this.query)
+        this.onQuerySuccess(results)
+      } catch (error) {
+        this.onQueryError(error)
+      }
     },
     onQuerySuccess (results) {
+      this.sparqlError = false
       this.results = results
+    },
+    onQueryError (error) {
+      this.sparqlError = true
+      console.warn('SPARQL QUERY ERROR\n', error)
+    },
+    isSparqlError() {
+      return this.sparqlError
     },
     onSpecJsonError () {
       console.log('bad', arguments)
@@ -101,25 +114,20 @@ export default Vue.component('vega-editor', {
         .then(resp => resp.blob())
       const fr = new FileReader()
       fr.addEventListener('load', () => {
-        this.chart.depiction = fr.result
+        this.setDepiction(fr.result)
       })
       fr.readAsDataURL(blob)
     },
-    async loadChart () {
-      let getChartPromise;
-      if (this.pageView === 'new') {
-        getChartPromise = Promise.resolve(getDefaultChart())
-      } else if(this.pageView === 'restore'){
+    async initializeChart () {
+      this.loading = true
+      if (this.pageView === 'edit') {
+        await loadChart(this.pageUri)
+      } else if (this.pageView === 'restore'){
 	      await this.postChartBk()
 	      return this.getSparqlData()
-      }else {
-        getChartPromise = loadChart(this.pageUri)
       }
-      getChartPromise
-        .then(chart => {
-          this.chart = chart
-          return this.getSparqlData()
-        })
+      await this.getSparqlData()
+      this.loading = false
     },
     async reloadRestored(args){
       const currChart = EventServices.tempChart;
@@ -164,10 +172,7 @@ export default Vue.component('vega-editor', {
         if(!recievedChart){
           return;
         } else {
-          this.chart.baseSpec = recievedChart.backup.baseSpec
-          this.chart.query = recievedChart.backup.query
-          this.chart.title = recievedChart.backup.title
-          this.chart.description = recievedChart.backup.description
+          this.setChart(recievedChart.backup)
           this.restoredChartId = recievedChart.name
         }
       } else {
@@ -178,21 +183,26 @@ export default Vue.component('vega-editor', {
       const thisView = getCurrentView();
       if(thisView == 'restore'){
         this.actionType = 'Restore';
-        this.allowEditing = false
+        this.queryEditorReadOnly = true
       } else if (thisView == 'edit'){
         this.actionType = 'Editing';
-        this.allowEditing = false
+        this.queryEditorReadOnly = false
       } else {
         this.actionType = 'Save Chart';
       }
+    },
+    goToSparqlTemplates() {
+      goToView(VIEW_URIS.SPARQL_TEMPLATES)
+    },
+    goToDataVoyager() {
+      goToView(VIEW_URIS.CHART_EDITOR, 'voyager')
     },
   },
   async created () {
     if(EventServices.authUser == undefined){
       return EventServices.navTo('view', true)
     }
-    this.loading = true;
-    await this.defineAction();
-    this.loadChart();
+    this.defineAction();
+    this.initializeChart();
   }
 })

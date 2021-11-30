@@ -19,7 +19,8 @@ cookiecutter==1.6.0
 cryptography==3.2
 Cython==0.29.10
 fabric==2.4.0
-filedepot==0.8.0
+#filedepot==0.8.0
+https://github.com/jimmccusker/depot.git@import_export#egg=filedepot
 Flask==1.0.3
 #Flask-Admin==1.5.3
 #Flask-BabelEx==0.9.3
@@ -37,13 +38,12 @@ invoke==1.2.0
 isodate==0.6.0
 itsdangerous==1.1.0
 javabridge==1.0.18
-Jinja2==2.10.1
+Jinja2>=3.0
 jinja2-time==0.2.0
 keepalive==0.5
 kombu==4.6.4
 lxml==4.3.4
 Markdown==3.1.1
-MarkupSafe==1.1.1
 nltk==3.4.5
 nose==1.3.7
 numpy==1.16.4
@@ -63,8 +63,7 @@ python-magic==0.4.15
 python-slugify==3.0.2
 pytidylib==0.3.2
 pytz==2019.1
-rdflib==5.0.0
-rdflib-jsonld==0.5.0
+rdflib==6.0.1
 git+git://github.com/tetherless-world/markdown-rdfa.git#egg=markdown-rdfa
 redis==3.3.8
 requests[security]==2.22.0

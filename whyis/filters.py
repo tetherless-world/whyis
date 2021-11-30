@@ -1,8 +1,9 @@
 import collections
 import json
 import rdflib
+import pandas
 
-from flask import g, request
+from flask import g, request, current_app
 from functools import reduce
 from jinja2 import Environment
 from markupsafe import Markup
@@ -96,15 +97,23 @@ def configure(app):
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes=None, values=None):
-        if prefixes is None: # default arguments are evaluated once, ever
-            prefixes = {}
+    def query_filter(query, graph=app.db, prefixes=None, values=None, limit=None, offset=None):
+        print(limit, offset, prefixes, values)
+        if prefixes == {}:
+            params = { 'initNs': {}}
+        else:
+            if prefixes is None:
+                prefixes = {}
 
-        namespaces = dict(app.NS.prefixes)
-        namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
-        params = { 'initNs': namespaces}
+            namespaces = dict(app.NS.prefixes)
+            namespaces.update({ key: rdflib.URIRef(value) for key, value in list(prefixes.items())})
+            params = { 'initNs': namespaces}
         if values is not None:
             params['initBindings'] = values
+        if limit is not None:
+            query = query + '\n limit %s' % int(limit)
+            if offset is not None:
+                query = query + '\n offset %s' % int(offset)
         return [x.asdict() for x in graph.query(query, **params)]
 
 
@@ -133,11 +142,10 @@ def configure(app):
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        result = graph.serialize(**kwargs)
-        if isinstance(result, bytes):
-            return result.decode('utf8')
-        else:
-            return result
+        serialized = graph.serialize(**kwargs)
+        if hasattr(serialized, 'decode'):
+            return serialized.decode()
+        return serialized
 
     @app.template_filter('attributes')
     def attributes(query, this):
@@ -157,7 +165,7 @@ def configure(app):
             result['attributes'][attr['property']]['@id'] = attr['property']
             result['attributes'][attr['property']]['values'].append(attr)
         for attr in list(result['attributes'].values()):
-            values = set(lang_filter([x['value'] for x in attr['values'] if x['value'] != result['label']]))
+            values = set(lang_filter([x['value'] for x in attr['values']]))
             attr['values'] = [x for x in attr['values'] if x['value'] in values]
             labelize(attr, key='@id')
             for value in attr['values']:
@@ -538,3 +546,51 @@ values (?c ?priority) { %s }
                 'label':app.get_label(app.vocab.resource(x))}
                for x in nav]
         return nav
+
+
+    @app.template_filter('excel_to_tabulator')
+    def excel_to_tabulator(this, file_id):
+        f = None
+        if current_app.file_depot.exists(file_id):
+            f = current_app.file_depot.get(file_id)
+        if f is not None:
+            xf = pandas.ExcelFile(f)
+            sheets = xf.sheet_names
+            parsed_dict = {}
+            for sheet in sheets :
+                parsed_dict[sheet] = xf.parse(sheet).to_json()
+            return sdd_dict_to_html(parsed_dict)
+        else:
+            return file_id
+
+    def sdd_dict_to_html(sdd_dict) :
+        output_string = ""
+        for entry_key,entry in sdd_dict.items() :
+            titles = []
+            fields = []
+            ids=[]
+            values_dict = {}
+            output_string += "<div class=\"md-title\">"+entry_key+"</div>\n<md-card>\n<div id=\""+entry_key.replace(" ","_")+"-table\"></div>\n<script>\n\tvar " + entry_key.replace(" ","_") +"_tabledata = [ "
+            entry_dict = json.loads(entry)
+            keys = list(entry_dict.keys())
+            for i in range(len(keys)):
+                titles.append(keys[i])
+                fields.append(keys[i].lower())
+                values = {}
+                for value in entry_dict[keys[i]] :
+                    values[value] = entry_dict[keys[i]][value]
+                    if i == 1 :
+                        ids.append(value)
+                values_dict[i] = values
+            for j in range(len(ids)):
+                output_string += "\n\t\t{id:" + ids[j] + ", "
+                for k in range(len(titles)):
+                    if values_dict[k][ids[j]] is not None :
+                        output_string += fields[k] + ":\"" + values_dict[k][ids[j]] + "\", "
+                output_string = output_string[:-2]
+                output_string += "},"
+            output_string += "\n\t];\n</script>\n<script type=\"text/javascript\">\n\tvar " + entry_key.replace(" ","_") + "_table = new Tabulator(\"#" + entry_key.replace(" ","_") +"-table\", {\n\t\tlayout:\"fitColumns\",\n\t\tdata:" + entry_key.replace(" ","_") +"_tabledata,\n\t\tautoColumns:true,\n\t\tcolumns:["
+            for l in range(len(titles)):
+                output_string +="\n\t\t\t{title:\""+titles[l]+"\", field:\""+fields[l]+"\"},"
+            output_string += "\n\t\t]\n\t});\n</script></md-card>"
+        return output_string
