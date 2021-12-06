@@ -1,0 +1,20 @@
+{{'''
+    SELECT distinct ?class ?label WHERE {
+    graph ?g {
+      ?target a owl:Ontology.
+      ?c a owl:Class.
+    }
+    ?c rdfs:subClassOf* ?class.
+    FILTER(!isBlank(?class)).
+  #  minus { ?class rdfs:subClassOf ?superClass.}
+  
+    FILTER(
+        !EXISTS {
+         ?class rdfs:subClassOf ?superClass.
+      }
+    )
+    optional {
+        ?class rdfs:label|dc:title ?label.
+    }
+  } 
+''' | query(values={"e":this.identifier}) | tojson }}

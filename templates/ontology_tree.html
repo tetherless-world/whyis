@@ -1,0 +1,7 @@
+{% extends "base_vue.html" %}
+{% from "elements/upload.html" import vue_upload_button_tab_modal %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
+{% block content %}
+ <tree-view v-bind:entity_uri="'{{this.description().identifier}}'"></tree-view>
+{% endblock %}

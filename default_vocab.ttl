@@ -460,12 +460,19 @@ whyis:hasInstanceData dc:identifier "instance_data";
   dc:format "application/sparql-query";
   rdfs:subPropertyOf whyis:hasView.
 
+whyis:hasTree dc:identifier "tree";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasTopLevel dc:identifier "toplevel";
+  rdfs:subPropertyOf whyis:hasView.
 
 owl:Ontology rdfs:label "Ontology";
     whyis:hasOutgoing "outgoing_ontology.json";
     whyis:hasIncoming "incoming_ontology.json";
     whyis:hasDescribe "describe_ontology.json";
     whyis:hasData "ontology_data.json";
+    whyis:hasTree "ontology_tree.html";
+    whyis:hasTopLevel "ontology_top_level.json";
     whyis:hasView "ontology_view.html".
 
 np:Nanopublication a owl:Class;
