@@ -3,5 +3,5 @@
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
- <tree-view v-bind:entity_uri="'{{this.description().identifier}}'"></tree-view>
+ <tree-view v-bind:entity_uri="'{{this.description().identifier}}'" v-bind:root_node_type="'toplevel'"></tree-view>
 {% endblock %}

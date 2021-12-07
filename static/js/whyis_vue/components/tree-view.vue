@@ -12,7 +12,13 @@ import axios from 'axios';
 import TreeNode from "./tree-node"
 
 export default Vue.component('tree-view', {
-    props: ['entity_uri'],
+    props: {
+        entity_uri: String,
+        root_node_type: {
+            type: String,
+            default: 'toplevel'
+        },
+    },
     components: {
         TreeNode,
     },
@@ -23,7 +29,7 @@ export default Vue.component('tree-view', {
     },
     created: function() {
         let topLevel = axios.get(
-            `${ROOT_URL}about?view=toplevel&uri=${this.entity_uri}`)
+            `${ROOT_URL}about?view=${this.root_node_type}&uri=${this.entity_uri}`)
             .then(response => {
                 this.rootNodes = response.data
             })

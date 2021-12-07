@@ -1,5 +1,5 @@
 {{'''
-    SELECT distinct ?class ?label WHERE {
+    SELECT distinct ?class WHERE {
     graph ?g {
       ?target a owl:Ontology.
       ?c a owl:Class.
@@ -13,8 +13,5 @@
          ?class rdfs:subClassOf ?superClass.
       }
     )
-    optional {
-        ?class rdfs:label|dc:title ?label.
-    }
   } 
-''' | query(values={"e":this.identifier}) | tojson }}
+''' | query(values={"e":this.identifier}) | iter_labelize(key="class", label_key="label") | tojson }}
