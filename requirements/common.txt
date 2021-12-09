@@ -1,7 +1,7 @@
 amqp==2.5.1
 arrow==0.14.2
 asn1crypto==0.24.0
-Babel==2.7.0
+Babel==2.9.1
 bcrypt==3.1.6
 beautifulsoup4==4.7.1
 bibtexparser==1.1.0
