@@ -9,6 +9,10 @@ import socket
 
 # exec $JAVA $JVM_ARGS -cp "$CP" org.apache.jena.fuseki.cmd.FusekiCmd "$@"
 
+def find_free_port():
+    with socket.socket() as s:
+        s.bind(('', 0))            # Bind to a free port provided by the host.
+        return s.getsockname()[1]  # Return the port number assigned.
 
 def _wait_for_port(port, host='localhost', timeout=5.0):
     """Wait until a port starts accepting TCP connections.

@@ -141,8 +141,6 @@ class NanopublicationManager(object):
                 for fileid, in self.db.query(file_query, initNs={"np": np, "whyis" : whyis},
                                              initBindings={'np': np_uri}):
                     if self.app.file_depot.exists(fileid):
-                        print("Deleting file",fileid, "in", np_uri,
-                              "because retire was called on",nanopub_uri)
                         self.app.file_depot.delete(fileid)
                     elif self.app.nanopub_depot.exists(fileid):
                         f = self.app.nanopub_depot.delete(fileid)

@@ -79,14 +79,12 @@ class LinkedData(Importer):
 
     def fetch(self, entity_name):
         u = self._get_access_url(entity_name)
-        print(u)
         r = requests.get(u, headers=self.headers, allow_redirects=True)
         g = rdflib.Dataset()
         local = g.graph(rdflib.BNode())
         text = r.text
         for pattern, repl in self.replace:
             text = re.sub(pattern, repl, text)
-        #print(text)
         local.parse(data=text, format=self.format)
         # print self.postprocess_update
         if self.postprocess_update is not None:
@@ -97,7 +95,6 @@ class LinkedData(Importer):
                 # print "update postprocess query."
                 g.update(command)
         if self.postprocess is not None:
-            print("postprocessing", entity_name)
             p = self.postprocess
             p(g)
         # print g.serialize(format="trig")

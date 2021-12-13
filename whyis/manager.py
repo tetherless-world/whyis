@@ -15,14 +15,27 @@ try:
 except:
     sys.path.append(os.getcwd())
 
+class CleanChildProcesses:
+    def __enter__(self):
+        os.setpgrp()  # create new process group, become its leader
+
+    def __exit__(self, type, value, traceback):
+        try:
+            import signal
+            os.killpg(0, signal.SIGINT)  # kill all processes in my group
+
+            app.celery_worker.stop()
+        except KeyboardInterrupt:
+            # SIGINT is delievered to this process as well as the child processes.
+            # Ignore it so that the existing exception, if any, is returned. This
+            # leaves us with a clean exit code if there was no exception.
+            pass
+
 
 class Manager(script.Manager):
     def __init__(self):
         script.Manager.__init__(self, app_factory)
 
-        config = import_config_module()
-        self.add_option("-n", "--name", dest="app_name", required=False, default=config.project_name)
-        self.add_option("-c", "--config", dest="config", required=False, default=config.Dev)
         self.add_command("backup", commands.Backup())
         self.add_command("configure", commands.Configure())
         self.add_command("createuser", commands.CreateUser())
@@ -37,7 +50,8 @@ class Manager(script.Manager):
         self.add_command("uninstallapp", commands.UninstallApp())
 
 def main():
-    Manager().run()
+    with CleanChildProcesses():
+        Manager().run()
 
 if __name__ == "__main__":
     Manager().run()

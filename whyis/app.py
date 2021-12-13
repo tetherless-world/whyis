@@ -29,11 +29,12 @@ from rdflib.query import Processor, Result, UpdateProcessor
 from slugify import slugify
 from werkzeug.exceptions import Unauthorized
 from werkzeug.utils import secure_filename
-from wtforms import TextField, validators
+from wtforms import StringField, validators
 
 from whyis import database
 from whyis import filters
 from whyis import search
+from whyis import fuseki
 from whyis.blueprint.entity import entity_blueprint
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.tableview import tableview_blueprint
@@ -69,9 +70,9 @@ bottom_compare_key = True, 100, [(2, 0)]
 
 # Setup Flask-Security
 class ExtendedRegisterForm(RegisterForm):
-    id = TextField('Identifier', [validators.Required()])
-    givenName = TextField('Given Name', [validators.Required()])
-    familyName = TextField('Family Name', [validators.Required()])
+    id = StringField('Identifier', [validators.InputRequired()])
+    givenName = StringField('Given Name', [validators.InputRequired()])
+    familyName = StringField('Family Name', [validators.InputRequired()])
 
 # def to_json(result):
 #     return json.dumps([ {key: value.value if isinstance(value, Literal) else value for key, value in list(x.items())} for x in result.bindings])
@@ -85,25 +86,21 @@ class App(Empty):
 
         Empty.configure_extensions(self)
 
+        if self.config.get('EMBEDDED_CELERY',False):
+            from redislite import Redis
+            self.rdb = Redis(os.path.join('run','redis.db'))
+            self.config['CELERY_BROKER_URL'] = 'redis+socket://%s' % (self.rdb.socket_file, )
+            self.config['CELERY_RESULT_BACKEND'] = self.config['CELERY_BROKER_URL']
+
         self.celery = Celery(self.name, broker=self.config['CELERY_BROKER_URL'], beat=True)
         self.celery.conf.update(self.config)
-        if self.config['CELERY_BROKER_URL'] == 'memory':
-            self.celery.conf.ONCE = {
-                'backend': 'celery_once.backends.File',
-                'settings': {
-                    'location': '/tmp/celery_once',
-                    'default_timeout': 60 * 60
-                }
+        self.celery.conf.ONCE = {
+            'backend': 'celery_once.backends.Redis',
+            'settings': {
+                'url': self.config['CELERY_BROKER_URL'],
+                'default_timeout': 60 * 60 * 24
             }
-        else:
-            self.celery.conf.ONCE = {
-                'backend': 'celery_once.backends.Redis',
-                'settings': {
-                    'url': self.config['CELERY_BROKER_URL'],
-                    'default_timeout': 60 * 60 * 24
-                }
-            }
-
+        }
         class ContextTask(self.celery.Task):
             def __call__(self, *args, **kwargs):
                 with app.app_context():
@@ -139,7 +136,6 @@ class App(Empty):
         @self.celery.task
         def process_nanopub(nanopub_uri, service_name, taskid=None):
             service = self.config['INFERENCERS'][service_name]
-            print(service, nanopub_uri)
             if app.nanopub_manager.is_current(nanopub_uri):
                 nanopub = app.nanopub_manager.get(nanopub_uri)
                 service.process_graph(nanopub)
@@ -200,7 +196,6 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         if service.getInstances(nanopub_graph):
-                            print("invoking", name, nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self
@@ -208,6 +203,7 @@ class App(Empty):
                         process_resource.apply_async(kwargs={'service_name':name}, priority=5)
 
         def run_update(nanopub_uri):
+            print('Adding to agent queue:',nanopub_uri)
             update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
 
@@ -230,7 +226,6 @@ class App(Empty):
             updated = importer.modified(entity_name)
             if updated is None:
                 updated = datetime.now(pytz.utc)
-            print("Remote modified:", updated, type(updated), "Local modified:", modified, type(modified))
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
         self.run_importer = run_importer
@@ -275,6 +270,7 @@ class App(Empty):
         return self._nanopub_depot
 
     datastore = None
+    fuseki_server = None
 
     @nanopub_depot.setter
     def nanopub_depot(self, value):
@@ -286,6 +282,19 @@ class App(Empty):
         """
         self.NS = NS
         self.NS.local = rdflib.Namespace(self.config['LOD_PREFIX']+'/')
+
+        if self.config.get('EMBEDDED_FUSEKI', False) and self.fuseki_server is None:
+            self.fuseki_port = fuseki.find_free_port()
+            print("Starting Fuseki on port",self.fuseki_port)
+            self.fuseki_server = fuseki.FusekiServer(port=self.fuseki_port)
+
+            self.config['FUSEKI_PORT'] = self.fuseki_port
+            knowledge_endpoint = self.fuseki_server.get_dataset('/knowledge')
+            print("Knowledge Endpoint:", knowledge_endpoint)
+            self.config['KNOWLEDGE_ENDPOINT'] = knowledge_endpoint
+            admin_endpoint = self.fuseki_server.get_dataset('/admin')
+            self.config['ADMIN_ENDPOINT'] = admin_endpoint
+            print("Admin Endpoint:", admin_endpoint)
 
         self.admin_db = database.engine_from_config(self.config.get_namespace('ADMIN'))
         self.db = database.engine_from_config(self.config.get_namespace("KNOWLEDGE"))
@@ -413,16 +422,13 @@ construct {
 
             if importer is None:
                 importer = self.find_importer(entity)
-            print(entity, importer)
 
             if importer is not None:
                 modified = importer.last_modified(entity, self.db, self.nanopub_manager)
                 if modified is None or async_ is False:
                     self.run_importer(entity)
                 elif not importer.import_once:
-                    print("Type of modified is",type(modified))
                     self.run_importer.delay(entity)
-
         return self.Entity(self.db, entity)
 
     def configure_template_filters(self):
@@ -528,7 +534,6 @@ construct {
     ?nanopub np:hasAssertion ?assertion; np:hasPublicationInfo ?info.
     graph ?info { ?assertion dc:contributor ?user. }
 }''', initBindings=dict(nanopub=uri, user=current_user.identifier), initNs=dict(np=self.NS.np, dc=self.NS.dc)):
-            #print "Is owner."
             return True
         return False
 
@@ -559,7 +564,6 @@ construct {
                     pass
                 resource_entity = g.resource(uri)
                 if len(resource_entity.graph) == 0:
-                    #print "skipping", db
                     continue
                 for property in label_properties:
                     labels = self.lang_filter(resource_entity[property])
@@ -585,7 +589,6 @@ construct {
         def get_label(resource):
             for property in label_properties:
                 labels = self.lang_filter(resource[property])
-                #print "mem", property, label
                 if len(labels) > 0:
                     return labels[0]
             return get_remote_label(resource.identifier)
@@ -744,6 +747,10 @@ construct {
             def cdn(filename):
                 return send_from_directory(self.config['WHYIS_CDN_DIR'], filename)
 
+        @self.route('/favicon.ico')
+        def favicon():
+            return redirect("/static/images/favicon.ico")
+
         def render_view(resource, view=None, args=None, use_cache=True):
             self.initialize_g()
             if view is None and 'view' in request.args:
@@ -782,7 +789,6 @@ construct {
             if 'as' in request.args:
                 types = [URIRef(request.args['as']), 0]
 
-            print (list(self.vocab.triples((None, NS.RDF.type, None))))
             types.extend((x, 1) for x in self.vocab[resource.identifier : NS.RDF.type])
             if len(types) == 0: # KG types cannot override vocab types. This should keep views stable where critical.
                 types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]  if isinstance(x.identifier, rdflib.URIRef)])
@@ -805,14 +811,12 @@ construct {
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
             if len(views) == 0:
                 abort(404)
-            print(resource.identifier, views)
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
             if extension in DATA_EXTENSIONS:
                 headers['Content-Type'] = DATA_EXTENSIONS[extension]
-            print(views[0]['view'], views[0]['content_type'])
             if views[0]['content_type'] is not None:
-                    headers['Content-Type'] = views[0]['content_type']
+                headers['Content-Type'] = views[0]['content_type']
 
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view

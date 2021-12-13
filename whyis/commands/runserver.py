@@ -15,11 +15,6 @@ from whyis import fuseki
 from celery import current_app
 from celery.bin import worker
 
-def find_free_port():
-    with socket.socket() as s:
-        s.bind(('', 0))            # Bind to a free port provided by the host.
-        return s.getsockname()[1]  # Return the port number assigned.
-
 fuseki_server = None
 
 class WhyisServer(Server):
@@ -38,7 +33,8 @@ class WhyisServer(Server):
 
     def run_celery(self):
         with self.app.app_context():
-            self.app.celery_worker = self.app.celery.WorkController()
+            self.app.celery_worker = self.app.celery.WorkController(pool="eventlet")
+            print(self.app.config['FUSEKI_PORT'])
             print("Starting Celery worker...")
             self.app.celery_worker.start()
 
@@ -53,22 +49,6 @@ class WhyisServer(Server):
             if self.app.config.get('EMBEDDED_CELERY', False):
                 app.celery_worker_process = Thread(target=self.run_celery, daemon=True)
                 app.celery_worker_process.start()
-                #app.celery_worker.start()
-
-            if app.config.get('EMBEDDED_FUSEKI', False) and fuseki_server is None:
-                self.port = find_free_port()
-                print("Starting Fuseki on port",self.port)
-                fuseki_server = fuseki.FusekiServer(port=self.port)
-
-        if app.config.get('EMBEDDED_FUSEKI', False):
-            app.config['FUSEKI_PORT'] = self.port
-            knowledge_endpoint = fuseki_server.get_dataset('/knowledge')
-            print("Knowledge Endpoint:", knowledge_endpoint)
-            app.config['KNOWLEDGE_ENDPOINT'] = knowledge_endpoint
-            admin_endpoint = fuseki_server.get_dataset('/admin')
-            app.config['ADMIN_ENDPOINT'] = admin_endpoint
-            print("Admin Endpoint:", admin_endpoint)
-            app.configure_database()
 
         kwds['use_reloader'] = False
 
@@ -98,24 +78,7 @@ class WhyisServer(Server):
         for static_dir_path in webpack_static_dir_paths:
             subprocess.call(["npm", "install"], cwd=static_dir_path)
 
-        class CleanChildProcesses:
-            def __enter__(self):
-                os.setpgrp()  # create new process group, become its leader
+        for static_dir_path in webpack_static_dir_paths:
+            subprocess.Popen(["npm", "start"], cwd=static_dir_path)
 
-            def __exit__(self, type, value, traceback):
-                try:
-                    import signal
-                    os.killpg(0, signal.SIGINT)  # kill all processes in my group
-
-                    app.celery_worker.stop()
-                except KeyboardInterrupt:
-                    # SIGINT is delievered to this process as well as the child processes.
-                    # Ignore it so that the existing exception, if any, is returned. This
-                    # leaves us with a clean exit code if there was no exception.
-                    pass
-
-        with CleanChildProcesses():
-            for static_dir_path in webpack_static_dir_paths:
-                subprocess.Popen(["npm", "start"], cwd=static_dir_path)
-
-            return Server.__call__(self, app=app, *args, **kwds)
+        return Server.__call__(self, app=app, *args, **kwds)

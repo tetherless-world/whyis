@@ -27,7 +27,8 @@ class EmbeddedSystem:
     EMBEDDED_FUSEKI = True
 
     EMBEDDED_CELERY = True
-    CELERY_BROKER_URL = 'memory'
+    CELERYD_CONCURRENCY = 4
+    CELERY_DISABLE_ALL_RATE_LIMITS = True
 
     DEFAULT_ANONYMOUS_READ = True
 
@@ -101,7 +102,7 @@ class Config:
     SECURITY_DEFAULT_REMEMBER_ME = True
     ADMIN_EMAIL_RECIPIENTS = []
     LOGIN_USER_TEMPLATE = "auth/login.html"
-    
+
     NAMESPACES = [
         importer.LinkedData(
             prefix = LOD_PREFIX+'/doi/',

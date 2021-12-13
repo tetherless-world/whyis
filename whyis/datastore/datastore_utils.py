@@ -9,7 +9,7 @@ from datetime import datetime
 __all__ = ["create_id", "value2object", "tag_datastore", "getList"]
 
 def create_id():
-    return base64.encodestring(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf8').rstrip(
+    return base64.encodebytes(str(random.random() * datetime.now().toordinal()).encode('utf8')).decode('utf').rstrip(
         '=\n')
 
 def value2object(value):
@@ -21,7 +21,7 @@ def value2object(value):
 
     if isinstance(value, (Identifier, BNode, URIRef)):
         return value
-    
+
     return Literal(value)
 
 def tag_datastore(fn):
@@ -62,7 +62,7 @@ def getList(sub, pred=None, db=None):
         return members
     # OK let's work at returning a Collection (Seq,Bag or Alt)
     # if was no RDF.first
-    
+
     i = 1
     # first = db.value(base, RDF._1) # _1 ???
     first = db.value(base, RDF.first)

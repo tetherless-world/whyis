@@ -36,9 +36,10 @@ def create_query_store(store):
 
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
 
-def engine_from_config(config, prefix):
+def engine_from_config(config):
     defaultgraph = None
-    if "DEFAULT_GRAPH" in config:
+    graph = None
+    if "_default_graph" in config:
         defaultgraph = URIRef(config["_default_graph"])
     if "_endpoint" in config:
         store = WhyisSPARQLUpdateStore(query_endpoint=config["_endpoint"],
@@ -46,45 +47,15 @@ def engine_from_config(config, prefix):
                                   method="POST",
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
-        store.query_endpoint = config[prefix+"queryEndpoint"]
+        store.query_endpoint = config["_endpoint"]
         def publish(data, format='application/x-trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
 
-            if config.get("USE_BLAZEGRAPH_BULK_LOAD",False):
-                # TODO: we aren't using blazegraph anymore,
-                # but should we keep supportin this?
-                prop_file = '''
-quiet=false
-verbose=1
-closure=false
-durableQueues=true
-#Needed for quads
-defaultGraph=%s
-format=text/x-nquads
-com.bigdata.rdf.store.DataLoader.flush=false
-com.bigdata.rdf.store.DataLoader.bufferCapacity=100000
-com.bigdata.rdf.store.DataLoader.queueCapacity=10
-#Namespace to load
-namespace=%s
-propertyFile=%s
-#Files to load
-fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
-                    config["BULK_LOAD_NAMESPACE"],
-                    config["BLAZEGRAPH_PROPERTIES"],
-                    data.name)
-                r = s.post(config["BULK_LOAD_ENDPOINT"],
-                           data=prop_file.encode('utf8'),
-                           headers={'Content-Type':'text/plain'})
-
-
-            else:
-                # result unused
-                r = s.post(store.query_endpoint,
-                           data=data,
-                           # params={"context-uri":graph.identifier},
-                           headers={'Content-Type':format})
-                #print(r.text)
+            r = s.post(store.query_endpoint,
+                       data=data,
+                       # params={"context-uri":graph.identifier},
+                       headers={'Content-Type':format})
 
         store.publish = publish
 
@@ -92,24 +63,21 @@ fileOrDirs=%s''' % (config['LOD_PREFIX']+'/pub/'+create_id()+"_assertion",
     elif '_store' in config:
         graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)
         graph.store.batch_unification = False
-        graph.store.open(config["STORE"], create=True)
-    else:
-<<<<<<< HEAD
+        graph.store.open(config["_store"], create=True)
+    elif '_memory' in config:
+        try:
+            raise Exception()
+        except Exception as e:
+            import traceback
+            import sys
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback)
+
         graph = ConjunctiveGraph()
-
-        def publish(data):
-            graph.parse(data, format='nquads')
-
-        graph.store.publish = publish
-
-=======
-        graph = ConjunctiveGraph() # memory_graphs[prefix]
 
         def publish(data):
             graph.parse(data, format='trig')
 
         graph.store.publish = publish
 
-
->>>>>>> master
     return graph

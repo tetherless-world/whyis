@@ -18,22 +18,7 @@ module.exports = (env, argv) => ({
       {
         test: /\.s?css$/,
         use: [
-<<<<<<< HEAD:whyis/static/webpack.config.js
-          argv.mode !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          argv.mode !== 'production'
-            ? 'vue-style-loader'
-            : MiniCssExtractPlugin.loader,
-=======
           'vue-style-loader',
->>>>>>> master:static/webpack.config.js
           'css-loader',
           'resolve-url-loader',
           'sass-loader'
@@ -68,22 +53,14 @@ module.exports = (env, argv) => ({
         use: [{
           loader:'file-loader',
           options: {
-<<<<<<< HEAD:whyis/static/webpack.config.js
-            // path: path.resolve(__dirname, 'dist'),
-            // publicPath: path.resolve(__dirname, 'dist'),
-=======
->>>>>>> master:static/webpack.config.js
             esModule: false
           }
         }],
       },
-<<<<<<< HEAD:whyis/static/webpack.config.js
-=======
       {
         test:/\.rq$/,
         use: 'raw-loader'
       },
->>>>>>> master:static/webpack.config.js
     ]
   },
   name: 'whyis',
@@ -92,10 +69,7 @@ module.exports = (env, argv) => ({
     chunkFilename: 'whyis_vue_bundle.[name].js',
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-<<<<<<< HEAD:whyis/static/webpack.config.js
-=======
     publicPath: 'static/dist/'
->>>>>>> master:static/webpack.config.js
   },
   plugins: [
     new MiniCssExtractPlugin({
