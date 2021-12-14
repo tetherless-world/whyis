@@ -163,7 +163,7 @@ setup(
         'nltk==3.6.5',
         'nose',
         'numpy',
-        'pandas==1.3.4',
+        'pandas',
         'PyJWT',
         'pyparsing',
         'pyshp',
