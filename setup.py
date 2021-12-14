@@ -162,7 +162,7 @@ setup(
         #'mod-wsgi==4.9.0',
         'nltk==3.6.5',
         'nose',
-        'numpy==1',
+        'numpy',
         'pandas==1.3.4',
         'PyJWT',
         'pyparsing',
