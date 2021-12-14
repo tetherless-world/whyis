@@ -159,7 +159,7 @@ setup(
         'keepalive',
         'lxml',
         'Markdown',
-        'mod-wsgi==4.9.0',
+        #'mod-wsgi==4.9.0',
         'nltk==3.6.5',
         'nose',
         'numpy==1.21.4',
