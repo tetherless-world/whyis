@@ -198,12 +198,10 @@ def configure(app):
 ?np
 ?probability
 #(max(?tfidf) as ?tfidf)
-(max(?frequency) as ?frequency)
-(max(?idf) as ?idf)
+(max(?freq) as ?frequency)
+(max(?idf_) as ?idf)
 (group_concat(distinct ?article; separator=" ") as ?articles)
 where {
-    hint:Query hint:optimizer "Runtime" .
-
     %s
 
     ?assertion a np:Assertion.
@@ -228,11 +226,11 @@ where {
     optional {
       ?source sio:hasPart ?term.
       ?term prov:specializationOf ?target;
-            sio:Frequency ?frequency.
+            sio:Frequency ?freq.
       optional {
-        ?target sio:InverseDocumentFrequency ?idf.
+        ?target sio:InverseDocumentFrequency ?idf_.
       }
-      #bind (?frequency * ?idf as ?tfidf)
+      #bind (?freq * ?idf_ as ?tfidf)
       #bind (?tfidf/(1+?tfidf) as ?probability)
     }
 } group by ?source ?target ?link ?link_type ?np ?prob_np ?probability''' % select
