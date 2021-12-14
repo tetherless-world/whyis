@@ -34,8 +34,6 @@ class WhyisServer(Server):
     def run_celery(self):
         with self.app.app_context():
             self.app.celery_worker = self.app.celery.WorkController(pool="eventlet")
-            print(self.app.config['FUSEKI_PORT'])
-            print("Starting Celery worker...")
             self.app.celery_worker.start()
 
     def __call__(self, app, watch, *args, **kwds):
@@ -53,7 +51,6 @@ class WhyisServer(Server):
         kwds['use_reloader'] = False
 
         if not watch:
-            print ("Starting Whyis Webserver...")
             return Server.__call__(self, app=app, *args, **kwds)
 
         if sys.platform != "win32":
