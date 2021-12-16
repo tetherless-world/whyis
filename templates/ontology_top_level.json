@@ -5,13 +5,7 @@
       ?c a owl:Class.
     }
     ?c rdfs:subClassOf* ?class.
-    FILTER(!isBlank(?class)).
-  #  minus { ?class rdfs:subClassOf ?superClass.}
-  
-    FILTER(
-        !EXISTS {
-         ?class rdfs:subClassOf ?superClass.
-      }
-    )
+    FILTER NOT EXISTS {?class rdfs:subClassOf ?superClass.}
+    FILTER (!isBlank(?class))
   } 
-''' | query(values={"e":this.identifier}) | iter_labelize(key="class", label_key="label") | tojson }}
+''' | query(values={"target":this.identifier}) | iter_labelize(key="class", label_key="label") | tojson }}

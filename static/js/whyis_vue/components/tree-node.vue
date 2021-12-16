@@ -1,7 +1,14 @@
 <template>
   <li class="TreeNode">
-    <span :class="['caret', expanded ? 'caret-down' : '']" @click="caretClicked()">
-        {{ (node.label && node.label != 'nan') ? node.label+' ('+node.class+')' : node.class }}
+    <md-progress-spinner :style="{'visibility':loading}" :md-diameter="20" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+    <span>
+      <span :class="[noChildren ? 'dotList' : 'caret', 
+                    expanded ? 'caret-down' : '']" 
+            @click="noChildren ? '' : caretClicked()"> </span>
+      <span v-if="(node.label && node.label != 'nan')"> 
+            {{node.label}} -
+      </span>
+      <a :href="'#/'+node.label.replace(' ','')">{{node.class}}</a>
     </span>
     <ul v-if="childNodes && childNodes.length"  :class="['nested', expanded ? 'active' : '' ]">
       <TreeNode v-for="(child, index) in childNodes" :node="child" :key="'child'+index"></TreeNode>
@@ -20,17 +27,26 @@ export default {
         return {
             expanded: false,
             childNodes: this.node.children,
+            noChildren: false,
+            loading: 'hidden',
         }
     },
     methods:{
         caretClicked(){
-            this.expanded = !this.expanded;
             if (!this.childNodes && this.node.class){
+                this.loading = 'visible'
                 this.getSubClasses()
+                .then( results => {
+                    if (!this.childNodes.length){
+                        this.noChildren = true;
+                    }
+                    this.loading = 'hidden';
+                } )
             }
+            this.expanded = !this.expanded;
         },
         getSubClasses(){
-            axios.get(
+            return axios.get(
                 `${ROOT_URL}about?view=incoming&uri=${this.node.class}`)
             .then(response => {
                 let incomingClasses = response.data.filter(resItem => resItem["link_label"].toLowerCase()=="sub class of")
@@ -52,6 +68,23 @@ export default {
 ul, #topLevelTree {
   list-style-type: none;
 }
+
+/* Style the dot */
+.dotList {
+  user-select: none; /* Prevent text selection */
+  width: max-content;
+  border: none;
+  margin-bottom: 20px
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.dotList::before {
+  content: "\25CF";
+  color: black;
+  display: inline-block;
+  margin-right: 6px;
+}
+
 
 /* Style the caret/arrow */
 .caret {
