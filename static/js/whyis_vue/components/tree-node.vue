@@ -2,8 +2,8 @@
   <li class="TreeNode">
     <md-progress-spinner :style="{'visibility':loading}" :md-diameter="20" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
     <span>
-      <span :class="[noChildren ? 'dotList' : 'caret', 
-                    expanded ? 'caret-down' : '']" 
+      <span :class="['caret', expanded ? 'caret-down' : '']" 
+            :style="noChildren ? 'visibility : hidden' : ''" 
             @click="noChildren ? '' : caretClicked()"> </span>
       <span v-if="(node.label && node.label != 'nan')"> 
             {{node.label}} -
@@ -68,23 +68,6 @@ export default {
 ul, #topLevelTree {
   list-style-type: none;
 }
-
-/* Style the dot */
-.dotList {
-  user-select: none; /* Prevent text selection */
-  width: max-content;
-  border: none;
-  margin-bottom: 20px
-}
-
-/* Create the caret/arrow with a unicode, and style it */
-.dotList::before {
-  content: "\25CF";
-  color: black;
-  display: inline-block;
-  margin-right: 6px;
-}
-
 
 /* Style the caret/arrow */
 .caret {
