@@ -48,11 +48,7 @@
   "scripts": {
     "lint": "eslint",
     "start": "webpack --mode development --watch",
-<<<<<<< HEAD:whyis/static/package.json
-    "build": "webpack --mode production"
-=======
     "build": "webpack --mode production",
     "build-dev": "webpack --mode development"
->>>>>>> master:static/package.json
   }
 }

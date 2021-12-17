@@ -3,7 +3,7 @@ import rdflib
 prefixes = dict(
     skos = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#"),
     foaf = rdflib.URIRef("http://xmlns.com/foaf/0.1/"),
-    bds = rdflib.URIRef("http://www.bigdata.com/rdf/search#"),
+    text = rdflib.URIRef("http://jena.apache.org/text#"),
     schema = rdflib.URIRef("http://schema.org/"),
     owl = rdflib.OWL,
     rdfs = rdflib.RDFS,
@@ -15,11 +15,8 @@ def resolve(graph, g, term, type=None, context=None):
     if context is not None:
         context_query = """
   optional {
+    (?context ?cr) text:search ('''%s''' 100 0.4).
     ?node ?p ?context.
-    ?context bds:search '''%s''';
-         bds:matchAllTerms "false";
-		 bds:relevance ?cr ;
-         bds:minRelevance 0.4.
   }
 """ % context
 
@@ -38,11 +35,7 @@ select distinct
 #(group_concat(distinct ?type; separator="||") as ?types)
 (coalesce(?relevance+?cr, ?relevance) as ?score)
 where {
-  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
-  ?label bds:search '''%s''';
-         bds:matchAllTerms "false";
-		 bds:relevance ?relevance .
-  
+  (?label ?relevance) text:search '''%s'''.  
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
 #  optional {
@@ -50,7 +43,7 @@ where {
 #  }
 
   %s
-  
+
   filter not exists {
     [] ?node [].
   }
@@ -88,13 +81,13 @@ where {
         results.append(result)
     return results
 
-latest_query = '''select distinct 
-?about 
+latest_query = '''select distinct
+?about
 (max(?created) as ?updated)
 #(group_concat(distinct ?type; separator="||") as ?types)
 where {
     hint:Query hint:optimizer "Runtime" .                                                                                              graph ?np {
-    ?np 
+    ?np
         np:hasPublicationInfo ?pubinfo;
         np:hasAssertion ?assertion.
   }
@@ -102,18 +95,18 @@ where {
       ?assertion dc:created|dc:modified ?created.
   }
     {
-      graph ?np { 
+      graph ?np {
         ?np sio:isAbout ?about.
       }
     }
-  
+
     filter not exists {
       [] ?about [].
     }
 #    optional {
 #      ?about a ?type.
 #    }
-    
+
 } group by ?about order by desc (?updated)
 LIMIT 20
 '''
@@ -137,4 +130,3 @@ def latest(graph, g):
         #    entities[entry['about']]['types'] = [g.labelize(dict(uri=x),'uri','label')
         #                                         for x in entry['types'].split('||') if len(x) > 0]
     return results
-
