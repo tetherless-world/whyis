@@ -3,7 +3,6 @@
 version: 2
 jobs:
   install_and_test:
-    working_directory: /
     docker:
       - image: cimg/python:3.9-node
     steps:
@@ -24,7 +23,7 @@ jobs:
       - store_test_results:
           path: /apps/whyis/test-results
   lint-js:
-    working_directory: /whyis
+    working_directory: ~/project/whyis
     docker:
       - image: node:12.6-stretch
     steps:
@@ -38,7 +37,7 @@ jobs:
       - store_artifacts:
           path: lint-results
   lint-py:
-    working_directory: /whyis
+    working_directory: ~/project/whyis
     docker:
       - image: cimg/python:3.9-node
     steps:
