@@ -2,98 +2,23 @@
 # Adapted from https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
 version: 2
 jobs:
-  build_test_and_deploy_monolithic_docker_image:
-    working_directory: /apps/whyis
-    docker:
-      - image: docker/compose:1.24.1
-    steps:
-      - run:
-          name: Install system dependencies with apk
-          command: |
-            apk update && apk add bash git
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build monolithic Docker image
-          command: |
-            cd docker/compose/monolithic && WHYIS_IMAGE_TAG=latest docker-compose build whyis
-      - run:
-          name: Run unit tests
-          command: .circleci/test-unit.sh tetherlessworld/whyis:latest
-      - run:
-          name: Build downstream whyis-demo monolithic Docker image for integration testing
-          command: |
-            cd /apps
-            git clone https://github.com/tetherless-world/whyis-demo.git
-            cd whyis-demo/docker/compose/monolithic
-            WHYIS_IMAGE_TAG=latest WHYIS_DEMO_IMAGE_TAG=latest docker-compose build whyis-demo
-      - run:
-          name: Build Cypress image
-          command: |
-            cd docker/compose/testing
-            docker-compose build
-      - run:
-          name: Run integration tests
-          command: .circleci/test-integration.sh tetherlessworld/whyis-demo:latest
-      - store_artifacts:
-          path: test-results
-      - store_test_results:
-          path: test-results
-      - run:
-          name: Build and push monolithic Docker images
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/monolithic/docker-compose.yml push whyis
-
-              tag=`git describe --exact-match` || echo "latest commit is not tagged"
-              if [ $tag ] ; then
-                docker tag tetherlessworld/whyis:latest "tetherlessworld/whyis:$tag"
-                docker tag tetherlessworld/whyis-deps:latest "tetherlessworld/whyis-deps:$tag"
-                WHYIS_IMAGE_TAG=$tag docker-compose -f docker/compose/monolithic/docker-compose.yml push
-              fi
-            fi
-  build_and_deploy_split_docker_image:
-    working_directory: /apps/whyis
-    docker:
-      - image: docker/compose:1.24.1
-    steps:
-      - run:
-          name: Install system dependencies with apk
-          command: |
-            apk update && apk add bash
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build split Docker image
-          command: |
-            cd docker/compose/split/app && WHYIS_IMAGE_TAG=latest docker-compose build whyis-server
-      - run:
-          name: Push split Docker image
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              WHYIS_IMAGE_TAG=latest docker-compose -f docker/compose/split/app/docker-compose.yml push whyis-server
-            fi
-  install_and_test_outside_docker:
+  install_and_test:
     working_directory: /
     docker:
-      - image: ubuntu:xenial
+      - image: cimg/python:3.9-node
     steps:
       - run:
-          name: Install dependencies
-          command: apt-get update && apt-get install -y curl lsb-release sudo
-      - run:
           name: Install whyis per the documentation
-          command: WHYIS_BRANCH="$CIRCLE_BRANCH" bash < <(curl -skL "https://raw.githubusercontent.com/tetherless-world/whyis/${CIRCLE_BRANCH}/install.sh")
-      - run:
-          name: Start services
           command: |
-            service redis-server start
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install requests
+            pip install -e .
       - run:
           name: Run tests
           command: |
-            cd /apps/whyis && source venv/bin/activate && python manage.py test --ci
+            source venv/bin/activate
+            whyis test
       - store_artifacts:
           path: /apps/whyis/test-results
       - store_test_results:
@@ -115,7 +40,7 @@ jobs:
   lint-py:
     working_directory: /whyis
     docker:
-      - image: python:3.7-stretch
+      - image: cimg/python:3.9-node
     steps:
       - checkout
       - run:
@@ -133,10 +58,4 @@ workflows:
     jobs:
       - lint-js
       - lint-py
-      - build_test_and_deploy_monolithic_docker_image
-      - build_and_deploy_split_docker_image:
-          requires:
-            - build_test_and_deploy_monolithic_docker_image
-      - install_and_test_outside_docker:
-          requires:
-            - build_test_and_deploy_monolithic_docker_image
+      - install_and_test
