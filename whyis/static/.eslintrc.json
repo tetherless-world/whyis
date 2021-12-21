@@ -5,7 +5,6 @@
     },
     "extends": [
         "eslint:recommended",
-        "standard",
         "plugin:vue/recommended"
     ],
     "globals": {

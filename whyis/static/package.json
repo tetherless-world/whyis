@@ -27,10 +27,10 @@
   },
   "devDependencies": {
     "css-loader": "^5.2.4",
-    "eslint": "5.16.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-angular": ">=4.0.1",
-    "eslint-plugin-vue": ">=5.2.3",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-angular": "^4.1.0",
+    "eslint-plugin-vue": "^8.2.0",
     "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^1.6.0",
     "raw-loader": "^3.1.0",
@@ -48,11 +48,7 @@
   "scripts": {
     "lint": "eslint",
     "start": "webpack --mode development --watch",
-<<<<<<< HEAD:whyis/static/package.json
-    "build": "webpack --mode production"
-=======
     "build": "webpack --mode production",
     "build-dev": "webpack --mode development"
->>>>>>> master:static/package.json
   }
 }
