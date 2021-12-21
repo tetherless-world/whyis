@@ -10,8 +10,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apt upgrade
-            apt install -y libdb-dev
+            sudo apt upgrade
+            sudo apt install -y libdb-dev
       - run:
           name: Install whyis per the documentation
           command: |
