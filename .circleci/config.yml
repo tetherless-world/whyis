@@ -8,6 +8,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            apt upgrade
+            apt install -y libdb-dev
+      - run:
           name: Install whyis per the documentation
           command: |
             python3 -m venv venv
