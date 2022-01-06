@@ -120,17 +120,17 @@ setup(
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
     license = "Apache License 2.0",
     keywords = "rdf semantic knowledge graph",
-    url = "http://packages.python.org/whyis",
+    url = "http://tetherless-world.github.io/whyis",
     packages=['whyis'],
     long_description='''Whyis is a nano-scale knowledge graph publishing,
-    management, and analysis framework. Whyis aims to support domain-aware management
-    and curation of knowledge from many different sources. Its primary goal is to enable
-    creation of useful domain- and data-driven knowledge graphs. Knowledge can be
-    contributed and managed through direct user interaction, statistical analysis,
-    or data ingestion from many different kinds of data sources. Every contribution to
-    the knowledge graph is managed as a separate entity so that its provenance
-    (publication status, attribution, and justification) is transparent and can
-    be managed and used.''',
+management, and analysis framework. Whyis aims to support domain-aware management
+and curation of knowledge from many different sources. Its primary goal is to enable
+creation of useful domain- and data-driven knowledge graphs. Knowledge can be
+contributed and managed through direct user interaction, statistical analysis,
+or data ingestion from many different kinds of data sources. Every contribution to
+the knowledge graph is managed as a separate entity so that its provenance
+(publication status, attribution, and justification) is transparent and can
+be managed and used.''',
     cmdclass={
         'build_ext': BuildExtCommand,
     },
