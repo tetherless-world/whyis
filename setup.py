@@ -85,7 +85,7 @@ def download_file(url, filename=None):
 
 def download_files():
     files = {
-        'whyis/fuseki/jars/fuseki-server.jar' : 'https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/3.17.0/jena-fuseki-fulljar-3.17.0.jar',
+        'whyis/fuseki/jars/fuseki-server.jar' : 'https://search.maven.org/remotecontent?filepath=org/apache/jena/jena-fuseki-fulljar/4.3.2/jena-fuseki-fulljar-4.3.2.jar',
 #        'whyis/fuseki/jars/jena-spatial.jar': 'https://repo1.maven.org/maven2/org/apache/jena/jena-spatial/3.12.0/jena-spatial-3.12.0.jar'
 # TODO: https://jena.apache.org/documentation/query/spatial-query.html#spatial-dataset-assembler
     }
@@ -109,7 +109,7 @@ class BuildExtCommand(distutils.command.build_ext.build_ext):
 
 setup(
     name = "whyis",
-    version = "2.0",
+    version = "2.0a1",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -187,9 +187,16 @@ setup(
         'flask-testing',
         'unittest-xml-reporting==2.5.1'
     ],
+    python_requires='>=3.7',
     package_data=package_data_with_recursive_dirs({
         'whyis.fuseki': ['jars/*.jar','webapp'],
-        'whyis': ['config-template','static','templates']
+        'whyis.static' : ['css',
+            'dist',
+            'html',
+            'images',
+            'js',
+        ],
+        'whyis': ['config-template','templates']
     }),
     entry_points = {
         'console_scripts': [
@@ -201,7 +208,7 @@ setup(
         ]
     },
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 3 - Alpha",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",

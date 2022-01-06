@@ -3,10 +3,10 @@
 <dl class="dl-horizontal">
   <% _.each( servicesDescription(), function( serviceDescription ) { %>
     <dt>
-      <%= serviceDescription.label %>:
+      <%- serviceDescription.label %>:
     </dt>
     <dd>
-      <a href="<%= serviceDescription.url %>"><%= serviceDescription.url %></a>
+      <a href="<%- serviceDescription.url %>"><%- serviceDescription.url %></a>
     </dd>
   <% } ); %>
 </dl>
@@ -24,10 +24,10 @@
   <dt><span class="heading">graph name:</span></dt><dd><span class="heading">triples:</span></dd>
   <% _.each( counts(), function( n, g ) { %>
     <dt class="font-weight-normal">
-      <%= g %>
+      <%- g %>
     </dt>
     <dd>
-      <div class="numeric"><%= n %></div>
+      <div class="numeric"><%- n %></div>
     </dd>
   <% } ); %>
 </dl>

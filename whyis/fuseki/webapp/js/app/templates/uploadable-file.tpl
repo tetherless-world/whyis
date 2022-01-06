@@ -1,10 +1,10 @@
 <div class="row file-description">
   <div class="col-sm-3">
-    <%= file.name %>
+    <%- file.name %>
   </div>
   <div class="col-sm-3">
     <em>
-      <%= file.readableFileSize %>
+      <%- file.readableFileSize %>
     </em>
   </div>
   <div class="col-sm-6">

@@ -2,11 +2,10 @@
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block styles %}
-<link rel="stylesheet" href="/static/bower_components/angular-semantic-faceted-search/dist/semantic-faceted-search.css">
 <link rel="stylesheet" href="/static/css/resources/primer.css" media="screen" type="text/css"/>    
 <!-- <link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>     -->
-<link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>    
-<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/> 
+<link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>
+<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/>
 {% endblock %}
 
 {% macro render_class(concept) %}
@@ -760,7 +759,7 @@ This section provides details for each class and property defined by the ontolog
 </div>
 </div>
 </div>
-    
+
 
 <!--REFERENCES SECTION-->
   <div id="references">

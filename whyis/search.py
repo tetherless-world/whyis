@@ -3,10 +3,11 @@ import rdflib
 prefixes = dict(
     skos = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#"),
     foaf = rdflib.URIRef("http://xmlns.com/foaf/0.1/"),
-    text = rdflib.URIRef("http://jena.apache.org/text#"),
+    text = rdflib.URIRef("http://jena.apache.org/fulltext#"),
     schema = rdflib.URIRef("http://schema.org/"),
     owl = rdflib.OWL,
     rdfs = rdflib.RDFS,
+    rdf = rdflib.RDF,
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
         )
 
@@ -35,7 +36,7 @@ select distinct
 #(group_concat(distinct ?type; separator="||") as ?types)
 (coalesce(?relevance+?cr, ?relevance) as ?score)
 where {
-  (?label ?relevance) text:search '''%s'''.  
+  (?label ?relevance) text:search '''%s'''.
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
 #  optional {

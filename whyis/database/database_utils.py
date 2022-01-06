@@ -48,7 +48,7 @@ def engine_from_config(config):
                                   returnFormat='json',
                                   node_to_sparql=node_to_sparql)
         store.query_endpoint = config["_endpoint"]
-        def publish(data, format='application/x-trig;charset=utf-8'):
+        def publish(data, format='text/trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
 
@@ -56,7 +56,7 @@ def engine_from_config(config):
                        data=data,
                        # params={"context-uri":graph.identifier},
                        headers={'Content-Type':format})
-
+            print(r.text)
         store.publish = publish
 
         graph = ConjunctiveGraph(store,defaultgraph)

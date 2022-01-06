@@ -91,16 +91,10 @@ class Manager(script.Manager):
 def main():
     os.environ['FLASK_ENV'] = 'development'
     with CleanChildProcesses():
-        try:
-            m = Manager()
-            m.run(default_command='run')
-        except UnconfiguredAppException as e:
-            if len(sys.argv) < 2 or sys.argv[1] not in unconfigurable_commands:
-                configure_knowledge_graph()
-                m = Manager()
-                m.run(default_command='run')
-            else:
-                print(e)
+        if not os.path.exists('whyis.conf'):
+            configure_knowledge_graph()
+        m = Manager()
+        m.run(default_command='run')
 
 if __name__ == "__main__":
     main()

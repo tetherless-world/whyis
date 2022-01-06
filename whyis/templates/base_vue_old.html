@@ -35,7 +35,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
 <meta name="msapplication-TileImage" content="{{ url_for('static', filename='images/ms-icon-144x144.png') }}">
 
-<link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
+<link href="{{ url_for('static', filename='css/lib/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
 
     <style>
       /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
@@ -53,7 +53,7 @@
       }
     </style>
 
-    <link href="{{ url_for('static', filename='bower_components/bootstrap-fileinput/css/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
+    <link href="{{ url_for('static', filename='css/lib/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
     <link href='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.min.css' rel='stylesheet' type='text/css'/>
     <link href='//cdn.jsdelivr.net/yasr/2.10.8/yasr.min.css' rel='stylesheet' type='text/css'/>
     {% block styles %}
@@ -141,9 +141,9 @@
 
     <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
 
-    <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/lib/bootstrap.js')}}"></script>
 
-    <script src="{{ url_for('static', filename='bower_components/bootstrap-fileinput/js/fileinput.js')}}" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='js/lib/fileinput.js')}}" type="text/javascript"></script>
 
     <script src="{{ url_for('static', filename='node_modules/vega/build/vega.min.js') }}" type="text/javascript"></script>
     <script src="{{ url_for('static', filename='node_modules/vega-lite/build/vega-lite.min.js') }}" type="text/javascript"></script>
