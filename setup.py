@@ -8,7 +8,7 @@ from os import path as osp
 from fnmatch import fnmatch
 
 
-def package_data_with_recursive_dirs(package_data_spec):
+def package_data_with_recursive_dirs(package_data_spec, exclude=[]):
     """converts modified package_data dict to a classic package_data dict
     Where normal package_data entries can only specify globs, the
     modified package_data dict can have
@@ -49,12 +49,17 @@ def package_data_with_recursive_dirs(package_data_spec):
             if osp.isdir(directory):  # only apply if it is really a directory
                 for (dirpath, dirnames, filenames) in os.walk(directory):
                     for filename in (osp.join(dirpath, f) for f in filenames):
+                        filename_parts = set(filename.split(os.path.sep))
+                        for ex in exclude:
+                            if ex in filename_parts:
+                                continue
                         if not pattern or fnmatch(filename, pattern):
                             relname = osp.normpath(osp.join(datadir, osp.relpath(filename, directory)))
                             out_entries.append(relname)
             else:  # datadir is not really a datadir but a glob or something else
                 out_entries.append(datadir)  # we just copy the entry
         out_spec[package_name] = out_entries
+    print(out_spec)
     return out_spec
 
 
@@ -126,7 +131,6 @@ setup(
     the knowledge graph is managed as a separate entity so that its provenance
     (publication status, attribution, and justification) is transparent and can
     be managed and used.''',
-    include_package_data = True,
     cmdclass={
         'build_ext': BuildExtCommand,
     },
@@ -188,16 +192,15 @@ setup(
         'unittest-xml-reporting==2.5.1'
     ],
     python_requires='>=3.7',
-    package_data=package_data_with_recursive_dirs({
-        'whyis.fuseki': ['jars/*.jar','webapp'],
-        'whyis.static' : ['css',
-            'dist',
-            'html',
-            'images',
-            'js',
-        ],
-        'whyis': ['config-template','templates']
-    }),
+    include_package_data=True,
+    # package_data=package_data_with_recursive_dirs({
+    #     'whyis.fuseki': ['jars/*.jar','webapp'],
+    #     'whyis': [
+    #         'config-template',
+    #         'static',
+    #         'templates'
+    #     ]
+    # }, exclude=['node_modules']),
     entry_points = {
         'console_scripts': [
             'whyis=whyis.manager:main',

@@ -1,0 +1,5 @@
+recursive-include whyis
+recursive-include tests
+recursive-include script
+global-exclude *.py[cod]
+prune whyis/static/node_modules/*
