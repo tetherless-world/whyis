@@ -24,7 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m venv venv
           source venv/bin/activate
-          pip install requests
+          pip install wheel requests
       - name: Install Whyis
         run: |
           source venv/bin/activate
