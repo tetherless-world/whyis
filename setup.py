@@ -155,6 +155,8 @@ setup(
         'html5lib==1.1',
         'ijson==2.4',
         'itsdangerous<2.0,>=0.24',
+        # Jinja2 restriction needed for Flask<2 on python3.7
+        'Jinja2<3.0',
         'jinja2-time',
         'keepalive',
         'lxml',
