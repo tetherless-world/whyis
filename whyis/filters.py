@@ -463,7 +463,10 @@ WHERE {
                 result['value'] = result['value'].n3()
         return results
 
-    instance_data_template = env.from_string('''SELECT DISTINCT
+    instance_data_template = env.from_string('''
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+    SELECT DISTINCT
 ?id
 {%- for variable in variables %}
 ?{{variable['field']}}

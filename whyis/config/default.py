@@ -103,6 +103,10 @@ class Config:
     ADMIN_EMAIL_RECIPIENTS = []
     LOGIN_USER_TEMPLATE = "auth/login.html"
 
+    WHYIS_TEMPLATE_DIR = [
+        "templates",
+    ]
+
     NAMESPACES = [
         importer.LinkedData(
             prefix = LOD_PREFIX+'/doi/',

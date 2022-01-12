@@ -1443,6 +1443,8 @@ function whyis() {
         function topClasses(ontology) {
             var query = 'prefix owl: <http://www.w3.org/2002/07/owl#>\n\
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\
+\n\
 select distinct ?id where {\n\
   graph ?graph {\n\
     ?id a owl:Class.\n\
@@ -1550,6 +1552,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
         var prefixes =
             ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n' +
+            ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n' +
             ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
             ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
             ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
@@ -2759,7 +2762,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             var facetOptions = {
                 endpointUrl: endpointUrl, // required
                 //rdfClass: rdfClass, // optional
-                constraint: '?id rdf:type/rdfs:subClassOf* '+rdfClass+'.\n\
+                constraint: '?id <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/rdfs:subClassOf* '+rdfClass+'.\n\
 FILTER (!ISBLANK(?id))\n\
 FILTER ( !strstarts(str(?id), "bnode:") )\n\
 ',
@@ -2768,6 +2771,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
 
             var prefixes =
                 ' PREFIX owl: <http://www.w3.org/2002/07/owl#>\n' +
+                ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n' +
                 ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
                 ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
                 ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
