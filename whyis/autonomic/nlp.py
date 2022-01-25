@@ -9,11 +9,11 @@ from whyis import nanopub
 from math import log10
 import collections
 
-from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis
+from whyis.namespace import sioc_types, sioc, sio, dc, prov, whyis, text
 
 class HTML2Text(autonomic.UpdateChangeService):
     activity_class = whyis.TextFromHTML
-    
+
     def getInputClass(self):
         return sioc.Post
 
@@ -28,26 +28,26 @@ class HTML2Text(autonomic.UpdateChangeService):
         soup = BeautifulSoup(content, 'html.parser')
         text = soup.get_text("\n")
         o.add(URIRef("http://schema.org/text"), Literal(text))
-        
+
 class IDFCalculator(autonomic.UpdateChangeService):
     activity_class = whyis.InverseDocumentFrequencyCalculation
-    
+
     def getInputClass(self):
         return autonomic.whyis.ResolvedText
 
     def getOutputClass(self):
         return autonomic.whyis.TFIDFText
-    
+
     @property
     def document_count(self):
         return list(self.app.db.query('''select (count(distinct ?node) as ?count) where {
     ?node sio:hasPart [ prov:specializationOf ?concept; a sio:Term].
 }''',
                                        initNs=dict(sio=sio, prov=prov)))[0][0].value
-    
+
     def process(self, i, o):
         document_count = float(self.document_count)
-        
+
         query = """select distinct ?concept (count(distinct ?othernode) as ?count) ?assertion where {
   ?node sio:hasPart [ a sio:Term; prov:specializationOf ?concept].
   ?othernode sio:hasPart [ a sio:Term; prov:specializationOf ?concept].
@@ -67,30 +67,24 @@ class IDFCalculator(autonomic.UpdateChangeService):
 
 class EntityResolver(autonomic.UpdateChangeService):
     activity_class = whyis.EntityResolution
-    
+
     def getInputClass(self):
         return autonomic.whyis.ExtractedText
-    
+
     def getOutputClass(self):
         return autonomic.whyis.ResolvedText
 
     def resolve(self, term, context):
         query = """prefix skos: <http://www.w3.org/2004/02/skos/core#>
 prefix foaf: <http://xmlns.com/foaf/0.1/>
-prefix bds: <http://www.bigdata.com/rdf/search#>
+prefix text: <http://jena.apache.org/fulltext#>
 
 select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?relevance ?cr where {
+  (?label ?relevance) text:search ('''%s''', 0.4).
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
-  ?label bds:search '''%s''';
-         bds:matchAllTerms "false";
-		 bds:relevance ?relevance ;
-         bds:minRelevance 0.4.
   optional {
+    (?context ?cr) text:search ('''%s''' 100 0.4).
     ?node ?p ?context.
-  ?context bds:search '''%s''';
-         bds:matchAllTerms "false";
-		 bds:relevance ?cr ;
-         bds:minRelevance 0.4.
   }
   filter not exists {
     ?node a <http://semanticscience.org/resource/Term>
@@ -111,7 +105,7 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
         for node, label, score, relevance, cr in self.app.db.query(query):
             return node, label, score
         return None, None, None
-    
+
     def process(self, i, o):
         #context = ' '.join([term.value(sio.hasValue) for term in i[sio.hasPart]][:20])
         context = ' '.join([term.value(sio.hasValue) for term
@@ -124,8 +118,8 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
                 #o_term.add(RDFS.label, label)
                 o_term.add(autonomic.prov.specializationOf, node)
                 o.add(dc.subject, node)
-    
-        
+
+
 class EntityExtractor(autonomic.UpdateChangeService):
     activity_class = whyis.EntityExtraction
 
@@ -141,7 +135,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
         nltk.download('all', quiet=True)
         if property_path is not None:
             self.property_path = property_path
-        
+
     def getInputClass(self):
         return URIRef("http://purl.org/dc/dcmitype/Text")
 

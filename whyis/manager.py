@@ -13,6 +13,8 @@ from cookiecutter.main import cookiecutter
 from pkg_resources import resource_filename, resource_listdir
 
 from whyis.config.utils import import_config_module, UnconfiguredAppException
+import json
+import signal
 
 # Add current directory to python path to enable imports for app.
 try:
@@ -20,21 +22,29 @@ try:
 except:
     sys.path.append(os.getcwd())
 
+fuseki_celery_local = False
+
 class CleanChildProcesses:
+
     def __enter__(self):
         os.setpgrp()  # create new process group, become its leader
 
     def __exit__(self, type, value, traceback):
+        global fuseki_celery_local
+        print(fuseki_celery_local)
+        if fuseki_celery_local:
+            print("Cleaning up local config.")
+            os.remove('embedded.conf')
         try:
             import signal
-            os.killpg(0, signal.SIGINT)  # kill all processes in my group
 
-            app.celery_worker.stop()
+            os.killpg(0, signal.SIGINT)  # kill all processes in my group
         except KeyboardInterrupt:
             # SIGINT is delievered to this process as well as the child processes.
             # Ignore it so that the existing exception, if any, is returned. This
             # leaves us with a clean exit code if there was no exception.
             pass
+
 
 def camel_case_split(identifier):
     matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
@@ -69,7 +79,8 @@ unconfigurable_commands = set([
     "retire",
     "test",
     "runagent",
-    "updateuser"
+    "updateuser",
+    "init"
 ])
 
 class Manager(script.Manager):
@@ -81,6 +92,7 @@ class Manager(script.Manager):
         self.add_command("createuser", commands.CreateUser())
         #self.add_command("listroutes", commands.ListRoutes())
         self.add_command("load", commands.LoadNanopub())
+        self.add_command("init", commands.Initialize())
         self.add_command("restore", commands.Restore())
         self.add_command("retire", commands.RetireNanopub())
         self.add_command("run", commands.WhyisServer())
@@ -88,13 +100,67 @@ class Manager(script.Manager):
         self.add_command("runagent", commands.TestAgent())
         self.add_command("updateuser", commands.UpdateUser())
 
+    _app = None
+
+    def app(self):
+        if self._app is None:
+            self._app =  script.Manager.app(self)
+        return self._app
+
 def main():
+    global fuseki_celery_local
     os.environ['FLASK_ENV'] = 'development'
+    #os.setpgrp()  # create new process group, become its leader
+    if not os.path.exists('whyis.conf'):
+        configure_knowledge_graph()
     with CleanChildProcesses():
-        if not os.path.exists('whyis.conf'):
-            configure_knowledge_graph()
         m = Manager()
+        app = m.app()
+        if app.config.get('EMBEDDED_CELERY',False) or app.config.get('EMBEDDED_FUSEKI', False):
+            print("setting up local config")
+            fuseki_celery_local = True
+            embedded_config = {
+                'EMBEDDED_FUSEKI' : False,
+                'FUSEKI_PORT' : app.config['FUSEKI_PORT'],
+                'KNOWLEDGE_ENDPOINT' : app.config['KNOWLEDGE_ENDPOINT'],
+                'ADMIN_ENDPOINT' : app.config['ADMIN_ENDPOINT'],
+                'EMBEDDED_CELERY' : False,
+                'CELERY_BROKER_URL' : app.config['CELERY_BROKER_URL'],
+                'CELERY_RESULT_BACKEND' : app.config['CELERY_RESULT_BACKEND']
+            }
+            with open('embedded.conf', 'w') as embedded_config_file:
+                json.dump(embedded_config, embedded_config_file)
+                #def sigint_handler(signal, frame):
+                #    print('Cleaning up...')
+                #    os.remove('embedded.conf')
+                #signal.signal(signal.SIGINT, sigint_handler)
+
+        print('Starting whyis...')
         m.run(default_command='run')
+#    except KeyboardInterrupt:
+    #    pass
+        # print('hi!',flush=True)
+        # if fuseki_celery_local:
+        #    os.remove('embedded.conf')
+        #try:
+        #    os.killpg(0, signal.SIGINT)  # kill all processes in my group
+        #except KeyboardInterrupt:
+            # SIGINT is delievered to this process as well as the child processes.
+            # Ignore it so that the existing exception, if any, is returned. This
+            # leaves us with a clean exit code if there was no exception.
+        #    pass
+    print("HI!")
+    #print(fuseki_celery_local, flush=True)
+    #print("Exiting...",flush=True)
+
+        #import signal
+
+        #os.killpg(0, signal.SIGINT)  # kill all processes in my group
+        #except KeyboardInterrupt:
+            # SIGINT is delievered to this process as well as the child processes.
+            # Ignore it so that the existing exception, if any, is returned. This
+            # leaves us with a clean exit code if there was no exception.
+        #    pass
 
 if __name__ == "__main__":
     main()

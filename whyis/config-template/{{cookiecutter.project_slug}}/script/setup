@@ -69,6 +69,9 @@ sudo -E sh -c "envsubst < $PWD/install_files/celerybeat.service \
 sudo -E sh -c "envsubst < $PWD/install_files/celery.service \
          > /etc/systemd/system/celery.service"
 
+# Initialize the fuseki datasets if they aren't already set up.
+whyis init
+
 envsubst < install_files/system.conf > system.conf
 
 # enable wsgi

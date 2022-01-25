@@ -1,12 +1,10 @@
-{{'''PREFIX bds: <http://www.bigdata.com/rdf/search#>
-
-  SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score) 
+{{'''
+  SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score)
 #  (group_concat(distinct ?type; separator="||") as ?types)
   WHERE {
-      ?obj bds:search ?query .
-      ?obj bds:relevance ?score .  		
+      (?obj ?score) text:search ?query .
       ?sub ?pred ?obj .
-#  OPTIONAL { 
+#  OPTIONAL {
 #    ?sub rdf:type ?type.
 #    }
   } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)

@@ -48,7 +48,7 @@ select ?class ?view where {
     ?class rdfs:subClassOf* ?c.
     ?c ?viewProp [].
     ?viewProp <http://purl.org/dc/terms/identifier> ?view.
-}''')]
+}''', initNs={'rdfs':rdflib.RDFS,'rdf':rdflib.RDF})]
             print(self.classes_and_views)
             self.views_by_class = {}
             for cv in self.classes_and_views:
@@ -69,7 +69,7 @@ select distinct ?resource where { ?resource a ?type. } values ?type { %s }
         if self.app.cache is None:
             return
         types = [x for x,
-                 in i.graph.query('select ?type where { ?resource rdf:type ?type. }',
+                 in i.graph.query('select ?type where { ?resource a ?type. }',
                                   initBindings={'resource':i.identifier})]
         print(types, self.views_by_class)
         views = [self.views_by_class[x] for x in types if x in self.views_by_class]

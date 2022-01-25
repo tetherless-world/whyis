@@ -407,8 +407,6 @@ rdfs:Resource
   whyis:hasNeighbors "resource_neighbors.json";
   whyis:hasSummary "summary_view.json" .
 
-bibo:AcademicArticle whyis:hasView "article_view.html".
-
 whyis:hasFacetValues a whyis:CachedView.
 
 owl:Class a rdfs:Class;
@@ -579,7 +577,6 @@ whyis:SparqlTemplateClass a owl:Class;
 
 whyis:SparqlTemplate a whyis:SparqlTemplateClass.
 
-sdd:SemanticDataDictionary a owl:Class ; 
+sdd:SemanticDataDictionary a owl:Class ;
   rdfs:label "Semantic Data Dictionary";
   whyis:hasView "sdd_view.html".
-

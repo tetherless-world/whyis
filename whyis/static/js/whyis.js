@@ -1555,7 +1555,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n' +
             ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
             ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
-            ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
+            ' PREFIX text: <http://jena.apache.org/fulltext#>\n' +
             ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
 
         // This is the result query, with <RESULT_SET> as a placeholder for
@@ -2774,7 +2774,6 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n' +
                 ' PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n' +
                 ' PREFIX dc: <http://purl.org/dc/terms/>\n' +
-                ' PREFIX bds: <http://www.bigdata.com/rdf/search#>\n' +
                 ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n' +
                 ' PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\n';
 

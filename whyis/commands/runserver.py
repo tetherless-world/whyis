@@ -5,6 +5,8 @@ import sys
 from multiprocessing import Process
 from threading import Thread, get_ident, main_thread
 from werkzeug.serving import is_running_from_reloader
+import os
+import signal
 
 from flask_script import Option, Server
 
@@ -32,9 +34,12 @@ class WhyisServer(Server):
             ]
 
     def run_celery(self):
-        with self.app.app_context():
-            self.app.celery_worker = self.app.celery.WorkController(pool="eventlet")
-            self.app.celery_worker.start()
+        celery_args = ['-A', 'wsgi.celery']
+        worker_args = ['-l', 'INFO', '-c', '4', '--logfile','run/logs/celery.log']
+        command = ['celery'] + celery_args + ['worker'] + worker_args
+        p = None
+        p = subprocess.Popen(command, stdin=subprocess.DEVNULL)
+        return p
 
     def __call__(self, app, watch, *args, **kwds):
         global fuseki_server
@@ -45,8 +50,10 @@ class WhyisServer(Server):
 
         if not is_running_from_reloader():
             if self.app.config.get('EMBEDDED_CELERY', False):
-                app.celery_worker_process = Thread(target=self.run_celery, daemon=True)
-                app.celery_worker_process.start()
+                print("Starting embeddded Celery")
+                self.celery_worker_process = self.run_celery()
+                # app.celery_worker_process = Thread(target=self.run_celery, daemon=True)
+                # app.celery_worker_process.start()
 
         kwds['use_reloader'] = False
 

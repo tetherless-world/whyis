@@ -87,8 +87,11 @@ class App(Empty):
         Empty.configure_extensions(self)
 
         if self.config.get('EMBEDDED_CELERY',False):
+            # self.config['CELERY_BROKER_URL'] = 'redis://localhost:6379'
+            # self.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379'
             from redislite import Redis
             self.rdb = Redis(os.path.join('run','redis.db'))
+            print("Starting redis...")
             self.config['CELERY_BROKER_URL'] = 'redis+socket://%s' % (self.rdb.socket_file, )
             self.config['CELERY_RESULT_BACKEND'] = self.config['CELERY_BROKER_URL']
 
@@ -137,6 +140,7 @@ class App(Empty):
         def process_nanopub(nanopub_uri, service_name, taskid=None):
             service = self.config['INFERENCERS'][service_name]
             if app.nanopub_manager.is_current(nanopub_uri):
+                print("Running task", service_name, 'on', nanopub_uri)
                 nanopub = app.nanopub_manager.get(nanopub_uri)
                 service.process_graph(nanopub)
             else:
@@ -185,7 +189,7 @@ class App(Empty):
         def update(nanopub_uri):
             '''gets called whenever there is a change in the knowledge graph.
             Performs a breadth-first knowledge expansion of the current change.'''
-            #print "Updating on", nanopub_uri
+            print("Updating on", nanopub_uri)
             #if not app.nanopub_manager.is_current(nanopub_uri):
             #    print("Skipping retired nanopub", nanopub_uri)
             #    return
@@ -196,6 +200,7 @@ class App(Empty):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
                         if service.getInstances(nanopub_graph):
+                            print("Running agent", service, "on", nanopub_uri)
                             process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
                 for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self

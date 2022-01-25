@@ -39,7 +39,7 @@ class FusekiServer:
     _template = resource_string(__name__, "default_assembler.ttl").decode('utf8')
     _fuseki_base = os.sep.join([os.getcwd(),'run'])
 
-    def __init__(self, args=[], port=3030, stdin=None, stdout=None, stderr=None):
+    def __init__(self, args=[], port=3030, stdin=subprocess.PIPE, stdout=None, stderr=None):
         self.args = args
         self.stdin = stdin
         self.stdout = stdout
@@ -78,22 +78,22 @@ def run_fuseki(args, stdin=None, stdout=None, stderr=None):
     if 'FUSEKI_HOME' not in env:
         env['FUSEKI_HOME'] = resource_filename('whyis', 'fuseki')
     command = [java, jvm_args, '-cp', cp, 'org.apache.jena.fuseki.cmd.FusekiCmd'] + args
-    try:
-        p = None
+    #try:
+    p = None
 
-        # Register handler to pass keyboard interrupt to the subprocess
-        def handler(sig, frame):
-            if p:
-                p.send_signal(signal.SIGINT)
-            else:
-                raise KeyboardInterrupt
-        signal.signal(signal.SIGINT, handler)
+    # Register handler to pass keyboard interrupt to the subprocess
+    # def handler(sig, frame):
+    #     if p:
+    #         p.send_signal(signal.SIGINT)
+    #     else:
+    #         raise KeyboardInterrupt
+    # signal.signal(signal.SIGINT, handler)
 
-        p = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, env=env)
-        return p
-    finally:
+    p = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, env=env)
+    return p
+    #finally:
         # Reset handler
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        #signal.signal(signal.SIGINT, signal.SIG_DFL)
     #return subprocess.run(command, stdin=stdin, stdout=stdout, stderr=stderr, env=env)
 
 def main():
