@@ -4,7 +4,7 @@ import sys
 
 _app = None
 
-def app_factory(blueprints=None):
+def app_factory(config=None, blueprints=None):
     global _app
     if _app is None:
         from whyis.app import App, PROJECT_PATH
@@ -13,7 +13,7 @@ def app_factory(blueprints=None):
                            instance_relative_config=True,
                            instance_path=os.getcwd())
         #print dir(config)
-        import_config_module(_app)
+        import_config_module(_app, config)
         if blueprints:
             _app.add_blueprint_list(blueprints)
         _app.setup()

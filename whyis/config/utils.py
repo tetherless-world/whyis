@@ -7,12 +7,12 @@ import json
 class UnconfiguredAppException(Exception):
     pass
 
-def import_config_module(app):
+def import_config_module(app, config=default.Config):
     """
     Import and return Flask application configuration, falling back to config_defaults if necessary.
     :return the config module
     """
-    app.config.from_object(default.Config)
+    app.config.from_object(config)
 
     try:
         app.config.from_pyfile('whyis.conf')

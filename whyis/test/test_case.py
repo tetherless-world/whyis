@@ -33,27 +33,24 @@ class TestCase(flask_testing.TestCase):
 
 
     def create_app(self):
-        try:
-            import config
-        except:
-            from whyis import config_defaults as config
+        from whyis.config.default import Test
 
-        if 'ADMIN_ENDPOINT' in config.Test:
-            del config.Test['ADMIN_ENDPOINT']
-            del config.Test['KNOWLEDGE_ENDPOINT']
-        config.Test['TESTING'] = True
-        config.Test['WTF_CSRF_ENABLED'] = False
-        config.Test['NANOPUB_ARCHIVE'] = {
+        if 'ADMIN_ENDPOINT' in Test:
+            del Test['ADMIN_ENDPOINT']
+            del Test['KNOWLEDGE_ENDPOINT']
+        Test['TESTING'] = True
+        Test['WTF_CSRF_ENABLED'] = False
+        Test['NANOPUB_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
-        config.Test['DEFAULT_ANONYMOUS_READ'] = False
-        config.Test['FILE_ARCHIVE'] = {
+        Test['DEFAULT_ANONYMOUS_READ'] = False
+        Test['FILE_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
         # Default port is 5000
-        config.Test['LIVESERVER_PORT'] = 8943
+        Test['LIVESERVER_PORT'] = 8943
         # Default timeout is 5 seconds
-        config.Test['LIVESERVER_TIMEOUT'] = 10
+        Test['LIVESERVER_TIMEOUT'] = 10
 
         from whyis.app_factory import app_factory
         application = app_factory(config.Test, config.project_name)
