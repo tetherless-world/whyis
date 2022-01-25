@@ -4,8 +4,9 @@ from .list_routes import ListRoutes
 from .load_nanopub import LoadNanopub
 from .retire_nanopub import RetireNanopub
 from .run_interpreter import RunInterpreter
-from .run_hybrid_reasoner import RunHybridReasoner
 from .runserver import WhyisServer
+from .run_aaa_abductive_reasoner import RunAAAReasoner
+from .run_hybrid_reasoner import RunHybridReasoner
 from .test import Test
 from .test_agent import TestAgent
 from .update_user import UpdateUser
