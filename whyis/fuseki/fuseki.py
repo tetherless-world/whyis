@@ -39,14 +39,15 @@ class FusekiServer:
     _template = resource_string(__name__, "default_assembler.ttl").decode('utf8')
     _fuseki_base = os.sep.join([os.getcwd(),'run'])
 
-    def __init__(self, args=[], port=3030, stdin=subprocess.PIPE, stdout=None, stderr=None):
+    def __init__(self, args=[], port=3030, stdin=subprocess.PIPE,
+                 localhost=True, stdout=None, stderr=None):
         self.args = args
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
         self.port = port
         self.url = 'http://localhost:'+str(self.port)
-        self.process = run_fuseki(args+['--port',str(port),'-q', '--localhost', '--mem','/ds'],
+        self.process = run_fuseki(args+['--port',str(port),'-q'] + ['--localhost'] if localhost else []+ ['--mem','/ds'],
                                   stdin, stdout, stderr)
         _wait_for_port(port)
 

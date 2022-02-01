@@ -22,7 +22,7 @@ class Fuseki(Command):
 
         self.fuseki_port = flask.current_app.config.get('FUSEKI_PORT', 3030)
         print("Starting Fuseki on port",self.fuseki_port)
-        self.fuseki_server = fuseki.FusekiServer(port=self.fuseki_port)
+        self.fuseki_server = fuseki.FusekiServer(port=self.fuseki_port, localhost=False)
 
         knowledge_endpoint = self.fuseki_server.get_dataset('/knowledge')
         admin_endpoint = self.fuseki_server.get_dataset('/admin')
