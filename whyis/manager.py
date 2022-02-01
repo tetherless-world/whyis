@@ -27,7 +27,10 @@ fuseki_celery_local = False
 class CleanChildProcesses:
 
     def __enter__(self):
-        os.setpgrp()  # create new process group, become its leader
+        try:
+            os.setpgrp()  # create new process group, become its leader
+        except PermissionError:
+            print("Running in a container, probably, so can't set process group.")
 
     def __exit__(self, type, value, traceback):
         global fuseki_celery_local
