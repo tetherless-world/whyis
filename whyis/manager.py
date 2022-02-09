@@ -5,6 +5,7 @@ import flask_script as script
 from whyis import commands
 
 from whyis.app_factory import app_factory
+from whyis.config import default
 from re import finditer
 
 import sys
@@ -88,7 +89,7 @@ unconfigurable_commands = set([
 
 class Manager(script.Manager):
     def __init__(self):
-        script.Manager.__init__(self, app_factory, with_default_commands=False)
+        script.Manager.__init__(self, lambda: app_factory(default.Dev), with_default_commands=False)
 
         self.add_command("backup", commands.Backup())
         #self.add_command("configure", commands.Configure())

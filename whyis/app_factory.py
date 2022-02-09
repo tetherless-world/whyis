@@ -1,10 +1,11 @@
 from whyis.config.utils import import_config_module
 import os
 import sys
+from whyis.config import default
 
 _app = None
 
-def app_factory(config=None, blueprints=None):
+def app_factory(config=default.Config, blueprints=None):
     global _app
     if _app is None:
         from whyis.app import App, PROJECT_PATH

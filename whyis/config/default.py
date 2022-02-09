@@ -74,9 +74,6 @@ class Config:
 
     DELETE_ARCHIVE_NANOPUBS = False
 
-    WHYIS_TEMPLATE_DIR = None
-    WHYIS_CDN_DIR = None
-
     DEFAULT_ANONYMOUS_READ = True
 
     SITE_HEADER_IMAGE = '/static/images/random_network.png'
@@ -106,6 +103,7 @@ class Config:
     WHYIS_TEMPLATE_DIR = [
         "templates",
     ]
+    WHYIS_CDN_DIR = 'static'
 
     NAMESPACES = [
         importer.LinkedData(

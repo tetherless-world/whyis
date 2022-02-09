@@ -56,6 +56,7 @@ def engine_from_config(config):
                        data=data,
                        # params={"context-uri":graph.identifier},
                        headers={'Content-Type':format})
+            print(r.status)
             print(r.text)
         store.publish = publish
 

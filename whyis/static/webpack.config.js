@@ -69,7 +69,7 @@ module.exports = (env, argv) => ({
     chunkFilename: 'whyis_vue_bundle.[name].js',
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: 'static/dist/'
+    publicPath: '/static/dist/'
   },
   plugins: [
     new MiniCssExtractPlugin({
