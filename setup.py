@@ -114,7 +114,7 @@ class BuildExtCommand(distutils.command.build_ext.build_ext):
 
 setup(
     name = "whyis",
-    version = "2.0a9",
+    version = "2.0b1",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -211,7 +211,7 @@ be managed and used.''',
         ]
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
