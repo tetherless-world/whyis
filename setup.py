@@ -1,7 +1,7 @@
 import os
 from distutils.core import setup
-import distutils.command.build_ext
-import requests
+import distutils.command.build
+import distutils.command.sdist
 import subprocess
 
 from os import path as osp
@@ -76,6 +76,7 @@ def build_js():
 
 
 def download_file(url, filename=None):
+    import requests
     filename = url.split('/')[-1] if filename is None else filename
     # NOTE the stream=True parameter below
     with requests.get(url, stream=True) as r:
@@ -99,22 +100,34 @@ def download_files():
         download_file(url, dest)
     print("Downloads complete.")
 
-class BuildExtCommand(distutils.command.build_ext.build_ext):
+class BuildCommand(distutils.command.build.build):
     """Custom build command."""
+
+    def run(self):
+        print('boo')
+        if os.path.exists('.git'): # build these if we are building from repo
+            print('Building JavaScript...')
+            build_js()
+            print('Downloading Fuseki Jars...')
+            download_files()
+        distutils.command.build.build.run(self)
+
+class SdistCommand(distutils.command.sdist.sdist):
+    """Custom sdist command."""
 
     def run(self):
         print('Building JavaScript...')
         build_js()
         print('Downloading Fuseki Jars...')
         download_files()
-        distutils.command.build_ext.build_ext.run(self)
+        distutils.command.sdist.sdist.run(self)
 
 
 # mvn -q clean compile assembly:single -PwhyisProfile
 
 setup(
     name = "whyis",
-    version = "2.0a2",
+    version = "2.0b3",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -132,7 +145,8 @@ the knowledge graph is managed as a separate entity so that its provenance
 (publication status, attribution, and justification) is transparent and can
 be managed and used.''',
     cmdclass={
-        'build_ext': BuildExtCommand,
+        'build': BuildCommand,
+        'sdist': SdistCommand,
     },
     setup_requires = [
         'wheel',

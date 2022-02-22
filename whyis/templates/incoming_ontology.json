@@ -5,7 +5,7 @@
       }
     }
     bind(1 as ?probability)
-    bind(owl:imports as ?link_type)
+    values ?link_type {owl:imports}
     bind(?assertion as ?link)
     minus { ?source owl:sameAs|rdfs:seeAlso|rdf:type|<http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
     minus { ?source sio:hasPart|sio:hasAttribute ?target }

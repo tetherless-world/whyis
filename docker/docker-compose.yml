@@ -1,0 +1,50 @@
+version: '3'
+services:
+  redis:
+    image: "redis:alpine"
+    command: redis-server
+    volumes:
+     - ./data/redis-data:/var/lib/redis
+  celery:
+    depends_on:
+      - redis
+      - fuseki
+    command: /opt/venv/bin/celery -A wsgi.celery worker -l INFO -c 4 --uid=nobody --gid=nogroup
+    volumes:
+      - .:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    image: "tetherlessworld/whyis"
+  celerybeat:
+    depends_on:
+      - redis
+      - fuseki
+    command: /opt/venv/bin/celery -A wsgi.celery beat -l INFO --uid=nobody --gid=nogroup
+    volumes:
+      - .:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    image: "tetherlessworld/whyis"
+  fuseki:
+    command: /opt/venv/bin/whyis fuseki # ; /opt/venv/bin/fuseki-server --mem /ds
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    image: "tetherlessworld/whyis"
+    ports:
+      - '3030:3030'
+    volumes:
+      - .:/app
+  whyis:
+    depends_on:
+      - redis
+      - fuseki
+    stdin_open: true
+    command: /opt/venv/bin/gunicorn wsgi:application --workers ${WEB_CONCURRENCY:-4} --timeout 90 -b :8000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    image: "tetherlessworld/whyis"
+    volumes:
+      - .:/app
+    ports:
+      - '8000:8000'
+      - '5000:5000'
