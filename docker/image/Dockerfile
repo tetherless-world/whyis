@@ -11,6 +11,6 @@ RUN apt-get update && apt-get install -y \
     default-jdk-headless
 RUN python3.8 -m venv /opt/venv
 RUN /opt/venv/bin/pip install wheel
-RUN /opt/venv/bin/pip install gunicorn whyis==2.0b5
+RUN /opt/venv/bin/pip install gunicorn whyis==2.0b6
 WORKDIR '/app'
 CMD [ "/opt/venv/bin/whyis" ]
