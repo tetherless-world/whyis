@@ -1,10 +1,15 @@
 version: '3'
 services:
+  init:
+    image: "tetherlessworld/whyis"
+    volumes:
+      - .:/app
+
   redis:
     image: "redis:alpine"
     command: redis-server
     volumes:
-     - ./data/redis-data:/var/lib/redis
+     - ./run/redis-data:/var/lib/redis
   celery:
     depends_on:
       - redis
@@ -26,7 +31,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
     image: "tetherlessworld/whyis"
   fuseki:
-    command: /opt/venv/bin/whyis fuseki # ; /opt/venv/bin/fuseki-server --mem /ds
+    command: /opt/venv/bin/whyis init ; /opt/venv/bin/whyis fuseki # ; /opt/venv/bin/fuseki-server --mem /ds
     environment:
       - CHOKIDAR_USEPOLLING=true
     image: "tetherlessworld/whyis"
