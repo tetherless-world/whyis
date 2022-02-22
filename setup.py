@@ -127,7 +127,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0b4",
+    version = "2.0b6",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -146,7 +146,7 @@ the knowledge graph is managed as a separate entity so that its provenance
 be managed and used.''',
     cmdclass={
         'build': BuildCommand,
-        'sdist': SdistCommand,
+#        'sdist': SdistCommand,
     },
     setup_requires = [
         'wheel',
