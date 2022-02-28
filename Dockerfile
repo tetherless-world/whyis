@@ -14,4 +14,4 @@ RUN /opt/venv/bin/pip install wheel requests gunicorn
 COPY . /opt/whyis
 RUN /opt/venv/bin/pip install -e /opt/whyis
 WORKDIR '/app'
-CMD [ "/opt/venv/bin/whyis" ]
+CMD [ "/opt/venv/bin/whyis", "run", "-h", "0.0.0.0" ]
