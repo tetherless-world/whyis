@@ -45,6 +45,7 @@ class FileImporter(LinkedData):
             for file_type in self.file_types:
                 npub.assertion.add((entity_name, rdflib.RDF.type, file_type))
         f = FileStorage(FileLikeFromIter(r.iter_content()), fname, content_type=content_type)
+        print(fname, content_type)
         old_nanopubs = self.app.add_file(f, entity_name, npub)
         npub.assertion.add((entity_name, self.app.NS.RDF.type, self.app.NS.pv.File))
 

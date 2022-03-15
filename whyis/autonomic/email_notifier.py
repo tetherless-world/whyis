@@ -41,7 +41,7 @@ class EmailNotifier(UpdateChangeService):
         return self.output_type
 
     def process(self, i, o):
-        with self.app.mail.connect() as conn:
+        with flask.current_app.mail.connect() as conn:
             for u in i[self.user_predicate]:
                 user = self.datastore.find_user(id=u.identifier)
                 parameters = dict(user=user, resource=i)

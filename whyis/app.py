@@ -19,6 +19,7 @@ from celery_once import QueueOnce
 from celery.schedules import crontab
 from depot.manager import DepotManager
 from depot.middleware import FileServeApp
+from depot.io.utils import FileIntent
 from flask import render_template, g, redirect, url_for, request, flash, send_from_directory, abort
 from flask_security import Security
 from flask_security.core import current_user
@@ -133,18 +134,22 @@ class App(Empty):
 
         @self.celery.task(base=QueueOnce, once={'graceful': True})
         def process_resource(service_name, taskid=None):
-            service = self.config['INFERENCERS'][service_name]
-            service.process_graph(app.db)
+            with app.app_context():
+                service = self.config['INFERENCERS'][service_name]
+                service.app = self
+                service.process_graph(app.db)
 
         @self.celery.task
         def process_nanopub(nanopub_uri, service_name, taskid=None):
-            service = self.config['INFERENCERS'][service_name]
-            if app.nanopub_manager.is_current(nanopub_uri):
-                print("Running task", service_name, 'on', nanopub_uri)
-                nanopub = app.nanopub_manager.get(nanopub_uri)
-                service.process_graph(nanopub)
-            else:
-                print("Skipping retired nanopub", nanopub_uri)
+            with app.app_context():
+                service = self.config['INFERENCERS'][service_name]
+                if app.nanopub_manager.is_current(nanopub_uri):
+                    print("Running task", service_name, 'on', nanopub_uri)
+                    service.app = app
+                    nanopub = app.nanopub_manager.get(nanopub_uri)
+                    service.process_graph(nanopub)
+                else:
+                    print("Skipping retired nanopub", nanopub_uri)
 
         def setup_periodic_task(task):
             @self.celery.task
@@ -172,6 +177,7 @@ class App(Empty):
             app.inference_tasks = [setup_periodic_task(task) for task in self.config['INFERENCE_TASKS']]
 
         for name, task in list(self.config['INFERENCERS'].items()):
+            print("Adding app to",task)
             task.app = app
 
         for task in app.inference_tasks:
@@ -259,6 +265,7 @@ class App(Empty):
     _file_depot = None
     @property
     def file_depot(self):
+        print(self.config['FILE_ARCHIVE'])
         if self._file_depot is None:
             if DepotManager.get('files') is None:
                 DepotManager.configure('files', self.config['FILE_ARCHIVE'])
@@ -454,7 +461,10 @@ construct {
             if not self._can_edit(np_uri):
                 raise Unauthorized()
             old_nanopubs.append((np_uri, np_assertion))
-        fileid = self.file_depot.create(f.stream, f.filename, f.mimetype)
+        fileintent = FileIntent(f.stream, f.filename, f.mimetype)
+        fileid = self.file_depot.create(fileintent)
+        self.file_depot.get(fileid)
+        print("added",entity,"to depot as",fileid)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))
         if current_user._get_current_object() is not None and hasattr(current_user, 'identifier'):
@@ -593,7 +603,7 @@ construct {
 
         def get_label(resource):
             for property in label_properties:
-                labels = self.lang_filter(resource[property])
+                labels = self.lang_filter(resource.graph.objects(resource.identifier, property))
                 if len(labels) > 0:
                     return labels[0]
             return get_remote_label(resource.identifier)

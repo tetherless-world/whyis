@@ -36,7 +36,7 @@
         {% if predicate.identifier != g.ns.sioc.content  %}
     
         <dl class="dl-horizontal clearfix">
-          <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate))}}</dt>
+          <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate.identifier))}}</dt>
           <dd>
             {% for object in objects | map('last') | lang()  %}
             {%- if loop.index == 11 %}<p>...</p>{% endif %}

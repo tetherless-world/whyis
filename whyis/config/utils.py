@@ -23,9 +23,10 @@ def import_config_module(app):
     if os.path.exists('system.conf'):
         print("Loading production config")
         app.config.from_pyfile('system.conf')
-    elif os.path.exists('embedded.conf'):
-        print("Loading local embedded config")
-        app.config.from_json('embedded.conf')
     else:
         print("Loading embedded config")
         app.config.from_object(default.EmbeddedSystem)
+    if os.path.exists('embedded.conf'):
+        print("Loading local embedded config")
+        app.config.from_json('embedded.conf')
+

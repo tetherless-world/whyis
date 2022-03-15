@@ -56,7 +56,7 @@ def engine_from_config(config):
                        data=data,
                        # params={"context-uri":graph.identifier},
                        headers={'Content-Type':format})
-            print(r.text)
+            #print(r.text)
         store.publish = publish
 
         graph = ConjunctiveGraph(store,defaultgraph)
