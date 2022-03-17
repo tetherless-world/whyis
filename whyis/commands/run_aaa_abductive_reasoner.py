@@ -63,9 +63,7 @@ class RunAAAReasoner(Command):
             with open(f.name) as tmpfile :
                 for tmpline in tmpfile :
                     lines.append(tmpline)
-            f.close()            
-        
-        print('lines:',lines)
+            f.close()
 
         for n, line in enumerate(lines) :
             if("INPUT DETAILS" in line) : 
@@ -92,14 +90,20 @@ class RunAAAReasoner(Command):
         #print(time_details)
         #print(mhs_details)
         #print(explanations)
+        #currentGraph = rdflib.ConjunctiveGraph() 
+        #for (s,p,o) in current_app.db :
+        #    currentGraph.add((s,p,o))
+
+        npub_list = []
 
         if("no explanations" in explanations[0]) :
             print("Handle the case where there is no explanations!")
         else :
             explanations = explanations[1:]
             for explanation in explanations :
-                npub = Nanopublication(store=current_app.db.store) # new nanopub per explanation
-
+                existing_exp_count = 0
+                #npub = Nanopublication(store=current_app.db.store) # new nanopub per explanation
+                npub = Nanopublication()
                 explanation=explanation.replace(' ','') #remove any spaces
                 explanation=explanation.lstrip('{') # get rid of first bracket
                 explanation=explanation.rstrip('\n') #get rid of ending newline
@@ -124,6 +128,9 @@ class RunAAAReasoner(Command):
                         exp = exp.replace("http:","http;") #temporarily replace colons in http:
                         exp_terms = exp.split(":")
                         exp_terms[:] = [x if "http;" not in x else x.replace("http;","http:") for x in exp_terms] #replace the colons back in to http:
+                        if (rdflib.URIRef(exp_terms[0]), rdflib.URIRef(predicate_uri), rdflib.URIRef(object_uri)) in current_app.db :
+                            existing_exp_count += 1
+                            print("Found existing assertion:",exp_terms[0],":",exp_terms[1])
                         try :
                             npub.assertion.add((rdflib.URIRef(exp_terms[0]), rdflib.URIRef(predicate_uri), rdflib.URIRef(object_uri)))
                         except Exception as e :
@@ -136,6 +143,9 @@ class RunAAAReasoner(Command):
                         exp = exp.replace("http:","http;") #temporarily replace colons in http:
                         exp_terms = exp.split(":")
                         exp_terms[:] = [x if "http;" not in x else x.replace("http;","http:") for x in exp_terms] #replace the colons back in to http:
+                        if (rdflib.URIRef(exp_terms[0]), rdflib.RDF.type, rdflib.URIRef(exp_terms[1])) in current_app.db :
+                            existing_exp_count += 1
+                            print("Found existing assertion:",exp_terms[0],":",exp_terms[1])
                         try :
                             npub.assertion.add((rdflib.URIRef(exp_terms[0]), rdflib.RDF.type, rdflib.URIRef(exp_terms[1])))
                         except Exception as e :
@@ -172,4 +182,11 @@ class RunAAAReasoner(Command):
                     for mhs_detail in mhs_details :
                         npub.provenance.add((mhs_ref,skos.note,rdflib.Literal(mhs_detail)))
                 npub.provenance.add((npub.assertion.identifier,rdflib.RDF.type,sio.Unsupported))
-
+                print("Number of existing explanations for", npub.assertion.identifier, ":", existing_exp_count)
+                npub_list.append(npub)
+        for nanopub in npub_list :
+            try:
+                current_app.nanopub_manager.publish(nanopub)
+            except Exception as e :
+                print("Unable to publish nanopub:", nanopub)
+                print("Error:",e)
