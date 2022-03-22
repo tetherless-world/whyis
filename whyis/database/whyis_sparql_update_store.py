@@ -2,7 +2,7 @@
 
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 from rdflib.plugins.stores.sparqlconnector import SPARQLConnectorException, _response_mime_types
-
+import re
 
 class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
     # To resolve linter warning
@@ -21,3 +21,14 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
             query
         ])
 
+    def query(self, query, initNs=None, initBindings=None, queryGraph=None, DEBUG=False):
+        if initBindings:
+            v = list(initBindings)
+            values = "\nVALUES ( %s )\n{ ( %s ) }\n" % (
+                " ".join("?" + str(x) for x in v),
+                " ".join(self.node_to_sparql(initBindings[x]) for x in v),
+            )
+            query = re.sub(r'where\s+{', 'WHERE {%s' % values, query, count=1, flags=re.I)
+            print(query)
+        return SPARQLUpdateStore.query(self, query, initNs=initNs, initBindings=None,
+                                       queryGraph=queryGraph, DEBUG=DEBUG)

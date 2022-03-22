@@ -595,3 +595,24 @@ values (?c ?priority) { %s }
                 output_string +="\n\t\t\t{title:\""+titles[l]+"\", field:\""+fields[l]+"\"},"
             output_string += "\n\t\t]\n\t});\n</script></md-card>"
         return output_string
+
+    @app.template_filter('from_n3_dict')
+    def from_n3_dict(args):
+        result = {}
+        for key, value in args.items():
+            v = rdflib.util.from_n3(value)
+            if not isinstance(v, rdflib.BNode):
+                result[key] = v
+            else:
+                try:
+                    result[key] = rdflib.Literal(int(value))
+                    continue
+                except:
+                    pass
+                try:
+                    result[key] = rdflib.Literal(float(value))
+                    continue
+                except:
+                    pass
+        print(result)
+        return result
