@@ -11,5 +11,4 @@ Every entity in the resource is visible through its own Uniform Resource Identif
 
 # Nano-scale?
 
-
 Nano-scale knowledge graphs are built of many *[nanopublications](http://nanopub.org)*, where each nanopublication is tracked individually, with the ability to provide provenance-based justifications and publication credit for each tiny bit of knowledge in the graph.
