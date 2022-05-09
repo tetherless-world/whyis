@@ -133,21 +133,23 @@ class App(Empty):
             app.jinja_loader = my_loader
 
         @self.celery.task(base=QueueOnce, once={'graceful': True})
-        def process_resource(service_name, taskid=None):
+        def process_resource(service_name, entity, taskid=None):
             with app.app_context():
                 service = self.config['INFERENCERS'][service_name]
                 service.app = self
-                service.process_graph(app.db)
+                instance = app.db.resource(entity)
+                service.process_instance(instance, app.db)
 
         @self.celery.task
-        def process_nanopub(nanopub_uri, service_name, taskid=None):
+        def process_nanopub(nanopub_uri, service_name, entity, taskid=None):
             with app.app_context():
                 service = self.config['INFERENCERS'][service_name]
                 if app.nanopub_manager.is_current(nanopub_uri):
                     print("Running task", service_name, 'on', nanopub_uri)
                     service.app = app
                     nanopub = app.nanopub_manager.get(nanopub_uri)
-                    service.process_graph(nanopub)
+                    instance = nanopub.assertion.resource(entity)
+                    service.process_instance(instance, nanopub)
                 else:
                     print("Skipping retired nanopub", nanopub_uri)
 
@@ -156,15 +158,15 @@ class App(Empty):
             def find_instances():
                 print("Triggered task", task['name'])
                 for x, in task['service'].getInstances(app.db):
-                    task['do'](x)
+                    task['do'](x.identifier)
 
             @self.celery.task
             def do_task(uri):
                 print("Running task", task['name'], 'on', uri)
-                resource = app.get_resource(uri)
+                resource = app.db.resource(uri)
 
                 # result never used
-                task['service'].process_graph(resource.graph)
+                task['service'].process_instance(resource, app.db)
 
             task['service'].app = app
             task['find_instances'] = find_instances
@@ -205,16 +207,24 @@ class App(Empty):
                 for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.updateChangeQuery:
-                        if service.getInstances(nanopub_graph):
-                            print("Running agent", service, "on", nanopub_uri)
-                            process_nanopub.apply_async(kwargs={'nanopub_uri': nanopub_uri, 'service_name':name}, priority=1 )
+                        for instance in service.getInstances(nanopub_graph):
+                            print("Running agent %s on %s in %s" % (service, instance.identifier, nanopub_uri))
+                            process_nanopub.apply_async(kwargs={
+                                'nanopub_uri': nanopub_uri,
+                                'service_name':name,
+                                'entity':instance.identifier
+                            }, priority=1 )
                 for name, service in list(self.config['INFERENCERS'].items()):
                     service.app = self
                     if service.query_predicate == self.NS.whyis.globalChangeQuery:
-                        process_resource.apply_async(kwargs={'service_name':name}, priority=5)
+                        for instance in service.getInstances(self.db):
+                            process_resource.apply_async(kwargs={
+                                'service_name':name,
+                                'entity':instance.identifier
+                            }, priority=5)
 
         def run_update(nanopub_uri):
-            print('Adding to agent queue:',nanopub_uri)
+            print('Adding to agent queue: %s' % nanopub_uri)
             update.apply_async(args=[nanopub_uri],priority=9)
         self.nanopub_update_listener = run_update
 

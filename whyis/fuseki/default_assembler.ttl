@@ -39,7 +39,7 @@ text:TextDataset      rdfs:subClassOf   ja:RDFDataset .
     tdb2:location "{FUSEKI_BASE}/databases{NAME}" ;
     tdb2:unionDefaultGraph true ;
     # Query timeout on this dataset (1s, 1000 milliseconds)
-    ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "10000,60000" ] ;
+    ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "100000,600000" ] ;
     .
 
 <#indexLucene_{NAME}> a text:TextIndexLucene ;

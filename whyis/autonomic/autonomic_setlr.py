@@ -28,9 +28,7 @@ setlr_handlers_added = False
 class SETLr(UpdateChangeService):
     activity_class = setl.SemanticETL
 
-    def __init__(self, depth=-1, predicates=[None]):
-        self.depth = depth
-        self.predicates = predicates
+    def __init__(self):
 
         global setlr_handlers_added
         if not setlr_handlers_added:
@@ -77,19 +75,19 @@ class SETLr(UpdateChangeService):
         resources = setlr._setl(setl_graph)
         # retire old copies
         old_np_map = {}
-        to_retire = []
-        for new_np, assertion, orig in flask.current_app.db.query('''select distinct ?np ?assertion ?original_uri where {
-                ?np np:hasAssertion ?assertion.
-                ?assertion a np:Assertion;
-                prov:wasGeneratedBy/a ?setl;
-                prov:wasQuotedFrom ?original_uri.
-            }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
-            old_np_map[orig] = assertion
-            to_retire.append(new_np)
-            if len(to_retire) > 100:
-                flask.current_app.nanopub_manager.retire(*to_retire)
-                to_retire = []
-        flask.current_app.nanopub_manager.retire(*to_retire)
+#        to_retire = []
+#        for new_np, assertion, orig in flask.current_app.db.query('''select distinct ?np ?assertion ?original_uri where {
+#                ?np np:hasAssertion ?assertion.
+#                ?assertion a np:Assertion;
+#                prov:wasGeneratedBy/a ?setl;
+#                prov:wasQuotedFrom ?original_uri.
+#            }''', initBindings=dict(setl=i.identifier), initNs=dict(prov=prov, np=np)):
+#            old_np_map[orig] = assertion
+#            to_retire.append(new_np)
+#            if len(to_retire) > 100:
+#                flask.current_app.nanopub_manager.retire(*to_retire)
+#                to_retire = []
+#        flask.current_app.nanopub_manager.retire(*to_retire)
         # print resources
         for output_graph in setl_graph.subjects(prov.wasGeneratedBy, i.identifier):
             print("output_graph", output_graph)

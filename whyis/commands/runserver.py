@@ -37,7 +37,7 @@ class WhyisServer(Server):
         import sys
         celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
         celery_args = ['-A', 'wsgi.celery']
-        worker_args = ['-l', 'INFO', '-c', '4', '--logfile','run/logs/celery.log']
+        worker_args = ['-l', 'INFO', '--logfile','run/logs/celery.log']
         command = [celery_command] + celery_args + ['worker'] + worker_args
         p = None
         p = subprocess.Popen(command, stdin=subprocess.DEVNULL)

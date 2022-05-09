@@ -596,6 +596,16 @@ values (?c ?priority) { %s }
             output_string += "\n\t\t]\n\t});\n</script></md-card>"
         return output_string
 
+    @app.template_filter('toframe')
+    def toframe(data):
+        import pandas as pd
+        return pd.DataFrame.from_records(data)
+
+    @app.template_filter('tocsv')
+    def tocsv(data):
+        import pandas as pd
+        return pd.DataFrame.from_records(data).to_csv(index=False)
+    
     @app.template_filter('from_n3_dict')
     def from_n3_dict(args):
         result = {}

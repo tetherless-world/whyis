@@ -54,14 +54,14 @@ def engine_from_config(config):
 
             r = s.post(store.query_endpoint,
                        data=data,
-                       # params={"context-uri":graph.identifier},
+                       #params={"graph":default_graph},
                        headers={'Content-Type':format})
             #print(r.text)
         store.publish = publish
 
         graph = ConjunctiveGraph(store,defaultgraph)
     elif '_store' in config:
-        graph = ConjunctiveGraph(store='Sleepycat',identifier=defaultgraph)
+        graph = ConjunctiveGraph(store='Oxigraph',identifier=defaultgraph)
         graph.store.batch_unification = False
         graph.store.open(config["_store"], create=True)
     elif '_memory' in config:

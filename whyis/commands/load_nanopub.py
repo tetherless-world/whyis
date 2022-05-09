@@ -39,7 +39,7 @@ class LoadNanopub(Command):
                 return
             was_revision_of = wasRevisionOf
         g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
-        if temp_store == "Sleepycat":
+        if temp_store == "Oxigraph":
             g_store_tempdir = tempfile.mkdtemp()
             g.store.open(g_store_tempdir, True)
         else:

@@ -69,10 +69,12 @@ class NanopublicationManager(object):
                 g = rdflib.Graph(store=context.store, identifier=new_np.assertion.identifier)
                 g += context
                 context.remove((None, None, None))
+                print ('replaced graph %s with %s' % (context.identifier, new_np.assertion.identifier))
             else:
                 new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
                 new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
                 new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+                print ('wrapped graph %s with %s' % (context.identifier, new_np.identifier))
             new_np.assertion
             new_np.provenance
             new_np.pubinfo
@@ -217,9 +219,9 @@ class NanopublicationManager(object):
             for store in stores:
                 for s, p, o, c in rdflib.ConjunctiveGraph(store).quads():
                     if self.app.config.get('BNODE_REWRITE', False):
+                        # predicates can't be bnodes, and contexts have already been rewritten.
                         s = skolemize(s)
                         o = skolemize(o)
-                        # predicates can't be bnodes, and contexts have already been rewritten.
                     row = '%s { %s %s %s . }' % (c.identifier.n3(), s.n3(), p.n3(), o.n3())
                     #print(row)
                     data.write(row.encode('utf8'))
@@ -232,7 +234,7 @@ class NanopublicationManager(object):
                 # np_graph.serialize(data, format="trig")
                 # data.write('\n')
                 # data.flush()
-            self.retire(*to_retire)
+                self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data)
 

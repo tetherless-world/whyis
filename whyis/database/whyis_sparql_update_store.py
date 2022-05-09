@@ -29,6 +29,5 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
                 " ".join(self.node_to_sparql(initBindings[x]) for x in v),
             )
             query = re.sub(r'where\s+{', 'WHERE {%s' % values, query, count=1, flags=re.I)
-            print(query)
         return SPARQLUpdateStore.query(self, query, initNs=initNs, initBindings=None,
                                        queryGraph=queryGraph, DEBUG=DEBUG)

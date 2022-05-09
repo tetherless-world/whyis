@@ -24,6 +24,8 @@ from whyis.datastore import create_id
 class Nanopublication(rdflib.ConjunctiveGraph):
     _nanopub_resource = None
 
+    new = True
+    
     @property
     def nanopub_resource(self):
         if self._nanopub_resource is None:
