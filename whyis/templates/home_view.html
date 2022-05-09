@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{config['SITE_NAME']}}{% endblock %}
+
+{% block pageheader %}
+<div class="jumbotron" style="color: #eee; background-color: #08233c; background: url('{{config['SITE_HEADER_IMAGE']}}') no-repeat top center; background-size:cover">
+  <div class="container" style="text-shadow: 0px 0px 20px black;">
+    <h1 class="">{{title()}}</h1>
+    {% if 'SITE_DESCRIPTION' in config %}
+    <p class="lead">{{config['SITE_DESCRIPTION']}}</p>
+    {% else %}
+    {% for property, value in g.get_summary(this.description())%}
+    <p class="lead">{{value}}</p>
+    {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row" >
+    {{ content(this.description()) }}
+</div>
+<div>
+<latest/>
+{% endblock %}

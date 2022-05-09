@@ -1,0 +1,1 @@
+{{this | instance_data(args['variables'], args['constraints']) | query | jsonify }}

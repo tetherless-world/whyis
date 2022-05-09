@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# exit when any command fails
+set -e
+
+sudo apt-get update
+sudo apt-get install -y software-properties-common
+
+export CURRENT_USER=$(id -u -n)
+export WHYIS_USER=${WHYIS_USER:-$CURRENT_USER}
+export WHYIS_GROUP=${WHYIS_GROUP:-whyis}
+
+export WHYIS_HOME=${WHYIS_HOME:-/home/$WHYIS_USER}
+
+export FUSEKI_SERVER=`which fuseki-server`
+export FUSEKI_HOME=$PWD/fuseki
+export WHYIS_APP_HOME=$PWD
+export PYTHON_HOME=$(python -c 'import sys; print(sys.prefix)')
+
+sudo groupadd -f $WHYIS_GROUP
+sudo usermod -a -G $WHYIS_GROUP $WHYIS_USER
+
+sudo apt-get install -y apache2-dev \
+			unzip \
+			zip \
+			default-jdk \
+			build-essential \
+			automake libblas3 \
+			libblas-dev \
+			python3-celery \
+			redis-server \
+			apache2 \
+			libffi-dev \
+			libssl-dev \
+			maven \
+			python3-dev
+
+mkdir -p $WHYIS_APP_HOME/data/nanopublications
+mkdir -p $WHYIS_APP_HOME/fuseki
+mkdir -p $WHYIS_APP_HOME/data/files
+mkdir -p $WHYIS_APP_HOME/celery
+
+sudo mkdir -p /var/log/celery
+sudo chown -R $WHYIS_USER /var/log/celery
+sudo mkdir -p /var/run/celery
+sudo chown -R $WHYIS_USER /var/run/celery
+
+sudo mkdir -p /var/log/whyis
+sudo chown -R $WHYIS_USER /var/log/whyis
+
+# These are here to re-substitute these variables back into the
+# script, while rewriting the ones we need to.
+export CELERY_BIN='${CELERY_BIN}'
+export CELERYD_NODES='${CELERYD_NODES}'
+export CELERY_APP='${CELERY_APP}'
+export CELERYD_PID_FILE='${CELERYD_PID_FILE}'
+export CELERYD_LOG_FILE='${CELERYD_LOG_FILE}'
+export CELERYD_LOG_LEVEL='${CELERYD_LOG_LEVEL}'
+export CELERYD_OPTS='${CELERYD_OPTS}'
+
+
+# configure celery
+sudo mkdir -p /etc/conf.d
+sudo -E sh -c "envsubst < $PWD/install_files/etc/conf.d/celery \
+	 > /etc/conf.d/celery"
+sudo -E sh -c "envsubst < $PWD/install_files/celerybeat.service \
+         > /etc/systemd/system/celerybeat.service"
+sudo -E sh -c "envsubst < $PWD/install_files/celery.service \
+         > /etc/systemd/system/celery.service"
+
+# Initialize the fuseki datasets if they aren't already set up.
+whyis init
+
+envsubst < install_files/system.conf > system.conf
+
+# enable wsgi
+export WSGI_EXPRESS=$(which mod_wsgi-express)
+sudo sh -c "$WSGI_EXPRESS module-config > /etc/apache2/mods-available/wsgi.load"
+sudo a2enmod wsgi
+sudo a2enmod headers
+sudo -E sh -c "envsubst < $PWD/install_files/etc/apache2/sites-available/000-default.conf \
+	 > /etc/apache2/sites-available/000-default.conf"
+
+# set up fuseki
+sudo -E sh -c "envsubst < $PWD/install_files/fuseki.service \
+	 > /etc/systemd/system/fuseki.service"
+
+sudo systemctl enable fuseki.service
+
+# start services
+sudo service apache2 restart
+sudo service celery restart
+sudo service celerybeat restart
+sudo service fuseki start
+
+echo "Complete!"

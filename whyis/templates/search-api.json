@@ -1,0 +1,11 @@
+{{'''
+  SELECT ?sub (sample(?pred) as ?pred) (sample(?obj) as ?obj) (max(?score) as ?score)
+#  (group_concat(distinct ?type; separator="||") as ?types)
+  WHERE {
+      (?obj ?score) text:search ?query .
+      ?sub ?pred ?obj .
+#  OPTIONAL {
+#    ?sub rdf:type ?type.
+#    }
+  } group by ?sub having (max(?score) = ?score) ORDER BY DESC(?score)
+LIMIT 10''' | query(values={"query":rdflib.Literal(args['query'])}) | tojson }}

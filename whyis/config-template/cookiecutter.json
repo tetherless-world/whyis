@@ -1,0 +1,10 @@
+{
+    "project_name": "My Knowledge Graph",
+    "project_short_description": "A knowledge graph.",
+    "project_slug": "",
+    "author": "Whyis",
+    "email": "changeme@example.com",
+    "linked_data_prefix": "http://purl.org/whyis/local",
+    "version": "0.1",
+    "__freeze" : ""
+}

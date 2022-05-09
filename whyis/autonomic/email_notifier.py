@@ -5,8 +5,8 @@ import setlr
 from datetime import datetime
 
 from .update_change_service import UpdateChangeService
-from nanopub import Nanopublication
-from datastore import create_id
+from whyis.nanopub import Nanopublication
+from whyis.datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -14,7 +14,7 @@ import logging
 
 import sys, traceback
 
-import database
+import whyis.database
 
 import tempfile
 
@@ -41,7 +41,7 @@ class EmailNotifier(UpdateChangeService):
         return self.output_type
 
     def process(self, i, o):
-        with self.app.mail.connect() as conn:
+        with flask.current_app.mail.connect() as conn:
             for u in i[self.user_predicate]:
                 user = self.datastore.find_user(id=u.identifier)
                 parameters = dict(user=user, resource=i)

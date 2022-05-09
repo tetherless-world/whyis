@@ -1,0 +1,165 @@
+{% macro title() %}
+{% block title %}{% endblock %}
+{% endmacro %}
+{% from "elements/upload.html" import upload_button_modal %}
+<html lang="{{config['default_language']}}"
+      xmlns="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+  <head>
+    <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{ title() }} - {{ config['SITE_NAME'] }}</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/vue-material.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/theme/default.css">
+
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/apple-icon-57x57.png') }}">
+<link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='images/apple-icon-60x60.png') }}">
+<link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='images/apple-icon-72x72.png') }}">
+<link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='images/apple-icon-76x76.png') }}">
+<link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='images/apple-icon-114x114.png') }}">
+<link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='images/apple-icon-120x120.png') }}">
+<link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='images/apple-icon-144x144.png') }}">
+<link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='images/apple-icon-152x152.png') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-icon-180x180.png') }}">
+<link rel="icon" type="image/png" sizes="192x192"  href="{{ url_for('static', filename='images/android-icon-192x192.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='images/favicon-96x96.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+<meta name="msapplication-TileImage" content="{{ url_for('static', filename='images/ms-icon-144x144.png') }}">
+
+<link href="{{ url_for('static', filename='css/lib/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
+
+    <style>
+      /* Fix for background-color being gray after the viewport is scrolled for all views that include extends "base.html"   */
+      html, body {
+        background-color: #fff;
+      }
+      .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+      div.container {
+      width: 100%;
+      margin-left: 0px;
+      margin-right: 0px;
+      }
+      a:visited {
+      color: #887ab7;
+      }
+    </style>
+
+    <link href="{{ url_for('static', filename='css/lib/fileinput.css')}}" media="all" rel="stylesheet" type="text/css"/>
+    <link href='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.min.css' rel='stylesheet' type='text/css'/>
+    <link href='//cdn.jsdelivr.net/yasr/2.10.8/yasr.min.css' rel='stylesheet' type='text/css'/>
+    {% block styles %}
+    {% endblock %}
+
+  </head>
+<body>
+  <div id="page">
+{% block body %}
+    <div class="page-container">
+            <md-toolbar class="md-primary">
+                <div class="md-toolbar-row">
+                    <div class="md-toolbar-section-start">
+                        <md-button href="{{url_for('entity.view',name='')}}">Home</md-button>
+                        <span class="md-title" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small></span>
+                    </div>
+                    <!-- Form for Search -->
+                    <form md-layout="box"
+                            style="color:black"
+                          role="search"
+                          action="{{url_for('entity.view',name='search')}}"
+                          method="get"
+                          name="search">
+                          <search-autocomplete ></search-autocomplete>
+                    </form><!-- /search form -->
+
+                    <div class="md-toolbar-section-end">
+                        {% block nav %}
+                        {% endblock %}
+                        {% include "nav.html" %}
+                        <h3>
+                            {% if not current_user or current_user.is_anonymous %}
+                            <md-button href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
+                            <md-button href="{{url_for('security.register')}}" aria-label="Register" title="">Register</md-button>
+                            {% else %}
+                            <md-menu md-size="medium" md-align-trigger>
+                                <md-button md-menu-trigger >Welcome, {{current_user.givenName}} <span class="caret"></span></md-button>
+                                <md-menu-content>
+                                    <md-menu-item><a href="{{url_for('security.logout')}}">Log out</a></md-menu-item>
+                                    <md-menu-item><a href="{{url_for('security.change_password')}}">Change password</a></md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </md-toolbar>
+    {% block pageheader %}
+    <div >
+      <div class="page-header" layout="row">
+      </div>
+      {% endblock %}
+      <div>
+        {% block content %}
+        {% endblock %}
+      </div>
+    </div>
+  </div>
+    {% endblock %}
+
+  </div>
+
+    <script>
+      LOD_PREFIX = '{{config.LOD_PREFIX}}';
+      {% if 'BASE_RATE_PROBABILITY' in config %}
+      BASE_RATE = {{config['BASE_RATE_PROBABILITY']}};
+      {% else %}
+      BASE_RATE = 0.5;
+      {% endif %}
+      {% if current_user and current_user.identifier %}
+      USER = { uri: '{{current_user.identifier}}', admin: '{{current_user.has_role('Admin')}}' };
+      {% else %}
+      USER = { }
+      {% endif %}
+      {% if this is defined %}
+      NODE_URI = "{{this.identifier | safe}}";
+      ATTRIBUTES = {{ this | include('attributes') | safe }};
+      DESCRIPTION = {{this.description().graph | serialize(format="json-ld") | safe}};
+      NODE = DESCRIPTION.filter(function(d) { return d['@id'] == NODE_URI});
+      if (NODE.length > 0)  NODE = NODE[0];
+      else NODE = {"@id" : NODE_URI};
+      {% endif %}
+      ROOT_URL = "{{url_for('entity.view',name='')}}";
+    </script>
+
+    <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
+
+    <script src="{{ url_for('static', filename='js/lib/bootstrap.js')}}"></script>
+
+    <script src="{{ url_for('static', filename='js/lib/fileinput.js')}}" type="text/javascript"></script>
+
+    <script src="{{ url_for('static', filename='node_modules/vega/build/vega.min.js') }}" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='node_modules/vega-lite/build/vega-lite.min.js') }}" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='node_modules/vega-embed/build/vega-embed.min.js') }}" type="text/javascript"></script>
+
+    <!-- TODO see if we can use the non-bundled versions -->
+    <script src='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.bundled.min.js'></script>
+    <script src='//cdn.jsdelivr.net/yasr/2.10.8/yasr.bundled.min.js'></script>
+
+    <script src="{{ url_for('static', filename='js/whyis_vue_bundle.js')}}"></script>
+
+
+{% block scripts %}{% endblock %}
+
+<script>
+</script>
+
+</body>
+</html>

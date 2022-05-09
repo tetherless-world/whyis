@@ -21,7 +21,7 @@ class TestCase(flask_testing.TestCase):
                                   query_string=query_string,
                                   headers=headers or {},
                                   follow_redirects=True)
-        
+
         if expected_template is not None:
             self.assertTemplateUsed(expected_template)
 
@@ -31,39 +31,37 @@ class TestCase(flask_testing.TestCase):
 
         return content
 
-    
+
     def create_app(self):
         try:
             import config
         except:
             from whyis import config_defaults as config
 
-        if 'admin_queryEndpoint' in config.Test:
-            del config.Test['admin_queryEndpoint']
-            del config.Test['admin_updateEndpoint']
-            del config.Test['knowledge_queryEndpoint']
-            del config.Test['knowledge_updateEndpoint']
+        if 'ADMIN_ENDPOINT' in config.Test:
+            del config.Test['ADMIN_ENDPOINT']
+            del config.Test['KNOWLEDGE_ENDPOINT']
         config.Test['TESTING'] = True
         config.Test['WTF_CSRF_ENABLED'] = False
-        config.Test['nanopub_archive'] = {
+        config.Test['NANOPUB_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
         config.Test['DEFAULT_ANONYMOUS_READ'] = False
-        config.Test['file_archive'] = {
+        config.Test['FILE_ARCHIVE'] = {
             'depot.backend' : 'depot.io.memory.MemoryFileStorage'
         }
         # Default port is 5000
         config.Test['LIVESERVER_PORT'] = 8943
         # Default timeout is 5 seconds
         config.Test['LIVESERVER_TIMEOUT'] = 10
-        
+
         from whyis.app_factory import app_factory
         application = app_factory(config.Test, config.project_name)
-        
+
         return application
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='Admin'):
-        import commands
+        from whyis import commands
         from uuid import uuid4
         pw = 'password'
         creator = commands.CreateUser()
@@ -73,4 +71,3 @@ class TestCase(flask_testing.TestCase):
     def login(self, email, password):
         return self.client.post('/login', data={'email': email, 'password': password, 'remember': 'y'},
                                 follow_redirects=True)
-

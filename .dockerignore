@@ -1,5 +1,6 @@
 /.git/
 /.idea/
+/.eggs/
 /static/node_modules/
 package-lock.json
 *.pyc
@@ -8,3 +9,5 @@ __pycache__/
 /tests/integration/cypress/videos/
 /test-results/
 /venv/
+/build/
+/dist/

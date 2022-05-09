@@ -1,0 +1,72 @@
+{% macro render_resource_link(resource) %}
+  <a href="{{url_for('entity.view', uri=resource.identifier)}}">{{get_label(resource)}}</a>
+{% endmacro %}
+
+{% macro render_rdfa_resource_link(resource, predicate) %}
+  <a relation="{{predicate}}" href="{{resource.identifier}}">{{get_label(resource)}}</a>
+{% endmacro %}
+
+{% macro get_label(resource) %}{{g.get_label(resource)}}{% endmacro %}
+
+{% macro content(resource) %}
+    {% for value in resource[g.ns.sioc.content] %}
+    <div class="panel panel-default">
+      <div class="panel-body" property="{{g.ns.sioc.content}}">
+        {{value  | safe}}
+      </div>
+    </div>
+    {% endfor %}  
+{% endmacro %}
+    
+{% macro summary_panel(resource) %}
+    {% for property, value in g.get_summary(resource)%}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">{{get_label(resource.graph.resource(property))}}</h2>
+      </div>
+      <div class="panel-body" property="{{property}}">
+        {{value | safe}}
+      </div>
+    </div>
+    {% endfor %}  
+{% endmacro %}
+
+{% macro facts_list(resource) %}
+        {% for predicate, objects in resource.predicate_objects() | groupby(0) | sort(attribute=0) %}
+        {% if predicate.identifier != g.ns.sioc.content  %}
+    
+        <dl class="dl-horizontal clearfix">
+          <dt style="font-weight:bold">{{get_label(resource.graph.resource(predicate.identifier))}}</dt>
+          <dd>
+            {% for object in objects | map('last') | lang()  %}
+            {%- if loop.index == 11 %}<p>...</p>{% endif %}
+            {% if loop.index <= 10 %}
+            {% if g.isinstance(object, g.rdflib.Literal)  %}
+            <p property="{{predicate}}">{{object}}</p>
+            {% else %}
+            <p>{{render_resource_link(object)}}</p>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+          </dd>
+        </dl>
+        {% endif %}
+        {% endfor %}
+{% endmacro%}
+        
+{% macro facts_panel(resource) %}
+    <div resource="{{resource.identifier}}" class="panel panel-default">
+      <div class="panel-heading">
+        <h2 class="panel-title">Facts</h2>
+      </div>
+      <div class="panel-body">
+        <dl class="dl-horizontal clearfix">
+          <dt style="font-weight:bold">Identifier</dt>
+          <dd>
+            <p>{{resource.identifier}}</p>
+          </dd>
+        </dl>
+        {{facts_list(resource)}}
+      </div>
+    </div>
+{% endmacro %}

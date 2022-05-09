@@ -14,8 +14,8 @@ class TemporaryApp:
 
         with open(os.path.join(self.app_dir_path, "setup.py"), "w+") as setup_py_file:
             setup_py_file.write("""\
-from distutils.core import setup            
-            
+from distutils.core import setup
+
 setup(name='TempApp',
       version='0.1',
       description='Temporary app',
@@ -28,7 +28,7 @@ setup(name='TempApp',
 
         with open(os.path.join(self.app_dir_path, "config.py"), "w+") as config_py_file:
             config_py_file.write("""\
-from config_defaults import *
+from whyis.config_defaults import *
 """)
 
         # print(self.app_dir_path)

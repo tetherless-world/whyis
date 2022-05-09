@@ -8,7 +8,7 @@ import requests
 class IntegrationTestCase(TestCase):
 
     def create_user(self, email, password, username="identifier", fn="First", ln="Last", roles='Admin'):
-        import commands
+        from whyis import commands
         from uuid import uuid4
         pw = 'password'
         creator = commands.CreateUser()

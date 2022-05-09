@@ -12,8 +12,8 @@ class TemporaryVenv:
         self.venv_dir_path = None
 
         if whyis_dir_path is None:
-            import manage
-            whyis_dir_path = os.path.dirname(manage.__file__)
+            from whyis import manager
+            whyis_dir_path = os.path.dirname(manager.__file__)
         self.whyis_dir_path = whyis_dir_path
 
     def __enter__(self):
@@ -36,14 +36,7 @@ class TemporaryVenv:
     def install_whyis_requirements(self) -> None:
         # Install every requirement separately so that failed installations are skipped
         # subprocess.call("cat requirements/common.txt | xargs -n 1 %s/bin/pip install" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True)
-        with tempfile.NamedTemporaryFile(delete=False, mode="w") as temp_requirements_txt:
-            with open(os.path.join(self.whyis_dir_path, "requirements", "common.txt")) as requirements_file:
-                for line in requirements_file:
-                    if line.startswith("javabridge"):
-                        continue
-                    temp_requirements_txt.write(line)
-            temp_requirements_txt.flush()
-            subprocess.call("%s/bin/pip install --progress-bar off -r %s" % (self.venv_dir_path, temp_requirements_txt.name), cwd=self.whyis_dir_path, shell=True)
+        subprocess.call("%s/bin/pip install --progress-bar off -e .." % (self.venv_dir_path), cwd=self.whyis_dir_path, shell=True)
 
     def is_whyis_app_installed(self) -> bool:
         return subprocess.call("%s/bin/python -c 'import config'" % self.venv_dir_path, cwd=self.whyis_dir_path, shell=True) == 0

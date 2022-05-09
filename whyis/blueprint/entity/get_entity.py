@@ -35,7 +35,7 @@ def view(name=None, format=None, view=None):
         elif current_app.file_depot.exists(fileid):
             f = current_app.file_depot.get(fileid)
         if f is not None:
-            fsa = FileServeApp(f, current_app.config["file_archive"].get("cache_max_age",3600*24*7))
+            fsa = FileServeApp(f, current_app.config["FILE_ARCHIVE"].get("cache_max_age",3600*24*7))
             return fsa
 
     if content_type is None:

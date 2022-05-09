@@ -4,7 +4,7 @@ import rdflib
 import os
 import collections
 import requests
-from dataurl import DataURLStorage
+from whyis.dataurl import DataURLStorage
 from werkzeug.utils import secure_filename
 
 import tempfile
@@ -18,12 +18,14 @@ import pytz
 from whyis.namespace import np, prov, dc, frbr
 from uuid import uuid4
 
-from datastore import create_id
+from whyis.datastore import create_id
 
 
 class Nanopublication(rdflib.ConjunctiveGraph):
     _nanopub_resource = None
 
+    new = True
+    
     @property
     def nanopub_resource(self):
         if self._nanopub_resource is None:

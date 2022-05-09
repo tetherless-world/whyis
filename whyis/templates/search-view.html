@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Results for "{{args['query']}}"{% endblock %} {% block styles %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+RESULTS = {{ rdflib.URIRef(config.LOD_PREFIX+'/searchApi') | include| safe }};
+</script>
+{% endblock %}
+{% block content %}
+
+<search-result query={{ args['query'] }} />
+
+{% endblock %}
+{% block actions %}{% endblock %}

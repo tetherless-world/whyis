@@ -5,8 +5,8 @@ import setlr
 from datetime import datetime
 
 from .global_change_service import GlobalChangeService
-from nanopub import Nanopublication
-from datastore import create_id
+from whyis.nanopub import Nanopublication
+from whyis.datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -14,7 +14,7 @@ import logging
 
 import sys, traceback
 
-import database
+import whyis.database
 
 import tempfile
 
@@ -65,8 +65,8 @@ select distinct ?resource where {
 
     def process_nanopub(self, i, o, new_np):
         print(i.identifier)
-        p = self.app.NS.prov.used
-        for script, np, parameterized_type, type_assertion in self.app.db.query('''
+        p = flask.current_app.NS.prov.used
+        for script, np, parameterized_type, type_assertion in flask.current_app.db.query('''
 select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;
@@ -92,22 +92,22 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
             ?extract prov:used ?resource.
         }
     }
-}''', initBindings=dict(resource=i.identifier), initNs=self.app.NS.prefixes):
-            nanopub = self.app.nanopub_manager.get(np)
+}''', initBindings=dict(resource=i.identifier), initNs=flask.current_app.NS.prefixes):
+            nanopub = flask.current_app.nanopub_manager.get(np)
             print("Template NP", nanopub.identifier, len(nanopub))
             template_prefix = nanopub.assertion.value(script, setl.hasTemplatePrefix)
-            replacement_prefix = self.app.NS.local['setl/' + create_id() + "/"]
+            replacement_prefix = flask.current_app.NS.local['setl/' + create_id() + "/"]
 
             mappings = {}
             for x, in nanopub.assertion.query("select ?x where {?x a ?t}",
                                               initBindings={'t': parameterized_type},
-                                              initNs=self.app.NS.prefixes):
+                                              initNs=flask.current_app.NS.prefixes):
                 mappings[x] = i.identifier
 
             script_run = rdflib.URIRef(script.replace(template_prefix, replacement_prefix, 1))
             for x, in nanopub.assertion.query("select ?x where {?x a ?t}",
                                               initBindings={'t': script},
-                                              initNs=self.app.NS.prefixes):
+                                              initNs=flask.current_app.NS.prefixes):
                 mappings[x] = script_run
 
             def replace(x):

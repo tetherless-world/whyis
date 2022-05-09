@@ -5,9 +5,9 @@ from .list_routes import ListRoutes
 from .load_nanopub import LoadNanopub
 from .restore import Restore
 from .retire_nanopub import RetireNanopub
-from .run_interpreter import RunInterpreter
 from .runserver import WhyisServer
 from .test import Test
 from .test_agent import TestAgent
 from .update_user import UpdateUser
 from .uninstall_app import UninstallApp
+from .init import Initialize

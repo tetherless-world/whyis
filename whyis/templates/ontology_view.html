@@ -1,0 +1,796 @@
+{% extends "base_vue.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{get_label(this.description())}}{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="/static/css/resources/primer.css" media="screen" type="text/css"/>    
+<!-- <link rel="stylesheet" href="/static/css/resources/rec.css" media="screen" type="text/css"/>     -->
+<link rel="stylesheet" href="/static/css/resources/extra.css" media="screen" type="text/css"/>
+<link rel="stylesheet" href="/static/css/resources/owl.css" media="screen" type="text/css"/>
+{% endblock %}
+
+{% macro render_class(concept) %}
+<ul>
+  {% for s in sort_by(concept.subjects(ns.RDFS.subClassOf), ns.RDFS.label) %}
+  <li>
+     <a title="{{s.value(ns.skos.definition)}}" href="{{s.identifier}}">
+       {{s.value(ns.RDFS.label)}}
+       {% if not s[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+       <span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+       {% endif %}
+     </a>
+     {{render_class(s)}}
+  </li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% block content %}
+
+<script type="text/javascript">
+    var ontology = "{{this.description().identifier}}";
+</script>
+<div class="page-header" layout="row">
+  <h1 flex property="rdfs:label">{{get_label(this.description())}}</h1>
+</div>
+<!--TABLE OF CONTENTS-->
+<div id="toc">
+<p class="toc_title"><h2>Contents</h2></p>
+<ul class="toc_list">
+  <li><a href="#introduction">1 Introduction</a></li>
+  <li><a href="#overview">2 Overview</a></li>
+  <li><a href="#description">3 Description</a></li>
+  <li><a href="#crossref">4 Cross reference for ontology classes, properties and named individuals
+</a></li>
+  <ul>
+    <li><a href="#classes">4.1 Classes</a></li>
+    <li><a href="#objectproperties">4.2 Object Properties</a></li>
+    <li><a href="#dataproperties">4.3 Data Properties</a></li>
+    <li><a href="#namedindividuals">4.4 Named Individuals</a></li>
+  </ul>
+<li><a href="#references">5 References</a></li>
+<li><a href="#acknowledgements">6 Acknowledgements</a></li>
+</ul>
+</div>
+
+{% set ontology = this | include("data") | fromjson %}
+
+<h2><a href="{{this.description().identifier}}" title="{{this.description().identifier}}">{{get_label(this.description())}}</a></h2>
+{% for metadata in ontology['metadata']%}
+<dl>
+  {% if metadata['title'] %}
+    <dt>Title:</dt>
+    <dd>{{metadata['title']}}</dd>
+  {% endif %}
+  {% if metadata['creationTime'] %}
+    <dt>Created:</dt>
+    <dd>{{metadata['creationTime']}}</dd>
+  {% endif %}
+  {% if metadata['modificationTime'] %}
+    <dt>Modified:</dt>
+    <dd>{{metadata['modificationTime']}}</dd>
+  {% endif %}
+  {% if metadata['issueDate'] %}
+    <dt>Issued:</dt>
+    <dd>{{metadata['issueDate']}}</dd>
+  {% endif %}
+  {% if metadata['version'] %}
+    <dt>This version:</dt>
+    <dd><a href="{{metadata['version']}}" title="{{metadata['version']}}" id="this-version-url">{{metadata['version']}}</a></dd>
+  {% endif %}
+  {% if metadata['original'] %}
+    <dt>Is version of:</dt>
+    <dd><a href="{{metadata['original']}}" title="{{metadata['original']}}" id="original-version-url">{{metadata['original']}}</a></dd>
+  {% endif %}
+  {% if metadata['identifier'] %}
+    <dt>Identifier:</dt>
+    <dd><a href="{{metadata['identifier']}}" title="{{metadata['identifier']}}" id="identifier-url">{{metadata['identifier']}}</a></dd>
+  {% endif %}
+  {% if metadata['creators'] %}
+    {% if '&&' in metadata['creators'] %}
+    <dt>Creators:</dt>
+        {% for creator in metadata['creators'].split('&&')%}
+            <dd><a href="{{creator}}" title="{{creator}}" id="creator-url">{{creator}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Creator:</dt>
+    <dd><a href="{{metadata['creators']}}" title="{{metadata['creators']}}" id="creator-url">{{metadata['creators']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['contributors'] %}
+    {% if '&&' in metadata['contributors'] %}
+    <dt>Contributors:</dt>
+        {% for contributor in metadata['contributors'].split('&&')%}
+            <dd><a href="{{contributor}}" title="{{contributor}}" id="contributor-url">{{contributor}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Contributor:</dt>
+    <dd><a href="{{metadata['contributors']}}" title="{{metadata['contributors']}}" id="contributor-url">{{metadata['contributors']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['publishers'] %}
+    {% if '&&' in metadata['publishers'] %}
+    <dt>Publishers:</dt>
+        {% for publisher in metadata['publishers'].split('&&')%}
+            <dd><a href="{{publisher}}" title="{{publisher}}" id="publisher-url">{{publisher}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Publisher:</dt>
+    <dd><a href="{{metadata['publishers']}}" title="{{metadata['publishers']}}" id="publisher-url">{{metadata['publishers']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['licenses'] %}
+    {% if '&&' in metadata['licenses'] %}
+    <dt>Licenses:</dt>
+        {% for license in metadata['license'].split('&&')%}
+            <dd><a href="{{license}}" title="{{license}}" id="license-url">{{license}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>License:</dt>
+    <dd><a href="{{metadata['licenses']}}" title="{{metadata['licenses']}}" id="license-url">{{metadata['licenses']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['languages'] %}
+    {% if '&&' in metadata['languages'] %}
+    <dt>Languages:</dt>
+        {% for language in metadata['languages'].split('&&')%}
+            <dd><a href="{{language}}" title="{{language}}" id="language-url">{{language}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Language:</dt>
+    <dd><a href="{{metadata['languages']}}" title="{{metadata['languages']}}" id="language-url">{{metadata['languages']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['rights'] %}
+    <dt>Rights:</dt>
+    {% if '&&' in metadata['rights'] %}
+        {% for right in metadata['rights'].split('&&')%}
+            <dd><a href="{{right}}" title="{{right}}" id="rights-url">{{right}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dd><a href="{{metadata['rights']}}" title="{{metadata['rights']}}" id="rights-url">{{metadata['rights']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['subjects'] %}
+    <dt>Subject:</dt>
+    {% if '&&' in metadata['subjects'] %}
+        {% for subject in metadata['subjects'].split('&&')%}
+            <dd><a href="{{subject}}" title="{{subject}}" id="subject-url">{{subject}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dd><a href="{{metadata['subjects']}}" title="{{metadata['subjects']}}" id="subject-url">{{metadata['subjects']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['coverages'] %}
+    <dt>Coverage:</dt>
+    {% if '&&' in metadata['coverages'] %}
+        {% for coverage in metadata['coverages'].split('&&')%}
+            <dd><a href="{{coverage}}" title="{{coverage}}" id="coverage-url">{{coverage}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dd><a href="{{metadata['coverages']}}" title="{{metadata['coverages']}}" id="coverage-url">{{metadata['coverages']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['formats'] %}
+    {% if '&&' in metadata['formats'] %}
+    <dt>Formats:</dt>
+        {% for format in metadata['formats'].split('&&')%}
+            <dd><a href="{{format}}" title="{{format}}" id="format-url">{{format}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Format:</dt>
+    <dd><a href="{{metadata['formats']}}" title="{{metadata['formats']}}" id="format-url">{{metadata['formats']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['formats'] %}
+    {% if '&&' in metadata['formats'] %}
+    <dt>Formats:</dt>
+        {% for format in metadata['formats'].split('&&')%}
+            <dd><a href="{{format}}" title="{{format}}" id="format-url">{{format}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Format:</dt>
+    <dd><a href="{{metadata['formats']}}" title="{{metadata['formats']}}" id="format-url">{{metadata['formats']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['sources'] %}
+    {% if '&&' in metadata['sources'] %}
+    <dt>Sources:</dt>
+        {% for source in metadata['sources'].split('&&')%}
+            <dd><a href="{{source}}" title="{{source}}" id="source-url">{{source}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Source:</dt>
+    <dd><a href="{{metadata['sources']}}" title="{{metadata['sources']}}" id="source-url">{{metadata['sources']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['relations'] %}
+    {% if '&&' in metadata['relations'] %}
+    <dt>Relations:</dt>
+        {% for relation in metadata['relations'].split('&&')%}
+            <dd><a href="{{relation}}" title="{{relation}}" id="relation-url">{{relation}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Relation:</dt>
+    <dd><a href="{{metadata['relations']}}" title="{{metadata['relations']}}" id="relation-url">{{metadata['relations']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['requirements'] %}
+    {% if '&&' in metadata['requirements'] %}
+    <dt>Requirements:</dt>
+        {% for requirement in metadata['requirements'].split('&&')%}
+            <dd><a href="{{requirement}}" title="{{requirement}}" id="requirement-url">{{requirement}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Requirement:</dt>
+    <dd><a href="{{metadata['requirements']}}" title="{{metadata['requirements']}}" id="requirement-url">{{metadata['requirements']}}</a></dd>
+    {% endif %}
+  {% endif %}
+  {% if metadata['standards'] %}
+    {% if '&&' in metadata['standards'] %}
+    <dt>Standards:</dt>
+        {% for standard in metadata['standards'].split('&&')%}
+            <dd><a href="{{standard}}" title="{{standard}}" id="standard-url">{{standard}}</a></dd>
+        {% endfor %}
+    {% else %}
+    <dt>Standard:</dt>
+    <dd><a href="{{metadata['standards']}}" title="{{metadata['standards']}}" id="standard-url">{{metadata['standards']}}</a></dd>
+    {% endif %}
+  {% endif %}
+</dl>
+
+<!--INTRODUCTION SECTION-->
+<div id="introduction"><h2 id="intro" class="list">Introduction</h2>
+
+  {% if metadata['comment'] %}
+    <span class="markdown">{{metadata['comment']}}</span>
+  {% endif%}
+
+  {% if metadata['description'] %}
+    <span class="markdown">{{metadata['description']}}</span>
+  {% endif%}
+
+  {% if metadata['abstract']%}
+    <div id="abstract">
+    <h3 id="abstract">Abstract</h3>
+    <span class="markdown">{{metadata['abstract']}}</span>
+    </div>
+  {% endif %}
+
+
+  {% if metadata['imports'] %}
+    <div id="importdeclarations">
+    <h3 id="im" class="list">Imports</h3>
+        <div id="im" align="center">
+        <table>
+        <caption align="center"><a href="#im">Imported Ontologies</a></caption>
+        <tbody>
+        {% if '&&' in metadata['imports'] %}
+            {% set imports = metadata['imports'].split('&&') %}
+            {% for import in imports%}
+                <tr><td><a href="{{import}}" title="{{import}}">&lt;{{import}}&gt;</a></td></tr>
+            {% endfor %}
+        {% else %}
+            <tr><td><a href="{{metadata['imports']}}" title="{{metadata['imports']}}">&lt;{{metadata['imports']}}&gt;</a></td></tr>
+        {% endif %}
+        </tbody>
+        </table>
+        </div>
+    </div>
+  {% endif %}
+    <!-- Still need to update this -->
+  {% if metadata['namespaces']%}
+    <div id="namespacedeclarations">
+    <h3 id="ns" class="list">Namespace declarations</h3>
+        <div id="ns" align="center">
+        <table>
+        <caption> <a href="#ns">Namespaces used in the document</a></caption>
+        <tbody>
+        <tr><td><b>owl</b></td><td>&lt;http://www.w3.org/2002/07/owl&gt;</td></tr>
+        </tbody>
+        </table>
+        </div>
+    </div>
+  {% endif %}
+</div>
+
+{% endfor %}
+
+<!--OVERVIEW SECTION-->
+    <div id="overview"><h2 id="overv" class="list">Overview</h2>
+<span class="markdown">
+This ontology has the following classes and properties.</span>
+<h4>Classes</h4>
+<ul class="hlist">
+{% for class in ontology['classes'] %}
+<li>
+<a href="#/{{class['label'].replace(' ','')}}" title={{class['class']}}>{{class['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+<h4>Object Properties</h4>
+<ul class="hlist">
+{% for property in ontology['object_properties'] %}
+<li>
+<a href="#/{{property['label'].replace(' ','')}}" title={{property['property']}}>{{property['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+<h4>Data Properties</h4>
+<ul class="hlist">
+{% for property in ontology['datatype_properties'] %}
+<li>
+<a href="#/{{property['label'].replace(' ','')}}" title={{property['property']}}>{{property['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+<h4>Named Individuals</h4>
+<ul class="hlist">
+{% for individual in ontology['individuals'] %}
+<li>
+<a href="#/{{individual['label'].replace(' ','')}}" title={{individual['individual']}}>{{individual['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+</div>
+
+<!--DESCRIPTION SECTION-->
+    <div id="description"><h2 id="desc" class="list">Description </h2>
+
+<div class="row">
+    <kg-card class="col-md-4" src="'{{this.identifier}}'"></kg-card>
+      <div class="col-md-4">
+
+<!--        <dd><a href="http://purl.org/ontology/bibo/">&lt;http://purl.org/ontology/bibo/&gt;</a></dd><dd><a href="http://semanticscience.org/ontology/sio.owl">sio.owl</a></dd><dd><a href="http://www.nanopub.org/nschema">nschema</a></dd>
+-->
+      </div>
+</div>
+
+</div>
+
+<!--CROSSREF SECTION-->
+   <div id="crossref"><h2 id="crossreference" class="list">Cross reference for ontology classes, properties and named individuals</h2>
+This section provides details for each class and property defined by the ontology.
+<div id="classes">
+   <h3 id="classes-headline" class="list">Classes</h3>
+
+<ul class="hlist">
+{% for class in ontology['classes'] %}
+<li>
+<a href="#/{{class['label'].replace(' ','')}}" title={{class['class']}}>{{class['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+
+{% for class in ontology['classes'] %}
+<div class="entity" id="/{{class['label'].replace(' ','')}}">
+      <h3>{{class['label']}}<sup class="type-c" title="class">c</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#classes">Class ToC</a>
+         </span>
+      </h3>
+      <p><strong>IRI:</strong> <a href="{{class['class']}}">{{class['class']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=class['class'])}}" title={{class['class']}}>{{class['label']}}</a></p>
+      {% if class['comment'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Comment:</strong> {{class['comment']}}</span>
+      </div>
+      {% endif %}
+      {% if class['def'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Definition:</strong> {{class['def']}}</span>
+      </div>
+      {% endif %}
+      <dl class="description">
+         {% if class['superClasses'] %}
+            {% if '&&' in class['superClasses'] %}
+            {% set superClasses = class['superClasses'].split('&&') %}
+            {% set superClassLabels = class['superLabels'].split('&&') %}
+             <dt>has super-classes</dt>
+             <dd>
+              {% for i in range(0,superClasses|length) %}
+                {% if superClassLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{superClassLabels[i].replace(' ','')}}" title="{{superClasses[i]}}">{{superClassLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has super-class</dt>
+             <dd>
+                <a href="#/{{class['superLabels'].replace(' ','')}}" title="{{class['superClasses']}}">{{class['superLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if class['subClasses'] %}
+            {% if '&&' in class['subClasses'] %}
+            {% set subClasses = class['subClasses'].split('&&') %}
+            {% set subClassLabels = class['subLabels'].split('&&') %}
+             <dt>has sub-classes</dt>
+             <dd>
+              {% for i in range(0,subClasses|length) %}
+                {% if subClassLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{subClassLabels[i].replace(' ','')}}" title="{{subClasses[i]}}">{{subClassLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has sub-class</dt>
+             <dd>
+                <a href="#/{{class['subLabels'].replace(' ','')}}" title="{{class['subClasses']}}">{{class['subLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if class['inDomainProperties'] %}
+         <dt>is in domain of</dt>
+         <dd>
+            {% if '&&' in class['inDomainProperties'] %}
+            {% set inDomainProperties = class['inDomainProperties'].split('&&') %}
+            {% set inDomainPropertyLabels = class['inDomainPropertyLabels'].split('&&') %}
+              {% for i in range(0,inDomainProperties|length) %}
+                {% if inDomainPropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{inDomainPropertyLabels[i].replace(' ','')}}" title="{{inDomainProperties[i]}}">{{inDomainPropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{class['inDomainPropertyLabels'].replace(' ','')}}" title="{{class['inDomainProperties']}}">{{class['inDomainPropertyLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if class['inRangeProperties'] %}
+         <dt>is in range of</dt>
+         <dd>
+            {% if '&&' in class['inRangeProperties'] %}
+            {% set inRangeProperties = class['inRangeProperties'].split('&&') %}
+            {% set inRangePropertyLabels = class['inRangePropertyLabels'].split('&&') %}
+              {% for i in range(0,inRangeProperties|length) %}
+                {% if inRangePropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{inRangePropertyLabels[i].replace(' ','')}}" title="{{inRangeProperties[i]}}">{{inRangePropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{class['inRangePropertyLabels'].replace(' ','')}}" title="{{class['inRangeProperties']}}">{{class['inRangePropertyLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if class['equivalentClasses'] %}
+         <dt>is equivalent to</dt>
+         <dd>
+            {% if '&&' in class['equivalentClasses'] %}
+            {% set equivalentClasses = class['equivalentClasses'].split('&&') %}
+            {% set equivalentClassLabels = class['equivalentClassLabels'].split('&&') %}
+              {% for i in range(0,equivalentClasses|length) %}
+                {% if equivalentClassLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{equivalentClassLabels[i].replace(' ','')}}" title="{{equivalentClasses[i]}}">{{equivalentClassLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{class['equivalentClassLabels'].replace(' ','')}}" title="{{class['equivalentClasses']}}">{{class['equivalentClassLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if class['disjointClasses'] %}
+         <dt>is disjoint with</dt>
+         <dd>
+            {% if '&&' in class['disjointClasses'] %}
+            {% set disjointClasses = class['disjointClasses'].split('&&') %}
+            {% set disjointClassLabels = class['disjointClassLabels'].split('&&') %}
+              {% for i in range(0,disjointClasses|length) %}
+                {% if disjointClassLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{disjointClassLabels[i].replace(' ','')}}" title="{{disjointClasses[i]}}">{{disjointClassLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{class['disjointClassLabels'].replace(' ','')}}" title="{{class['disjointClasses']}}">{{class['disjointClassLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if class['members'] %}
+            {% if '&&' in class['members'] %}
+            {% set members = class['members'].split('&&') %}
+            {% set memberLabels = class['memberLabels'].split('&&') %}
+             <dt>has members</dt>
+             <dd>
+              {% for i in range(0,members|length) %}
+                {% if memberLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{memberLabels[i].replace(' ','')}}" title="{{members[i]}}">{{memberLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has member</dt>
+             <dd>
+                <a href="#/{{class['memberLabels'].replace(' ','')}}" title="{{class['members']}}">{{class['memberLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+      </dl>
+</div>
+{% endfor %}
+
+<div id="objectproperties">
+   <h3 id="properties" class="list">Object Properties</h3>
+
+<ul class="hlist">
+{% for property in ontology['object_properties'] %}
+<li>
+<a href="#/{{property['label'].replace(' ','')}}" title={{property['property']}}>{{property['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+
+{% for property in ontology['object_properties'] %}
+  <div class="entity" id="/{{property['label'].replace(' ','')}}">
+      <h3>{{property['label']}}<sup class="type-op" title="object property">op</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#objectproperties">Object Property ToC</a>
+         </span>
+      </h3>
+      <p><strong>IRI:</strong> <a href="{{property['property']}}">{{property['property']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=property['property'])}}" title={{property['property']}}>{{property['label']}}</a></p>
+      {% if property['comment'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Comment:</strong> {{property['comment']}}</span>
+      </div>
+      {% endif %}
+      {% if property['def'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Definition:</strong> {{property['def']}}</span>
+      </div>
+      {% endif %}
+      <dl class="description">
+         {% if property['superProperties'] %}
+            {% if '&&' in property['superProperties'] %}
+            {% set superProperties = property['superProperties'].split('&&') %}
+            {% set superPropertyLabels = property['superLabels'].split('&&') %}
+             <dt>has super-properties</dt>
+             <dd>
+              {% for i in range(0,superProperties|length) %}
+                {% if superPropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{superPropertyLabels[i].replace(' ','')}}" title="{{superProperties[i]}}">{{superPropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has super-property</dt>
+             <dd>
+                <a href="#/{{property['superLabels'].replace(' ','')}}" title="{{property['superProperties']}}">{{property['superLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if property['subProperties'] %}
+            {% if '&&' in property['subProperties'] %}
+            {% set subProperties = property['subProperties'].split('&&') %}
+            {% set subPropertyLabels = property['subLabels'].split('&&') %}
+             <dt>has sub-properties</dt>
+             <dd>
+              {% for i in range(0,subProperties|length) %}
+                {% if subPropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{subPropertyLabels[i].replace(' ','')}}" title="{{subProperties[i]}}">{{subPropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has sub-property</dt>
+             <dd>
+                <a href="#/{{property['subLabels'].replace(' ','')}}" title="{{property['subProperties']}}">{{property['subLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if property['domain'] %}
+         <dt>has domain</dt>
+         <dd>
+            {% if '&&' in property['domain'] %}
+            {% set domain = property['domain'].split('&&') %}
+            {% set domainLabels = property['domainLabels'].split('&&') %}
+              {% for i in range(0,domain|length) %}
+                {% if domainLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{domainLabels[i].replace(' ','')}}" title="{{domain[i]}}">{{domainLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{property['domainLabels'].replace(' ','')}}" title="{{property['domain']}}">{{property['domainLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if property['range'] %}
+         <dt>has range</dt>
+         <dd>
+            {% if '&&' in property['range'] %}
+            {% set range = property['range'].split('&&') %}
+            {% set rangeLabels = property['rangeLabels'].split('&&') %}
+              {% for i in range(0,range|length) %}
+                {% if rangeLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{rangeLabels[i].replace(' ','')}}" title="{{range[i]}}">{{rangeLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{property['rangeLabels'].replace(' ','')}}" title="{{property['range']}}">{{property['rangeLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+      </dl>
+  </div>
+{% endfor %}
+</div>
+
+<div id="dataproperties">
+   <h3 id="dataproperties-headline" class="list">Data Properties</h3>
+<ul class="hlist">
+{% for property in ontology['datatype_properties'] %}
+<li>
+<a href="#/{{property['label'].replace(' ','')}}" title={{property['property']}}>{{property['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+{% for property in ontology['datatype_properties'] %}
+  <div class="entity" id="/{{property['label'].replace(' ','')}}">
+      <h3>{{property['label']}}<sup class="type-dp" title="data property">dp</sup>
+         <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>
+         </span>
+      </h3>
+      <p><strong>IRI:</strong> <a href="{{property['property']}}">{{property['property']}}</a></p>
+      <p><strong>Label:</strong> <a href="{{url_for('entity.view', uri=property['property'])}}" title={{property['property']}}>{{property['label']}}</a></p>
+      {% if property['comment'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Comment:</strong> {{property['comment']}}</span>
+      </div>
+      {% endif %}
+      {% if property['def'] %}
+      <div class="comment">
+         <span class="markdown"><strong>Definition:</strong> {{property['def']}}</span>
+      </div>
+      {% endif %}
+      <dl class="description">
+         {% if property['superProperties'] %}
+            {% if '&&' in property['superProperties'] %}
+            {% set superProperties = property['superProperties'].split('&&') %}
+            {% set superPropertyLabels = property['superLabels'].split('&&') %}
+             <dt>has super-properties</dt>
+             <dd>
+              {% for i in range(0,superProperties|length) %}
+                {% if superPropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{superPropertyLabels[i].replace(' ','')}}" title="{{superProperties[i]}}">{{superPropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has super-property</dt>
+             <dd>
+                <a href="#/{{property['superLabels'].replace(' ','')}}" title="{{property['superProperties']}}">{{property['superLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if property['subProperties'] %}
+            {% if '&&' in property['subProperties'] %}
+            {% set subProperties = property['subProperties'].split('&&') %}
+            {% set subPropertyLabels = property['subLabels'].split('&&') %}
+             <dt>has sub-properties</dt>
+             <dd>
+              {% for i in range(0,subProperties|length) %}
+                {% if subPropertyLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{subPropertyLabels[i].replace(' ','')}}" title="{{subProperties[i]}}">{{subPropertyLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+             </dd>
+            {% else %}
+             <dt>has sub-property</dt>
+             <dd>
+                <a href="#/{{property['subLabels'].replace(' ','')}}" title="{{property['subProperties']}}">{{property['subLabels']}}</a>
+             </dd>
+            {% endif %}
+         {% endif %}
+         {% if property['domain'] %}
+         <dt>has domain</dt>
+         <dd>
+            {% if '&&' in property['domain'] %}
+            {% set domain = property['domain'].split('&&') %}
+            {% set domainLabels = property['domainLabels'].split('&&') %}
+              {% for i in range(0,domain|length) %}
+                {% if domainLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{domainLabels[i].replace(' ','')}}" title="{{domain[i]}}">{{domainLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{property['domainLabels'].replace(' ','')}}" title="{{property['domain']}}">{{property['domainLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+         {% if property['range'] %}
+         <dt>has range</dt>
+         <dd>
+            {% if '&&' in property['range'] %}
+            {% set range = property['range'].split('&&') %}
+            {% set rangeLabels = property['rangeLabels'].split('&&') %}
+              {% for i in range(0,range|length) %}
+                {% if rangeLabels[i] %}
+                   <a style="margin-right: 40px" href="#/{{rangeLabels[i].replace(' ','')}}" title="{{range[i]}}">{{rangeLabels[i]}}</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+                <a href="#/{{property['rangeLabels'].replace(' ','')}}" title="{{property['range']}}">{{property['rangeLabels']}}</a>
+            {% endif %}
+         </dd>
+         {% endif %}
+      </dl>
+  </div>
+{% endfor %}
+</div>
+
+<div id="namedindividuals">
+   <h3 id="namedindividuals" class="list">Named Individuals</h3>
+   <ul class="hlist">
+{% for individual in ontology['individuals'] %}
+<li>
+<a href="#/{{individual['label'].replace(' ','')}}" title={{individual['individual']}}>{{individual['label']}}</a>
+</li>
+{% endfor %}
+</ul>
+
+{% for individual in ontology['individuals'] %}
+  <div class="entity" id="/{{individual['label'].replace(' ','')}}">
+      <h3>{{individual['label']}}
+            <sup class="type-ni" title="named individual">ni</sup>
+                 <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#namedindividuals">Named Individual ToC</a>
+         </span>
+      </h3>
+      <p>
+         <strong>IRI:</strong> <a href="{{individual['individual']}}">{{individual['individual']}}</a></p>
+      {% if individual['class'] %}
+      <dl class="description">
+         <dt>belongs to</dt>
+         <dd>
+            <a href="#/{{individual['classLabel'].replace(' ','')}}" title="{{individual['class']}}">{{individual['classLabel']}}</a>
+         </dd>
+      </dl>
+      {% endif %}
+   </div>
+{% endfor %}
+</div>
+<div id="legend">
+<h2>Legend <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<div   class="entity">
+<sup class="type-c" title="Classes">c</sup>: Classes <br/>
+<sup class="type-op" title="Object Properties">op</sup>: Object Properties <br/>
+<sup class="type-dp" title="Data Properties">dp</sup>: Data Properties <br/>
+<sup class="type-ni" title="Named Individuals">ni</sup>: Named Individuals
+</div>
+</div>
+</div>
+
+
+<!--REFERENCES SECTION-->
+  <div id="references">
+<h2 id="ref" class="list">References <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<!--<span class="markdown">
+Add your references here. It is recommended to have them as a list.</span>-->
+{% for metadata in ontology['metadata']%}
+  {% if metadata['citations'] %}
+    <div id="citations">
+        <div id="cite" align="center">
+        <table>
+        <caption align="center"><a href="#im">Bibliographical References</a></caption>
+        <tbody>
+        {% if '&&' in metadata['citations'] %}
+            {% set imports = metadata['citations'].split('&&') %}
+            {% for citation in citations%}
+                <tr><td><a href="{{citation}}" title="{{citation}}">&lt;{{citation}}&gt;</a></td></tr>
+            {% endfor %}
+        {% else %}
+            <tr><td><a href="{{metadata['citations']}}" title="{{metadata['citations']}}">&lt;{{metadata['citations']}}&gt;</a></td></tr>
+        {% endif %}
+        </tbody>
+        </table>
+        </div>
+    </div>
+  {% endif %}
+{% endfor %}
+</div>
+<div id="acknowledgements">
+<h2 id="ack" class="list">Acknowledgements <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<p>
+The authors would like to acknowledge <a href="https://w3id.org/people/dgarijo">Daniel Garijo</a> for developing <a href="https://github.com/dgarijo/Widoco">Widoco</a>, a program used for creating documentation templates, which was leveraged when designing this Whyis template.</p>
+</div>
+{% endblock %}

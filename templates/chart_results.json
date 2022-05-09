@@ -1,1 +1,0 @@
-{{ this.description().value(ns.schema.query) | query(prefixes={}) | tojson }}

@@ -5,8 +5,8 @@ import setlr
 from datetime import datetime
 
 from .update_change_service import UpdateChangeService
-from nanopub import Nanopublication
-from datastore import create_id
+from whyis.nanopub import Nanopublication
+from whyis.datastore import create_id
 import flask
 from flask import render_template
 from flask import render_template_string
@@ -14,7 +14,7 @@ import logging
 
 import sys, traceback
 
-import database
+import whyis.database
 
 import tempfile
 
@@ -53,7 +53,7 @@ class Crawler(UpdateChangeService):
             if uri in cache:
                 continue
             node = None
-            node = self.app.get_resource(uri, async_=False)
+            node = flask.current_app.get_resource(uri, async_=False)
             cache.add(uri)
             if depth != 0:
                 for p in self.predicates:

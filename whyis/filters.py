@@ -90,7 +90,7 @@ def configure(app):
         best_lang = request.accept_languages.best_match(list(languages))
         best_terms = [x for x in literals if x.language == best_lang]
         if not best_terms:
-            best_terms = [x for x in literals if x.language == app.config['default_language']]
+            best_terms = [x for x in literals if x.language == app.config['DEFAULT_LANGUAGE']]
         if best_terms:
             return resources + best_terms
         return resources
@@ -102,7 +102,7 @@ def configure(app):
         if prefixes == {}:
             params = { 'initNs': {}}
         else:
-            if prefixes is None: 
+            if prefixes is None:
                 prefixes = {}
 
             namespaces = dict(app.NS.prefixes)
@@ -198,12 +198,10 @@ def configure(app):
 ?np
 ?probability
 #(max(?tfidf) as ?tfidf)
-(max(?frequency) as ?frequency)
-(max(?idf) as ?idf)
+(max(?freq) as ?frequency)
+(max(?idf_) as ?idf)
 (group_concat(distinct ?article; separator=" ") as ?articles)
 where {
-    hint:Query hint:optimizer "Runtime" .
-
     %s
 
     ?assertion a np:Assertion.
@@ -228,11 +226,11 @@ where {
     optional {
       ?source sio:hasPart ?term.
       ?term prov:specializationOf ?target;
-            sio:Frequency ?frequency.
+            sio:Frequency ?freq.
       optional {
-        ?target sio:InverseDocumentFrequency ?idf.
+        ?target sio:InverseDocumentFrequency ?idf_.
       }
-      #bind (?frequency * ?idf as ?tfidf)
+      #bind (?freq * ?idf_ as ?tfidf)
       #bind (?tfidf/(1+?tfidf) as ?probability)
     }
 } group by ?source ?target ?link ?link_type ?np ?prob_np ?probability''' % select
@@ -241,7 +239,7 @@ where {
     def mergeLink(edges):
         from scipy.stats import combine_pvalues
 
-        base_rate = app.config['base_rate_probability']
+        base_rate = app.config['BASE_RATE_PROBABILITY']
 
         def merge(links):
             result = dict(links[0])
@@ -465,7 +463,10 @@ WHERE {
                 result['value'] = result['value'].n3()
         return results
 
-    instance_data_template = env.from_string('''SELECT DISTINCT
+    instance_data_template = env.from_string('''
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+    SELECT DISTINCT
 ?id
 {%- for variable in variables %}
 ?{{variable['field']}}
@@ -595,3 +596,33 @@ values (?c ?priority) { %s }
             output_string += "\n\t\t]\n\t});\n</script></md-card>"
         return output_string
 
+    @app.template_filter('toframe')
+    def toframe(data):
+        import pandas as pd
+        return pd.DataFrame.from_records(data)
+
+    @app.template_filter('tocsv')
+    def tocsv(data):
+        import pandas as pd
+        return pd.DataFrame.from_records(data).to_csv(index=False)
+    
+    @app.template_filter('from_n3_dict')
+    def from_n3_dict(args):
+        result = {}
+        for key, value in args.items():
+            v = rdflib.util.from_n3(value)
+            if not isinstance(v, rdflib.BNode):
+                result[key] = v
+            else:
+                try:
+                    result[key] = rdflib.Literal(int(value))
+                    continue
+                except:
+                    pass
+                try:
+                    result[key] = rdflib.Literal(float(value))
+                    continue
+                except:
+                    pass
+        print(result)
+        return result

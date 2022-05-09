@@ -4,7 +4,7 @@ import rdflib
 import os
 import collections
 import requests
-from dataurl import DataURLStorage
+from whyis.dataurl import DataURLStorage
 from werkzeug.utils import secure_filename
 
 import tempfile
@@ -18,7 +18,7 @@ import pytz
 from whyis.namespace import np, prov, dc, frbr, whyis
 from uuid import uuid4
 
-from datastore import create_id
+from whyis.datastore import create_id
 from .nanopublication import Nanopublication
 
 from rdflib.plugins.serializers import nquads
@@ -69,10 +69,12 @@ class NanopublicationManager(object):
                 g = rdflib.Graph(store=context.store, identifier=new_np.assertion.identifier)
                 g += context
                 context.remove((None, None, None))
+                print ('replaced graph %s with %s' % (context.identifier, new_np.assertion.identifier))
             else:
                 new_np.add((new_np.identifier, np.hasAssertion, context.identifier))
                 new_np.add((new_np.identifier, rdflib.RDF.type, np.Nanopublication))
                 new_np.add((graph.identifier, rdflib.RDF.type, np.Assertion))
+                print ('wrapped graph %s with %s' % (context.identifier, new_np.identifier))
             new_np.assertion
             new_np.provenance
             new_np.pubinfo
@@ -126,7 +128,7 @@ class NanopublicationManager(object):
   ?npa prov:wasDerivedFrom* ?ra.
   ?np np:hasAssertion ?npa.
   ?np a np:Nanopublication.
-''' + ('' if self.app.config.get('delete_archive_nanopubs',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
+''' + ('' if self.app.config.get('DELETE_ARCHIVE_NANOPUBS',True) else 'minus { ?np a whyis:FRIRNanopublication }') + '''
 }'''
         file_query = '''select ?fileid where {
   ?np np:hasAssertion ?assertion.
@@ -141,8 +143,6 @@ class NanopublicationManager(object):
                 for fileid, in self.db.query(file_query, initNs={"np": np, "whyis" : whyis},
                                              initBindings={'np': np_uri}):
                     if self.app.file_depot.exists(fileid):
-                        print("Deleting file",fileid, "in", np_uri,
-                              "because retire was called on",nanopub_uri)
                         self.app.file_depot.delete(fileid)
                     elif self.app.nanopub_depot.exists(fileid):
                         f = self.app.nanopub_depot.delete(fileid)
@@ -219,9 +219,9 @@ class NanopublicationManager(object):
             for store in stores:
                 for s, p, o, c in rdflib.ConjunctiveGraph(store).quads():
                     if self.app.config.get('BNODE_REWRITE', False):
+                        # predicates can't be bnodes, and contexts have already been rewritten.
                         s = skolemize(s)
                         o = skolemize(o)
-                        # predicates can't be bnodes, and contexts have already been rewritten.
                     row = '%s { %s %s %s . }' % (c.identifier.n3(), s.n3(), p.n3(), o.n3())
                     #print(row)
                     data.write(row.encode('utf8'))
@@ -234,7 +234,7 @@ class NanopublicationManager(object):
                 # np_graph.serialize(data, format="trig")
                 # data.write('\n')
                 # data.flush()
-            self.retire(*to_retire)
+                self.retire(*to_retire)
             data.seek(0)
             self.db.store.publish(data)
 

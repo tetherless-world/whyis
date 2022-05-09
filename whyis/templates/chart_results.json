@@ -1,0 +1,1 @@
+{{ this.description().value(ns.schema.query) | query(values=args | from_n3_dict, prefixes={}) | tojson }}

@@ -4,18 +4,22 @@ import shutil
 from flask_script import Command, Option, Server
 
 import flask
+import requests
+
+from whyis.data_extensions import DATA_EXTENSIONS
 
 import rdflib
-from nanopub import Nanopublication
+from whyis.nanopub import Nanopublication
 import tempfile
 
 from whyis.namespace import np
 from whyis.blueprint.nanopub.nanopub_utils import load_nanopub_graph
+import sys
 
 class LoadNanopub(Command):
     '''Add a nanopublication to the knowledge graph.'''
 
-    _TEMP_STORE_DEFAULT = "Sleepycat"
+    _TEMP_STORE_DEFAULT = None
 
     def get_options(self):
         return [
@@ -34,8 +38,8 @@ class LoadNanopub(Command):
                 print("Could not find active nanopublication to revise:", was_revision_of)
                 return
             was_revision_of = wasRevisionOf
-        g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize(), store=temp_store)
-        if temp_store == "Sleepycat":
+        g = rdflib.ConjunctiveGraph(identifier=rdflib.BNode().skolemize())
+        if temp_store == "Oxigraph":
             g_store_tempdir = tempfile.mkdtemp()
             g.store.open(g_store_tempdir, True)
         else:
@@ -44,7 +48,7 @@ class LoadNanopub(Command):
 
         try:
             g1 = load_nanopub_graph(location=input_file, format=file_format, store=g.store)
-            
+
             nanopubs = []
             for npub in flask.current_app.nanopub_manager.prepare(g):
                 if was_revision_of is not None:

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+sudo apt-get install python3-venv
+python3.8 -m venv venv
+source venv/bin/activate
+pip install requests wheel 
+sudo apt-get install -y software-properties-common \
+			build-essential \
+			python3.8-dev \
+			npm
+pip install -r requirements.txt

@@ -38,13 +38,11 @@ class Importer:
             if m is None:
                 continue
             if modified is None or m > modified:
-                print(m, modified, old_np.modified)
                 modified = m
         return modified
 
     def load(self, entity_name, db, nanopubs):
         entity_name = rdflib.URIRef(entity_name)
-        print("Fetching", entity_name)
         old_nps = [nanopubs.get(x) for x, in db.query('''select ?np where {
     ?np np:hasAssertion ?assertion.
     ?assertion a np:Assertion; prov:wasQuotedFrom ?mapped_uri.
@@ -59,7 +57,6 @@ class Importer:
         #    traceback.print_exc(file=sys.stdout)
         #    return
         for new_np in nanopubs.prepare(g):
-            print("Adding new nanopub:", new_np.identifier)
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
             if updated is not None:
@@ -69,9 +66,7 @@ class Importer:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime,
                                     rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
             nanopubs.publish(new_np)
-
         for old_np in old_nps:
-            print("retiring", old_np.identifier)
             nanopubs.retire(old_np.identifier)
 
     def explain(self, new_np, entity_name):

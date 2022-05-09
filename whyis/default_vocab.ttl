@@ -1,0 +1,582 @@
+@prefix : <http://vocab.rpi.edu/whyis/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sio: <http://semanticscience.org/resource/> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix auth: <http://vocab.tw.rpi.edu/auth/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix flaskld: <http://vocab.rpi.edu/flaskld/> .
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix sdd: <http://purl.org/twc/sdd/> .
+
+dc:description rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty .
+
+rdfs:label rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty .
+
+foaf:mbox rdf:type owl:DatatypeProperty ,
+                   owl:FunctionalProperty .
+
+
+
+###  http://vocab.rpi.edu/flaskld/hasOwner
+
+flaskld:hasOwner rdf:type owl:ObjectProperty ;
+
+                 rdfs:range prov:Agent .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hasRole
+
+auth:hasRole rdf:type owl:ObjectProperty ;
+
+             rdfs:label "roles" ;
+
+             flaskld:fieldName "roles" ;
+
+             rdfs:subPropertyOf owl:topObjectProperty ;
+
+             rdfs:range prov:Role .
+
+
+
+###  http://www.nanopub.org/nschema#hasAssertion
+
+np:hasAssertion rdf:type owl:FunctionalProperty ,
+                         owl:ObjectProperty ;
+
+                rdfs:range np:Assertion ;
+
+                rdfs:domain np:Nanopublication .
+
+
+
+###  http://www.nanopub.org/nschema#hasProvenance
+
+np:hasProvenance rdf:type owl:FunctionalProperty ,
+                          owl:ObjectProperty ;
+
+                 rdfs:domain np:Nanopublication ;
+
+                 rdfs:range np:Provenance .
+
+
+
+###  http://www.nanopub.org/nschema#hasPublicationInfo
+
+np:hasPublicationInfo rdf:type owl:FunctionalProperty ,
+                               owl:ObjectProperty ;
+
+                      rdfs:domain np:Nanopublication ;
+
+                      rdfs:range np:PublicationInfo .
+
+
+
+###  http://www.w3.org/2000/01/rdf-schema#seeAlso
+
+rdfs:seeAlso rdf:type owl:ObjectProperty ;
+
+             rdfs:subPropertyOf owl:topObjectProperty .
+
+
+
+
+
+dc:identifier rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty ;
+
+              flaskld:fieldName "identifier" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/active
+
+auth:active rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+
+            rdfs:label "active" ;
+
+            flaskld:fieldName "active" ;
+
+            rdfs:range xsd:boolean .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/confirmed
+
+auth:confirmed rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty ;
+
+               rdfs:label "confirmed" ;
+
+               flaskld:fieldName "confirmed_at" ;
+
+               rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/email
+
+auth:email rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty ;
+
+           rdfs:label "email address" ;
+
+           flaskld:fieldName "email" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadCurrentLogin
+
+auth:hadCurrentLogin rdf:type owl:DatatypeProperty ,
+                              owl:FunctionalProperty ;
+
+                     rdfs:label "current login at" ;
+
+                     flaskld:fieldName "current_login_at" ;
+
+                     rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadCurrentLoginIP
+
+auth:hadCurrentLoginIP rdf:type owl:DatatypeProperty ,
+                                owl:FunctionalProperty ;
+
+                       rdfs:label "current login IP" ;
+
+                       flaskld:fieldName "current_login_ip" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLastLogin
+
+auth:hadLastLogin rdf:type owl:DatatypeProperty ,
+                           owl:FunctionalProperty ;
+
+                  rdfs:label "last login" ;
+
+                  flaskld:fieldName "last_login_at" ;
+
+                  rdfs:range xsd:dateTime .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLastLoginIP
+
+auth:hadLastLoginIP rdf:type owl:DatatypeProperty ,
+                             owl:FunctionalProperty ;
+
+                    rdfs:label "last login IP" ;
+
+                    flaskld:fieldName "last_login_ip" .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/hadLoginCount
+
+auth:hadLoginCount rdf:type owl:DatatypeProperty ,
+                            owl:FunctionalProperty ;
+
+                   rdfs:label "login count" ;
+
+                   flaskld:fieldName "login_count" ;
+
+                   rdfs:range xsd:integer .
+
+
+
+###  http://vocab.tw.rpi.edu/auth/passwd
+
+auth:passwd rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+
+            rdfs:label "password" ;
+
+            flaskld:fieldName "password" .
+
+
+
+###  http://xmlns.com/foaf/0.1/familyName
+
+foaf:familyName rdf:type owl:DatatypeProperty ,
+                         owl:FunctionalProperty ;
+
+                rdfs:label "last name" ;
+
+                flaskld:fieldName "familyName" .
+
+
+
+###  http://xmlns.com/foaf/0.1/givenName
+
+foaf:givenName rdf:type owl:DatatypeProperty ,
+                        owl:FunctionalProperty ;
+
+               rdfs:label "first name" ;
+
+               flaskld:fieldName "givenName" .
+
+
+
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+
+###  http://vocab.rpi.edu/whyis/Graph
+
+:Graph rdf:type owl:Class ;
+
+       flaskld:prefix "role" ;
+
+       flaskld:hasField dc:description ;
+
+       flaskld:key rdfs:label ;
+
+       flaskld:hasField rdfs:label .
+
+
+
+###  http://www.nanopub.org/nschema#Assertion
+
+np:Assertion rdf:type owl:Class ;
+
+             rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.nanopub.org/nschema#Nanopublication
+
+np:Nanopublication rdf:type owl:Class ;
+      flaskld:prefix "pub";
+      flaskld:hasField sio:isAbout.
+
+
+###  http://www.nanopub.org/nschema#Provenance
+
+np:Provenance rdf:type owl:Class ;
+
+              rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.nanopub.org/nschema#PublicationInfo
+
+np:PublicationInfo rdf:type owl:Class ;
+
+                   rdfs:subClassOf rdfg:Graph .
+
+
+
+###  http://www.w3.org/2002/07/owl#Ontology
+
+owl:Ontology rdf:type owl:Class ;
+
+             rdfs:subClassOf :Graph .
+
+
+
+###  http://www.w3.org/2004/03/trix/rdfg-1/Graph
+
+rdfg:Graph rdf:type owl:Class .
+
+
+
+###  http://www.w3.org/ns/prov#Agent
+
+prov:Agent rdf:type owl:Class ;
+
+           rdfs:label "User" ;
+
+           flaskld:prefix "user" ;
+
+           flaskld:hasField dc:identifier ;
+
+           flaskld:key dc:identifier ;
+
+           flaskld:hasField auth:active ,
+                            auth:confirmed ,
+                            auth:email ,
+                            auth:hadCurrentLogin ,
+                            auth:hadCurrentLoginIP ,
+                            auth:hadLastLogin ,
+                            auth:hadLastLoginIP ,
+                            auth:hadLoginCount ,
+                            auth:hasRole ,
+                            auth:passwd ;
+
+           flaskld:hideField auth:passwd ;
+
+           flaskld:hasField foaf:familyName ,
+                            foaf:givenName .
+
+
+
+###  http://www.w3.org/ns/prov#Role
+
+prov:Role rdf:type owl:Class ;
+
+          flaskld:prefix "role" ;
+
+          flaskld:key rdfs:label ;
+
+          flaskld:hasField rdfs:label .
+
+whyis:hasView dc:identifier "view".
+
+whyis:hasDownload dc:identifier "download";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasDescribe dc:identifier "describe";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasNanopublications dc:identifier "nanopublications";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasRelated dc:identifier "related";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasLabel dc:identifier "label";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasLabels dc:identifier "labels";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasSummary dc:identifier "summary";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasInstances dc:identifier "instances";
+  rdfs:subPropertyOf whyis:hasView.
+
+  whyis:hasGallery dc:identifier "gallery";
+    rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasDataset dc:identifier "dataset";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasView rdfs:label "View".
+whyis:hasExplore rdfs:label "Explore".
+whyis:hasGraphView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "graph";
+  rdfs:label "RDF Graph View".
+whyis:hasHistory rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "history";
+  rdfs:label "History".
+
+rdfs:Resource
+  whyis:hasNavigation (
+      whyis:hasView
+      whyis:hasExplore
+      whyis:hasGraphView
+      whyis:hasHistory
+      whyis:editInstanceView
+  );
+  whyis:hasView "resource_view.html";
+  whyis:hasGraphView "rdf_viewer.html";
+  whyis:hasHistory "history.html";
+  whyis:hasRelated "related_nodes.json";
+  whyis:hasOutgoing "outgoing_resource.json";
+  whyis:hasIncoming "incoming_resource.json";
+  whyis:hasAttributes "attributes.json";
+  whyis:cardView "card.html";
+  whyis:hasExplore "explore.html";
+  whyis:hasDescribe "describe.json";
+  whyis:hasNanopublications "nanopublications.json";
+  whyis:hasLabel "label_view.html";
+  whyis:editInstanceView "edit_instance_view.html";
+  whyis:hasSuggestedTypes "suggested_types.json";
+  whyis:hasSuggestedLinks "suggested_links.json";
+  whyis:hasSuggestedAttributes "suggested_attributes.json";
+  whyis:hasNeighbors "resource_neighbors.json";
+  whyis:hasSummary "summary_view.json" .
+
+whyis:hasFacetValues a whyis:CachedView.
+
+owl:Class a rdfs:Class;
+  rdfs:label "Class";
+  whyis:hasConstraints "class_constraints.json";
+  whyis:hasFacets "class_facets.json";
+  whyis:hasFacetValues "facet_values.json";
+  whyis:hasInstanceData "class_instance_data.rq";
+  whyis:hasOutgoing "outgoing_class.json";
+  whyis:hasIncoming "incoming_class.json";
+  whyis:newInstanceView "new_instance_view.html";
+  whyis:hasInstances "instances.json";
+  whyis:hasGallery "gallery.html";
+  whyis:hasView "class_view.html".
+
+rdfs:Class rdfs:label "Class";
+    whyis:hasFacets "class_facets.json";
+    whyis:hasFacetValues "facet_values.json";
+    whyis:hasInstanceData "class_instance_data.rq";
+    whyis:hasOutgoing "outgoing_class.json";
+    whyis:hasIncoming "incoming_class.json";
+    whyis:hasInstances "instances.json";
+    whyis:hasGallery "gallery.html";
+    whyis:hasView "class_view.html".
+
+
+whyis:hasSuggestedTypes dc:identifier "suggested_types";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasSuggestedLinks dc:identifier "suggested_links";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasNeighbors dc:identifier "neighbors";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasSuggestedAttributes dc:identifier "suggested_attributes";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasConstraints dc:identifier "constraints";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasFacets dc:identifier "facets";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasFacetValues dc:identifier "facet_values";
+  rdfs:subPropertyOf whyis:hasView.
+
+whyis:hasInstanceData dc:identifier "instance_data";
+  dc:format "application/sparql-query";
+  rdfs:subPropertyOf whyis:hasView.
+
+
+owl:Ontology rdfs:label "Ontology";
+    whyis:hasOutgoing "outgoing_ontology.json";
+    whyis:hasIncoming "incoming_ontology.json";
+    whyis:hasDescribe "describe_ontology.json";
+    whyis:hasData "ontology_data.json";
+    whyis:hasView "ontology_view.html".
+
+np:Nanopublication a owl:Class;
+    whyis:hasDescribe "nanopub_describe.json";
+    whyis:hasView "nanopublication_view.html".
+
+# <search> a whyis:searchView.
+
+# whyis:searchView whyis:hasView "search.html".
+
+# <searchView> a whyis:searchView.
+
+# whyis:searchView whyis:hasView "search-view.html".
+
+<searchApi> a whyis:searchApi .
+
+whyis:searchApi whyis:hasView "search-api.json".
+
+<search> a whyis:search .
+
+whyis:search whyis:hasView "search-view.html".
+
+# whyis:search whyis:hasView "search-view.html";
+#   whyis:searchApi "search-api.json".
+
+#   whyis:searchApi rdfs:subPropertyOf whyis:hasView;
+#   dc:identifier "searchApi".
+
+rdfs:label flaskld:fieldName "name" .
+
+<Home> a whyis:HomePage.
+
+whyis:HomePage a owl:Class;
+  whyis:hasView "home_view.html";
+  whyis:hasLabels "labels.json";
+  whyis:latestView "latest.json";
+  whyis:resolveView "resolve.json".
+
+whyis:cardView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "card".
+
+whyis:latestView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "latest".
+
+whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "new".
+
+whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;
+  rdfs:label "Edit";
+  dc:identifier "edit".
+
+whyis:restoreInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "restore".
+
+whyis:manageInstanceView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "manage".
+
+
+<https://www.iana.org/assignments/media-types/text/csv>
+  whyis:bipartiteView "bipartite_graph.svg".
+
+whyis:bipartiteView rdfs:subPropertyOf whyis:hasView;
+  dc:format "image/svg+xml";
+  dc:identifier "bipartite".
+
+whyis:resolveView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "resolve".
+
+whyis:resultsView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "results".
+
+whyis:hasExplore rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "explore".
+whyis:hasOutgoing rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "outgoing".
+whyis:hasIncoming rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "incoming".
+whyis:hasAttributes rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "attributes".
+whyis:hasData rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "data".
+
+whyis:ChartClass a owl:Class;
+  rdfs:subClassOf owl:Class;
+  whyis:hasView "chart_gallery.html";
+  whyis:newInstanceView "chart_new.html";
+  whyis:manageInstanceView "chart_manage.html";
+  whyis:restoreInstanceView "chart_restore.html";
+  whyis:voyagerView "chart_voyager.html".
+
+whyis:voyagerView rdfs:subPropertyOf whyis:hasView;
+  rdfs:domain whyis:ChartClass;
+  dc:identifier "voyager".
+
+sio:Chart a whyis:ChartClass;
+  whyis:hasView "chart_view.html";
+  whyis:resultsView "chart_results.json";
+  whyis:editInstanceView "chart_edit.html";
+  whyis:voyagerView "chart_voyager.html".
+
+whyis:DatasetClass a owl:Class;
+  rdfs:subClassOf owl:Class;
+  whyis:newInstanceView "dataset_new.html".
+
+dcat:Dataset a whyis:DatasetClass;
+  whyis:editInstanceView "dataset_edit.html".
+
+whyis:SparqlTemplateClass a owl:Class;
+  rdfs:subClassOf owl:Class;
+  whyis:hasView "sparql_templates.html".
+
+whyis:SparqlTemplate a whyis:SparqlTemplateClass.
+
+sdd:SemanticDataDictionary a owl:Class ;
+  rdfs:label "Semantic Data Dictionary";
+  whyis:hasView "sdd_view.html".

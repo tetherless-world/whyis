@@ -14,6 +14,7 @@ sioc_types = rdflib.Namespace("http://rdfs.org/sioc/types#")
 skos = rdflib.Namespace("http://www.w3.org/2008/05/skos#")
 whyis = rdflib.Namespace('http://vocab.rpi.edu/whyis/')
 owl = rdflib.Namespace("http://www.w3.org/2002/07/owl#")
+text = rdflib.Namespace("http://jena.apache.org/fulltext#")
 
 
 class NamespaceContainer(object):
@@ -49,6 +50,7 @@ class NamespaceContainer(object):
     setl = rdflib.Namespace("http://purl.org/twc/vocab/setl/")
     sdd = rdflib.Namespace("http://purl.org/twc/sdd/")
     csvw = rdflib.Namespace("http://www.w3.org/ns/csvw#")
+    text = rdflib.Namespace("http://jena.apache.org/fulltext#")
 
     @property
     def prefixes(self):

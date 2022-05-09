@@ -1,0 +1,3 @@
+{% for package in cookiecutter.__freeze %}{{ package }}
+{% endfor %}
+mod-wsgi==4.9.0

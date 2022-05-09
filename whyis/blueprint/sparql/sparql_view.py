@@ -3,6 +3,7 @@ from flask import request, redirect, url_for, current_app, Response
 
 from whyis.blueprint.sparql import sparql_blueprint
 from whyis.decorator import conditional_login_required
+from setlr import FileLikeFromIter
 
 
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
@@ -23,17 +24,18 @@ def sparql_view():
         if 'Content-Length' in headers:
             del headers['Content-Length']
         req = requests.get(current_app.db.store.query_endpoint,
-                           headers = headers, params=request.args)
+                           headers = headers, params=request.args, stream=True)
     elif request.method == 'POST':
         if 'application/sparql-update' in request.headers['content-type']:
             return "Update not allowed.", 403
         if 'update' in request.values:
             return "Update not allowed.", 403
         #print(request.get_data())
-        req = requests.get(current_app.db.store.query_endpoint,# data=request.values,
-                            headers = request.headers, params=request.values)
+        req = requests.post(current_app.db.store.query_endpoint,# data=request.values,
+                            headers = request.headers, data=request.values, stream=True)
     #print self.db.store.query_endpoint
     #print req.status_code
-    response = Response(req.content, content_type = req.headers['content-type'])
+    response = Response(FileLikeFromIter(req.iter_content()),
+                        content_type = req.headers['content-type'])
     #response.headers[con(req.headers)
     return response, req.status_code
