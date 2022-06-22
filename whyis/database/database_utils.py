@@ -56,16 +56,19 @@ def engine_from_config(config):
         store.query_endpoint = config["_endpoint"]
         if 'auth' in kwargs:
             store.auth = kwargs['auth']
+        else:
+            store.auth = None
 
         def publish(data, format='text/trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
 
-            r = s.post(store.query_endpoint,
-                       data=data,
-                       #params={"graph":default_graph},
-                       headers={'Content-Type':format},
-                       auth= store.auth)
+            kwargs = dict(
+                headers={'Content-Type':format},
+            )
+            if store.auth is not None:
+                kwargs['auth'] = store.auth
+            r = s.post(store.query_endpoint, data=data, **kwargs)
             #print(r.text)
         store.publish = publish
 
