@@ -11,7 +11,7 @@ from setlr import FileLikeFromIter
 import re
 import os
 from requests_testadapter import Resp
-import magic
+import puremagic as magic
 import mimetypes
 import traceback
 import sys
@@ -25,8 +25,10 @@ class LocalFileAdapter(requests.adapters.HTTPAdapter):
         mtime = os.path.getmtime(file_path)
         dt = datetime.datetime.fromtimestamp(mtime, tzlocal())
         mimetype = mimetypes.guess_type(file_path)[0]
-        if mimetype is None:
-            mimetype = magic.from_file(file_path, mime=True)
+        if mimetype is None and magic is not None:
+            t = magic.from_file(file_path, mime=True)
+            if len(t) > 0:
+                mimetype = t[0].mime_type
         headers = {"Last-Modified": http_date(dt)}
         if mimetype is not None:
             headers['Content-Type'] = mimetype

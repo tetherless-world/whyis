@@ -1,47 +1,63 @@
 # Install Whyis
 
-The Whyis installer is layered, which allows for maximum flexibility. Each layer is runnable by itself, resulting in a functional Whyis.
+Whyis is available as both a python package and a docker image. When deploying to a server, the generated knowlege graph application (kgapp) can easily be installed in recent Ubuntu versions. Since the kgapp is source-based, it can be managed using source control systems like Git or others.
 
-If you do not have Ubuntu 16.04, please use VirtualBox, VMWare, or another virtualization tool to create a VM with Ubuntu 16.04 installed. Whyis requires at least 4 GB of memory and 30GB of disk space.
+## As a Python Package
 
-- **Layer 2: Shell Script** If you already have a virtual machine provisioned, or want to directly install Whyis onto an Ubuntu 16.04 server directly, you can use the Layer 2 shell script. It is a simple script, `install.sh`, that installs Puppet and the needed modules, and then runs the Layer 1 Puppet script.
-- **Layer 1: Puppet** [Puppet](https://puppet.com/) is a flexible devops tool that automates the configuration and provisioning of servers, both virtual and physical. The script `puppet/manifests/install.pp` can be used directly by current Puppet users that want to incorporate Whyis deployment into their existing Puppet infrastructure.
+Installing and running Whyis 2.0 is very straightforward. It is available for installation on either Ubuntu 18 or later, MacOS, or the Windows Subsystem for Linux.
 
-** Whyis installations are currently supported on Ubuntu 16.04. **
+Requirements:
 
+* Python 3.7 or later with venv and pip
+* Open or Oracle JDK 13 or later
 
-## Layer 2: Install into an Ubuntu 16.04 system
+We will refer to your most recent python as `python`, although most systems only use the `python` alias for python 2.x. Please use the command for your version of python.
 
-This is useful for deploying production knowledge graphs, or for developers who already have a machine (virtual or otherwise) that is ready to run Whyis. Currently, we only support installing on Ubuntu 16.04.
-
-```
-bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/release/install.sh)
-```
-
-To install using the development branch of Whyis, use the master install script:
+**NOTE**: It is strongly recommended to install Whyis into a virtual python environment using venv, virtualenv, Conda, or similar. The following will generate and activate a venv for your current python. Please refer to your virtual environment documentation to generate it if you are not using venv.
 
 ```
-bash < <(curl -skL https://raw.githubusercontent.com/tetherless-world/whyis/master/install.sh)
+python -m venv venv
+source venv/bin/activate
 ```
-## How to Create an Ubuntu 16.04 Virtual Machine with Virtualbox
 
-### Download ISO file
+Finally, install the whyis package using pip:
 
-Download the ISO file for Ubuntu Server 16.04 from: https://www.ubuntu.com/download/server.
+```
+pip install whyis
+```
 
-### Create a new Ubuntu Virtual Machine
+To generate your first kgapp, make a directory for it, change to that directory, and start whyis:
 
-From VM VirtualBox Manager, Select "New" to create a new VM.
+```
+mkdir kgapp
+cd kgapp
+whyis
+```
 
-In the following window, name your VM and select Type Linux and Version Ubuntu.
+This will generate all the needed files to build a knowledge graph, and start the SPARQL database, inference engine system, and the web server. Visit the web page at http://localhost:5000 to start working with Whyis.
 
-Choose the desired memory and space settings, and complete the VM creation.
+## As a Docker Image
 
-### Load the ISO
-Before starting the newly created VM, right click the VM and go to its Settings.
+Running whyis in docker is also very simple. With docker installed, To generate your first knowledge graph, make a directory for your kgapp, change to it, and start the whyis container:
 
-Under Storage, select Controller IDE and specify your ISO file. Press Ok to save the settings.
+```
+mkdir kgapp
+cd kgapp
+docker pull tetherlessworld/whyis
+docker -v $PWD:$PWD -w $PWD -p 5000 --name mykgapp tetherlessworld/whyis:latest
+```
 
-Now, when you start the VM, it should install a new Ubuntu desktop. You can now just follow the instructions for installing Whyis onto a Ubuntu system.
+Note that `$PWD` binds the current directory as the working dir in the container. You can adjust this as needed. Once the container is running, you can visit the knowledge graph at http://localhost:5000.
+
+Whyis commands can be run from inside the container using `docker exec`.
+
+## Deploying a kgapp to a Server
+
+If you need to deploy your knowledge graph to a server, copy your kgapp dir to the server, and run the following scripts from within the kgapp dir:
+
+```
+./script/bootstrap
+./script/setup
+```
 
 ## [Next: Using the Whyis command-line interface](commands)

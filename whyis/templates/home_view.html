@@ -23,5 +23,12 @@
     {{ content(this.description()) }}
 </div>
 <div>
-<latest/>
+<p>
+  {% if db.__len__() == 0 %}
+  The KG is empty.
+  {% else %}
+  Show cool stuff here.
+  {% endif %}
+</p>
+
 {% endblock %}

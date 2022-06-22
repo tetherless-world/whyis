@@ -11,7 +11,6 @@ from setlr import FileLikeFromIter
 import re
 import os
 from requests_testadapter import Resp
-import magic
 import mimetypes
 import traceback
 import sys

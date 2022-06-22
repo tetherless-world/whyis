@@ -52,11 +52,11 @@ def configure(app):
         except Exception:
             entry[label_key] = entry[key]
             return entry
-        if fetch:
-            resource = app.get_resource(key_uri)
-        else:
-            resource = app.Entity(app.db, key_uri)
-        entry[label_key] = app.get_label(resource.description())
+#        if fetch:
+        resource = app.db.resource(key_uri)
+#        else:
+#            resource = app.Entity(app.db, key_uri)
+        entry[label_key] = app.get_label(resource)
         return entry
 
     @app.template_filter('iter_labelize')
@@ -605,7 +605,7 @@ values (?c ?priority) { %s }
     def tocsv(data):
         import pandas as pd
         return pd.DataFrame.from_records(data).to_csv(index=False)
-    
+
     @app.template_filter('from_n3_dict')
     def from_n3_dict(args):
         result = {}
