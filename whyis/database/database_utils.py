@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import requests
+from requests.auth import HTTPBasicAuth
 from rdflib import BNode, URIRef
 from rdflib.graph import ConjunctiveGraph
 from rdflib.plugins.stores.sparqlstore import _node_to_sparql
@@ -42,12 +43,20 @@ def engine_from_config(config):
     if "_default_graph" in config:
         defaultgraph = URIRef(config["_default_graph"])
     if "_endpoint" in config:
-        store = WhyisSPARQLUpdateStore(query_endpoint=config["_endpoint"],
-                                  update_endpoint=config["_endpoint"],
-                                  method="POST",
-                                  returnFormat='json',
-                                  node_to_sparql=node_to_sparql)
+        kwargs = dict(
+            query_endpoint=config["_endpoint"],
+            update_endpoint=config["_endpoint"],
+            method="POST",
+            returnFormat='json',
+            node_to_sparql=node_to_sparql
+        )
+        if '_username' in config:
+            kwargs['auth'] = (config['_username'], config['_password'])
+        store = WhyisSPARQLUpdateStore(**kwargs)
         store.query_endpoint = config["_endpoint"]
+        if 'auth' in kwargs:
+            store.auth = kwargs['auth']
+
         def publish(data, format='text/trig;charset=utf-8'):
             s = requests.session()
             s.keep_alive = False
@@ -55,7 +64,8 @@ def engine_from_config(config):
             r = s.post(store.query_endpoint,
                        data=data,
                        #params={"graph":default_graph},
-                       headers={'Content-Type':format})
+                       headers={'Content-Type':format},
+                       auth= store.auth)
             #print(r.text)
         store.publish = publish
 

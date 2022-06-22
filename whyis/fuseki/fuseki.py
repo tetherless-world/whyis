@@ -14,7 +14,7 @@ def find_free_port():
         s.bind(('', 0))            # Bind to a free port provided by the host.
         return s.getsockname()[1]  # Return the port number assigned.
 
-def _wait_for_port(port, host='localhost', timeout=5.0):
+def _wait_for_port(port, host='localhost', timeout=10.0):
     """Wait until a port starts accepting TCP connections.
     Args:
         port (int): Port number.
@@ -29,10 +29,10 @@ def _wait_for_port(port, host='localhost', timeout=5.0):
             with socket.create_connection((host, port), timeout=timeout):
                 break
         except OSError as ex:
-            time.sleep(0.1)
             if time.perf_counter() - start_time >= timeout:
                 raise TimeoutError('Waited too long for the port {} on host {} to start accepting '
                                    'connections.'.format(port, host)) from ex
+            time.sleep(0.1)
 
 class FusekiServer:
     _datasets = None

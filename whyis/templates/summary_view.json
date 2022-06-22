@@ -1,1 +1,14 @@
-{{g.get_summary(this)|list|tojson}}
+{{'''
+ select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
+    optional {
+        ?identifier foaf:depiction|sio:isRepresentedBy ?depiction.
+    }
+    optional {
+        ?identifier dc:description|skos:definition|rdfs:comment ?d.
+    }
+    optional {
+        ?identifier a [ foaf:depiction|sio:isRepresentedBy ?type_thumbnail]
+    }
+    bind (coalesce(?depiction, ?type_thumbnail) as ?t)
+} group by ?identifier
+''' | query(values={"identifier":this.identifier}) | first | labelize("identifier","label") | tojson }}
