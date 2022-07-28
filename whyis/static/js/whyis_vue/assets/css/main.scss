@@ -2,8 +2,22 @@
 @import "screens";
 @import "content";
 
+@import "~vue-material/dist/theme/engine"; // Import the theme engine
+
+@include md-register-theme("default", (
+  primary: $primary-color, // The primary color of your brand
+  accent: orangered // The secondary color of your brand
+));
+
+@import "~vue-material/dist/theme/all"; // Apply the theme
+
 html {
     font-family: 'Roboto', sans-serif !important;
+}
+.random_network {
+  background: url('/images/random_network.png') no-repeat bottom center !important;
+  background-size: "cover" !important;
+  background-color: $primary-color;
 }
 .nav {
     &-title {
@@ -305,6 +319,11 @@ html {
     &-menu-content {
         z-index: 12;
     }
+    &-primary {
+      background-color: $primary-color ;
+    }
 }
+
+[v-cloak] { display: none }
 
 /**.yasgui .endpointText {display:none !important;}*/

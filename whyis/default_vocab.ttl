@@ -409,7 +409,17 @@ rdfs:Resource
 
 whyis:hasFacetValues a whyis:CachedView.
 
+rdfs:Class a rdfs:Class.
+
 owl:Class a rdfs:Class;
+  whyis:hasNavigation (
+      whyis:hasView
+      whyis:hasExplore
+      whyis:hasGraphView
+      whyis:hasHistory
+      whyis:editInstanceView
+      whyis:newInstanceView
+  );
   rdfs:label "Class";
   whyis:hasConstraints "class_constraints.json";
   whyis:hasFacets "class_facets.json";
@@ -429,6 +439,7 @@ rdfs:Class rdfs:label "Class";
     whyis:hasOutgoing "outgoing_class.json";
     whyis:hasIncoming "incoming_class.json";
     whyis:hasInstances "instances.json";
+    whyis:newInstanceView "new_instance_view.html";
     whyis:hasGallery "gallery.html";
     whyis:hasView "class_view.html".
 
@@ -500,6 +511,7 @@ whyis:HomePage a owl:Class;
   whyis:hasView "home_view.html";
   whyis:hasLabels "labels.json";
   whyis:latestView "latest.json";
+  whyis:hasInstances "home_instances.json";
   whyis:resolveView "resolve.json".
 
 whyis:cardView rdfs:subPropertyOf whyis:hasView;
@@ -509,6 +521,7 @@ whyis:latestView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "latest".
 
 whyis:newInstanceView rdfs:subPropertyOf whyis:hasView;
+  rdfs:label "New";
   dc:identifier "new".
 
 whyis:editInstanceView rdfs:subPropertyOf whyis:hasView;

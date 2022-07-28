@@ -21,11 +21,11 @@ from uuid import uuid4
 from whyis.datastore import create_id
 
 
-class Nanopublication(rdflib.ConjunctiveGraph):
+class Nanopublication(rdflib.Graph):
     _nanopub_resource = None
 
     new = True
-    
+
     @property
     def nanopub_resource(self):
         if self._nanopub_resource is None:
@@ -45,6 +45,23 @@ class Nanopublication(rdflib.ConjunctiveGraph):
     @property
     def provenance_resource(self):
         return self.resource(self.provenance.identifier)
+
+    _head = None
+
+    @property
+    def head(self):
+        if self._head is None:
+
+            assertion = self.nanopub_resource.value(np.hasAssertion)
+            if assertion is None:
+                if isinstance(self.identifier, rdflib.BNode):
+                    assertion = self.resource(rdflib.BNode())
+                else:
+                    assertion = self.resource(self.identifier + "_assertion")
+                assertion.add(rdflib.RDF.type, np.Assertion)
+                self.add((self.identifier, np.hasAssertion, assertion.identifier))
+            self._assertion = rdflib.Graph(store=self.store, identifier=assertion.identifier)
+        return self._assertion
 
     _assertion = None
 

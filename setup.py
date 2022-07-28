@@ -72,7 +72,7 @@ def read(fname):
 
 def build_js():
     subprocess.run('npm install',shell=True,cwd='whyis/static')
-    subprocess.run('npm run build',shell=True,cwd='whyis/static')
+    subprocess.run('npm run build-dev',shell=True,cwd='whyis/static')
 
 
 def download_file(url, filename=None):
@@ -127,7 +127,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0b12",
+    version = "2.0b13",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),

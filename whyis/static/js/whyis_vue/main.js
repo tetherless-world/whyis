@@ -7,6 +7,8 @@ import './components'
 import {store} from './store'
 import Header from './components/utils/header'
 import Drawer from './components/utils/drawer'
+import "./assets/css/main.scss";
+
 // import dialogBox from './components/utils/dialog'
 import viewMixin from './mixins/view-mixin'
 
@@ -14,10 +16,21 @@ import viewMixin from './mixins/view-mixin'
 Vue.use(VueMaterial.default)
 Vue.mixin(viewMixin)
 
+// As per https://github.com/vuematerial/vue-material/issues/2285#issuecomment-1059410143
+// Vue.component('MdSelect', Vue.options.components.MdFile.extend({
+//     methods: {
+//         isInvalidValue: function isInvalidValue () {
+//             return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
+//         }
+//     }
+// }))
+
 let data = {}
 if (typeof (ATTRIBUTES) !== 'undefined') {
   data = {
     attributes: ATTRIBUTES,
+    summary: SUMMARY,
+    nav: NAVIGATION,
     uri: NODE_URI,
     description: DESCRIPTION,
     user: USER,
@@ -36,8 +49,8 @@ new Vue({
   data,
   store,
   components: {
-    mdAppToolbar: Header,
-    mdAppDrawer: Drawer,
+//    mdAppToolbar: Header,
+//    mdAppDrawer: Drawer,
     // dialogBox
   }
 })
