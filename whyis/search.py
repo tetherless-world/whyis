@@ -33,15 +33,15 @@ def resolve(graph, g, term, type=None, context=None):
 select distinct
 ?node
 ?label
-#(group_concat(distinct ?type; separator="||") as ?types)
+(group_concat(distinct ?type; separator="||") as ?types)
 (coalesce(?relevance+?cr, ?relevance) as ?score)
 where {
   (?label ?relevance) text:search '''%s'''.
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
-#  optional {
-#    ?node rdf:type/rdfs:subClassOf* ?type.
-#  }
+  optional {
+    ?node rdf:type/rdfs:subClassOf* ?type.
+  }
 
   %s
 
@@ -78,7 +78,7 @@ where {
     for hit in graph.query(query, initNs=prefixes):
         result = hit.asdict()
         g.labelize(result,'node','preflabel')
-        #result['types'] = [g.labelize({'uri':x},'uri','label') for x in result['types'].split('||')]
+        result['types'] = [g.labelize({'uri':x},'uri','label') for x in result['types'].split('||')]
         results.append(result)
     return results
 

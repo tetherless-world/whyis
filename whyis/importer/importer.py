@@ -55,7 +55,8 @@ class Importer:
         #    print("Error loading %s: %s" % (entity_name, e))
         #    traceback.print_exc(file=sys.stdout)
         #    return
-        for new_np in nanopubs.prepare(g):
+        new_nps = list(nanopubs.prepare(g))
+        for new_np in new_nps:
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
             if updated is not None:
@@ -64,7 +65,7 @@ class Importer:
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime,
                                     rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
-            nanopubs.publish(new_np)
+        nanopubs.publish(*new_nps)
         for old_np in old_nps:
             nanopubs.retire(old_np.identifier)
 

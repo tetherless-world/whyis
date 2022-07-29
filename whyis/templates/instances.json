@@ -2,6 +2,7 @@
  select ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
    ?typ rdfs:subClassOf* ?type.
    ?identifier rdf:type ?typ.
+   filter(!isBlank(?identifier))
 
     optional {
         ?identifier foaf:depiction|sio:isRepresentedBy ?depiction.

@@ -26,16 +26,21 @@ def view(name=None, format=None, view=None):
     resource = current_app.get_resource(entity)
 
     # 'view' is the default view
+    print("using resource with these statements", len(resource.graph))
     fileid = resource.value(current_app.NS.whyis.hasFileID)
+    print(resource.identifier, current_app.NS.whyis.hasFileID, fileid)
     if fileid is not None and 'view' not in request.args:
+        print("Using File ID",fileid)
         fileid = fileid.value
         f = None
         if current_app.nanopub_depot is not None and current_app.nanopub_depot.exists(fileid):
             f = current_app.nanopub_depot.get(fileid)
         elif current_app.file_depot.exists(fileid):
             f = current_app.file_depot.get(fileid)
+            print("Found File",f)
         if f is not None:
             fsa = FileServeApp(f, current_app.config["FILE_ARCHIVE"].get("cache_max_age",3600*24*7))
+            print("Serving FSA",fsa)
             return fsa
 
     if content_type is None:

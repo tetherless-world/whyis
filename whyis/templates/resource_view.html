@@ -1,12 +1,10 @@
 {% extends "base_vue.html" %}
-{% from "elements/upload.html" import vue_upload_button_tab_modal %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
-{% set attributes = this | include("attributes") | fromjson %}
+{% set attributes = this | include("attributes") | fromjson  %}
 {% set incoming = this | include("incoming") | fromjson  %}
 {% set outgoing = this | include("outgoing") | fromjson  %}
-
     <md-card-header>
         <md-card-header-text>
             <ul class="nav nav-tabs">
@@ -27,7 +25,9 @@
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    {{ vue_upload_button_tab_modal(this) }}
+                  <a class="nav-link" @click="nav.showUploadDialog=true" aria-label="Upload file for this entity" title="Upload file for this entity." >
+                      Upload
+                  </a>
                 </li>
                 {% if not this.identifier.startswith(ns.local) %}
                 <li class="nav-item">
@@ -71,27 +71,6 @@
                     {% endfor %}
                 {% endfor %}
                 </dl>
-                <div>
-                    <add-attribute uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Attribute
-                            <md-tooltip>Add a new attribute fact.</md-tooltip>
-                        </md-button>
-                    </add-attribute>
-                </div>
-                <div>
-                    <add-link uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Link
-                            <md-tooltip>Link another entity.</md-tooltip>
-                        </md-button>
-                    </add-link>
-                </div>
-                <div>
-                    <add-type uri="{{attributes['@id']}}">
-                        <md-button class="md-raised">Add Type
-                            <md-tooltip>Specify additional type, subclass, or superclass</md-tooltip>
-                        </md-button>
-                    </add-type>
-                </div>
             </div>
             <div class="md-layout-item">
                 {% for link_name, items in outgoing | groupby("link_label") %}
@@ -127,7 +106,13 @@
             </div>
                 {% endfor %}
                 {% for link_name, items in incoming | groupby("link_label") %}
-                <h2>{{link_name.title()}} Of</h2>
+                <h2>
+                  {% if link_name.lower().endswith(" of") %}
+                  {{link_name[:-3].title()}}
+                  {% else %}
+                  {{link_name.title()}} Of
+                  {% endif %}
+                </h2>
                 <div class="md-layout md-gutter md-alignment-top-left">
                 {% for item in items %}
                 <md-card style="margin-bottom: 1em; width: 300px" class="md-layout-item">

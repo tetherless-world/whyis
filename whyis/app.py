@@ -249,6 +249,7 @@ class App(Empty):
                 updated = datetime.now(pytz.utc)
             if modified is None or (updated - modified).total_seconds() > importer.min_modified:
                 importer.load(entity_name, app.db, app.nanopub_manager)
+
         self.run_importer = run_importer
 
         self.template_imports = {}
@@ -276,11 +277,13 @@ class App(Empty):
     @property
     def file_depot(self):
         print(self.config['FILE_ARCHIVE'])
-        if self._file_depot is None:
-            if DepotManager.get('files') is None:
-                DepotManager.configure('files', self.config['FILE_ARCHIVE'])
-            self._file_depot = DepotManager.get('files')
-        return self._file_depot
+        #if self._file_depot is None:
+        if DepotManager.get('files') is None:
+            print("constructing new depot")
+            DepotManager.configure('files', self.config['FILE_ARCHIVE'])
+            #self._file_depot =
+        return DepotManager.get('files')
+        #return self._file_depot
 
     _nanopub_depot = None
     @property
@@ -474,6 +477,7 @@ construct {
         fileintent = FileIntent(f.stream, f.filename, f.mimetype)
         fileid = self.file_depot.create(fileintent)
         self.file_depot.get(fileid)
+        print(self.file_depot)
         print("added",entity,"to depot as",fileid)
         nanopub.add((nanopub.identifier, NS.sio.isAbout, entity))
         nanopub.assertion.add((entity, NS.whyis.hasFileID, Literal(fileid)))

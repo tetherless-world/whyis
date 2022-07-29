@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_vue.html" %}
 
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{config['SITE_NAME']}}{% endblock %}
@@ -24,10 +24,31 @@
 </div>
 <div>
 <p>
-  {% if db.__len__() == 0 %}
-  The KG is empty.
+  {% if app.db | length == 0 %}
+    {% if not current_user or current_user.is_anonymous %}
+        <md-empty-state
+          md-icon="account_circle"
+          md-label="Log in or Register to begin"
+          md-description="Log in or create an account to begin populating your knowledge graph.">
+          <md-button class="md-raised md-primary" md-raised href="{{url_for('security.login')}}" aria-label="Log in" title=""><md-icon>login</md-icon> Log in</md-button>
+          <md-button class="md-raised md-primary" href="{{url_for('security.register')}}" aria-label="Register" title=""><md-icon>person_add</md-icon> Register</md-button>
+        </md-empty-state>
+    {% else %}
+      <md-empty-state
+        md-icon="hub"
+        md-label="Add Knowledge"
+        md-description="Build your knowledge graph by adding ontologies and RDF.">
+        <md-button @click="nav.showAddKnowledgeMenu=true"
+                   class="md-raised md-primary"
+                   md-raised aria-label="Add Knowledge"
+                   title="">
+          <md-icon>publish</md-icon>
+          Add Knowledge
+        </md-button>
+      </md-empty-state>
+    {% endif %}
   {% else %}
-  Show cool stuff here.
+  <album instancetype="{{this.identifier}}"></album>
   {% endif %}
 </p>
 

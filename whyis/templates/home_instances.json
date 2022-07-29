@@ -1,0 +1,25 @@
+{{'''
+select distinct ?identifier (sample(?t) as ?thumbnail) (sample(?d) as ?description) where {
+     {
+          select ?identifier (count(?x) as ?instances) where {
+              ?x a ?i.
+              filter(!isBlank(?x))
+              ?i rdfs:subClass* ?identifier.
+          }
+          group by ?identifier
+          order by desc(?instances)
+          limit 6
+     }
+
+     optional {
+         ?identifier foaf:depiction|sio:isRepresentedBy ?depiction.
+     }
+     optional {
+         ?identifier dc:description|skos:definition|rdfs:comment ?d.
+     }
+     optional {
+         ?identifier a [ foaf:depiction|sio:isRepresentedBy ?type_thumbnail]
+     }
+     bind (coalesce(?depiction, ?type_thumbnail) as ?t)
+ } group by ?identifier order by desc(?instances) limit 6
+''' | query(values={"type":this.identifier}) | iter_labelize("identifier","label") | tojson }}

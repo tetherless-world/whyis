@@ -31,6 +31,7 @@ def load_nanopub_graph(format, location=None, data=None, store=None):
         nanopub.provenance
         nanopub.pubinfo
         inputGraph = Graph(store=store, identifier=nanopub.assertion.identifier)
+    print(data[:200])
     inputGraph.parse(data=data, location=location, format=format, publicID=inputGraph.identifier)
     return ConjunctiveGraph(store=store)
 
