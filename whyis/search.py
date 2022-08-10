@@ -40,15 +40,11 @@ where {
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
   optional {
-    ?t rdfs:subClass* ?type.
-    ?node rdf:type ?t.
+    ?node rdf:type ?type.
   }
 
   %s
 
-  filter not exists {
-    [] ?node [].
-  }
   filter not exists {
     ?node a <http://semanticscience.org/resource/Term>
   }
@@ -60,9 +56,6 @@ where {
   }
   filter not exists {
     ?node a <http://www.nanopub.org/nschema#Provenance>
-  }
-  filter not exists {
-    ?node a owl:AnnotationProperty.
   }
   # filter not exists {
   #   ?node a owl:ObjectProperty.
