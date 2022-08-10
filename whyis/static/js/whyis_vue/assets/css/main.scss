@@ -319,9 +319,6 @@ html {
     &-menu-content {
         z-index: 12;
     }
-    &-primary {
-      background-color: $primary-color ;
-    }
 }
 
 [v-cloak] { display: none }

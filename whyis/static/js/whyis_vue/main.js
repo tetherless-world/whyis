@@ -25,6 +25,18 @@ Vue.mixin(viewMixin)
 //     }
 // }))
 
+import { MdField } from 'vue-material/dist/components'
+
+Vue.use(MdField)
+
+Vue.component('MdSelect', Vue.options.components.MdSelect.extend({
+    methods: {
+        isInvalidValue: function isInvalidValue () {
+            return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
+        }
+    }
+}))
+
 let data = {}
 if (typeof (ATTRIBUTES) !== 'undefined') {
   data = {

@@ -9,17 +9,17 @@
       <md-field>
         <label>Format</label>
         <md-select :required="true" v-model="format" name="format" id="format">
-          <md-option v-for="f in formats" :value="f">{{f.name}}</md-option>
+          <md-option v-for="f in formats" :value="f.name">{{f.name}}</md-option>
         </md-select>
       </md-field>
-      <md-dialog-options class="md-layout md-gutter md-alignment-center-right">
-        <md-button @click.prevent="onCancel" class="md-raised md-layout-item">
+      <md-dialog-actions>
+        <md-button @click.prevent="onCancel" class="md-primary">
           Cancel
         </md-button>
-        <md-button v-on:click="onSubmit()" class="md-raised md-layout-item">
+        <md-button v-on:click="onSubmit()" class="md-primary">
           Add
         </md-button>
-      </md-dialog-options>
+      </md-dialog-actions>
     </div>
   </md-dialog>
 </template>
@@ -38,8 +38,9 @@ var formats =  [
 ];
 
 var format_map = {
-
 };
+
+formats.forEach(function(f) { format_map[f.name] = f; })
 
 export default Vue.component('upload-knowledge', {
     props: ['active'],
@@ -47,6 +48,7 @@ export default Vue.component('upload-knowledge', {
         return {
             formats: formats,
             file: {name: ''},
+            format_map: format_map,
             format: null,
             fileobj: "",
             status: false,
@@ -74,23 +76,28 @@ export default Vue.component('upload-knowledge', {
         handleFileUpload(event) {
             console.log(event);
             this.fileobj = event[0];
-            let selectedFormats = this.formats.filter(f =>
-                f.extensions.filter(e => this.fileobj.name.endsWith(e)));
-            if (selectedFormats.length > 0) {
-                this.format = selectedFormats[0];
-            } else {
-                this.format = null;
-            }
         },
         async save() {
+            let format = this.format;
+            if (format == null) {
+                let selectedFormats = this.formats.filter(f =>
+                    f.extensions.filter(e => this.fileobj.name.endsWith(e)));
+                if (selectedFormats.length > 0) {
+                    console.log("setting format", selectedFormats[0]);
+                    format = selectedFormats[0];
+                }
+            } else {
+                format = this.format_map[this.format];
+            }
             console.log(this.format);
             try {
                 const request = {
                   method: 'post',
                   url: `${ROOT_URL}pub`,
                   data: this.fileobj,
-                  headers: { 'Content-Type': this.format.mimetype}
+                  headers: { 'Content-Type': format.mimetype}
                 }
+                console.log(request);
                 return axios(request)
             } catch(err){
                 return alert(err)

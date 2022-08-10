@@ -40,7 +40,8 @@ where {
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
   optional {
-    ?node rdf:type/rdfs:subClassOf* ?type.
+    ?t rdfs:subClass* ?type.
+    ?node rdf:type ?t.
   }
 
   %s

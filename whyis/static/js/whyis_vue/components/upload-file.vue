@@ -9,14 +9,14 @@
           <md-radio name="upload_type" v-model="upload_type" value="http://www.w3.org/ns/dcat#Dataset">Dataset</md-radio>
       </p>
       <md-field>
-        <label>RDF File</label>
+        <label>File</label>
         <md-file name="file" multiple placeholder="Add files here." />
       </md-field>
   </form>
-  <md-dialog-options class="md-layout md-gutter md-alignment-center-right">
-    <md-button @click="resetDialogBox()" class="md-raised md-layout-item" >Close</md-button>
-    <md-button form="upload_form" type="submit" class="md-raised md-layout-item">Upload</md-button>
-  </md-dialog-options>
+  <md-dialog-actions>
+    <md-button @click="resetDialogBox()" class="md-primary" >Close</md-button>
+    <md-button form="upload_form" type="submit" class="md-primary">Upload</md-button>
+  </md-dialog-actions>
 </md-dialog>
 </template>
 <style scoped lang="scss" src="../assets/css/main.scss"></style>
