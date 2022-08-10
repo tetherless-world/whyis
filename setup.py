@@ -127,7 +127,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0b14",
+    version = "2.0b15",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -174,7 +174,7 @@ be managed and used.''',
         'itsdangerous<2.0,>=0.24',
         'jinja2-time',
         'Jinja2==2.11.3',
-        'keepalive',
+        #'keepalive',
         'lxml',
         'Markdown',
         'markupsafe==2.0.1',
