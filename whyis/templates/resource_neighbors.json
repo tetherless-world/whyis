@@ -1,8 +1,9 @@
 {{'''
-select distinct ?uri (sample(?class) as ?class) where {
+select distinct ?uri (sample(?c) as ?class) where {
     ?e (!rdf:type|^!rdf:type)?/(!rdf:type|^!rdf:type)? ?uri.
-    ?uri rdf:type/rdfs:subClassOf* ?type.
-    ?uri a ?class.
+    ?uri rdf:type ?t.
+    ?t rdfs:subClassOf* ?type.
+    ?uri a ?c.
 
     filter (?e != ?uri)
     filter (isURI(?uri))

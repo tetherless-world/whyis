@@ -390,40 +390,41 @@ class App(Empty):
 #                try:
                 result = Graph()
 #                try:
-                for quad in self._graph.query('''
-construct {
-    ?e ?p ?o.
-    ?o rdfs:label ?label.
-    ?o skos:prefLabel ?prefLabel.
-    ?o dc:title ?title.
-    ?o foaf:name ?name.
-    ?o ?pattr ?oattr.
-    ?oattr rdfs:label ?oattrlabel
-} where {
-    graph ?g {
-      ?e ?p ?o.
-    }
-    ?g a np:Assertion.
-    optional {
-      ?e sio:hasAttribute|sio:hasPart ?o.
-      ?o ?pattr ?oattr.
-      optional {
-        ?oattr rdfs:label ?oattrlabel.
-      }
-    }
-    optional {
-      ?o rdfs:label ?label.
-    }
-    optional {
-      ?o skos:prefLabel ?prefLabel.
-    }
-    optional {
-      ?o dc:title ?title.
-    }
-    optional {
-      ?o foaf:name ?name.
-    }
-}''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
+                for quad in self._graph.query('''describe ?e
+# construct {
+#     ?e ?p ?o.
+#     ?o rdfs:label ?label.
+#     ?o skos:prefLabel ?prefLabel.
+#     ?o dc:title ?title.
+#     ?o foaf:name ?name.
+#     ?o ?pattr ?oattr.
+#     ?oattr rdfs:label ?oattrlabel
+# } where {
+#     graph ?g {
+#       ?e ?p ?o.
+#     }
+#     ?g a np:Assertion.
+#     optional {
+#       ?e sio:hasAttribute|sio:hasPart ?o.
+#       ?o ?pattr ?oattr.
+#       optional {
+#         ?oattr rdfs:label ?oattrlabel.
+#       }
+#     }
+#     optional {
+#       ?o rdfs:label ?label.
+#     }
+#     optional {
+#       ?o skos:prefLabel ?prefLabel.
+#     }
+#     optional {
+#       ?o dc:title ?title.
+#     }
+#     optional {
+#       ?o foaf:name ?name.
+#     }
+# }
+''', initNs=NS.prefixes, initBindings={'e':self.identifier}):
                     if len(quad) == 3:
                         s,p,o = quad
                     else:
