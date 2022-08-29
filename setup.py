@@ -127,7 +127,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0b17",
+    version = "2.0.0",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -197,7 +197,7 @@ be managed and used.''',
         'sadi',
         'scipy',
         'setlr==0.2.18',
-        'sdd2rdf>=1.0.1',
+        'sdd2rdf>=1.0.3',
         'xlrd==2.0.1',
         'Flask-Caching==1.10.1'
     ],
@@ -227,9 +227,10 @@ be managed and used.''',
         ]
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Framework :: Flask",
         "Environment :: Web Environment",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
         "License :: OSI Approved :: Apache Software License",
     ],

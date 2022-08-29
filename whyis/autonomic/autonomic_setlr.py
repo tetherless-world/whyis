@@ -73,6 +73,7 @@ class SETLr(UpdateChangeService):
         setl_graph = i.graph
         #        setlr.run_samples = True
         resources = setlr._setl(setl_graph)
+        print(resources)
         # retire old copies
         old_np_map = {}
 #        to_retire = []

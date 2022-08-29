@@ -183,7 +183,7 @@ class NanopublicationManager(object):
                     for entity in np_graph.assertion.subjects(self.app.NS.whyis.hasContent):
                         localpart = self.db.qname(entity).split(":")[1]
                         filename = secure_filename(localpart)
-                        f = DataURLStorage(np_graph.value(entity, self.app.NS.whyis.hasContent), filename=filename)
+                        f = DataURLStorage(np_graph.assertion.value(entity, self.app.NS.whyis.hasContent), filename=filename)
                         print('adding file', filename)
                         self.app.add_file(f, entity, np_graph)
                         np_graph.assertion.remove((entity, self.app.NS.whyis.hasContent, None))

@@ -44,4 +44,4 @@ class TestAgent(Command):
         for np in results:
             print(np.identifier)
             if dry_run:
-                print(np.serialize(format="trig"))
+                print(rdflib.ConjunctiveGraph(np.store).serialize(format="trig"))
