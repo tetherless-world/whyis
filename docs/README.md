@@ -1,7 +1,7 @@
 # Whyis: a nano-scale knowledge graph framework
 
-Whyis is a nano-scale knowledge graph publishing, management, and analysis framework. 
-Whyis aims to support domain-aware management and curation of knowledge from many different sources. Its primary goal is to enable creation of useful domain- and data-driven knowledge graphs. Knowledge can be contributed and managed through direct user interaction, statistical analysis, or data ingestion from many different kinds of data sources. Every contribution to the knowledge graph is managed as a separate entity so that its provenance (publication status, attribution, and justification) is transparent and can be managed and used. 
+Whyis is a nano-scale knowledge graph publishing, management, and analysis framework.
+Whyis aims to support domain-aware management and curation of knowledge from many different sources. Its primary goal is to enable creation of useful domain- and data-driven knowledge graphs. Knowledge can be contributed and managed through direct user interaction, statistical analysis, or data ingestion from many different kinds of data sources. Every contribution to the knowledge graph is managed as a separate entity so that its provenance (publication status, attribution, and justification) is transparent and can be managed and used.
 
 Whyis manages its fragments of knowledge as nanopublications, which can be viewed as the smallest publishable unit. They are fragments of knowledge graphs that have secondary graphs associated with them to contain provenance and publication information. Knowledge graph systems need to manage the provenance of its contents. By using existing recommended standards like RDF, OWL, and SPARQL, nanopublications are able to provide flexible expansion and integration options without the limitations of custom database management tools. They also have the flexibility to capture any level of granularity of information required by the application.
 
@@ -29,15 +29,10 @@ However, if it is possible to break up assertions into smaller units, that will 
 
 
 Whyis is written in Python using the Flask framework, and uses a number of existing infrastructure tools to work, as shown below.
-The RDF database used by default is [Blazegraph](https://www.blazegraph.com) which provides scale-out [horizontal scaling for large graphs](https://wiki.blazegraph.com/wiki/index.php/HAJournalServer).
+The RDF database used by default is [Fuseki](https://jena.apache.org/documentation/fuseki2/) which provides a modular database for knowledge graph research.
 Whyis uses the SPARQL 1.1 Query, Update, and Graph Store HTTP Protocol.
 Any RDF database that supports those protocols can be a drop-in replacement for Blazegraph.
-A read-only SPARQL endpoint is available via `/sparql`, along with a [Yet Another SPARQL GUI (YASGUI)-basedb UI](http://yasgui.org). 
-
-
-
->![The Whyis technology stack](architecture.png "The Whyis technology stack")
->The Whyis technology stack. Current nanopublications are stored in the RDF database, while the entire history is stored in the nanopublication file archive using File Depot.  Files can be uploaded and stored in a special File Depot instance as well. Celery is used to invoke and manage a set of autonomic inference agents, which listen for graph changes and respond with additional nanopublications. Users interact with the graph through a set of views that are configured by node type and are based on the Flask templating system Jinja2.
+A read-only SPARQL endpoint is available via `/sparql`, along with a [Yet Another SPARQL GUI (YASGUI)-basedb UI](http://yasgui.org).
 
 
 Storage is provided using the [FileDepot Python library](http://depot.readthedocs.io) to provide file-based persistence of nanopublications and uploaded files.
