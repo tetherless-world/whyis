@@ -2,7 +2,7 @@
 
 **Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Installing Whyis](https://tetherless-world.github.io/whyis/install).**
 
-Whyis is more than just a place to store, manage and query knowledge. The Inference Agent framework allows for post-processing of your uploaded knowledge. Inference Agents are capable of knowledge curation, reasoning, interaction, creation, and much more. 
+Whyis is more than just a place to store, manage and query knowledge. The Inference Agent framework allows for post-processing of your uploaded knowledge. Inference Agents are capable of knowledge curation, reasoning, interaction, creation, and much more.
 
 This tutorial will walk through the Inference Agent framework, how to create an inference agent, and invocation of an example inference agent.
 
@@ -30,17 +30,17 @@ A Whyis agent must consist of the following functions:
 
 ### Inference Agent Declaration in Customization Package
 
-All inference agents should be stored in your separate customization package. Here is a sample project source directory location: `/apps/my_knowledge_graph/my_knowledge_graph/`. In this directory, there are two pre-generated files: `agent.py` and `__init__.py`.
+All inference agents should be stored in your kgapp. Here is a sample project source directory location: `/apps/my_knowledge_graph/my_knowledge_graph/`. In this directory, there are two pre-generated files: `agent.py` and `__init__.py`.
 
 `__init__.py` contains import statements to all python inference agent files in this directory. For example, if you have one file in the directory called `agent.py`, `__init__.py` should contain: `import agent`. If you create additional python files in that directory, you need to add import statements in `__init__.py`.
 
 `agent.py` contains the framework for sample inference agents. Here is the content from `agent.py`:
 
 ```
-import autonomic
+from whyis import autonomic
 from rdflib import *
 from slugify import slugify
-import nanopub
+from whyis import nanopub
 
 sioc_types = Namespace("http://rdfs.org/sioc/types#")
 sioc = Namespace("http://rdfs.org/sioc/ns#")
@@ -57,7 +57,7 @@ After the import statements and namespace definitions, we can declare our Infere
 ```
 class HTML2Text(autonomic.UpdateChangeService):
     activity_class = whyis.TextFromHTML
-    
+
     def getInputClass(self):
         return sioc.Post
 
@@ -77,7 +77,7 @@ class HTML2Text(autonomic.UpdateChangeService):
 
 ### Inclusion of Inference Agent in Configuration File
 
-After a new Agent is implemented, it must be declared in your customization package's `config.py` file. For the purpose of explanation, let's say that I have created a new inference agent. The name of the python file is `myAgents.py`, the inference agent (python class) defined in this file is called `SampleAgent`, and the customization package's name is `my_knowledge_graph`.
+After a new Agent is implemented, it must be declared in your customization package's `whyis.conf` file. For the purpose of explanation, let's say that I have created a new inference agent. The name of the python file is `myAgents.py`, the inference agent (python class) defined in this file is called `SampleAgent`, and the customization package's name is `my_knowledge_graph`.
 
 To declare a new inference agent in the configuration, the following two tasks must be completed:
 1) Import your new inference agent in the config file.
@@ -87,7 +87,7 @@ In the case of my example, I would first need to import my inference agent. The 
 `import my_knowledge_graph.myAgents as myAgents`. Secondly, we must include the inference agent in the inferencers dictionary. A sample inferencers dictionary is provided below, with our new inference agent included.
 
 ```
-    inferencers = {
+    INFERENCERS = {
         "SETLr": autonomic.SETLr(),
         "HTML2Text" : nlp.HTML2Text(),
         "EntityExtractor" : nlp.EntityExtractor(),
@@ -96,7 +96,7 @@ In the case of my example, I would first need to import my inference agent. The 
         "SKOS Crawler" : autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
         "SampleAgent" : myAgents.SampleAgent()
     },
-    inference_tasks = [
+    INFERENCE_TASKS = [
         dict ( name="SKOS Crawler",
                service=autonomic.Crawler(predicates=[skos.broader, skos.narrower, skos.related]),
                schedule=dict(hour="1")
@@ -116,7 +116,7 @@ select ?resource where { ?resource <http://rdfs.org/sioc/ns#content> [].}
 In order to invoke HTML2Text, we must first define the inference agent in the `config.py` file. Open the file and uncomment the line: '"HTML2Text" : nlp.HTML2Text(),'. Confirm that all uncommented inference agents end in a comma, except for the last defined inference agent in the list. If there is an error in your `config.py`, Whyis will use the default config file instead. Your inferencers dictionary should look like the following:
 
 ```
-    inferencers = {
+    INFERENCERS = {
         "SETLr": autonomic.SETLr(),
         "HTML2Text" : nlp.HTML2Text()
         #"EntityExtractor" : nlp.EntityExtractor(),
@@ -135,7 +135,7 @@ Second, we must upload some knowledge to invoke the HTML2Text Agent. Below is a 
 
 To load our new knowledge, use the load command:
 ```
-$ python manage.py load -i <path to input file directory> -f turtle
+$ whyis load -i <path to input file directory> -f turtle
 ```
 
 As a result of the knowledge upload, there will be a new triple that contains parsed HTML text.

@@ -59,5 +59,3 @@ If you need to deploy your knowledge graph to a server, copy your kgapp dir to t
 ./script/bootstrap
 ./script/setup
 ```
-
-## [Next: Using the Whyis command-line interface](commands)

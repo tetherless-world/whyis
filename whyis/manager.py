@@ -31,7 +31,7 @@ class CleanChildProcesses:
             os.setpgrp()  # create new process group, become its leader
         except PermissionError:
             print('Running in a container, probably.')
-            
+
     def __exit__(self, type, value, traceback):
         global fuseki_celery_local
         print(fuseki_celery_local)
@@ -114,31 +114,30 @@ def main():
     global fuseki_celery_local
     os.environ['FLASK_ENV'] = 'development'
     #os.setpgrp()  # create new process group, become its leader
-    if not os.path.exists('whyis.conf'):
-        configure_knowledge_graph()
     with CleanChildProcesses():
         m = Manager()
-        app = m.app()
-        if app.config.get('EMBEDDED_CELERY',False) or app.config.get('EMBEDDED_FUSEKI', False):
-            print("setting up local config")
-            fuseki_celery_local = True
-            embedded_config = {
-                'EMBEDDED_FUSEKI' : False,
-                'FUSEKI_PORT' : app.config['FUSEKI_PORT'],
-                'KNOWLEDGE_ENDPOINT' : app.config['KNOWLEDGE_ENDPOINT'],
-                'ADMIN_ENDPOINT' : app.config['ADMIN_ENDPOINT'],
-                'EMBEDDED_CELERY' : False,
-                'CELERY_BROKER_URL' : app.config['CELERY_BROKER_URL'],
-                'CELERY_RESULT_BACKEND' : app.config['CELERY_RESULT_BACKEND']
-            }
-            with open('embedded.conf', 'w') as embedded_config_file:
-                json.dump(embedded_config, embedded_config_file)
-                #def sigint_handler(signal, frame):
-                #    print('Cleaning up...')
-                #    os.remove('embedded.conf')
-                #signal.signal(signal.SIGINT, sigint_handler)
+        if '-q' not in sys.argv and '--help' not in sys.argv:
+            if not os.path.exists('whyis.conf'):
+                configure_knowledge_graph()
+            app = m.app()
+            if app.config.get('EMBEDDED_CELERY',False) or app.config.get('EMBEDDED_FUSEKI', False):
+                fuseki_celery_local = True
+                embedded_config = {
+                    'EMBEDDED_FUSEKI' : False,
+                    'FUSEKI_PORT' : app.config['FUSEKI_PORT'],
+                    'KNOWLEDGE_ENDPOINT' : app.config['KNOWLEDGE_ENDPOINT'],
+                    'ADMIN_ENDPOINT' : app.config['ADMIN_ENDPOINT'],
+                    'EMBEDDED_CELERY' : False,
+                    'CELERY_BROKER_URL' : app.config['CELERY_BROKER_URL'],
+                    'CELERY_RESULT_BACKEND' : app.config['CELERY_RESULT_BACKEND']
+                }
+                with open('embedded.conf', 'w') as embedded_config_file:
+                    json.dump(embedded_config, embedded_config_file)
+                    #def sigint_handler(signal, frame):
+                    #    print('Cleaning up...')
+                    #    os.remove('embedded.conf')
+                    #signal.signal(signal.SIGINT, sigint_handler)
 
-        print('Starting whyis...')
         m.run(default_command='run')
 #    except KeyboardInterrupt:
     #    pass
@@ -152,7 +151,6 @@ def main():
             # Ignore it so that the existing exception, if any, is returned. This
             # leaves us with a clean exit code if there was no exception.
         #    pass
-    print("HI!")
     #print(fuseki_celery_local, flush=True)
     #print("Exiting...",flush=True)
 

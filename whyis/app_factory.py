@@ -16,6 +16,7 @@ def app_factory(blueprints=None):
         import_config_module(_app)
         if blueprints:
             _app.add_blueprint_list(blueprints)
-        _app.setup()
+        if not _app.setup_mode:
+            _app.setup()
 
     return _app

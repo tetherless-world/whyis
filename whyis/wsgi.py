@@ -5,4 +5,5 @@ import sys
 from whyis.app_factory import app_factory
 
 application = app_factory()
-celery = application.celery
+if not application.setup_mode:
+    celery = application.celery
