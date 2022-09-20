@@ -1,0 +1,4 @@
+myst-parser
+Sphinx
+sphinxcontrib-httpdomain
+sphinxcontrib-openapi
