@@ -34,8 +34,8 @@ void:uriSpace ?prefix .
 MINUS {
 ?setl_script prov:wasDerivedFrom ?sdd_file;
     a setl:SemanticETLScript.
-?dataset prov:wasGeneratedBy ?setl_script;
-    prov:wasGeneratedBy ?template.
+?dataset void:subset [ prov:wasGeneratedBy ?setl_script;
+    prov:wasGeneratedBy ?template] .
 ?template a setl:Transform;
     prov:used/prov:wasGeneratedBy ?extract.
 ?extract a setl:Extract;
@@ -66,6 +66,7 @@ class SDDAgent(GlobalChangeService):
             else:
                 sdd_data = sdd_file
 
+            local_dataset = rdflib.URIRef('/'.join([dataset,"subset",create_id()]))
             output = sdd2setl(sdd_data,
                               prefix.value,
                               data_file,
@@ -73,8 +74,8 @@ class SDDAgent(GlobalChangeService):
                               delimiter.value,
                               None,
                               None,
-                              dataset)
+                              local_dataset)
             o.graph.parse(data=output, format="turtle")
-
+            o.graph.add((dataset, self.app.NS.void.subset, local_dataset))
             sdd_setl = o.graph.value(predicate=rdflib.RDF.type, object=setl.SemanticETLScript)
             o.graph.add((sdd_setl, prov.wasDerivedFrom, sdd_file))

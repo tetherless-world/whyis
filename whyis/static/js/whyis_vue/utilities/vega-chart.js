@@ -207,7 +207,14 @@ function buildSparqlSpec (baseSpec, sparqlResults) {
     return null
   }
   const spec = Object.assign({}, baseSpec)
-  spec.data = { values: transformSparqlData(sparqlResults) }
+  if (spec.data != null) {
+    if (spec.datasets == null) {
+      spec.datasets = {}
+    }
+    spec.datasets['results'] = transformSparqlData(sparqlResults)
+  } else {
+    spec.data = { values: transformSparqlData(sparqlResults) }
+  }
   return spec
 }
 

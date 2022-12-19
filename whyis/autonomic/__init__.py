@@ -14,3 +14,4 @@ from .cache_updater import CacheUpdater
 from .update_change_service import UpdateChangeService
 from .sdd_agent import SDDAgent
 from .nlp import HTML2Text, EntityResolver, EntityExtractor
+from .import_trigger import ImportTrigger

@@ -6,7 +6,7 @@ import collections
 import requests
 from whyis.dataurl import DataURLStorage
 from werkzeug.utils import secure_filename
-
+from http.client import BadStatusLine
 import tempfile
 
 from depot.io.utils import FileIntent
@@ -194,8 +194,12 @@ class NanopublicationManager(object):
                                 np_graph.pubinfo.identifier,
                                 np_graph.provenance.identifier]:
                         np_query = '''select ?np where { ?np np:hasAssertion|np:hasProvenance|np:hasPublicationInfo ?x}'''
-                        replacing = [x for x, in self.db.query(np_query, initNs=dict(np=np), initBindings=dict(x=part))]
-                        to_retire = to_retire.union(replacing)
+                        try:
+                            replacing = [x for x, in self.db.query(np_query, initNs=dict(np=np), initBindings=dict(x=part))]
+                            to_retire = to_retire.union(replacing)
+                        except BadStatusLine as e:
+                            # Why is this happening??
+                            pass
 
                     for revised in np_graph.pubinfo.objects(np_graph.assertion.identifier, prov.wasRevisionOf):
                         for nanopub_uri in self.db.subjects(predicate=np.hasAssertion, object=revised):

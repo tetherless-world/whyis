@@ -73,7 +73,7 @@ class SETLr(UpdateChangeService):
         setl_graph = i.graph
         #        setlr.run_samples = True
         resources = setlr._setl(setl_graph)
-        print(resources)
+        #print(resources)
         # retire old copies
         old_np_map = {}
 #        to_retire = []
@@ -96,7 +96,7 @@ class SETLr(UpdateChangeService):
                 flask.current_app.nanopub_manager.publish(resources[output_graph])
             else:
                 out = resources[output_graph]
-                out_conjunctive = rdflib.ConjunctiveGraph(store=out.store, identifier=output_graph)
+                out_conjunctive = rdflib.ConjunctiveGraph(store=out.store)
                 to_publish = []
                 triples = 0
                 for new_np in flask.current_app.nanopub_manager.prepare(out_conjunctive):
