@@ -204,7 +204,7 @@ def configure(app):
 where {
     %s
 
-    ?assertion a np:Assertion.
+#    ?assertion a np:Assertion.
     ?np np:hasAssertion ?assertion.
     optional {
       ?np np:hasProvenance ?provenance
@@ -290,7 +290,7 @@ where {
             for i in links:
                 result['from'].extend(i['from'])
                 result['articles'].extend(i['articles'])
-            result['probability'] = combine_pvalues([e['probability'] for e in links], method="stouffer")[1]
+            result['probability'] = combine_pvalues([float(e['probability']) for e in links], method="stouffer")[1]
             if result['probability'] < 1 and result['probability'] > 0:
                 from scipy.stats import norm
                 result['zscore'] = norm.ppf(result['probability'])
