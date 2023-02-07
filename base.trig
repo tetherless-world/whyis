@@ -3027,4 +3027,9 @@ skos:Concept a owl:Class ;
       a owl:ObjectProperty ;
       rdfs:comment "This axiom needed so that Protege loads DCAT2 without errors."
     .
+    foaf:depiction
+      a owl:ObjectProperty;
+      rdfs:label "depiction";
+      rdfs:comment "A depiction of some thing."
+    .
 }
