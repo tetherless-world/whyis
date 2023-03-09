@@ -26,7 +26,7 @@ def view(name=None, format=None, view=None):
     resource = current_app.get_resource(entity)
 
     # 'view' is the default view
-    print("using resource with these statements", len(resource.graph))
+    # print("using resource with these statements", len(resource.graph))
     fileid = resource.value(current_app.NS.whyis.hasFileID)
     print(resource.identifier, current_app.NS.whyis.hasFileID, fileid)
     if fileid is not None and 'view' not in request.args:
