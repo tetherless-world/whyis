@@ -127,7 +127,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0.4",
+    version = "2.0.6",
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -160,6 +160,7 @@ be managed and used.''',
         'cookiecutter==1.7.3',
         'email_validator==1.1.3',
         'eventlet==0.33.0',
+        'dnspython==2.2.1',
         'filedepot==0.8.0',
         # Upgrade to 2.0 when Celery can use click 8.0
         'Flask<2.0',
