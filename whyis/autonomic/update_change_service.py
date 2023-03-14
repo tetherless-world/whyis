@@ -29,11 +29,11 @@ class UpdateChangeService(Service):
         return whyis.updateChangeQuery
 
     def explain(self, nanopub, i, o):
-        np_assertions = list(i.graph.subjects(rdflib.RDF.type, np.Assertion))
-        activity = nanopub.provenance.resource(rdflib.BNode())
+        Service.explain(self, nanopub, i, o)
         nanopub.pubinfo.add((o.identifier, rdflib.RDF.type, self.getOutputClass()))
-        nanopub.provenance.add((nanopub.assertion.identifier, prov.wasGeneratedBy, activity.identifier))
+        activity = nanopub.provenance.value(nanopub.assertion.identifier, prov.wasGeneratedBy)
+        np_assertions = list([i.graph.identifier])
         for assertion in np_assertions:
-            nanopub.provenance.add((activity.identifier, prov.used, assertion))
+            nanopub.provenance.add((activity, prov.used, assertion))
             nanopub.provenance.add((nanopub.assertion.identifier, prov.wasDerivedFrom, assertion))
             nanopub.pubinfo.add((nanopub.assertion.identifier, dc.created, rdflib.Literal(datetime.utcnow())))

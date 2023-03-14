@@ -56,7 +56,7 @@ class Service(sadi.Service):
 
     def create_output_nanopub(self):
         return flask.current_app.nanopub_manager.new()
-    
+
     def process_graph(self, inputGraph):
         instances = self.getInstances(inputGraph)
         return self.process_instances(instances, inputGraph)

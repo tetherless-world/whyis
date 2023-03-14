@@ -11,3 +11,4 @@ from .test_agent import TestAgent
 from .update_user import UpdateUser
 from .uninstall_app import UninstallApp
 from .init import Initialize
+from .sanitize import Sanitize

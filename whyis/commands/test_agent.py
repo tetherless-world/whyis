@@ -27,11 +27,36 @@ class TestAgent(Command):
         agent.app = app
         print(agent.get_query())
         results = []
-        #if agent.query_predicate == app.NS.whyis.globalChangeQuery:
-        if (entity_uri):
-            results.extend(agent.process_instance(app.db.resource(entity_uri), app.db))
+        if agent.query_predicate == app.NS.whyis.updateChangeQuery:
+            nanopublications = app.db.query('select distinct {}')
+            nanopulications = app.db
+            if entity_uri:
+                nanopublications = [nanopub for nanopub, in app.db.query('''
+                  select distinct ?nanopub where {
+                    graph ?assertion { ?subject ?predicate ?object. }
+                    ?nanopub a np:Nanopublication;
+                        np:hasAssertion ?assertion.
+                  }''', initNs=dict(np = app.NS.np), initBindings=dict(subject=entity_uri))]
+                for nanopub_uri in nanopublications:
+                    nanopub = app.nanopub_manager.get(nanopub_uri)
+                    instance = nanopub.assertion.resource(entity_uri)
+                    print ("Processing",nanopub_uri, "with", entity_uri)
+                    results.extend(agent.process_instance(instance, nanopub))
+            else:
+                nanopublications = [nanopub for nanopub, in app.db.query('''
+                  select distinct ?nanopub where {
+                    ?nanopub a np:Nanopublication;
+                        np:hasAssertion ?assertion.
+                  }''', initNs=dict(np = app.NS.np))]
+                for nanopub_uri in nanopublications:
+                    nanopub = app.nanopub_manager.get(nanopub_uri)
+                    print("Processing",nanopub_uri)
+                    results.extend(agent.process_graph(nanopub))
         else:
-            results.extend(agent.process_graph(app.db))
+            if (entity_uri):
+                results.extend(agent.process_instance(app.db.resource(entity_uri), app.db))
+            else:
+                results.extend(agent.process_graph(app.db))
         #else:
         #    for resource in agent.getInstances(app.db):
         #        for np_uri, in app.db.query('''select ?np where {

@@ -83,7 +83,8 @@ unconfigurable_commands = set([
     "test",
     "runagent",
     "updateuser",
-    "init"
+    "init",
+    "sanitize"
 ])
 
 class Manager(script.Manager):
@@ -96,6 +97,7 @@ class Manager(script.Manager):
         #self.add_command("listroutes", commands.ListRoutes())
         self.add_command("load", commands.LoadNanopub())
         self.add_command("init", commands.Initialize())
+        self.add_command("sanitize", commands.Sanitize())
         self.add_command("restore", commands.Restore())
         self.add_command("retire", commands.RetireNanopub())
         self.add_command("run", commands.WhyisServer())
