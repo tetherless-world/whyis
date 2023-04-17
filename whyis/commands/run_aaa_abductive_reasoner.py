@@ -182,6 +182,7 @@ class RunAAAReasoner(Command):
                     for mhs_detail in mhs_details :
                         npub.provenance.add((mhs_ref,skos.note,rdflib.Literal(mhs_detail)))
                 npub.provenance.add((npub.assertion.identifier,rdflib.RDF.type,sio.Unsupported))
+                npub.provenance.add((npub.assertion.identifier,prov.wasInformedBy,rdflib.Literal(observation)))
                 print("Number of existing explanations for", npub.assertion.identifier, ":", existing_exp_count)
                 npub_list.append(npub)
         for nanopub in npub_list :
