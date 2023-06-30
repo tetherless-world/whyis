@@ -64,10 +64,10 @@ class Backup(Command):
                 fileid = nanopub_to_fileid.get(nanopub_uri, None)
                 if fileid is None:
                     nanopub = app.nanopub_manager.get(np_uri)
-                    npg = rdflib.ConjunctiveGraph(store=nanpub.store)
+                    npg = rdflib.ConjunctiveGraph(store=nanopub.store)
                     quads = npg.serialize(format="trig")
                     np_uri.split('/')[-1]
-                    fileid = backup_nanopubs.create(quads,
+                    fileid = backup_nanopubs.create(quads.encode('utf8'),
                                                     nanopub_uri.split('/')[-1]+'.trig',
                                                     "application/trig")
                 else:

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Check release version in Dockerfile and setup.py
+
+VERSION=`python whyis/_version.py`
+
+echo ${VERSION}
+
+python setup.py sdist
+
+docker build . --build-arg __version__=${VERSION} -t tetherlessworld/whyis:latest -t tetherlessworld/whyis:${VERSION}

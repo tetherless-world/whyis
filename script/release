@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Check release version in Dockerfile and setup.py
+
+VERSION=`python whyis/_version.py`
+
+echo ${VERSION}
+
+twine upload dist/whyis-${VERSION}.tar.gz
+
+docker push tetherlessworld/whyis:${VERSION}
+
+docker push tetherlessworld/whyis:latest
+
+git tag -f v${VERSION}
+
+git push

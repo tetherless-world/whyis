@@ -6,7 +6,7 @@ starter knowledge graph, load knowledge into the graph, including transforming
 some data into RDF, and then show how to explore the knowledge with
 different Whyis tools.
 
-For this guide, we will be re-creating the [Les Miserables knowledge graph](https://github.com/whyiskg/les_mis_demo).
+For this guide, we will be re-creating the [Les Miserables knowledge graph](https://github.com/whyiskg/les-mis-demo).
 
 **Note:** We will be using Unix system commands that will work in Linux, Mac OS,
 and in the Windows Linux Subsystem.

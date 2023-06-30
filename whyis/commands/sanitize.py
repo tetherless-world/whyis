@@ -53,7 +53,7 @@ class Sanitize(Command):
                     if file_name.endswith('file'):
                         graph_changed = False
                         g = rdflib.ConjunctiveGraph()
-                        g.parse(data=data, format="trig")
+                        g.parse(data=data, format="nquads")
 
                         # Remove invalid literals.
                         # Fuseki has an especially hard time with them.

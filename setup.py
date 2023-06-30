@@ -7,6 +7,7 @@ import subprocess
 from os import path as osp
 from fnmatch import fnmatch
 
+from whyis._version import __version__
 
 def package_data_with_recursive_dirs(package_data_spec, exclude=[]):
     """converts modified package_data dict to a classic package_data dict
@@ -127,7 +128,7 @@ class SdistCommand(distutils.command.sdist.sdist):
 
 setup(
     name = "whyis",
-    version = "2.0.6",
+    version = __version__,
     author = "Jamie McCusker",
     author_email = "mccusj@cs.rpi.edu",
     description = ("Whyis is a nano-scale knowledge graph publishing, management, and analysis framework."),
@@ -161,7 +162,7 @@ be managed and used.''',
         'email_validator==1.1.3',
         'eventlet==0.33.0',
         'dnspython==2.2.1',
-        'filedepot==0.8.0',
+        'filedepot==0.1.0',
         # Upgrade to 2.0 when Celery can use click 8.0
         'Flask<2.0',
         'Flask-Login==0.5.0',
@@ -197,8 +198,8 @@ be managed and used.''',
         'requests[security]',
         'sadi',
         'scipy',
-        'setlr==0.2.18',
-        'sdd2rdf>=1.0.3',
+        'setlr==0.2.19',
+        'sdd2rdf>=1.1.0',
         'xlrd==2.0.1',
         'Flask-Caching==1.10.1'
     ],

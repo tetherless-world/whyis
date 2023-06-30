@@ -44,7 +44,7 @@ Running whyis in docker is also very simple. With docker installed, To generate 
 mkdir kgapp
 cd kgapp
 docker pull tetherlessworld/whyis
-docker -v $PWD:$PWD -w $PWD -p 5000 --name mykgapp tetherlessworld/whyis:latest
+docker run -v $PWD:$PWD -w $PWD -p 5000:5000 --name mykgapp tetherlessworld/whyis:latest
 ```
 
 Note that `$PWD` binds the current directory as the working dir in the container. You can adjust this as needed. Once the container is running, you can visit the knowledge graph at http://localhost:5000.
