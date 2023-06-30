@@ -97,11 +97,11 @@ class Backup(Command):
                 f = app.file_depot.get(file_id)
                 real_file_ids.add(file_id)
                 if not backup_files.exists(file_id):
-                    backup_files.create(f, f.name, f.content_type, f.file_id)
+                    backup_files.replace(f, f)
                 else:
                     fileinfo = backup_files.get(file_id)
                     if f.last_modified.replace(tzinfo=utc) > fileinfo.last_modified.replace(tzinfo=utc):
-                        backup_files.replace(f.file_id, f, f.name, f.content_type)
+                        backup_files.replace(f, f)
             except IOError:
                 # Looks like this one's missing.
                 pass

@@ -162,7 +162,7 @@ be managed and used.''',
         'email_validator==1.1.3',
         'eventlet==0.33.0',
         'dnspython==2.2.1',
-        'filedepot==0.1.0',
+        'filedepot==0.10.0',
         # Upgrade to 2.0 when Celery can use click 8.0
         'Flask<2.0',
         'Flask-Login==0.5.0',
