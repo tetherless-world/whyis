@@ -28,8 +28,6 @@ class TestAgent(Command):
         print(agent.get_query())
         results = []
         if agent.query_predicate == app.NS.whyis.updateChangeQuery:
-            nanopublications = app.db.query('select distinct {}')
-            nanopulications = app.db
             if entity_uri:
                 nanopublications = [nanopub for nanopub, in app.db.query('''
                   select distinct ?nanopub where {
@@ -39,9 +37,14 @@ class TestAgent(Command):
                   }''', initNs=dict(np = app.NS.np), initBindings=dict(subject=entity_uri))]
                 for nanopub_uri in nanopublications:
                     nanopub = app.nanopub_manager.get(nanopub_uri)
-                    instance = nanopub.assertion.resource(entity_uri)
-                    print ("Processing",nanopub_uri, "with", entity_uri)
-                    results.extend(agent.process_instance(instance, nanopub))
+                    np_conj = rdflib.ConjunctiveGraph(store=nanopub.store)
+                    instances = [r.identifier for r
+                                 in agent.getInstances(np_conj)
+                                 if r.identifier == entity_uri]
+                    if len(instances) > 0:
+                        instance = nanopub.assertion.resource(entity_uri)
+                        print ("Processing",nanopub_uri, "with", entity_uri)
+                        results.extend(agent.process_instance(instance, nanopub))
             else:
                 nanopublications = [nanopub for nanopub, in app.db.query('''
                   select distinct ?nanopub where {
@@ -50,8 +53,9 @@ class TestAgent(Command):
                   }''', initNs=dict(np = app.NS.np))]
                 for nanopub_uri in nanopublications:
                     nanopub = app.nanopub_manager.get(nanopub_uri)
+                    np_conj = rdflib.ConjunctiveGraph(store=nanopub.store)
                     print("Processing",nanopub_uri)
-                    results.extend(agent.process_graph(nanopub))
+                    results.extend(agent.process_graph(np_conj))
         else:
             if (entity_uri):
                 results.extend(agent.process_instance(app.db.resource(entity_uri), app.db))
