@@ -26,6 +26,84 @@ def node_to_sparql(node):
 #    else:
 #        return _node_from_result(node)
 
+drivers = {}
+
+def driver(name):
+    def decorator(function):
+        drivers[name] = function
+        return function
+    return decorator
+
+def driver(name):
+    def inner(fn):
+        print("registering", fn, name)
+        drivers[name] = fn
+        return fn
+    return inner
+
+@driver(name="memory")
+def memory_driver(config):
+    graph = ConjunctiveGraph()
+
+    def publish(data):
+        graph.parse(data, format='trig')
+
+    graph.store.publish = publish
+
+    return graph
+
+@driver(name="oxigraph")
+def oxigraph_driver(config):
+    defaultgraph = None
+    if "_default_graph" in config:
+        defaultgraph = URIRef(config["_default_graph"])
+    graph = ConjunctiveGraph(store='Oxigraph',identifier=defaultgraph)
+    graph.store.batch_unification = False
+    graph.store.open(config["_store"], create=True)
+
+    def publish(data):
+        graph.parse(data, format='trig')
+
+    graph.store.publish = publish
+
+    return graph
+
+@driver(name="sparql")
+def sparql_driver(config):
+    defaultgraph = None
+    if "_default_graph" in config:
+        defaultgraph = URIRef(config["_default_graph"])
+    kwargs = dict(
+        query_endpoint=config["_endpoint"],
+        update_endpoint=config["_endpoint"],
+        method="POST",
+        returnFormat='json',
+        node_to_sparql=node_to_sparql
+    )
+    if '_username' in config:
+        kwargs['auth'] = (config['_username'], config['_password'])
+    store = WhyisSPARQLUpdateStore(**kwargs)
+    store.query_endpoint = config["_endpoint"]
+    if 'auth' in kwargs:
+        store.auth = kwargs['auth']
+    else:
+        store.auth = None
+
+    def publish(data, format='text/trig;charset=utf-8'):
+        s = requests.session()
+        s.keep_alive = False
+
+        kwargs = dict(
+            headers={'Content-Type':format},
+        )
+        if store.auth is not None:
+            kwargs['auth'] = store.auth
+        r = s.post(store.query_endpoint, data=data, **kwargs)
+        #print(r.text)
+    store.publish = publish
+
+    graph = ConjunctiveGraph(store,defaultgraph)
+    return graph
 
 def create_query_store(store):
     new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
@@ -38,59 +116,14 @@ def create_query_store(store):
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
 
 def engine_from_config(config):
-    defaultgraph = None
-    graph = None
-    if "_default_graph" in config:
-        defaultgraph = URIRef(config["_default_graph"])
+    engine = None
     if "_endpoint" in config:
-        kwargs = dict(
-            query_endpoint=config["_endpoint"],
-            update_endpoint=config["_endpoint"],
-            method="POST",
-            returnFormat='json',
-            node_to_sparql=node_to_sparql
-        )
-        if '_username' in config:
-            kwargs['auth'] = (config['_username'], config['_password'])
-        store = WhyisSPARQLUpdateStore(**kwargs)
-        store.query_endpoint = config["_endpoint"]
-        if 'auth' in kwargs:
-            store.auth = kwargs['auth']
-        else:
-            store.auth = None
-
-        def publish(data, format='text/trig;charset=utf-8'):
-            s = requests.session()
-            s.keep_alive = False
-
-            kwargs = dict(
-                headers={'Content-Type':format},
-            )
-            if store.auth is not None:
-                kwargs['auth'] = store.auth
-            r = s.post(store.query_endpoint, data=data, **kwargs)
-            #print(r.text)
-        store.publish = publish
-
-        graph = ConjunctiveGraph(store,defaultgraph)
+        engine = drivers['sparql'](config)
     elif '_store' in config:
-        graph = ConjunctiveGraph(store='Oxigraph',identifier=defaultgraph)
-        graph.store.batch_unification = False
-        graph.store.open(config["_store"], create=True)
+        engine = drivers['oxigraph'](config)
     elif '_memory' in config:
-        try:
-            raise Exception()
-        except Exception as e:
-            import traceback
-            import sys
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_tb(exc_traceback)
-
-        graph = ConjunctiveGraph()
-
-        def publish(data):
-            graph.parse(data, format='trig')
-
-        graph.store.publish = publish
-
-    return graph
+        engine = drivers['memory'](config)
+    else:
+        t = config['_type']
+        engine = drivers[t](config)
+    return engine

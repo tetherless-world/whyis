@@ -169,6 +169,7 @@ be managed and used.''',
         'Flask-Script==2.0.6',
         'Flask-Security==3.0.0',
         'itsdangerous<2.0,>=0.24',
+        'Flask-PluginEngine==0.5',
         # remove version when upgrading to Flask 2.0
         'Flask-WTF<0.15',
         'html5lib==1.1',
@@ -226,6 +227,9 @@ be managed and used.''',
         ],
         'rdf.plugins.resultparser' : [
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
+        ],
+        'whyis': [
+            'whyis_sparql_entity_resolver = whyis.plugins.whyis_sparql_entity_resolver:SPARQLEntityResolverPlugin'
         ]
     },
     classifiers=[

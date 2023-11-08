@@ -118,7 +118,10 @@ class NanopublicationManager(object):
             # print "Contexts", [g.identifier for g in output_graph.contexts()]
 
         for npuri in graph.subjects(rdflib.RDF.type, np.Nanopublication):
-            yield Nanopublication(store=graph.store, identifier=npuri)
+            nanopub =  Nanopublication(store=graph.store, identifier=npuri)
+            for listener in self.app.listeners['on_prepare']:
+                listener.on_prepare(nanopub)
+            yield nanopub
 
     def retire(self, *nanopub_uris):
         self.db.store.nsBindings = {}
@@ -146,6 +149,9 @@ class NanopublicationManager(object):
                         self.app.file_depot.delete(fileid)
                     elif self.app.nanopub_depot.exists(fileid):
                         f = self.app.nanopub_depot.delete(fileid)
+                for listener in self.app.listeners['on_retire']:
+                    listener.on_retire(np_graph)
+
                 self.db.remove((None, None, None, self.db.value(np_uri, np.hasAssertion)))
                 self.db.remove((None, None, None, self.db.value(np_uri, np.hasProvenance)))
                 self.db.remove((None, None, None, self.db.value(np_uri, np.hasPublicationInfo)))
@@ -188,6 +194,8 @@ class NanopublicationManager(object):
                         self.app.add_file(f, entity, np_graph)
                         np_graph.assertion.remove((entity, self.app.NS.whyis.hasContent, None))
 
+                    for listener in self.app.listeners['on_publish']:
+                        listener.on_publish(np_graph)
                     r = False
                     now = rdflib.Literal(datetime.utcnow())
                     for part in [np_graph.assertion.identifier,

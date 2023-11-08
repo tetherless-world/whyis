@@ -7,6 +7,7 @@ from functools import lru_cache
 from re import finditer
 from urllib.parse import urlencode
 
+import collections
 import json
 
 import jinja2
@@ -36,6 +37,7 @@ from whyis import database
 from whyis import filters
 from whyis import search
 from whyis import fuseki
+from whyis import plugin as plugin
 from whyis.blueprint.entity import entity_blueprint
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.tableview import tableview_blueprint
@@ -82,6 +84,14 @@ class ExtendedRegisterForm(RegisterForm):
 class App(Empty):
 
     managed = False
+    listeners = collections.defaultdict(list)
+
+    def resolve(self, term, type=None, context=None, label=False):
+        for resolver in self.listeners['on_resolve']:
+            results = resolver.on_resolve(term, type, context)
+            if len(results) > 0:
+                return results
+        return []
 
     def configure_extensions(self):
 
@@ -301,6 +311,10 @@ class App(Empty):
     def nanopub_depot(self, value):
         self._nanopub_depot = value
 
+    def add_listener(self, listener):
+        for signal in listener.signals:
+            self.listeners[signal].append(listener)
+
     def configure_database(self):
         """
         Database configuration should be set here
@@ -325,10 +339,22 @@ class App(Empty):
         self.db = database.engine_from_config(self.config.get_namespace("KNOWLEDGE"))
         self.db.app = self
 
+        self.databases = {}
+        self.databases['admin'] = self.admin_db
+        self.databases['knowledge'] = self.db
+
+        for db in self.config.get('DATABASES',[]):
+            db_instance = database.engine_from_config(self.config.get_namespace(db))
+            self.databases[db_instance.name] = db_instance
+            if isinstance(db_instance, plugin.Listener):
+                self.add_listener(db_instance)
+
         self.vocab = ConjunctiveGraph()
         #print URIRef(self.config['vocab_file'])
         default_vocab = Graph(store=self.vocab.store)
         default_vocab.parse(source=os.path.abspath(os.path.join(os.path.dirname(__file__), "default_vocab.ttl")), format="turtle", publicID=str(self.NS.local))
+        for p in self.plugins:
+            p.vocab(self.vocab.store)
         if 'VOCAB_FILE' in self.config and os.path.exists(self.config['VOCAB_FILE']):
             custom_vocab = Graph(store=self.vocab.store)
             custom_vocab.parse(self.config['VOCAB_FILE'], format="turtle", publicID=str(self.NS.local))

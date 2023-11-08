@@ -30,4 +30,4 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
             )
             query = re.sub(r'where\s+{', 'WHERE {%s' % values, query, count=1, flags=re.I)
         return SPARQLUpdateStore.query(self, query, initNs=initNs, initBindings=None,
-                                       queryGraph=queryGraph, DEBUG=DEBUG)
+                                 queryGraph=queryGraph, DEBUG=DEBUG)

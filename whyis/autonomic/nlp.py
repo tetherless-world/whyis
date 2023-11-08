@@ -74,38 +74,6 @@ class EntityResolver(autonomic.UpdateChangeService):
     def getOutputClass(self):
         return autonomic.whyis.ResolvedText
 
-    def resolve(self, term, context):
-        query = """prefix skos: <http://www.w3.org/2004/02/skos/core#>
-prefix foaf: <http://xmlns.com/foaf/0.1/>
-prefix text: <http://jena.apache.org/fulltext#>
-
-select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?relevance ?cr where {
-  (?label ?relevance) text:search ('''%s''', 0.4).
-  ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name ?label.
-  optional {
-    (?context ?cr) text:search ('''%s''' 100 0.4).
-    ?node ?p ?context.
-  }
-  filter not exists {
-    ?node a <http://semanticscience.org/resource/Term>
-  }
-  filter not exists {
-    ?node a <http://www.nanopub.org/nschema#Nanopublication>
-  }
-  filter not exists {
-    ?node a <http://www.nanopub.org/nschema#Assertion>
-  }
-  filter not exists {
-    ?node a <http://www.nanopub.org/nschema#Provenance>
-  }
-  filter not exists {
-    ?node a <http://www.nanopub.org/nschema#PublicationInfo>
-  }
-} order by desc(?score) limit 10""" % (term, context)
-        for node, label, score, relevance, cr in self.app.db.query(query):
-            return node, label, score
-        return None, None, None
-
     def process(self, i, o):
         #context = ' '.join([term.value(sio.hasValue) for term in i[sio.hasPart]][:20])
         context = ' '.join([term.value(sio.hasValue) for term
@@ -113,12 +81,13 @@ select distinct ?node ?label (coalesce(?relevance+?cr, ?relevance) as ?score) ?r
         for term in i[sio.hasPart]:
             term_label = term.value(sio.hasValue)
             o_term = o.graph.resource(term.identifier)
-            node, score, label = self.resolve(term_label, context)
+            results = self.app.resolve(term, context, label=False)
+            if len(results) > 0:
+                result = results[0]
             if node is not None:
                 #o_term.add(RDFS.label, label)
-                o_term.add(autonomic.prov.specializationOf, node)
-                o.add(dc.subject, node)
-
+                o_term.add(autonomic.prov.specializationOf, result['node'])
+                o.add(dc.subject, result['node'])
 
 class EntityExtractor(autonomic.UpdateChangeService):
     activity_class = whyis.EntityExtraction

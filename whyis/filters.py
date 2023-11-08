@@ -151,8 +151,14 @@ def configure(app):
     def attributes(query, this):
         result = {
             "@id" : this.identifier,
-            'description' : [labelize({'@id':property, "value": value},key="@id") for property, value in app.get_summary(this)],
-            'type' : [labelize({"@id":x.identifier},key='@id') for x in this.description()[app.NS.RDF.type]],
+            'description' : [
+                labelize({'@id':property, "value": value}, key="@id")
+                for property, value in app.get_summary(this)
+            ],
+            'type' : [
+                labelize({"@id":x.identifier},key='@id')
+                for x in this.description()[app.NS.RDF.type]
+            ],
             "attributes" : collections.defaultdict(lambda : dict(values=[]))
         }
         result['description'] = sorted(result['description'], key=lambda x: len(x['value']))
@@ -290,7 +296,10 @@ where {
             for i in links:
                 result['from'].extend(i['from'])
                 result['articles'].extend(i['articles'])
-            result['probability'] = combine_pvalues([float(e['probability']) for e in links], method="stouffer")[1]
+            result['probability'] = combine_pvalues(
+                [float(e['probability']) for e in links],
+                method="stouffer"
+            )[1]
             if result['probability'] < 1 and result['probability'] > 0:
                 from scipy.stats import norm
                 result['zscore'] = norm.ppf(result['probability'])
@@ -402,10 +411,13 @@ WHERE {
                 continue
             if 'predicate' not in facet and 'property' in facet:
                 facet['predicate'] = '<'+facet['property']+'>'
-            if 'typeProperty' not in facet and facet['propertyType'] == 'http://www.w3.org/2002/07/owl#ObjectProperty':
+            if 'typeProperty' not in facet and facet['propertyType'] == NS.owl.ObjectProperty:
                 facet['typeProperty'] = 'a'
             if True:#'valuePredicate' in facet:
-                query = facet_value_template.render(facet=facet, variables=variables, constraints=constraints)
+                query = facet_value_template.render(
+                    facet=facet,
+                    variables=variables,
+                    constraints=constraints)
                 print(query)
                 values = {}
                 for value in query_filter(query):
@@ -527,7 +539,10 @@ WHERE {
         types = []
         types.extend((x, 1) for x in app.vocab[this.identifier : NS.RDF.type])
         if not types: # KG types cannot override vocab types. This should keep views stable where critical.
-            types.extend([(x.identifier, 1) for x in this.description()[NS.RDF.type]  if isinstance(x, rdflib.URIRef)])
+            types.extend([
+                (x.identifier, 1) for x in this.description()[NS.RDF.type]
+                if isinstance(x, rdflib.URIRef)
+            ])
         #if len(types) == 0:
         types.append([NS.RDFS.Resource, 100])
         type_string = ' '.join(["(%s %d)" % (x.n3(), i) for x, i in types])
@@ -571,7 +586,15 @@ values (?c ?priority) { %s }
             fields = []
             ids=[]
             values_dict = {}
-            output_string += "<div class=\"md-title\">"+entry_key+"</div>\n<md-card>\n<div id=\""+entry_key.replace(" ","_")+"-table\"></div>\n<script>\n\tvar " + entry_key.replace(" ","_") +"_tabledata = [ "
+            output_string += ''.join([
+                "<div class=\"md-title\">",
+                entry_key,
+                "</div>\n<md-card>\n<div id=\"",
+                entry_key.replace(" ","_"),
+                "-table\"></div>\n<script>\n\tvar ",
+                entry_key.replace(" ","_"),
+                "_tabledata = [ "
+            ])
             entry_dict = json.loads(entry)
             keys = list(entry_dict.keys())
             for i in range(len(keys)):
@@ -590,7 +613,15 @@ values (?c ?priority) { %s }
                         output_string += fields[k] + ":\"" + values_dict[k][ids[j]] + "\", "
                 output_string = output_string[:-2]
                 output_string += "},"
-            output_string += "\n\t];\n</script>\n<script type=\"text/javascript\">\n\tvar " + entry_key.replace(" ","_") + "_table = new Tabulator(\"#" + entry_key.replace(" ","_") +"-table\", {\n\t\tlayout:\"fitColumns\",\n\t\tdata:" + entry_key.replace(" ","_") +"_tabledata,\n\t\tautoColumns:true,\n\t\tcolumns:["
+            output_string += ''.join([
+                "\n\t];\n</script>\n<script type=\"text/javascript\">\n\tvar ",
+                entry_key.replace(" ","_"),
+                "_table = new Tabulator(\"#",
+                entry_key.replace(" ","_"),
+                "-table\", {\n\t\tlayout:\"fitColumns\",\n\t\tdata:",
+                entry_key.replace(" ","_"),
+                "_tabledata,\n\t\tautoColumns:true,\n\t\tcolumns:["
+            ])
             for l in range(len(titles)):
                 output_string +="\n\t\t\t{title:\""+titles[l]+"\", field:\""+fields[l]+"\"},"
             output_string += "\n\t\t]\n\t});\n</script></md-card>"
@@ -626,3 +657,7 @@ values (?c ?priority) { %s }
                     pass
         print(result)
         return result
+
+    @app.template_filter('resolve')
+    def resolve(term, type=None, context=None):
+        return app.resolve(term, type, context, label=False)

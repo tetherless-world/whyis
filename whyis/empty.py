@@ -4,6 +4,7 @@
 # __all__ = ['Empty']
 
 from flask import Flask, render_template
+from flask_pluginengine import PluginFlask
 import logging
 
 basestring = getattr(__builtins__, 'basestring', str)
@@ -15,7 +16,7 @@ def _import_variable(blueprint_path, module, variable_name):
     return getattr(mod, variable_name)
 
 
-class Empty(Flask):
+class Empty(PluginFlask):
 
     def configure(self, config):
         """
@@ -26,6 +27,7 @@ class Empty(Flask):
         self.config.update(config)
         # could/should be available in server environment
         self.config.from_envvar("APP_CONFIG", silent=True)
+
 
     def add_blueprint(self, name, kw):
         blueprint = _import_variable(name, 'views', 'app')
@@ -47,7 +49,11 @@ class Empty(Flask):
 
             self.add_blueprint(name, kw)
 
+    def configure_plugins(self):
+        self.plugins = self.plugin_engine.get_active_plugins(app=self).values()
+
     def setup(self):
+        self.configure_plugins()
         self.configure_logger()
         self.configure_error_handlers()
         self.configure_database()
@@ -72,11 +78,11 @@ class Empty(Flask):
         except Exception:
             pass
             # print("Could not configure logger, using defaults.")
-            
+
     def configure_error_handlers(self):
 
         errorhandler = self.errorhandler
-        
+
         @errorhandler(403)
         def forbidden_page(error):
             """
