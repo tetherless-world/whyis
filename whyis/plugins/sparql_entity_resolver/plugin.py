@@ -1,4 +1,4 @@
-from .plugin import Plugin, EntityResolverListener
+from whyis.plugin import Plugin, EntityResolverListener
 import rdflib
 from flask import current_app
 
@@ -13,19 +13,6 @@ prefixes = dict(
     rdf = rdflib.RDF,
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
 )
-
-class SPARQLEntityResolverPlugin(Plugin):
-
-    resolvers = {
-        "sparql" = SPARQLEntityResolver,
-        "fuseki" = SPARQLEntityResolver
-    }
-
-    def init(self):
-        resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
-        resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")
-        resolver = resolvers[resolver_type](resolver_db)
-        self.app.add_listener(resolver)
 
 class SPARQLEntityResolver(EntityResolverListener):
 
@@ -105,3 +92,17 @@ where {
                 ]
             results.append(result)
         return results
+
+
+class SPARQLEntityResolverPlugin(Plugin):
+
+    resolvers = {
+        "sparql" : SPARQLEntityResolver,
+        "fuseki" : SPARQLEntityResolver
+    }
+
+    def init(self):
+        resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
+        resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")
+        resolver = resolvers[resolver_type](resolver_db)
+        self.app.add_listener(resolver)
