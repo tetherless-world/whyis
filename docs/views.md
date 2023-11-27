@@ -1,6 +1,6 @@
 # Creating Whyis Views
 
-**Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Advanced Configuration](https://tetherless-world.github.io/whyis/configuration).**
+**Before starting this tutorial, please make sure that you have created a Whyis extension using the instructions in [Install Whyis](https://whyis.readthedocs.io/en/latest/install.html).**
 
 Whyis creates knowledge graphs like a wiki - every possible URL in your Whyis knowledge graph is a node waiting to be created.
 We will walk through creating custom views in Whyis, and how to use them to display nodes based on their type.
@@ -31,6 +31,69 @@ We are also able to reference nodes outside of the Whyis namespace.
 This makes it easier to import external knowledge from linked data and ontologies.
 All URIs can be referenced using the `/about` URL, with a URL-encoded parameter of `uri`.
 For instance, the page for Tim Berners-Lee can also be visited at `/about?uri=http://dbpedia.org/resource/Tim_Berners-Lee`.
+
+## Existing Views
+
+Several views already exist within Whyis, allowing the user to view a resource and its components from different perspectives. Many of these views are discussed in this section.
+
+### Label View
+
+Arguably, the simplest view include in Whyis is the Label view. This view simply returns the label of the resource and can be accessed by including `?view=label` as part of the URL.
+
+The Label view is encoded in `label_view.html` as follows:
+
+```html
+{{g.get_label(this)}}
+```
+
+### Describe View
+
+The Describe view can be reached by including `?view=describe` as part of the URL.
+
+The Describe view is encoded in `describe.json` as follows:
+```html
+{{this.description().graph | serialize(format="json-ld", context=ns.prefixes) | safe}}
+```
+
+### Resource View
+
+If a resource is encoded as an `rdfs:Resource`, the Resource view is displayed. Since all resources in the graph is an `rdfs:Resource`, this is the default view for a resource. The properties of the resource are displayed in this view.
+
+### Class View
+
+The Class view is accessed by going to the URI of a resource that is included in the knowledge base as an owl:Class. This view includes the values of the properties included for the class. Furthermore, all the instances of the class are included in this view, organized as an album. Clicking an item in the album redirects to the view for that instance.
+
+### Chart View
+
+If a resource is encoded with type `sio:Chart`, the chart view is returned for that resource. Such as resource typically includes an associated query using the `schema:query` property. Furthermore, additional VegaLite elements describing the chart is included using the `sio:hasValue` property.
+
+Rather than manually having to encode chart information in RDF, Whyis includes the functionality to create visualizations using SPARQL queries, as described here: [https://whyis.readthedocs.io/en/latest/gettingstarted.html#visualize-with-sparql-vegalite](https://whyis.readthedocs.io/en/latest/gettingstarted.html#visualize-with-sparql-vegalite)
+
+The Chart view is encoded in `chart_view.html` as follows:
+```html
+{% extends "base_vue.html" %}
+{% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% block title %}{{g.get_label(this)}}{% endblock %}
+{% block content %}
+<vega-viewer></vega-viewer>
+{% endblock %}
+```
+
+### Ontology View
+
+When the URI corresponds to a resource encoded as type `owl:Ontology`, a documentation style page is created. This page includes the classes, object properties, datatype properties, and instances included in the ontology.
+
+### Nanopublication View
+
+The Nanopublication view can be used to view the nanopublication associated with a resource. The Nanopublication view can be accessed by including `?view=nanopublications` as part of the URL.
+
+### Graph View
+
+The Graph view can be reached by including ?view=describe` as part of the URL.
+
+### Edit View
+
+The Edit view can be used to edit content associated with a resource.
 
 ## Creating a Custom Default View
 
