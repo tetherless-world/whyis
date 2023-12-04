@@ -50,12 +50,15 @@ class Importer:
         if updated is None:
             updated = datetime.datetime.now(pytz.utc)
         #try:
+        print("fetching",entity_name)
         g = self.fetch(entity_name)
         #except Exception as e:
         #    print("Error loading %s: %s" % (entity_name, e))
         #    traceback.print_exc(file=sys.stdout)
         #    return
+        print("preparing",entity_name)
         new_nps = list(nanopubs.prepare(g))
+        print("explaining",entity_name)
         for new_np in new_nps:
             self.explain(new_np, entity_name)
             new_np.add((new_np.identifier, sio.isAbout, entity_name))
@@ -65,9 +68,12 @@ class Importer:
             for old_np in old_nps:
                 new_np.pubinfo.add((old_np.assertion.identifier, prov.invalidatedAtTime,
                                     rdflib.Literal(updated, datatype=rdflib.XSD.dateTime)))
+        print("publishing",entity_name)
         nanopubs.publish(*new_nps)
+        print("retiring",entity_name)
         for old_np in old_nps:
             nanopubs.retire(old_np.identifier)
+        print("done",entity_name)
 
     def explain(self, new_np, entity_name):
         activity = rdflib.BNode()

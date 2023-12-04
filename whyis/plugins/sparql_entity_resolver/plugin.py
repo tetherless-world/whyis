@@ -104,5 +104,5 @@ class SPARQLEntityResolverPlugin(Plugin):
     def init(self):
         resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
         resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")
-        resolver = resolvers[resolver_type](resolver_db)
+        resolver = self.resolvers[resolver_type](resolver_db)
         self.app.add_listener(resolver)

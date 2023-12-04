@@ -228,9 +228,9 @@ be managed and used.''',
         'rdf.plugins.resultparser' : [
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
         ],
-        # 'whyis': [
-        #     'whyis_sparql_entity_resolver = whyis.plugins.whyis_sparql_entity_resolver:SPARQLEntityResolverPlugin'
-        # ]
+        'whyis': [
+         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin'
+        ]
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
