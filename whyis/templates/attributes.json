@@ -10,6 +10,17 @@
         ?attr sio:hasUnit ?unit.
       }
     } union {
+      ?this sio:SIO_000008 ?attr.
+      ?attr a ?property; sio:SIO_000300 ?value.
+      optional {
+        ?attr sio:SIO_000221 ?unit.
+      }
+    } union {
+      ?this sio:SIO_000008 ?attr.
+      ?attr a ?property.
+      ?attr a ?value.
+      ?value rdfs:subClassOf ?property.
+    } union {
       ?this sio:hasAttribute ?attr.
       ?attr a ?property.
       ?attr a ?value.

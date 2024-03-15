@@ -167,7 +167,7 @@ class App(Empty):
             @self.celery.task
             def find_instances():
                 print("Triggered task", task['name'])
-                for x, in task['service'].getInstances(app.db):
+                for x in task['service'].getInstances(app.db):
                     task['do'](x.identifier)
 
             @self.celery.task
@@ -353,11 +353,15 @@ class App(Empty):
         #print URIRef(self.config['vocab_file'])
         default_vocab = Graph(store=self.vocab.store)
         default_vocab.parse(source=os.path.abspath(os.path.join(os.path.dirname(__file__), "default_vocab.ttl")), format="turtle", publicID=str(self.NS.local))
+        print("Vocab size:", len(self.vocab))
         for p in self.plugins:
             p.vocab(self.vocab.store)
+            print("Vocab size:", len(self.vocab))
         if 'VOCAB_FILE' in self.config and os.path.exists(self.config['VOCAB_FILE']):
+            print(self.config['VOCAB_FILE'])
             custom_vocab = Graph(store=self.vocab.store)
             custom_vocab.parse(self.config['VOCAB_FILE'], format="turtle", publicID=str(self.NS.local))
+            print("Vocab size:", len(self.vocab))
         else:
             print("Not loading custom view mappings.")
 
@@ -856,6 +860,7 @@ class App(Empty):
                 types.extend([(x.identifier, 1) for x in resource[NS.RDF.type]  if isinstance(x.identifier, rdflib.URIRef)])
             #if len(types) == 0:
             types.append([self.NS.RDFS.Resource, 100])
+            print(types)
             type_string = ' '.join(["(%s %d '%s')" % (x.n3(), i, view) for x, i in types])
             view_query = '''select ?id ?view (count(?mid)+?priority as ?rank) ?class ?c ?content_type where {
     values (?c ?priority ?id) { %s }
