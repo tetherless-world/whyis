@@ -71,12 +71,14 @@ Rather than manually having to encode chart information in RDF, Whyis includes t
 
 The Chart view is encoded in `chart_view.html` as follows:
 ```html
+{% raw %}
 {% extends "base_vue.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
 {% block title %}{{g.get_label(this)}}{% endblock %}
 {% block content %}
 <vega-viewer></vega-viewer>
 {% endblock %}
+{% endraw %}
 ```
 
 ### Ontology View
