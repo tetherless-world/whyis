@@ -211,7 +211,6 @@ templates/outgoing_person.json
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?target))
-
 ''' | probit(source=this.identifier) | tojson }}
 ```
 
@@ -227,7 +226,6 @@ templates/incoming_person.json
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?source))
-
 ''' | probit(target=this.identifier) | tojson }}
 ```
 
