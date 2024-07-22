@@ -3,9 +3,9 @@ where {
     hint:Query hint:optimizer "Runtime" .
     ?local_node ?relation ?node.
     optional {
-      ?local_node sio:hasPart ?term.
+      ?local_node sio:hasPart|sio:SIO_000028 ?term.
       ?term prov:specializationOf ?node;
-            sio:Frequency ?frequency.
+            sio:Frequency|sio:SIO_001367 ?frequency.
     }
     ?node a ?type.
     optional {
@@ -14,5 +14,5 @@ where {
     optional {
       ?node rdfs:label|dc:title ?label.
     }
-    FILTER NOT EXISTS { ?local_node sio:hasPart ?node }
+    FILTER NOT EXISTS { ?local_node sio:hasPart|sio:SIO_000028 ?node }
 } group by ?node'''|query(values={"local_node":this.identifier}) | tojson }}

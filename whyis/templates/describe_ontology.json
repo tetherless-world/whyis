@@ -1,6 +1,6 @@
 {{'''
 select ?s ?p ?o ?assertion where {
-  { graph ?np { ?np sio:isAbout ?e.}}
+  { graph ?np { ?np sio:isAbout|sio:SIO_000332 ?e.}}
   UNION
   {graph ?assertion { ?e ?x ?y.}}
   ?np a np:Nanopublication;

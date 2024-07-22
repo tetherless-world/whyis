@@ -13,8 +13,8 @@ SPARQL: |
   PREFIX dct: <http://purl.org/dc/terms/>
   PREFIX sio: <http://semanticscience.org/resource/>
   SELECT DISTINCT * WHERE {
-    ?doi a sio:Chart ;
-         dct:description ?Description ;
+    { ?doi a sio:Chart . } UNION {?doi a sio:SIO_000904 .}
+      ?doi dct:description ?Description ;
          dct:title ?Title
     FILTER (REGEX(STR(?Description), "{{id_1}}"))
   }

@@ -50,17 +50,17 @@ SPARQL: |
     (GROUP_CONCAT(DISTINCT ?Matrix ; SEPARATOR=", ") AS ?MatrixMaterials)
   WHERE {
     ?Sample a nm:PolymerNanocomposite ;
-            sio:hasComponentPart [ sio:hasRole [ a nm:Filler ] ;
+            sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a nm:Filler ] ;
                                    a [ rdfs:label ?Filler ] ] ,
-                                 [ sio:hasRole [ a nm:Filler ] ;
+                                 [ sio:hasRole|sio:SIO_000228 [ a nm:Filler ] ;
                                    a [ rdfs:label {{id_2}} ] ] ,
-                                 [ sio:hasRole [ a nm:Matrix ] ;
+                                 [ sio:hasRole|sio:SIO_000228 [ a nm:Matrix ] ;
                                    a [ rdfs:label ?Matrix ] ] ,
-                                 [ sio:hasRole [ a nm:Matrix ] ;
+                                 [ sio:hasRole|sio:SIO_000228 [ a nm:Matrix ] ;
                                    a [ rdfs:label {{id_3}} ] ] .
     ?doi a dct:BibliographicResource ;
          dct:created ?Year ;
-         sio:hasPart ?Sample .
+         sio:hasPart|sio:SIO_000028 ?Sample .
     FILTER (?Year >= {{id_1}})
   }
   GROUP BY ?doi ?Year

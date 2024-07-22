@@ -55,12 +55,12 @@ SPARQL: |
   PREFIX foaf: <http://xmlns.com/foaf/0.1/>
   SELECT DISTINCT ?doi ?Material ?MaterialRole ?Year ?Author WHERE {
     ?Sample a nm:PolymerNanocomposite ;
-            sio:hasComponentPart [ sio:hasRole [ a [ rdfs:label ?MaterialRole ] ] ;
+            sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a [ rdfs:label ?MaterialRole ] ] ;
                                    a [ rdfs:label ?Material ; rdfs:label {{id_2}} ] ] .
     ?doi a dct:BibliographicResource ;
          dct:creator [ foaf:name ?Author ] ;
          dct:created ?Year ;
-         sio:hasPart ?Sample .
+         sio:hasPart|sio:SIO_000028 ?Sample .
     FILTER(!REGEX(STR(?doi), "unpublished"))
     FILTER(?Year >= {{id_1}})
     FILTER(REGEX(STR(?Author), "{{id_3}}"))

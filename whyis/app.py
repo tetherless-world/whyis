@@ -746,7 +746,7 @@ class App(Empty):
                 np:hasPublicationInfo ?pubinfo;
                 np:hasAssertion ?assertion;
 
-            {graph ?np { ?np sio:isAbout ?e.}}
+            {graph ?np { ?np sio:isAbout|sio:SIO_000332 ?e.}}
             UNION
             {graph ?assertion { ?e ?p ?o.}}
             graph ?g { ?s ?p ?o }
