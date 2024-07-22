@@ -201,31 +201,35 @@ template file for the `incoming` view. We will need to make those files in the
 
 templates/outgoing_person.json
 ```
+{% raw %}
 {{'''graph ?assertion {
       {
          ?article sio:hasParticipant ?source.
          ?article sio:hasParticipant ?target.
          ?article a ?link_type.
-      } }
+      }
+    }
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?target))
 ''' | probit(source=this.identifier) | tojson }}
-```
+{% endraw %}```
 
 templates/incoming_person.json
 ```
+{% raw %}
 {{'''graph ?assertion {
       {
          ?article sio:hasParticipant ?target.
          ?article sio:hasParticipant ?source.
          ?article a ?link_type.
-      } }
+      }
+    }
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?source))
 ''' | probit(target=this.identifier) | tojson }}
-```
+{% endraw %}```
 
 These templates pass a SPARQL query fragment to the probit filter, which queries
 for links in the expected format. The important thing to note is that the target
