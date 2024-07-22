@@ -206,8 +206,7 @@ templates/outgoing_person.json
          ?article sio:hasParticipant ?source.
          ?article sio:hasParticipant ?target.
          ?article a ?link_type.
-      }
-    }
+      } }
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?target))
@@ -221,8 +220,7 @@ templates/incoming_person.json
          ?article sio:hasParticipant ?target.
          ?article sio:hasParticipant ?source.
          ?article a ?link_type.
-      }
-    }
+      } }
     bind(?article as ?link)
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?source))
