@@ -213,7 +213,8 @@ templates/outgoing_person.json
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?target))
 ''' | probit(source=this.identifier) | tojson }}
-{% endraw %}```
+{% endraw %}
+```
 
 templates/incoming_person.json
 ```
@@ -229,7 +230,8 @@ templates/incoming_person.json
     bind(0.8 as ?probability)
     filter (!sameTerm(?source, ?target) && isIRI(?source))
 ''' | probit(target=this.identifier) | tojson }}
-{% endraw %}```
+{% endraw %}
+```
 
 These templates pass a SPARQL query fragment to the probit filter, which queries
 for links in the expected format. The important thing to note is that the target
