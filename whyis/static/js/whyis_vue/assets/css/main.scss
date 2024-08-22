@@ -2,14 +2,14 @@
 @import "screens";
 @import "content";
 
-@import "~vue-material/dist/theme/engine"; // Import the theme engine
+@import "vue-material/dist/theme/engine"; // Import the theme engine
 
 @include md-register-theme("default", (
   primary: $primary-color, // The primary color of your brand
   accent: orangered // The secondary color of your brand
 ));
 
-@import "~vue-material/dist/theme/all"; // Apply the theme
+@import "vue-material/dist/theme/all"; // Apply the theme
 
 html {
     font-family: 'Roboto', sans-serif !important;
@@ -294,7 +294,7 @@ html {
         bottom: unset
     }
 
-    &-dialog >>>.md-dialog-container {
+    &-dialog ::v-deep.md-dialog-container {
         max-width: 90%;
         height: auto;
         @include respond(tab-land) {

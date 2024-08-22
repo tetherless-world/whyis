@@ -97,7 +97,7 @@ def configure(app):
     app.lang_filter = lang_filter
 
     @app.template_filter('query')
-    def query_filter(query, graph=app.db, prefixes=None, values=None, limit=None, offset=None):
+    def query_filter(query, graph=app.db, prefixes=None, values=None, limit=None, offset=None, as_graph=False, raw=False):
         print(limit, offset, prefixes, values)
         if prefixes == {}:
             params = { 'initNs': {}}
@@ -114,13 +114,25 @@ def configure(app):
             query = query + '\n limit %s' % int(limit)
             if offset is not None:
                 query = query + '\n offset %s' % int(offset)
-        return [x.asdict() for x in graph.query(query, **params)]
-
+        results = graph.query(query, **params)
+        if raw:
+            return results
+        elif as_graph:
+            return results.graph
+        else:
+            return [x.asdict() for x in results]
 
     @app.template_filter("fromjson")
     def fromjson(json_text):
         return json.loads(json_text)
 
+    @app.template_filter("markdown")
+    def from_markdown(text):
+        if text is None:
+            return None
+        from markdown import markdown
+        return markdown(text)
+    
     @app.template_filter('construct')
     def construct_filter(query, graph=app.db, prefixes=None, values=None):
         if prefixes is None:
@@ -142,7 +154,8 @@ def configure(app):
 
     @app.template_filter('serialize')
     def serialize_filter(graph, **kwargs):
-        serialized = graph.serialize(**kwargs)
+        g = rdflib.ConjunctiveGraph(store=graph.store)
+        serialized = g.serialize(**kwargs)
         if hasattr(serialized, 'decode'):
             return serialized.decode()
         return serialized
@@ -252,6 +265,7 @@ where {
             result['from'] = []
             result['articles'] = []
             for i in links:
+                print(i, 'probability' not in i)
                 if 'probability' not in i:
 
                     # Do a very rudimentary meta-analysis based on the number of supporting papers
@@ -330,16 +344,26 @@ where {
             app.get_resource(rdflib.URIRef(r['link']))
             labelize(r, 'link','label')
             #r['descriptions'] = [v for k,v in app.get_summary(resource)]
-        if 'target' not in values:
-            results = iter_labelize(results,'target','target_label')
-            for r in results:
-                r['target_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
-                                                             initBindings=dict(x=r['target']))]
-        if 'source' not in values:
-            results = iter_labelize(results,'source','source_label')
-            for r in results:
-                r['source_types'] = [x for x in app.db.query('select ?t where {?x a ?t}',
-                                                             initBindings=dict(x=r['source']))]
+        types = {}
+        def get_types(e):
+            if e not in types:
+                 types[e] = [x for (x,) in app.db.query('''
+select ?t where {
+  ?x a ?t.
+  minus { 
+    ?st rdfs:subClassOf ?t. 
+    ?x a ?st.
+  }
+}
+''',
+                                                     initBindings=dict(x=e), initNs=NS.prefixes)]
+            return types[e]
+        results = iter_labelize(results,'target','target_label')
+        results = iter_labelize(results,'source','source_label')
+        for r in results:
+            r['target_types'] = get_types(r['target'])
+            r['source_types'] = get_types(r['source'])
+            
         return results
 
     env = Environment()

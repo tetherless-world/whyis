@@ -24,11 +24,11 @@
     </div>
   </div>
 </template>
-<style scoped lang="scss" src="../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue'
   import EventServices from '../../../modules/events/event-services'
-  import vizGrid from './components/Vizgrid'
+  import vizGrid from './components/Vizgrid.vue'
   export default Vue.component('viz-gallery', {
     props:{
       instancetype: {

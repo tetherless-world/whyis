@@ -6,9 +6,9 @@ import { load } from 'js-yaml';
 
 import { EventServices } from '../../../../modules'
 import { goToView, VIEW_URIS, DEFAULT_VIEWS } from "../../../../utilities/views";
-import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from 'utilities/vega-chart'
-import { getCurrentView } from 'utilities/views'
-import { querySparql } from 'utilities/sparql'
+import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
+import { getCurrentView } from '../../../../utilities/views'
+import { querySparql } from '../../../../utilities/sparql'
 
 export default Vue.component('vega-editor', {
   props:['instances'],

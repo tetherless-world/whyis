@@ -1,1 +1,1 @@
-import './vega-sparql'
+import './vega-sparql.vue'

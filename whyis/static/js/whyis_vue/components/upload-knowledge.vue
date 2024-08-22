@@ -23,7 +23,7 @@
     </div>
   </md-dialog>
 </template>
-<style scoped lang="scss" src="../assets/css/main.scss"></style>
+<style lang="scss" src="../assets/css/main.scss"></style>
 <script>
 import Vue from "vue";
 import axios from 'axios'

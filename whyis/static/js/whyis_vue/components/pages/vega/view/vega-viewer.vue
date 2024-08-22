@@ -107,7 +107,7 @@
     </div>
   </div>
 </template>
-<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../../assets/css/main.scss"></style>
 <style scoped lang="scss">
 
   .vega-spec-container {
@@ -128,7 +128,7 @@
   import VJsoneditor from 'v-jsoneditor'
 
   import { EventServices, Slug } from '../../../../modules'
-  import tempFiller from '../../../utils/temporary_filler'
+  import tempFiller from '../../../utils/temporary_filler.vue'
   import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'
   import { querySparql } from '../../../../utilities/sparql'
   import { goToView } from '../../../../utilities/views'

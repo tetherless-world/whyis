@@ -1,8 +1,43 @@
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 import { querySparql } from "../../../utilities/sparql";
-import loadSparqlTemplatesQuery from './load-sparql-templates.rq'
+//import loadSparqlTemplatesQuery from './load-sparql-templates.rq'
 import {RDF, RDFS, SCHEMA} from '../../../utilities/common-namespaces'
+
+loadSparqlTemplatesQuery = `
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+PREFIX sp: <http://spinrdf.org/sp>
+PREFIX spin: <http://spinrdf.org/spin#>
+PREFIX spl: <http://spinrdf.org/spin#>
+PREFIX whyis: <http://vocab.rpi.edu/whyis/>
+PREFIX nanomine_templates: <http://nanomine.org/query/>
+
+CONSTRUCT {
+    ?template a whyis:SparqlTemplate  ;
+        spin:labelTemplate ?labelTemplate ;
+        sp:text ?query ;
+        spin:constraint ?constraint .
+    ?constraint sp:varName ?varName ;
+        schema:option ?option .
+    ?option rdfs:label ?optLabel ;
+        schema:value ?optValue ;
+        schema:identifier ?optId ;
+        schema:position ?optPosition .
+}
+WHERE {
+    ?template a whyis:SparqlTemplate  ;
+        spin:labelTemplate ?labelTemplate ;
+        sp:text ?query ;
+        spin:constraint ?constraint .
+    ?constraint sp:varName ?varName ;
+        schema:option ?option .
+    ?option rdfs:label ?optLabel ;
+        schema:position ?optPosition .
+    OPTIONAL { ?option schema:value ?optValue } .
+    OPTIONAL { ?option schema:identifier ?optId } .
+}
+`
 
 const SP = 'http://spinrdf.org/sp'
 const SPIN = `${SP}in#`

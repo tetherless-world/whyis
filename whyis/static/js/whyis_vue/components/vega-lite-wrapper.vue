@@ -10,7 +10,7 @@ import Vue from 'vue'
 import vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json'
 import embed from 'vega-embed'
 
-import debounce from 'utilities/debounce'
+import debounce from '../utilities/debounce'
 
 import { validate as jsonValidate } from 'jsonschema'
 

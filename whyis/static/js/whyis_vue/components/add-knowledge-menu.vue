@@ -14,7 +14,7 @@
   <add-attribute v-if="whichAdd == 'addAttribute'" v-bind:uri="uri" hideButton="true"></add-attribute>
 </div>
 </template>
-<style scoped lang="scss" src="../assets/css/main.scss"></style>
+<style lang="scss" src="../assets/css/main.scss"></style>
 <script>
 import Vue from "vue";
 

@@ -1,5 +1,6 @@
+import uuidv4 from 'uuid'
 
-import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
+import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from './nanopub'
 import axios from 'axios'
 
 
@@ -79,7 +80,6 @@ const datasetPrefix = 'dataset'
 function generateDatasetId (guuid) {
   var datasetId;
   if (arguments.length === 0) {
-    const { v4: uuidv4 } = require('uuid');
     datasetId = uuidv4();
   } else {
     datasetId = guuid;

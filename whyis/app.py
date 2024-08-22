@@ -876,7 +876,9 @@ class App(Empty):
 ''' % type_string
 
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
+            print(views)
             if len(views) == 0:
+                
                 abort(404)
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
@@ -884,7 +886,7 @@ class App(Empty):
                 headers['Content-Type'] = DATA_EXTENSIONS[extension]
             if views[0]['content_type'] is not None:
                 headers['Content-Type'] = views[0]['content_type']
-
+            print("rendering template: %s"% views[0]['view'].value)
             return render_template(views[0]['view'].value, **template_args), 200, headers
         self.render_view = render_view
 
@@ -892,7 +894,13 @@ class App(Empty):
         self.register_blueprint(nanopub_blueprint)
         self.register_blueprint(sparql_blueprint)
         self.register_blueprint(entity_blueprint)
-        self.register_blueprint(tableview_blueprint)
+        #self.register_blueprint(tableview_blueprint)
+        for p in self.plugins:
+            if p.blueprint is not None:
+                print("Registering Blueprint",str(p.blueprint))
+                with p.plugin_context():
+                    self.register_blueprint(p.blueprint)
+        
 
     def get_entity_uri(self, name, format):
         content_type = None

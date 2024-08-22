@@ -262,9 +262,18 @@ class NanopublicationManager(object):
             graph = rdflib.ConjunctiveGraph()
 
         quads = self.db.query('''select ?s ?p ?o ?g where {
-        ?np np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo? ?g.
-        graph ?g { ?s ?p ?o}
-        }''', initNs={'np':np}, initBindings={'np':nanopub_uri})
+        {
+            graph ?g {
+                ?np a np:Nanopublication.
+                ?s ?p ?o.
+            }
+        }
+        UNION 
+        {
+            ?np (np:hasAssertion?|np:hasProvenance?|np:hasPublicationInfo)? ?g.
+            graph ?g { ?s ?p ?o}
+        }
+}''', initNs={'np':np}, initBindings={'np':nanopub_uri})
         for s, p, o, g in quads:
             if self.app.config.get('BNODE_REWRITE', False):
                 if isinstance(s, rdflib.URIRef) and s.startswith('bnode:'):

@@ -1,1 +1,1 @@
-import './vega-viewer'
+import './vega-viewer.vue'

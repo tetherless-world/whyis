@@ -16,7 +16,7 @@
       </md-card-media-cover>
   </md-card>
 </template>
-<style scoped lang="scss" src="../assets/css/main.scss"></style>
+<style lang="scss" src="../assets/css/main.scss"></style>
 <script>
     import Vue from "vue";
     import { Slug } from '../modules'

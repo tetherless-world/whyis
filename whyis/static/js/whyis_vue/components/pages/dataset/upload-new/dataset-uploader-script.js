@@ -1,14 +1,15 @@
 import Vue from 'vue';
+import uuidv4 from "uuid";
 import { EventServices } from '../../../../modules';
 import VueMaterial from "vue-material";
-import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "utilities/dataset-upload";
-import lookupOrcid from "utilities/orcid-lookup";
-import {processAutocompleteMenu, getAuthorList, getOrganizationlist} from "utilities/autocomplete-menu"
-import { goToView } from "utilities/views"; 
+import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "../../../../utilities/dataset-upload";
+import lookupOrcid from "../../../../utilities/orcid-lookup";
+import {processAutocompleteMenu, getAuthorList, getOrganizationlist} from "../../../../utilities/autocomplete-menu"
+import { goToView } from "../../../../utilities/views"; 
 Vue.use(VueMaterial);
 
+
 const STATUS_INITIAL = 0, STATUS_SAVING = 1, STATUS_SUCCESS = 2, STATUS_FAILED = 3;
-const { v4: uuidv4 } = require('uuid');
 const datasetId = uuidv4(); 
 
 

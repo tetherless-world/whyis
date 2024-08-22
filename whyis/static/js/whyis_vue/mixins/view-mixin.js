@@ -1,4 +1,4 @@
-import { DEFAULT_VIEWS, getCurrentUri, getCurrentView } from 'utilities/views'
+import { DEFAULT_VIEWS, getCurrentUri, getCurrentView } from '../utilities/views'
 /**
  * mixin providing common functions useful for whyis views.
  */

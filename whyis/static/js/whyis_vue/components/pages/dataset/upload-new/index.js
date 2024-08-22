@@ -1,1 +1,1 @@
-import './dataset-uploader';
+import './dataset-uploader.vue';

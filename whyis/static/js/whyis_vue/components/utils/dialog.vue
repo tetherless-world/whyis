@@ -126,10 +126,9 @@
     </md-dialog>
   </div>
 </template>
-<style scoped lang="scss" src="../../assets/css/main.scss"></style>
+<style lang="scss" src="../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue'
-  import tipIntro from './chart-intro';
   import EventServices from '../../modules/events/event-services'
   import { processFloatList, resetProcessFloatList } from '../../utilities/dialog-box-adjust'
   import { goToView } from '../../utilities/views'
@@ -185,7 +184,6 @@
       }
     },
     components: {
-      intros: tipIntro
     },
     destroy(){
         return resetProcessFloatList();

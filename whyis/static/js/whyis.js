@@ -1873,9 +1873,31 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 "color": "#16A085",
                 "uris": ["http://semanticscience.org/resource/Drug"]
             },
+            "class" : {
+                'label' : 'data(label)',
+                'text-valign': 'center',
+                'shape' : 'round-rectangle',
+                'width' : 'label',
+                'height' : 'label',
+                'padding' : '0.5em',
+                'border-width' : 2,
+                'border-color' : 'steelblue',
+                'background-color' : 'powderblue',
+                "uris": [
+		    "http://semanticscience.org/resource/Drug",
+		    "http://www.w3.org/2002/07/owl#Class",
+		    "http://www.w3.org/2000/01/rdf-schema#Class",
+		    "http://www.w3.org/2004/02/skos/core#Concept",
+		    "http://purl.org/arclight/ontology/ObjectClass"
+		]
+            },
             "other" : {
-                "shape": "ellipse",
-                "size": "50",
+                'text-valign': 'center',
+                'shape' : 'ellipse',
+                'width' : 'label',
+                'height' : 'label',
+                'padding' : '0.5em',
+                'border-width' : 2,
                 "color": "#FF7F50",
                 "uris": [],
             }
@@ -1889,10 +1911,12 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
             for (var i = 0; i < keys.length; i++) {
                 for (var j = 0; j < uris.length; j++) {
                     if (nodeTypes[keys[i]]["uris"].indexOf(uris[j]) > -1) {
+			console.log(feature, uris[j], nodeTypes[keys[i]][feature])
                         return nodeTypes[keys[i]][feature];
                     }
                 }
             }
+	    console.log(uris, feature, nodeTypes["other"][feature])
             return nodeTypes["other"][feature];
         };
     }]);
@@ -1907,7 +1931,7 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 else {
                     var keys = Object.keys(edgeTypes);
                     for (var i = 0; i < keys.length; i++) {
-                        console.log(uri,keys[i], edgeTypes[keys[i]]["uris"]);
+                        //console.log(uri,keys[i], edgeTypes[keys[i]]["uris"]);
                         if (edgeTypes[keys[i]]["uris"].indexOf(uri) > -1) {
                             return edgeTypes[keys[i]][feature];
                         }
@@ -1937,8 +1961,14 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             if (nodeEntry.data['@type']) {
                                 var types = nodeEntry.data['@type'];
                                 nodeEntry.classes = types.join(' ');
-                                nodeEntry.data.shape = getNodeFeature("shape", types);
-                                nodeEntry.data.color = getNodeFeature("color", types);
+				if (!nodeEntry.data.shape) 
+                                    nodeEntry.data.shape = getNodeFeature("shape", types);
+				if (!nodeEntry.data.color)
+                                    nodeEntry.data.color = getNodeFeature("color", types);
+				if (!nodeEntry.data.borderColor)
+                                    nodeEntry.data.borderColor = getNodeFeature("border-color", types);
+				if (!nodeEntry.data.backgroundColor)
+                                    nodeEntry.data.backgroundColor = getNodeFeature("background-color", types);
                             }
                         }
                         //nodeEntry.data.linecolor = "#E1EA38";
@@ -1949,14 +1979,16 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             nodeEntry.data.described = true;
                             $http.get(ROOT_URL+'about',{ params: {uri:uri,view:'describe'}, responseType:'json'})
                                 .then(function(response) {
-                                    response.data.forEach(function(x) {
-                                        console.log(x);
-                                        if (x['@id'] == uri) {
-                                            $.extend(nodeEntry.data, x);
-                                            processTypes();
-                                            console.log(nodeEntry);
-                                        }
-                                    });
+				    if (response.data.forEach) {
+					response.data.forEach(function(x) {
+                                            //console.log(x);
+                                            if (x['@id'] == uri) {
+						$.extend(nodeEntry.data, x);
+						processTypes();
+						console.log(nodeEntry);
+                                            }
+					});
+				    }
                                     if (update) update()
                                 });
                         }
@@ -1986,8 +2018,10 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                             var types = edgeEntry.data['link_types'];
                             edgeEntry['@types'] = types;
                             edgeEntry.classes = types.join(' ');
-                            edgeEntry.data.shape = getEdgeFeature("shape", types);
-                            edgeEntry.data.color = getEdgeFeature("color", types);
+			    if (!edgeEntry.data.shape) 
+				edgeEntry.data.shape = getEdgeFeature("shape", types);
+			    if (!edgeEntry.data.shape)
+				edgeEntry.data.color = getEdgeFeature("color", types);
                             if (getEdgeFeature("label",types) && types.length > 0) {
                                 edgeEntry.data.label = types[0].label;
                             }
@@ -2232,35 +2266,54 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 }
 
                 if (!scope.style) {
+		    var borderColors = d3.schemeCategory20
+			.filter(function(element, index) { return !(index % 2 > 0) });
+		    var fillColors = d3.schemeCategory20
+			.filter(function(element, index) { return index % 2 > 0 });
+		    
+		    
+		    scope.defaultNodeBorderMapper = d3.scaleOrdinal().range(borderColors);
+		    scope.defaultNodeFillMapper = d3.scaleOrdinal().range(fillColors);
+		    
                     scope.style = cytoscape.stylesheet()
                         .selector('node')
                         .css({
-                            'min-zoomed-font-size': 8,
-                            'text-valign': 'center',
-                            'border-width': 0,
+			    'text-valign': 'center',
+			    'width' : 'label',
+			    'height' : 'label',
+			    'padding' : '0.5em',
+			    'border-width' : 1,
+			    "uris": [],
                             'cursor': 'pointer',
-                            'color' : 'white',
+                            'color' : 'black',
                             'font-size': 'mapData(rank,0,1,8,16)',
-//                            'font-size' : '8px',
                             'text-wrap': 'wrap',
-                            'text-max-width': 'mapData(rank,0,1,100,200)',
-                            //'text-outline-width' : 3,
-                            //'text-outline-opacity' : 1,
-                            'text-background-opacity' : 1,
-                            'text-background-shape' : 'roundrectangle',
-                            'text-background-padding' : '1px',
-                            'width': 'mapData(rank,0,1,100,200)',
-                            'height': 'mapData(rank,0,1,30,60)',
+			    'text-max-width' : '50em',
                         })
-                        .selector('node[color]')
+                        .selector('node[label]')
                         .css({
-                            'background-color': 'data(color)',
-                            'text-background-color': 'data(color)',
-                            'shape': 'data(shape)',
-                            //'text-outline-color' : 'data(color)',
-                            //'border-color': 'data(linecolor)',
-//                            'height': 'data(size)',
-//                            'width': 'data(size)',
+			    //'border-color' : 'data(borderColor)',
+			    //'background-color' : 'data(backgroundColor)',
+			    "shape": "data(shape)",
+			    'border-color' : function(ele) {
+				if (ele.data('borderColor')) return ele.data('borderColor');
+				console.log(ele.data('@type'));
+				t = ele.data('@type');
+				if (t && t.length > 0) {
+				    t = t[0];
+				}
+				else t = null;
+				return scope.defaultNodeBorderMapper(t);
+			    },
+			    'background-color' : function(ele) {
+				if (ele.data('backgroundColor')) return ele.data('backgroundColor');
+				t = ele.data('@type');
+				if (t && t.length > 0) {
+				    t = t[0];
+				}
+				else t = null;
+				return scope.defaultNodeFillMapper(t);
+			    },
                         })
                         .selector('node[label]')
                         .css({
@@ -2276,11 +2329,11 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                         })
                         .selector('edge[label]')
                         .css({
-                            'font-size' : '6px',
-                            'source-text-offset': '0.5em',
+                            'font-size' : '0.5em',
+                            //'source-text-offset': '50%',
                             'text-wrap':'wrap',
-                            'text-max-width':'5em',
-                            'source-label': 'data(label)',
+                            //'text-max-width':'5em',
+                            'label': 'data(label)',
                         })
                         .selector('edge[negation]')
                         .css({
@@ -2321,13 +2374,13 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 scope.neighborhood = [];
                 if (!scope.layout)
                     scope.layout = {
-                        name: 'cose-bilkent',
-                        animate: false,
+                        name: 'fcose',
+                        animate: true,
                         //randomize: true,
                         nodeDimensionsIncludeLabels: true,
                         //fit: false,
                         //padding: [20,20,20,20],
-                        idealEdgeLength: 60,
+                        //idealEdgeLength: 60,
                         //circle: true,
                         //concentric: function(){
                             //var rank = scope.pageRank.rank(this);
@@ -2561,9 +2614,9 @@ FILTER ( !strstarts(str(?id), "bnode:") )\n\
                 if (scope.start) {
                     incomingOutgoing([scope.start]);
                 }
-                scope.$watch("startList",function() {
-                    incomingOutgoing(scope.startList);
-                });
+                //scope.$watch("startList",function() {
+                //    incomingOutgoing(scope.startList);
+                //});
 
             }
         }

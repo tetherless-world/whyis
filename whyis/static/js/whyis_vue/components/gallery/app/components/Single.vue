@@ -19,7 +19,7 @@
     </md-speed-dial>
   </div>
 </template>
-<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
   import EventServices from '../../../../modules/events/event-services'
   import { loadChart, buildSparqlSpec } from '../../../../utilities/vega-chart'

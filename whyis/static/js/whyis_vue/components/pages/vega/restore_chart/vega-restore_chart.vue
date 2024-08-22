@@ -109,7 +109,7 @@
 
   }
 </style>
-<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
   import Vue from 'vue'
   import { EventServices, Slug } from '../../../../modules'

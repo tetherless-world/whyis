@@ -17,7 +17,7 @@
               <div style="display:inline-block; padding-top:.5rem"><span class="md-subheading">{{ authenticated.name }}</span></div>
               <md-button class="md-icon-button">
                 <md-avatar>
-                  <img src="/static/images/default.jpg" alt="Avatar">
+                  <img src="/images/default.jpg" alt="Avatar">
                 </md-avatar>
               </md-button>
             </div>
@@ -35,7 +35,7 @@
   </div>
 </template>
 
-<style scoped lang="scss" src="../../assets/css/main.scss"></style>
+<style lang="scss" src="../../assets/css/main.scss"></style>
 
 <script>
 import Vue from 'vue';

@@ -1,1 +1,1 @@
-import './Main'
+import './Main.vue'

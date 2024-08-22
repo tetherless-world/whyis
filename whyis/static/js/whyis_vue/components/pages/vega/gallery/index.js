@@ -1,1 +1,1 @@
-import './vega-gallery'
+import './vega-gallery.vue'

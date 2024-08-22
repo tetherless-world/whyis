@@ -3,8 +3,8 @@ import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 import axios from 'axios'
 
-import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from 'utilities/nanopub'
-import { querySparql } from 'utilities/sparql'
+import { listNanopubs, getLocalNanopub, describeNanopub, postNewNanopub, deleteNanopub, lodPrefix } from './nanopub'
+import { querySparql } from './sparql'
 
 const defaultQuery = `
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

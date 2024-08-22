@@ -52,8 +52,9 @@ class Plugin(PluginBase):
             )
 
     def create_blueprint(self):
-        plugin_blueprint = PluginBlueprint('example', __name__)
-        return plugin_blueprint
+        return None
+#        plugin_blueprint = PluginBlueprint('example', __name__)
+#        return plugin_blueprint
 
     @property
     def blueprint(self):

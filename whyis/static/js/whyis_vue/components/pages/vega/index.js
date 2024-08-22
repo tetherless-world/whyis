@@ -1,6 +1,5 @@
 import './editor'
 import './gallery'
-import './restore_chart'
 import './sparql'
 import './view'
 import './data-voyager'

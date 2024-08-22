@@ -146,7 +146,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../../assets/css/main.scss"></style>
 
 <style scoped>
 .dv-title {

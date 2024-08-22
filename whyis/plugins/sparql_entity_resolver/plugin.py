@@ -83,7 +83,7 @@ where {
         results = []
         for hit in graph.query(query, initNs=prefixes):
             result = hit.asdict()
-            result['types'] = [{'uri':x} for x in result['types'].split('||')]
+            result['types'] = [{'uri':x} for x in result.get('types','').split('||')]
             if label:
                 current_app.labelize(result,'node','preflabel')
                 result['types'] = [

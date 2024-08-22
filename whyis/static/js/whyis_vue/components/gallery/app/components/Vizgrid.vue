@@ -40,11 +40,11 @@
         </div>
     </div>
 </template>
-<style scoped lang="scss" src="../../../../assets/css/main.scss"></style>
+<style lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
     import { EventServices, Slug } from '../../../../modules'
     import { getViewUrl } from '../../../../utilities/views'
-    import pagination from './Pagination'
+    import pagination from './Pagination.vue'
     import axios from 'axios'
     export default {
         name: "viz-grid",

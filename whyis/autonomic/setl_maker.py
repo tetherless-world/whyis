@@ -34,33 +34,37 @@ class SETLMaker(GlobalChangeService):
 
     def get_query(self):
         return '''
-select distinct ?resource where {
-    graph ?type_assertion {
-      ?resource rdf:type/rdfs:subClassOf* ?parameterized_type.
+select ?resource where {
+  {
+	select * where {
+    	graph ?assertion {
+      		?setl_script rdfs:subClassOf setl:SemanticETLScript;
+        		rdfs:subClassOf [ a owl:Restriction;
+            	owl:onProperty prov:used;
+            	owl:someValuesFrom ?parameterized_type
+        	].
+    	}
+    	minus {
+        	?assertion prov:wasGeneratedBy [ a setl:Planner].
+    	}
     }
-    graph ?assertion {
-      ?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        rdfs:subClassOf [ a owl:Restriction;
-            owl:onProperty prov:used;
-            owl:someValuesFrom ?parameterized_type
-        ].
-    }
-    filter not exists {
-        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
-        ?assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
+  }
+  graph ?type_assertion {
+      ?resource rdf:type ?parameterized_type.
+  }
+  filter (!regex(str(?resource), "^bnode:"))
+  filter (!isBLANK(?resource))
+  minus {
+    ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
+  }
+  minus {
         ?planned_assertion prov:wasDerivedFrom* ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {
             ?setl_run a ?setl_script.
             ?extract prov:used ?resource.
         }
-    }
-  filter (!regex(str(?resource), "^bnode:"))
-  filter (!isBLANK(?resource))
+  }
 }'''
 
     def process_nanopub(self, i, o, new_np):
@@ -68,6 +72,12 @@ select distinct ?resource where {
         p = flask.current_app.NS.prov.used
         for script, np, parameterized_type, type_assertion in flask.current_app.db.query('''
 select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
+    graph ?type_assertion { ?resource rdf:type ?parameterized_type. }
+    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
+    ?np a np:Nanopublication; np:hasAssertion ?assertion.
+    minus {
+        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
+    }
     graph ?assertion {
       ?setl_script rdfs:subClassOf setl:SemanticETLScript;
         rdfs:subClassOf [ a owl:Restriction;
@@ -75,16 +85,10 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
             owl:someValuesFrom ?parameterized_type
       ].
     }
-    graph ?type_assertion { ?resource rdf:type/rdfs:subClassOf* ?parameterized_type. }
-    ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
-    ?np a np:Nanopublication; np:hasAssertion ?assertion.
-    filter not exists {
-        ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
-    }
-    filter not exists {
+    minus {
         ?assertion prov:wasGeneratedBy [ a setl:Planner].
     }
-    filter not exists {
+    minus {
         ?planned_assertion prov:wasDerivedFrom* ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {

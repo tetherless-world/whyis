@@ -156,7 +156,7 @@ be managed and used.''',
     install_requires = [
         'beautifulsoup4==4.7.1',
         'bibtexparser==1.1.0',
-        'celery==5.1.2',
+        'celery<6.0.0',
         'celery_once==3.0.1',
         'cookiecutter==1.7.3',
         'email_validator==1.1.3',
@@ -199,9 +199,10 @@ be managed and used.''',
         'requests[security]',
         'sadi',
         'scipy',
-        'setlr==0.2.19',
+        'setlr>=1.0.1',
         'sdd2rdf>=1.1.0',
         'xlrd==2.0.1',
+        'werkzeug==2.0.3',
         'Flask-Caching==1.10.1'
     ],
     tests_require=[
@@ -229,7 +230,8 @@ be managed and used.''',
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
         ],
         'whyis': [
-         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin'
+         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin',
+         'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
         ]
     },
     classifiers=[
