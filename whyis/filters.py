@@ -245,7 +245,7 @@ where {
       ?prob_np np:hasAssertion ?prob_assertion.
     }
     optional {
-      ?source sio:hasPart|SIO_000028 ?term.
+      ?source sio:hasPart|sio:SIO_000028 ?term.
       ?term prov:specializationOf ?target;
             sio:Frequency|sio:SIO_001367 ?freq.
       optional {
