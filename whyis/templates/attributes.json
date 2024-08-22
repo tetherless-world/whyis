@@ -4,24 +4,13 @@
       filter( ?property not in  (foaf:depiction, sioc:content, skos:definition, dc:abstract, dc:description, dc:summary, rdfs:comment, dcelements:description, <http://purl.obolibrary.org/obo/IAO_0000115>, prov:value, sio:hasValue, <http://dbpedia.org/ontology/abstract>))
       filter (isLiteral(?value))
     } union {
-      ?this sio:hasAttribute ?attr.
-      ?attr a ?property; sio:hasValue ?value.
+      ?this sio:hasAttribute|sio:SIO_000008 ?attr.
+      ?attr a ?property; sio:hasValue|sio:SIO_000300 ?value.
       optional {
-        ?attr sio:hasUnit ?unit.
+        ?attr sio:hasUnit|sio:SIO_000221 ?unit.
       }
     } union {
-      ?this sio:SIO_000008 ?attr.
-      ?attr a ?property; sio:SIO_000300 ?value.
-      optional {
-        ?attr sio:SIO_000221 ?unit.
-      }
-    } union {
-      ?this sio:SIO_000008 ?attr.
-      ?attr a ?property.
-      ?attr a ?value.
-      ?value rdfs:subClassOf ?property.
-    } union {
-      ?this sio:hasAttribute ?attr.
+      ?this sio:hasAttribute|sio:SIO_000008 ?attr.
       ?attr a ?property.
       ?attr a ?value.
       ?value rdfs:subClassOf ?property.

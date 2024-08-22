@@ -232,20 +232,22 @@ where {
         #?article a sio:PeerReviewedArticle.
       }
       optional {
-        ?article sio:hasAttribute [ a whyis:ConfidenceScore; sio:hasValue ?probability].
+        ?article sio:hasAttribute|sio:SIO_000008 [ a whyis:ConfidenceScore; sio:hasValue|sio:SIO_000300 ?probability].
       }
       minus { ?article a np:Nanopublication.}
     }
     optional {
       graph ?prob_assertion {
-        ?assertion sio:hasAttribute [ a sio:ProbabilityMeasure; sio:hasValue ?probability].
+        { ?assertion sio:hasAttribute|sio:SIO_000008 [ a sio:ProbabilityMeasure; sio:hasValue|sio:SIO_000300 ?probability]. }
+        UNION
+        { ?assertion sio:hasAttribute|sio:SIO_000008 [ a sio:SIO_000638; sio:hasValue|sio:SIO_000300 ?probability]. }
       }
       ?prob_np np:hasAssertion ?prob_assertion.
     }
     optional {
-      ?source sio:hasPart ?term.
+      ?source sio:hasPart|SIO_000028 ?term.
       ?term prov:specializationOf ?target;
-            sio:Frequency ?freq.
+            sio:Frequency|sio:SIO_001367 ?freq.
       optional {
         ?target sio:InverseDocumentFrequency ?idf_.
       }

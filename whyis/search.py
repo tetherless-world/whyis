@@ -15,7 +15,7 @@ where {
   }
     {
       graph ?np {
-        ?np sio:isAbout ?about.
+        ?np sio:isAbout|sio:SIO_000332 ?about.
       }
     }
 

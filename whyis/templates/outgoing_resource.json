@@ -5,8 +5,9 @@
     }
     bind(?assertion as ?link)
     minus { ?source owl:sameAs|rdfs:seeAlso|rdf:type|<http://dbpedia.org/ontology/wikiPageExternalLink>|foaf:depiction ?target.}
-    minus { ?source sio:hasPart|sio:hasAttribute ?target }
+    minus { ?source sio:hasPart|sio:SIO_000028|sio:hasAttribute|sio:SIO_000008 ?target }
     minus { ?target a sio:Term.}
+    minus { ?target a sio:SIO_000275.}
     filter (!sameTerm(?source, ?target) && isIRI(?target))
 
 ''' | probit(source=this.identifier) | tojson | safe}}

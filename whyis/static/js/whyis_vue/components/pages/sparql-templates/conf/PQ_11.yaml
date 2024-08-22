@@ -33,10 +33,10 @@ SPARQL: |
     (COUNT(DISTINCT ?doi) AS ?ArticleCount) 
   WHERE {
     ?attr a ?AttributeType ;
-          sio:hasValue ?AttributeValue ;
-          sio:hasUnit [ rdfs:label ?UnitOfMeasure ] .
-    ?doi sio:hasPart ?sample .
-    ?sample sio:hasAttribute ?attr .
+          sio:hasValue|sio:SIO_000300 ?AttributeValue ;
+          sio:hasUnit|sio:SIO_000221 [ rdfs:label ?UnitOfMeasure ] .
+    ?doi sio:hasPart|sio:SIO_000028 ?sample .
+    ?sample sio:hasAttribute|sio:SIO_000008 ?attr .
     VALUES ?UnitOfMeasure {
       "{{id_1}}"
     }

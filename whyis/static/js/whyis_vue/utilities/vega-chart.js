@@ -141,12 +141,12 @@ const chartQuery = `
   PREFIX dcat: <http://www.w3.org/ns/dcat#>
   SELECT DISTINCT ?uri ?downloadUrl ?title ?description ?query ?dataset ?baseSpec ?depiction
   WHERE {
-    ?uri a sio:Chart .
+    { ?uri a sio:Chart . } UNION { ?uri a sio:SIO_000904 .}
     OPTIONAL { ?uri dcterms:title ?title } .
     OPTIONAL { ?uri dcterms:description ?description } .
     OPTIONAL { ?uri schema:query ?query } .
     OPTIONAL { ?uri prov:used ?dataset}
-    OPTIONAL { ?uri sio:hasValue ?baseSpec } .
+    OPTIONAL { ?uri sio:hasValue|sio:SIO_000300 ?baseSpec } .
     OPTIONAL { ?uri foaf:depiction ?depiction } .
     OPTIONAL { ?uri dcat:downloadURL ?downloadUrl } .
   }

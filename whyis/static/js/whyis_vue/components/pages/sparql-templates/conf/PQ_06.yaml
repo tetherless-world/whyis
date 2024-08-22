@@ -23,12 +23,12 @@ SPARQL: |
   PREFIX dct: <http://purl.org/dc/terms/>
   SELECT DISTINCT ?Matrix (COUNT(DISTINCT ?doi) AS ?DOI_Count) (GROUP_CONCAT(DISTINCT ?doi ; SEPARATOR=", ") AS ?ListOfDOIs) WHERE {
     ?Sample a nm:PolymerNanocomposite ;
-            sio:hasComponentPart [ sio:hasRole [ a nm:Filler ] ;
+            sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a nm:Filler ] ;
                                    a [ rdfs:label {{id_1}} ] ] ,
-                                 [ sio:hasRole [ a nm:Matrix ] ;
+                                 [ sio:hasRole|sio:SIO_000228 [ a nm:Matrix ] ;
                                    a [ rdfs:label ?Matrix ] ] .
     ?doi a dct:BibliographicResource ;
-         sio:hasPart ?Sample .
+         sio:hasPart|sio:SIO_000028 ?Sample .
     FILTER(!REGEX(STR(?doi), "unpublished"))
   }
   GROUP BY ?Matrix

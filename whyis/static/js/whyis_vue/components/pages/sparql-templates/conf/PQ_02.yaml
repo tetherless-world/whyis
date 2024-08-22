@@ -18,9 +18,9 @@ SPARQL: |
   (COUNT(DISTINCT ?Matrix) AS ?MatrixCount) (GROUP_CONCAT(DISTINCT ?Matrix ; SEPARATOR=", ") AS ?MatrixMaterials)
   WHERE {
   ?Sample a nm:PolymerNanocomposite ;
-        sio:hasComponentPart [ sio:hasRole [ a nm:Filler ] ;
+        sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a nm:Filler ] ;
                                a [ rdfs:label ?Filler ] ] ,
-                             [ sio:hasRole [ a nm:Matrix ] ;
+                             [ sio:hasRole|sio:SIO_000228 [ a nm:Matrix ] ;
                                a [ rdfs:label ?Matrix] ]
   }
   GROUP BY ?Sample

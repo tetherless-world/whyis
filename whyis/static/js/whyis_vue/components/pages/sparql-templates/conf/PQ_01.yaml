@@ -59,13 +59,13 @@ SPARQL: |
   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   SELECT DISTINCT * WHERE {
     ?Sample a nm:PolymerNanocomposite ;
-            sio:hasComponentPart [ sio:hasRole [ a nm:Filler ] ;
+            sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a nm:Filler ] ;
                                    a [ rdfs:label {{id_1}} ] ;
-                                   sio:hasAttribute [ a {{id_3}} ;
-                                                      sio:hasValue ?FillerAmount] ] ,
-                                 [ sio:hasRole [ a nm:Matrix ] ;
+                                   sio:hasAttribute|sio:SIO_000008 [ a {{id_3}} ;
+                                                      sio:hasValue|sio:SIO_000300 ?FillerAmount] ] ,
+                                 [ sio:hasRole|sio:SIO_000228 [ a nm:Matrix ] ;
                                    a [ rdfs:label {{id_2}} ] ] ;
-            sio:hasAttribute [ a {{id_4}} ;
-                               sio:hasValue ?AttributeValue ;
-                               sio:hasUnit ?UnitOfMeasure ] .
+            sio:hasAttribute|sio:SIO_000008 [ a {{id_4}} ;
+                               sio:hasValue|sio:SIO_000300 ?AttributeValue ;
+                               sio:hasUnit|sio:SIO_000221 ?UnitOfMeasure ] .
   }

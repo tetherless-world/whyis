@@ -52,12 +52,12 @@ SPARQL: |
   PREFIX prov: <http://www.w3.org/ns/prov#>
   SELECT DISTINCT ?doi ?Material ?MaterialRole ?Property WHERE {
     ?Sample a nm:PolymerNanocomposite ;
-            sio:hasComponentPart [ sio:hasRole [ a [ rdfs:label ?MaterialRole ] ] ;
+            sio:hasComponentPart|sio:SIO_000369 [ sio:hasRole|sio:SIO_000228 [ a [ rdfs:label ?MaterialRole ] ] ;
                                    a [ rdfs:label ?Material ; rdfs:label {{id_3}} ] ] ;
             prov:wasGeneratedBy [ a {{id_1}} ] ;
-            sio:hasAttribute [ a ?Property ] .
+            sio:hasAttribute|sio:SIO_000008 [ a ?Property ] .
     ?Property rdfs:subClassOf {{id_2}} .
     ?doi a dct:BibliographicResource ;
-         sio:hasPart ?Sample .
+         sio:hasPart|sio:SIO_000028 ?Sample .
     FILTER(!REGEX(STR(?doi), "unpublished"))
   }

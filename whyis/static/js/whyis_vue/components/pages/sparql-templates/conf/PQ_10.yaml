@@ -20,8 +20,8 @@ SPARQL: |
   PREFIX schema: <http://schema.org/>
   PREFIX dct: <http://purl.org/dc/terms/>
   SELECT ?Chart ?Title WHERE {
-    ?Chart a sio:Chart ;
-           schema:query ?Query ;
+    { ?Chart a sio:Chart . } UNION {?Chart a sio:SIO_000904 .}
+    ?Chart schema:query ?Query ;
            dct:title ?Title .
     FILTER(REGEX(LCASE(STR(?Query)), "{{id_1}}"))
   }
