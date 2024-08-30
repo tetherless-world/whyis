@@ -29,27 +29,40 @@ def node_to_sparql(node):
 drivers = {}
 
 def driver(name):
-    def decorator(function):
-        drivers[name] = function
-        return function
-    return decorator
-
-def driver(name):
     def inner(fn):
-        print("registering", fn, name)
+        #print("registering", fn, name)
         drivers[name] = fn
         return fn
     return inner
+
+def _local_sparql_store_protocol(store):
+    def publish(data):
+        store.parse(data, format='trig')
+
+    def put(graph):
+        idb = Graph(store,graph.identifier)
+        if idb:
+            idb.remove((None,None,None))
+        idb += model.graph
+
+    def post(graph):
+        idb = Graph(store,graph.identifier)
+        idb += graph
+
+    def delete(c):
+        store.remove((None, None, None), c)
+        
+    store.publish = publish
+    store.put = put
+    store.delete = delete
+    store.post = post
+    return store
 
 @driver(name="memory")
 def memory_driver(config):
     graph = ConjunctiveGraph()
 
-    def publish(data):
-        graph.parse(data, format='trig')
-
-    graph.store.publish = publish
-
+    store = _local_sparql_store_protocol(graph.store)
     return graph
 
 @driver(name="oxigraph")
@@ -61,12 +74,77 @@ def oxigraph_driver(config):
     graph.store.batch_unification = False
     graph.store.open(config["_store"], create=True)
 
-    def publish(data):
-        graph.parse(data, format='trig')
-
-    graph.store.publish = publish
+    store = _local_sparql_store_protocol(graph.store)
 
     return graph
+
+def _remote_sparql_store_protocol(store):
+    def publish(data, format='text/trig;charset=utf-8'):
+        s = requests.session()
+        s.keep_alive = False
+
+        kwargs = dict(
+            headers={'Content-Type':format},
+        )
+        if store.auth is not None:
+            kwargs['auth'] = store.auth
+        r = s.post(store.query_endpoint, data=data, **kwargs)
+        if not r.ok:
+            print(f"Error: {store.query_endpoint} publish returned status {r.status_code}:\n{r.text}")
+
+    def put(graph):
+        g = ConjunctiveGraph(store=graph.store)
+        data = g.serialize(format='trig')
+        print(data)
+        s = requests.session()
+        s.keep_alive = False
+
+        kwargs = dict(
+            headers={'Content-Type':'text/trig;charset=utf-8'},
+        )
+        if store.auth is not None:
+            kwargs['auth'] = store.auth
+        r = s.put(store.query_endpoint, data=data, **kwargs)
+        if not r.ok:
+            print(f"Error: {store.query_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+        else:
+            print(r.text, r.status_code)
+
+    def post(graph):
+        g = ConjunctiveGraph(store=graph.store)
+        data = g.serialize(format='trig')
+        s = requests.session()
+        s.keep_alive = False
+
+        kwargs = dict(
+            headers={'Content-Type':'text/trig;charset=utf-8'},
+        )
+        if store.auth is not None:
+            kwargs['auth'] = store.auth
+        r = s.post(store.query_endpoint, data=data, **kwargs)
+        if not r.ok:
+            print(f"Error: {store.query_endpoint} POST returned status {r.status_code}:\n{r.text}")
+
+    def delete(c):
+        s = requests.session()
+        s.keep_alive = False
+
+        kwargs = dict(
+        )
+        if store.auth is not None:
+            kwargs['auth'] = store.auth
+        r = s.delete(store.query_endpoint,
+                     params=dict(graph=c),
+                     **kwargs)
+        if not r.ok:
+            print(f"Error: {store.query_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
+        store.remove((None, None, None), c)
+        
+    store.publish = publish
+    store.put = put
+    store.delete = delete
+    store.post = post
+    return store
 
 @driver(name="sparql")
 def sparql_driver(config):
@@ -89,19 +167,8 @@ def sparql_driver(config):
     else:
         store.auth = None
 
-    def publish(data, format='text/trig;charset=utf-8'):
-        s = requests.session()
-        s.keep_alive = False
-
-        kwargs = dict(
-            headers={'Content-Type':format},
-        )
-        if store.auth is not None:
-            kwargs['auth'] = store.auth
-        r = s.post(store.query_endpoint, data=data, **kwargs)
-        #print(r.text)
-    store.publish = publish
-
+    store = _remote_sparql_store_protocol(store)
+    
     graph = ConjunctiveGraph(store,defaultgraph)
     return graph
 

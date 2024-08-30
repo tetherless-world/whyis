@@ -15,28 +15,19 @@ class WhyisDatastore(Datastore):
         self.prefix = prefix
 
     def commit(self):
-        self.db.commit()
+        pass
+        #self.db.commit()
 
     def put(self, model):
-        #self.db.add(model)
-        idb = Graph(self.db.store,model.identifier)
-        if idb:
-            idb.remove((None,None,None))
-        idb += model.graph
-        self.db.store.commit()
-        
+        self.db.store.put(model.graph)
         return self.get(model.identifier, type(model))
 
     def delete(self, model):
-        uri = model.identifier
+        uri = model.graph.identifier
         idb = ConjunctiveGraph(self.db.store,uri)
         if not idb:
             abort(404, "Resource does not exist or is not deletable.")
-        idb.remove((None,None,None))
-        g = ConjunctiveGraph(self.db.store)
-        g.remove((uri,None,None))
-        g.remove((None,None,uri))
-        self.delete(model.identifier)
+        self.db.store.delete(uri)
 
     def get(self,resUri, c=None):
         idb = Graph(self.db.store,resUri)
