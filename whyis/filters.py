@@ -131,7 +131,7 @@ def configure(app):
         if text is None:
             return None
         from markdown import markdown
-        return markdown(text)
+        return markdown(text, extensions=['extra'])
     
     @app.template_filter('construct')
     def construct_filter(query, graph=app.db, prefixes=None, values=None):
