@@ -152,10 +152,14 @@ class NanopublicationManager(object):
                 for listener in self.app.listeners['on_retire']:
                     listener.on_retire(np_graph)
 
-                self.db.remove((None, None, None, self.db.value(np_uri, np.hasAssertion)))
-                self.db.remove((None, None, None, self.db.value(np_uri, np.hasProvenance)))
-                self.db.remove((None, None, None, self.db.value(np_uri, np.hasPublicationInfo)))
-                self.db.remove((None, None, None, np_uri))
+                delete_grpahs = [
+                    self.db.value(np_uri, np.hasAssertion),
+                    self.db.value(np_uri, np.hasProvenance),
+                    self.db.value(np_uri, np.hasPublicationInfo),
+                    np_uri
+                ]
+                for uri in delete_graphs:
+                    self.db.store.delete(uri)
         self.db.commit()
         # data = [('c', c.n3()) for c in graphs]
         # session = requests.session()
