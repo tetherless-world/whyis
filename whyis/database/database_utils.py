@@ -94,17 +94,20 @@ def _remote_sparql_store_protocol(store):
 
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
-        data = g.serialize(format='trig')
+        data = g.serialize(format='turtle')
         print(data)
         s = requests.session()
         s.keep_alive = False
 
         kwargs = dict(
-            headers={'Content-Type':'text/trig;charset=utf-8'},
+            headers={'Content-Type':'text/turtle;charset=utf-8'},
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.put(store.query_endpoint, data=data, **kwargs)
+        r = s.put(store.query_endpoint,
+                  params=dict(graph=graph.identifier),
+                  data=data,
+                  **kwargs)
         if not r.ok:
             print(f"Error: {store.query_endpoint} PUT returned status {r.status_code}:\n{r.text}")
         else:
