@@ -152,7 +152,7 @@ class NanopublicationManager(object):
                 for listener in self.app.listeners['on_retire']:
                     listener.on_retire(np_graph)
 
-                delete_grpahs = [
+                delete_graphs = [
                     self.db.value(np_uri, np.hasAssertion),
                     self.db.value(np_uri, np.hasProvenance),
                     self.db.value(np_uri, np.hasPublicationInfo),
