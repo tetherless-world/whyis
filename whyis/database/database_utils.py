@@ -141,7 +141,6 @@ def _remote_sparql_store_protocol(store):
                      **kwargs)
         if not r.ok:
             print(f"Error: {store.query_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
-        store.remove((None, None, None), c)
         
     store.publish = publish
     store.put = put

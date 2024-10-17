@@ -58,7 +58,7 @@ select ?resource where {
     ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
   }
   minus {
-        ?planned_assertion prov:wasDerivedFrom* ?assertion;
+        ?planned_assertion prov:wasDerivedFrom ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {
             ?setl_run a ?setl_script.
@@ -89,7 +89,7 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
         ?assertion prov:wasGeneratedBy [ a setl:Planner].
     }
     minus {
-        ?planned_assertion prov:wasDerivedFrom* ?assertion;
+        ?planned_assertion prov:wasDerivedFrom ?assertion;
            prov:wasGeneratedBy [ a setl:Planner].
         graph ?planned_assertion {
             ?setl_run a ?setl_script.
