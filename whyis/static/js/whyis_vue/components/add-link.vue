@@ -250,7 +250,7 @@ export default Vue.component('add-link', {
         processAutocompleteMenu (param) {
             const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
             if(itemListContainer.length >= 1) {
-                itemListContainer[0].style['z-index'] = 12;
+                //itemListContainer[0].style['z-index'] = 12;
                 return status = true
             }
         },

@@ -17,6 +17,7 @@ import './gallery';
 //import './album.vue'
 
 import Vue from 'vue';
+
 Vue.component('vega-lite', () => import('./vega-lite-wrapper.vue'))
 Vue.component('spinner', () => import('./utils/spinner.vue'))
 Vue.component('dialogBox', () => import('./utils/dialog.vue'))

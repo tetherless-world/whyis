@@ -4,6 +4,7 @@ import * as VueMaterial from 'vue-material'
 import axios from 'axios'
 import './modules'
 import './components'
+
 import {store} from './store'
 import Header from './components/utils/header.vue'
 import Drawer from './components/utils/drawer.vue'

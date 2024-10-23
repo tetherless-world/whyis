@@ -4,7 +4,7 @@ import rdflib
 import setlr
 from datetime import datetime
 
-from .global_change_service import GlobalChangeService
+from .update_change_service import UpdateChangeService
 from whyis.nanopub import Nanopublication
 from whyis.datastore import create_id
 import flask
@@ -23,7 +23,7 @@ from depot.io.interfaces import StoredFile
 from whyis.namespace import *
 
 
-class SETLMaker(GlobalChangeService):
+class SETLMaker(UpdateChangeService):
     activity_class = setl.Planner
 
     def getInputClass(self):
@@ -31,42 +31,7 @@ class SETLMaker(GlobalChangeService):
 
     def getOutputClass(self):
         return setl.SETLedFile
-
-    def get_query(self):
-        return '''
-select ?resource where {
-  {
-	select * where {
-    	graph ?assertion {
-      		?setl_script rdfs:subClassOf setl:SemanticETLScript;
-        		rdfs:subClassOf [ a owl:Restriction;
-            	owl:onProperty prov:used;
-            	owl:someValuesFrom ?parameterized_type
-        	].
-    	}
-    	minus {
-        	?assertion prov:wasGeneratedBy [ a setl:Planner].
-    	}
-    }
-  }
-  graph ?type_assertion {
-      ?resource rdf:type ?parameterized_type.
-  }
-  filter (!regex(str(?resource), "^bnode:"))
-  filter (!isBLANK(?resource))
-  minus {
-    ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
-  }
-  minus {
-        ?planned_assertion prov:wasDerivedFrom ?assertion;
-           prov:wasGeneratedBy [ a setl:Planner].
-        graph ?planned_assertion {
-            ?setl_run a ?setl_script.
-            ?extract prov:used ?resource.
-        }
-  }
-}'''
-
+        
     def process_nanopub(self, i, o, new_np):
         print(i.identifier)
         p = flask.current_app.NS.prov.used
@@ -74,7 +39,6 @@ select ?resource where {
 select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
     graph ?type_assertion { ?resource rdf:type ?parameterized_type. }
     ?type_np a np:Nanopublication; np:hasAssertion ?type_assertion.
-    ?np a np:Nanopublication; np:hasAssertion ?assertion.
     minus {
         ?type_assertion prov:wasGeneratedBy [ a setl:Planner].
     }
@@ -85,6 +49,7 @@ select distinct ?setl_script ?np ?parameterized_type ?type_assertion where {
             owl:someValuesFrom ?parameterized_type
       ].
     }
+    ?np np:hasAssertion ?assertion; a np:Nanopublication.
     minus {
         ?assertion prov:wasGeneratedBy [ a setl:Planner].
     }

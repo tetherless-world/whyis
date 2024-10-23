@@ -1,3 +1,3 @@
-import './vega';
+import './vega'
 import './dataset'
 import './sparql-templates'
