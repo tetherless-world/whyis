@@ -876,9 +876,8 @@ class App(Empty):
 ''' % type_string
 
             views = list(self.vocab.query(view_query, initNs=dict(whyis=self.NS.whyis, dc=self.NS.dc)))
-            print(views)
             if len(views) == 0:
-                
+                print("Cannot find template %s for %s using types %s." % (view, resource.identifier, types))
                 abort(404)
             headers = {'Content-Type': "text/html"}
             extension = views[0]['view'].value.split(".")[-1]
