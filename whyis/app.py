@@ -88,7 +88,7 @@ class App(Empty):
 
     def resolve(self, term, type=None, context=None, label=False):
         for resolver in self.listeners['on_resolve']:
-            results = resolver.on_resolve(term, type, context)
+            results = resolver.on_resolve(term, type, context, label)
             if len(results) > 0:
                 return results
         return []
