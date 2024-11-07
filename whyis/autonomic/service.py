@@ -72,6 +72,7 @@ class Service(sadi.Service):
         output_nanopub = self.create_output_nanopub()
         o = output_nanopub.assertion.resource(i.identifier)  # OutputClass(i.identifier)
         error = False
+        new_nps = []
         try:
             result = self.process_nanopub(i, o, output_nanopub)
             for new_np in flask.current_app.nanopub_manager.prepare(rdflib.ConjunctiveGraph(store=output_nanopub.store)):
@@ -79,6 +80,7 @@ class Service(sadi.Service):
                     continue
                 self.explain(new_np, i, o)
                 new_np.add((new_np.identifier, sio.isAbout, i.identifier))
+                new_nps.append(new_np)
                 # print new_np.serialize(format="trig")
         except Exception as e:
             output_nanopub.add(
@@ -86,7 +88,7 @@ class Service(sadi.Service):
             logging.exception("Error processing resource %s in nanopub %s" % (i.identifier, inputGraph.identifier))
             error = True
         if not self.dry_run:
-            flask.current_app.nanopub_manager.publish(output_nanopub)
+            flask.current_app.nanopub_manager.publish(new_nps)
         else:
             print("Not publishing",output_nanopub.identifier,", dry run.")
         results = [output_nanopub]
