@@ -58,7 +58,7 @@ class LoadNanopub(Command):
                 print('Prepared', npub.identifier)
                 nanopubs.append(npub)
             flask.current_app.nanopub_manager.publish(*nanopubs)
-            print("Published", npub.identifier)
+            print("Published", [npub.identifier for npub in nanopubs])
         finally:
             if g_store_tempdir is not None:
                 shutil.rmtree(g_store_tempdir)
