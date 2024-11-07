@@ -109,7 +109,7 @@
                         <md-card-media md-medium>
                             {% set depiction = this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
                             {% if depiction.startswith(config['lod_prefix']) %}
-                            <img src="{{url_for('entity.view', uri=rfdlib.URIRef(depiction))}}" alt="{{item.target_label}}">
+                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.target_label}}">
                             {% else %}
                             <img src="{{depiction}}" alt="{{item.target_label}}">
                             {% endif %}
