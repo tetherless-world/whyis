@@ -88,7 +88,7 @@ class Service(sadi.Service):
             logging.exception("Error processing resource %s in nanopub %s" % (i.identifier, inputGraph.identifier))
             error = True
         if not self.dry_run:
-            flask.current_app.nanopub_manager.publish(new_nps)
+            flask.current_app.nanopub_manager.publish(*new_nps)
         else:
             print("Not publishing",output_nanopub.identifier,", dry run.")
         results = [output_nanopub]

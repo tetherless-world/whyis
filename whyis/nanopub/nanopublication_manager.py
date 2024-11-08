@@ -150,7 +150,7 @@ class NanopublicationManager(object):
                     elif self.app.nanopub_depot.exists(fileid):
                         f = self.app.nanopub_depot.delete(fileid)
                 for listener in self.app.listeners['on_retire']:
-                    listener.on_retire(np_graph)
+                    listener.on_retire(self.get(nanopub_uri))
 
                 delete_graphs = [
                     self.db.value(np_uri, np.hasAssertion),
