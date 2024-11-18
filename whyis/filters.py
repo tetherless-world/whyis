@@ -232,11 +232,11 @@ where {
 #        ?assertion prov:wasDerivedFrom|dc:references ?article.
 #        #?article a sio:PeerReviewedArticle.
 #      }
-      optional {
-        ?article sio:hasAttribute [ a whyis:ConfidenceScore; sio:hasValue ?probability].
-      }
-      minus { ?article a np:Nanopublication.}
-    }
+#      optional {
+#        ?article sio:hasAttribute [ a whyis:ConfidenceScore; sio:hasValue ?probability].
+#      }
+#      minus { ?article a np:Nanopublication.}
+#    }
     optional {
       graph ?prob_assertion {
         { ?assertion sio:hasAttribute [ a sio:ProbabilityMeasure; sio:hasValue ?probability]. }
