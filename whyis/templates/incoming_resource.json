@@ -4,9 +4,17 @@
       }
     }
     bind(?assertion as ?link)
-    minus { ?source owl:sameAs|rdfs:seeAlso|rdf:type|<http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
-    minus { ?source sio:hasPart|sio:SIO_000028|sio:hasAttribute|sio:SIO_000008 ?target }
-    minus { ?source a sio:Term }
+    filter(!isLiteral(?target))
+    minus { ?source owl:sameAs ?target.}
+    minus { ?source rdfs:seeAlso ?target.}
+    minus { ?source rdf:type ?target.}
+    minus { ?source <http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
+    minus { ?source foaf:depiction ?target.
+    minus { ?source sio:hasPart  ?target.}
+    minus { ?source sio:SIO_000028 ?target.}
+    minus { ?source sio:hasAttribute ?target.}
+    minus { ?source sio:SIO_000008 ?target. }
+    minus { ?target a sio:Term.}
     minus { ?target a sio:SIO_000275.}
     filter (!sameTerm(?source, ?target) && isIRI(?target))
 

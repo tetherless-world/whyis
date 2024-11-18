@@ -225,22 +225,23 @@ where {
 
 #    ?assertion a np:Assertion.
     ?np np:hasAssertion ?assertion.
-    optional {
-      ?np np:hasProvenance ?provenance
-      graph ?provenance {
-        ?assertion prov:wasDerivedFrom|dc:references ?article.
-        #?article a sio:PeerReviewedArticle.
-      }
+
+        #    optional {
+#     ?np np:hasProvenance ?provenance
+#      graph ?provenance {
+#        ?assertion prov:wasDerivedFrom|dc:references ?article.
+#        #?article a sio:PeerReviewedArticle.
+#      }
       optional {
-        ?article sio:hasAttribute|sio:SIO_000008 [ a whyis:ConfidenceScore; sio:hasValue|sio:SIO_000300 ?probability].
+        ?article sio:hasAttribute [ a whyis:ConfidenceScore; sio:hasValue ?probability].
       }
       minus { ?article a np:Nanopublication.}
     }
     optional {
       graph ?prob_assertion {
-        { ?assertion sio:hasAttribute|sio:SIO_000008 [ a sio:ProbabilityMeasure; sio:hasValue|sio:SIO_000300 ?probability]. }
+        { ?assertion sio:hasAttribute [ a sio:ProbabilityMeasure; sio:hasValue ?probability]. }
         UNION
-        { ?assertion sio:hasAttribute|sio:SIO_000008 [ a sio:SIO_000638; sio:hasValue|sio:SIO_000300 ?probability]. }
+        { ?assertion sio:SIO_000008 [ a sio:SIO_000638; sio:SIO_000300 ?probability]. }
       }
       ?prob_np np:hasAssertion ?prob_assertion.
     }
@@ -284,8 +285,10 @@ where {
                         i['probability'] = combine_pvalues([tfidf/(1+tfidf)],method='stouffer')[1]
                 else:
                     i['probability'] = i['probability'].value
-                result['from'].append(i['np'])
-                result['articles'].extend(i['articles'])
+                if 'np' in i:
+                    result['from'].append(i['np'])
+                if 'artciles' in i:
+                    result['articles'].extend(i['articles'])
             result['probability'] = max([i['probability'] for i in links])
             #print "end: "
             return result
@@ -308,7 +311,8 @@ where {
             result = dict(links[0])
             result['from'] = []
             result['articles'] = []
-            del result['np']
+            if 'np' in result:
+                del result['np']
             for i in links:
                 result['from'].extend(i['from'])
                 result['articles'].extend(i['articles'])
@@ -338,6 +342,11 @@ where {
         results = query_filter(q, values=values)
         results = mergeLink(results)
         results = sorted(mergeLinkTypes(results), key=lambda x: x['probability'], reverse=True)
+        results = add_types_and_labels(results)
+        return results
+
+    @app.template_filter('add_types_and_labels')
+    def add_types_and_labels(results):
         for r in results:
             if 'link_type' in r:
                 labelize(r, 'link_type', 'link_label')
