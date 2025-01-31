@@ -13,7 +13,7 @@
     minus { ?source rdfs:seeAlso ?target.}
     minus { ?source rdf:type ?target.}
     minus { ?source <http://dbpedia.org/ontology/wikiPageExternalLink> ?target.}
-    minus { ?source foaf:depiction ?target.
+    minus { ?source foaf:depiction ?target.}
     minus { ?source sio:hasPart  ?target.}
     minus { ?source sio:SIO_000028 ?target.}
     minus { ?source sio:hasAttribute ?target.}

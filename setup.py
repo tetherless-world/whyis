@@ -200,7 +200,7 @@ be managed and used.''',
         'sadi',
         'scipy',
         'setlr>=1.0.1',
-        'sdd2rdf>=1.1.0',
+        'sdd2rdf>=1.3.2',
         'xlrd==2.0.1',
         'werkzeug==2.0.3',
         'Flask-Caching==1.10.1'
