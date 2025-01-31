@@ -95,7 +95,7 @@ def _remote_sparql_store_protocol(store):
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
         data = g.serialize(format='turtle')
-        print(data)
+        #print(data)
         s = requests.session()
         s.keep_alive = False
 
