@@ -20,8 +20,8 @@ Follow the [instructions for installation](install.md).
 To create a knowledge graph application, create a new directory somewhere and enter it:
 
 ```
-mkdir les-mis-kg
-cd les-mis-kg
+mkdir les_mis_demo
+cd les_mis_demo
 ```
 
 Then run the `whyis` command. You will see initialization for Fuseki and Celery:
