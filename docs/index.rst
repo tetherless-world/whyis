@@ -17,6 +17,7 @@
    usecases
    commands
    api
+   howto
    source/modules
 
 Indices and tables
