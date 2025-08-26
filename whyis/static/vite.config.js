@@ -15,6 +15,13 @@ export default defineConfig({
     define: {
 	"process.env": {},
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                api: 'modern-compiler' // Use modern compiler API
+            }
+        }
+    },
     build: {
 	lib: {
 	    // Could also be a dictionary or array of multiple entry points

@@ -1,6 +1,6 @@
-@import "variables";
-@import "screens";
-@import "content";
+@use "variables" as *;
+@use "screens" as *;
+@use "content" as *;
 
 // Use Bootstrap and custom material design styling instead of vue-material
 $primary-color: #1976d2; // Material Blue

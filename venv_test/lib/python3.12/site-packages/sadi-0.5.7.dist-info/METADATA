@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: sadi
+Version: 0.5.7
+Summary: SADI for python.
+Home-page: http://code.google.com/p/sadi/
+Author: James McCusker
+Author-email: mccusker@gmail.com
+License: New BSD License
+Keywords: Webservices SemanticWeb,RDF,Python,REST
+Platform: UNKNOWN
+Requires-Dist: rdflib (>=4.0)
+Requires-Dist: Werkzeug
+Requires-Dist: webob
+Requires-Dist: python-dateutil
+Requires-Dist: pytidylib
+Requires-Dist: future
+
+UNKNOWN
+
+
