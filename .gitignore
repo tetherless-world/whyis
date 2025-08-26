@@ -1,6 +1,8 @@
 #Node install files
 node_modules/
 
+test_env
+
 # Emacs backup files
 *~
 
