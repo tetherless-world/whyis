@@ -25,8 +25,7 @@ import Vue from "vue";
 import axios from 'axios'
 
 
-export default {
-  name: 'upload-file',
+export default Vue.component('upload-file', {
     props: ['active', 'label'],
     data: function() {
         return {
@@ -51,6 +50,6 @@ export default {
             return this.resetDialogBox();
         }
     },
-}
+});
 
 </script>

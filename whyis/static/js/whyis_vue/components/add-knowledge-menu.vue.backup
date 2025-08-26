@@ -18,14 +18,13 @@
 <script>
 import Vue from "vue";
 
-export default {
-  name: 'add-knowledge-menu',
+export default Vue.component('add-knowledge-menu', {
     props: ['uri'],
     data: function() {
       return {
         whichAdd: "",
       };
     },
-}
+});
 
 </script>

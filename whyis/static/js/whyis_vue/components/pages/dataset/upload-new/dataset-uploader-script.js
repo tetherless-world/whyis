@@ -200,7 +200,7 @@ methods: {
       .catch(err => { 
         this.uploadError = err.response;
         this.distrStatus = STATUS_FAILED;
-      });
+      }
     }, 
 
     async saveRepImg() {
@@ -220,7 +220,7 @@ methods: {
       .catch(err => { 
         this.uploadError = err.response;
         this.depictStatus = STATUS_FAILED;
-      }); 
+      }
       
     }, 
 
@@ -344,7 +344,7 @@ methods: {
         onbehalfof: {
           "name": null,
         },
-      });
+      }
       this.selectedAuthor = "";
     }, 
     selectedOrgChange(row, event){
@@ -363,7 +363,7 @@ methods: {
           onbehalfof: {
             "name": null,
           },
-        }); 
+        }
     },
 
     async getDOI() {
@@ -382,7 +382,7 @@ methods: {
         this.doiLoading = false;
         this.setDone('first', 'second');
         throw err;
-      }); 
+      }
     }, 
 
     // Fill the form with available data from doi
@@ -448,7 +448,7 @@ methods: {
       })
       .catch(err => { 
         throw err;
-      }); 
+      }
     },
 
     // Clear contact point values

@@ -43,11 +43,10 @@
 <script>
 import Vue from "vue";
 
-export default {
-  name: 'kg-card',
+export default Vue.component('kg-card', {
     data: function() {
         return {};
     },
     props: ['attributes']
-}
+});
 </script>

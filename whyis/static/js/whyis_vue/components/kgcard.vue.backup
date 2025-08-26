@@ -21,7 +21,7 @@
     import Vue from "vue";
     import { Slug } from '../modules'
     import { getViewUrl } from '../utilities/views'
-    export default {
+    export default Vue.component('kgcard', {
         name: "kgcard",
         props:{
           entity: {
@@ -48,5 +48,5 @@
             },
 
         },
-    }
+    })
 </script>

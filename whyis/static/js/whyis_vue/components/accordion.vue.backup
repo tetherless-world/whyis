@@ -21,8 +21,7 @@
 <script>
 import Vue from "vue";
 
-export default {
-  name: 'accordion',
+export default Vue.component('accordion', {
   props: {
     startOpen: {
       type: Boolean,
@@ -43,7 +42,7 @@ export default {
     }
   }
 
-}
+})
 </script>
 
 <style scoped>

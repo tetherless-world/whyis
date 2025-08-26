@@ -6,7 +6,7 @@
 </template>
 
 <script>
-
+import Vue from 'vue'
 import vegaLiteSchema from 'vega-lite/build/vega-lite-schema.json'
 import embed from 'vega-embed'
 

@@ -1,8 +1,7 @@
-
+import Vue from 'vue'
 import { EventServices } from '../../../../modules'
 
-export default {
-  name: 'vega-sparql-script.js',
+export default Vue.component('vega-sparql', {
   data() {
     return {
       loading: false,
@@ -21,11 +20,11 @@ export default {
           fetchTitlesFromPrefLabel : false
         }
       }
-    }
+    });
   },
   created () {
     if(EventServices.authUser == undefined){
       return EventServices.navTo('view', true)
     }
   }
-}
+})

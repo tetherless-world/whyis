@@ -60,7 +60,7 @@
         return EventServices.tipController(arg)
       },
       showFilterBox () {
-        EventServices.$emit('open-filter-box', {open: true, type: "filter"});
+        EventServices.$emit('open-filter-box', {open: true, type: "filter"}
         return this.filter = true
       },
       newChart(){

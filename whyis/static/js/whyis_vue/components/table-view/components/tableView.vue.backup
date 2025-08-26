@@ -14,13 +14,13 @@
 </template>
 
 <script>
-
+import Vue from 'vue';
 import Tabulator from 'tabulator-tables';
 import MockApi from '../api/mockapi.js';
 import tableControl from './tableControl.vue';
 import columnAddition from './columnAddition.vue';
 
-export default {
+export default Vue.component('tableview', {
     name: 'tableview',
     data() {
         return {
@@ -38,8 +38,8 @@ export default {
             response.map((value) => {
                 Object.entries(value).map((header) => {
                     columns[header[0]] = typeof(header[1]);
-                }
-            }
+                })
+            })
             let formattedCol = [];
             for (var el in columns) {
                 let temp = {}
@@ -64,11 +64,11 @@ export default {
         //instantiate Tabulator when element is mounted
         this.tabulator = new Tabulator('#data-table', {
             reactiveData:true, //enable data reactivity
-        }
+        });
         // Create API instance
         this.api = new MockApi();
   },
-}
+})
 </script>
 
 <style lang="css">

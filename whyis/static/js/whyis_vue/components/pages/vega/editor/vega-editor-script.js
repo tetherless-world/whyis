@@ -137,7 +137,7 @@ export default {
         })
       }
       const text = args == 'Editing' ? 'Edited' : 'Restored'
-      EventServices.$emit('snacks', {status:true, message: `Chart ${text} Successfully`});
+      EventServices.$emit('snacks', {status:true, message: `Chart ${text} Successfully`}
       //RELOAD RESTORE USED IN SETTINGS TO RE FILTER CHART LIST
       EventServices.$emit('reloadrestored', true)
       return EventServices.navTo('view', true);
@@ -155,7 +155,7 @@ export default {
             return;
           } else {
             await EventServices.createBackUp(this.chart, null, true, this.selectedTags);
-            EventServices.$emit('snacks', {status:true, message: 'Chart Saved Successfully'});
+            EventServices.$emit('snacks', {status:true, message: 'Chart Saved Successfully'}
             return EventServices.navTo('view', true);
           }
         })
@@ -174,7 +174,7 @@ export default {
           this.restoredChartId = recievedChart.name
         }
       } else {
-        EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'});
+        EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'}
       }
     },
     defineAction(){

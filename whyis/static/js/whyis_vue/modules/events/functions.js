@@ -28,7 +28,7 @@ const controller = {
       const userURI =  this.getCurrentUserURI(USER.uri)
       this.authUser = {...USER, user: userURI};
       this.authUser['admin'] = userURI == 'testuser' ? "True" : "False";
-      this.$emit('snacks', {status: true});
+      this.$emit('snacks', {status: true}
       return this.$emit('isauthenticated', this.authUser);
     }
   },
@@ -94,7 +94,7 @@ const controller = {
     const pageUri = getViewUrl(args, "instances")
     data = await fetch(pageUri, {
       method: "POST"
-    });
+    }
     processedData = await data.json();
     return processedData;
   },
@@ -138,7 +138,7 @@ const controller = {
               if(o2 && o2.chart){
                 return o1.name === o2.chart.name;
               }
-            });
+            }
           })
           await filter.forEach(el => {
             el.bookmark = true;
@@ -188,9 +188,9 @@ const controller = {
       const result = await this.restCallFn({creator: this.authUser.user}, `${URL}/resetcharts`, 'POST')
       if(result){
         await this.fetchAllCharts();
-        return this.$emit('snacks', {status:true, message: 'Chart Reset Completed'});
+        return this.$emit('snacks', {status:true, message: 'Chart Reset Completed'}
       }
-      return this.$emit('snacks', {status:true, message: err, tip: "Try Again"});
+      return this.$emit('snacks', {status:true, message: err, tip: "Try Again"}
     }
   },
 
@@ -203,7 +203,7 @@ const controller = {
         }
         return this.fetchAllCharts();
       }
-      return this.$emit('snacks', {status:true, message: 'Error retreiving bookmarks', tip: "Refresh App"});
+      return this.$emit('snacks', {status:true, message: 'Error retreiving bookmarks', tip: "Refresh App"}
     }
   },
 
@@ -213,9 +213,9 @@ const controller = {
       if(result){
         localStorage.removeItem('chartbkmk');
         this.getUserBkmk()
-        return this.$emit('savedbookmark', {status:true, message: exist ? "Bookmark Removed!": "Bookmark Saved!"});
+        return this.$emit('savedbookmark', {status:true, message: exist ? "Bookmark Removed!": "Bookmark Saved!"}
       }
-      return this.$emit('savedbookmark', {status:true, message: 'Bookmark Error!', tip: "Try Again"});
+      return this.$emit('savedbookmark', {status:true, message: 'Bookmark Error!', tip: "Try Again"}
     }
   },
 
@@ -255,7 +255,7 @@ const controller = {
 
     if(!checkIntroStatus){
       localStorage.setItem('introstatus', JSON.stringify(true));
-      return this.$emit("dialoguebox", {status: true, intro: true});
+      return this.$emit("dialoguebox", {status: true, intro: true}
     }
   },
 

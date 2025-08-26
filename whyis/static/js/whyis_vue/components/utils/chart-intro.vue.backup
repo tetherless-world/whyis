@@ -61,10 +61,9 @@
 </template>
 <style lang="scss" src="../../assets/css/main.scss"></style>
 <script>
-    
+    import Vue from 'vue'
 
-    export default {
-  name: 'chart-intro',
+    export default Vue.component('tip-intro', {
         props: ['screen']
-    }
+    })
 </script>

@@ -97,8 +97,7 @@ import Vue from "vue";
 import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
-export default {
-  name: 'add-type',
+export default Vue.component('add-type', {
     props: ['uri', 'hideButton'],
     data: function() {
         return {
@@ -187,7 +186,7 @@ export default {
                 if (processedChips[key]["node"]){
                     processedChips[key] = processedChips[key]["node"];
                 }
-            }
+            });
             return processedChips
         },
         // Formats the dropdown menu. Runs only while the menu is open
@@ -214,7 +213,7 @@ export default {
                 `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
             ]).catch((err) => {
                 throw(err)
-            }
+            })
             combinedList = owlClass.data.concat(rdfsClass.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
@@ -226,10 +225,10 @@ export default {
             let groupedDictionary = original.reduce(function(grouped, index) {
                 grouped[index[key]] = grouped[index[key]] || index;
                 return grouped;
-            }, {}
+            }, {});
             var values = Object.keys(groupedDictionary).map(function(key) {
                 return groupedDictionary[key]
-            }
+            })
             return values
         },
     },
@@ -240,6 +239,6 @@ export default {
             this.active=true;
         }
     }
-}
+});
 
 </script>

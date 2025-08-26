@@ -109,7 +109,7 @@ export async function loadSparqlTemplates() {
 export const TextSegmentType = Object.freeze({
   VAR: "var",
   TEXT: "text"
-});
+}
 
 /**
  * Enumeration of types of query parameter option values.
@@ -194,5 +194,5 @@ function parseDisplayText(displayText) {
       };
     }
     return displaySegment;
-  });
+  }
 }
