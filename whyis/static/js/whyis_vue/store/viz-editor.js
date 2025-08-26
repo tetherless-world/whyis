@@ -1,48 +1,45 @@
+import { defineStore } from 'pinia'
 import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from '../utilities/vega-chart'
 
-const state = () => getDefaultChart()
-
-const actions = {
-  resetChart({commit}) {
-    commit('setChart', getDefaultChart())
+export const useVizEditorStore = defineStore('vizEditor', {
+  state: () => getDefaultChart(),
+  
+  getters: {
+    chart: (state) => state
   },
-  async loadChart({commit}, uri) {
-    const chart = await loadChart(uri)
-    commit('setChart', chart)
+  
+  actions: {
+    resetChart() {
+      Object.assign(this, getDefaultChart())
+    },
+    
+    async loadChart(uri) {
+      const chart = await loadChart(uri)
+      Object.assign(this, chart)
+    },
+    
+    setBaseSpec(baseSpec) {
+      this.baseSpec = baseSpec
+    },
+    
+    setQuery(query) {
+      this.query = query
+    },
+    
+    setTitle(title) {
+      this.title = title
+    },
+    
+    setDescription(description) {
+      this.description = description
+    },
+    
+    setDepiction(depiction) {
+      this.depiction = depiction
+    },
+    
+    setChart(chart) {
+      Object.assign(this, chart)
+    }
   }
-}
-
-const getters = {
-  chart(state) {
-    return state
-  }
-}
-
-const mutations = {
-  setBaseSpec(state, baseSpec) {
-    state.baseSpec = baseSpec
-  },
-  setQuery(state, query) {
-    state.query = query
-  },
-  setTitle(state, title) {
-    state.title = title
-  },
-  setDescription(state, description) {
-    state.description = description
-  },
-  setDepiction(state, depiction) {
-    state.depiction = depiction
-  },
-  setChart(state, chart) {
-    Object.assign(state, chart)
-  },
-}
-
-export default {
-  namespaced: true,
-  state,
-  getters,
-  actions,
-  mutations,
-}
+})

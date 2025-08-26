@@ -1,3 +1,2 @@
-import Vue from 'vue'
-
-Vue.component('sparql-template-page', () => import('./sparql-template-page.vue'))
+// Component will be registered in the main components index
+export { default as SparqlTemplatePage } from './sparql-template-page.vue'

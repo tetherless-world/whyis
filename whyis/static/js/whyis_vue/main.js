@@ -1,43 +1,21 @@
 //__webpack_public_path__ = ROOT_URL+'static/dist/';
-import Vue from 'vue'
-import * as VueMaterial from 'vue-material'
+import { createApp } from 'vue'
 import axios from 'axios'
 import './modules'
-import './components'
+import { componentsList } from './components'
 
 import {store} from './store'
 import Header from './components/utils/header.vue'
 import Drawer from './components/utils/drawer.vue'
 import "./assets/css/main.scss";
 
+// MDBootstrap
+import 'mdb-vue-ui-kit/css/mdb.min.css'
+
 // import dialogBox from './components/utils/dialog'
 import viewMixin from './mixins/view-mixin'
 
-Vue.use(VueMaterial.default)
-Vue.mixin(viewMixin)
-
-// As per https://github.com/vuematerial/vue-material/issues/2285#issuecomment-1059410143
-// Vue.component('MdSelect', Vue.options.components.MdFile.extend({
-//     methods: {
-//         isInvalidValue: function isInvalidValue () {
-//             return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-//         }
-//     }
-// }))
-
-import { MdField } from 'vue-material/dist/components'
-
-Vue.use(MdField)
-
-Vue.component('MdSelect', Vue.options.components.MdSelect.extend({
-    methods: {
-        isInvalidValue: function isInvalidValue () {
-            return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-        }
-    }
-}))
-
-function createApp() {
+function createWhyisApp() {
     let data = {}
     if (typeof (ATTRIBUTES) !== 'undefined') {
 	data = {
@@ -57,18 +35,26 @@ function createApp() {
 	}
     }
 
-    var app = new Vue({
-	el: '#page',
-	data,
-	store,
-	
+    const app = createApp({
+	data() {
+	    return data
+	},
 	components: {
 	    //    mdAppToolbar: Header,
 	    //    mdAppDrawer: Drawer,
 	    // dialogBox
 	}
     })
+    
+    app.use(store)
+    app.mixin(viewMixin)
+    
+    // Register components
+    componentsList.forEach(({ name, component }) => {
+        app.component(name, component)
+    })
+    
     return app;
 }
 
-export {Vue, axios, createApp}
+export {axios, createWhyisApp}

@@ -1,5 +1,5 @@
-import Vue from 'vue'
 import DataVoyagerPage from './data-voyager-page.vue'
 
-Vue.component('data-voyager', () => import('./data-voyager.vue'))
-Vue.component('data-voyager-page', DataVoyagerPage)
+// Components will be registered in the main components index
+export { default as DataVoyager } from './data-voyager.vue'
+export { DataVoyagerPage }

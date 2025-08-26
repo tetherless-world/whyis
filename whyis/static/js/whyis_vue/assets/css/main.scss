@@ -2,15 +2,11 @@
 @import "screens";
 @import "content";
 
-@import "vue-material/dist/theme/engine"; // Import the theme engine
-
-@include md-register-theme("default", (
-  primary: $primary-color, // The primary color of your brand
-  accent: orangered // The secondary color of your brand
-));
-
-@import "vue-material/dist/theme/all"; // Apply the theme
-
+// Use Bootstrap and custom material design styling instead of vue-material
+$primary-color: #1976d2; // Material Blue
+$primary-color-light: #42a5f5;
+$primary-black: #000000;
+$primary-white: #ffffff;
 
 html {
     font-family: 'Roboto', sans-serif !important;

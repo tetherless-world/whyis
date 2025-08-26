@@ -1,3 +1,2 @@
-import Vue from 'vue';
-
-Vue.component('vega-editor', () => import('./vega-editor.vue'))
+// Component will be registered in the main components index
+export { default as VegaEditor } from './vega-editor.vue'
