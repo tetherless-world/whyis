@@ -1,0 +1,4 @@
+[console_scripts]
+sdd2rdf = sdd2rdf:main
+sdd2setl = sdd2rdf:sdd2setl_main
+sddmarkup = sdd2rdf:sddmarkup_main

@@ -18,7 +18,6 @@
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
-    import Vue from "vue";
     import { Slug } from '../modules'
     import { getViewUrl } from '../utilities/views'
     export default {

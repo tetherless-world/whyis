@@ -105,7 +105,6 @@
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
-import Vue from "vue";
 import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
