@@ -8,11 +8,11 @@ export default class MockApi extends Api {
             resolve(file);
           }, 300)
           : reject();
-        }
+        });
         x.then((value) => {
             //Set data in backend 
             console.log("File contents:", value);
-        }
+        });
         return x;
     }
     getFile() {
@@ -31,6 +31,6 @@ export default class MockApi extends Api {
                     {id:10, name:"Margret Marmajuke", age:"16", gender:"female", height:5, col:"yellow", dob:"31/01/1999"},
                 ]);
             }, 300);
-        }
+        });
     }
 }

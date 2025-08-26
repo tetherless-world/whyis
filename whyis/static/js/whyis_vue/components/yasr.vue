@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import Vue from "vue"
-
 export default {
   name: 'yasr',
     props: {
@@ -33,8 +31,8 @@ export default {
                     key: () => false
                 }
             }
-        }
-        this.setResults(this.results)
+        });
+        this.setResults(this.results);
     },
     watch: {
         results (newVal, oldVal) {

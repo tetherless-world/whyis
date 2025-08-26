@@ -3,9 +3,8 @@
 </template>
 
 <script>
-import Vue from "vue";
-
-export default Vue.component("yasqe", {
+export default {
+  name: "yasqe",
   props: {
     value: {
       type: String,
@@ -48,12 +47,12 @@ export default Vue.component("yasqe", {
         }
       },
       readOnly: this.readOnly
-    }
+    });
     this.yasqe.setValue(this.value);
     this.yasqe.on("changes", () => {
       this.editorValue = yasqeContext.yasqe.getValue();
       yasqeContext.$emit("input", this.editorValue);
-    }
+    });
     this.yasqe.setSize("100%", "100%");
   },
   watch: {
@@ -63,5 +62,5 @@ export default Vue.component("yasqe", {
       }
     }
   }
-}
+};
 </script>

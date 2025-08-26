@@ -40,7 +40,7 @@ var formats =  [
 var format_map = {
 };
 
-formats.forEach(function(f) { format_map[f.name] = f; }
+formats.forEach(function(f) { format_map[f.name] = f; });
 
 export default {
     props: ['active'],

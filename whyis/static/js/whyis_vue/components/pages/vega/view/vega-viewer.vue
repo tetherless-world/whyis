@@ -199,7 +199,7 @@
         return EventServices.$emit("dialoguebox", {status: true, share: true,
         title: "Share Chart",
         message: "Copy the chart link above to share this chart",
-        chart: this.chart.uri}
+        chart: this.chart.uri});
       },
       editChart(){
         return goToView(this.chart.uri, 'edit')
@@ -209,7 +209,7 @@
           return EventServices.$emit("dialoguebox", {status: true, query: true, 
           title: "Chart Query", 
           message: "Copy and rerun query on a sparql endpoint", 
-          chart: this.chart.query}
+          chart: this.chart.query});
         }
       },
       slugify(args){
@@ -223,8 +223,8 @@
             return EventServices.$emit("dialoguebox", {status: true, 
               tableview: sparqlResults, 
               title: "Table View of Chart Data",
-              chart: this.chart.query}
-          }
+              chart: this.chart.query});
+          });
         }
       },
       slugify(args){

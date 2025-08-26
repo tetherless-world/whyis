@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import Vue from "vue";
 import axios from 'axios';
 
 export default {
@@ -33,15 +32,15 @@ export default {
     methods: {
         resolveEntity (query) {
             this.items = axios.get('/',{params:{view:'resolve',term:query+"*"},
-                                 responseType:'json' }
+                                 responseType:'json' })
                 .then(function(response) {
                     var result = response.data;
                     result.forEach(function (x) {
                       x.toLowerCase = () => x.label.toLowerCase();
                       x.toString = () => x.label;
-                    }
+                    });
                     return result;
-                }
+                });
         },
         selectedItemChange(item) {
             window.location.href = '/'+'about?view=view&uri='+window.encodeURIComponent(item.node);

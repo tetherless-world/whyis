@@ -282,7 +282,7 @@ async function saveDistribution(fileList, id){
         '@id': `${lodPrefix}/dataset/${id}/${fileList[x].name.replace(/ /g, '_')}`,
         'http://www.w3.org/2000/01/rdf-schema#label': fileList[x].label,
       }
-    }
+    });
 
 
   // Where to save the distribution
@@ -302,7 +302,7 @@ async function saveDistribution(fileList, id){
       if(distrLDs[x]['http://www.w3.org/2000/01/rdf-schema#label'] != ''){
         postNewNanopub(distrLDs[x])
       }
-  }
+    });
 
 }
 
@@ -336,7 +336,7 @@ async function getDoi(doi){
     headers: {
       'Accept': 'application/json',
     }
-  }
+  });
   return response
 }
 

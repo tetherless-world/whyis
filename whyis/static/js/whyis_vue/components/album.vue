@@ -53,7 +53,7 @@
                                                    limit: this.pageSize,
                                                    offset: this.results.length
                                                  }
-                                               }
+                                               });
                 this.results.push(...result.data)
             },
             async scrollBottom () {

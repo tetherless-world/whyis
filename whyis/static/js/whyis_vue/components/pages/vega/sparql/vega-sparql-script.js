@@ -21,7 +21,7 @@ export default {
           fetchTitlesFromPrefLabel : false
         }
       }
-    }
+    });
   },
   created () {
     if(EventServices.authUser == undefined){

@@ -281,7 +281,7 @@
         this.active = data.status
         this.agent = data.type
         this.makeNew = data
-      }
+      })
     }
   }
 </script>

@@ -271,7 +271,7 @@ export default {
                 `${ROOT_URL}about?term=*${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23ObjectProperty`)
             ]).catch((err) => {
                 throw(err)
-            }
+            });
             combinedList = owlObjectProperty.data.concat(rdfsProperty.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
@@ -295,10 +295,10 @@ export default {
             let groupedDictionary = original.reduce(function(grouped, index) {
                 grouped[index[key]] = grouped[index[key]] || index;
                 return grouped;
-            }, {}
+            }, {});
             var values = Object.keys(groupedDictionary).map(function(key) {
                 return groupedDictionary[key]
-            }
+            });
             return values
         },
     },
