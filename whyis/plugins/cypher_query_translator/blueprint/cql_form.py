@@ -2,7 +2,7 @@ import rdflib
 from flask import g, current_app, render_template
 from flask_login import current_user
 
-from whyis.blueprint.cql import cql_blueprint
+from .cql_blueprint import cql_blueprint
 from whyis.decorator import conditional_login_required
 from whyis.namespace import NS
 

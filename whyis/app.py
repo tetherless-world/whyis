@@ -42,7 +42,6 @@ from whyis.blueprint.entity import entity_blueprint
 from whyis.blueprint.nanopub import nanopub_blueprint
 from whyis.blueprint.tableview import tableview_blueprint
 from whyis.blueprint.sparql import sparql_blueprint
-from whyis.blueprint.cql import cql_blueprint
 from whyis.data_extensions import DATA_EXTENSIONS
 from whyis.data_formats import DATA_FORMATS
 from whyis.datastore import WhyisUserDatastore
@@ -893,7 +892,6 @@ class App(Empty):
         # Register blueprints
         self.register_blueprint(nanopub_blueprint)
         self.register_blueprint(sparql_blueprint)
-        self.register_blueprint(cql_blueprint)
         self.register_blueprint(entity_blueprint)
         #self.register_blueprint(tableview_blueprint)
         for p in self.plugins:

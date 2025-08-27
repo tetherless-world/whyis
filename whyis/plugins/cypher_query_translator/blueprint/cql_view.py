@@ -1,8 +1,8 @@
 import requests
 from flask import request, redirect, url_for, current_app, Response, jsonify
-from whyis.blueprint.cql import cql_blueprint
+from .cql_blueprint import cql_blueprint
 from whyis.decorator import conditional_login_required
-from whyis.plugins.cypher_query_translator.plugin import CypherToSparqlTranslator
+from ..plugin import CypherToSparqlTranslator
 from setlr import FileLikeFromIter
 
 

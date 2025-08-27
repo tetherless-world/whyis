@@ -271,6 +271,12 @@ class CypherQueryResolver(CypherQueryListener):
 class CypherQueryPlugin(Plugin):
     """Main plugin class for Cypher query translation."""
     
+    def __init__(self):
+        super().__init__()
+        # Import blueprint here to avoid circular imports
+        from .blueprint.cql_blueprint import cql_blueprint
+        self.blueprint = cql_blueprint
+    
     def init(self):
         """Initialize the plugin with configuration."""
         # Get configuration
@@ -281,35 +287,4 @@ class CypherQueryPlugin(Plugin):
         resolver = CypherQueryResolver(cypher_db, cypher_context)
         self.app.add_listener(resolver)
         
-        # Optionally add a route for Cypher queries
-        if hasattr(self.app, 'add_url_rule'):
-            self.app.add_url_rule('/cypher', 'cypher_query', self._handle_cypher_query, methods=['POST'])
-            
-    def _handle_cypher_query(self):
-        """Handle HTTP requests for Cypher queries."""
-        from flask import request, jsonify
-        
-        try:
-            data = request.get_json()
-            if not data or 'query' not in data:
-                return jsonify({'error': 'Missing query parameter'}), 400
-                
-            cypher_query = data['query']
-            context = data.get('context', {})
-            
-            # Find the resolver - check if listeners attribute exists
-            resolver = None
-            listeners = getattr(self.app, 'listeners', [])
-            for listener in listeners:
-                if isinstance(listener, CypherQueryResolver):
-                    resolver = listener
-                    break
-                    
-            if not resolver:
-                return jsonify({'error': 'Cypher resolver not found'}), 500
-                
-            results = resolver.on_cypher_query(cypher_query, context)
-            return jsonify({'results': results})
-            
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        # The blueprint will be registered automatically by the plugin system
