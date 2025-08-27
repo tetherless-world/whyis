@@ -1,9 +1,9 @@
 {% from "_macros.html" import get_label %}
 {% macro upload_button_modal(resource) %}
 {% if g.current_user and g.current_user.is_authenticated %}
-<md-button md-secondary class="md-icon-button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
-  <md-icon>file_upload</md-icon>
-</md-button>
+<button type="button" class="btn btn-secondary btn-sm" aria-label="Upload File" title="Upload File" data-mdb-toggle="modal" data-mdb-target="#uploadModal">
+  <i class="material-icons">file_upload</i>
+</button>
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
   <div class="modal-dialog" role="document">
     <form class="modal-content" action="" method="post" enctype="multipart/form-data">
@@ -78,26 +78,43 @@
     Upload
 </a>
 
-<md-dialog :md-active.sync="showUploadDialog">
-    <md-dialog-title>Upload File for {{get_label(resource)}}</md-dialog-title>
-    <md-dialog-content>
-        <form id="upload_form" enctype="multipart/form-data" novalidate method="post" action="">
-            <div>
-                <label for="upload_type">Upload Type</label><br/>
-                <input type="radio" name="upload_type" checked value="http://purl.org/net/provenance/ns#File">Single File</md-radio>
-                <input type="radio"  name="upload_type" value="http://purl.org/dc/dcmitype/Collection">Collection</md-radio>
-                <input type="radio"  name="upload_type" value="http://www.w3.org/ns/dcat#Dataset">Dataset</md-radio>
+<!-- Bootstrap Modal for Vue -->
+<div class="modal fade" :class="{ show: showUploadDialog }" tabindex="-1" v-show="showUploadDialog" @click.self="showUploadDialog = false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload File for {{get_label(resource)}}</h5>
+                <button type="button" class="btn-close" @click="showUploadDialog = false" aria-label="Close"></button>
             </div>
-            <md-field>
-                <label>Files</label>
-                <md-file name="file" multiple placeholder="Add files here." />
-            </md-field>
-        </form>
-    </md-dialog-content>
-    <md-dialog-actions>
-        <md-button class="md-primary" @click="showUploadDialog = false">Close</md-button>
-        <md-button class="md-primary" form="upload_form" type="submit" >Upload</md-button>
-    </md-dialog-actions>
-</md-dialog>
+            <div class="modal-body">
+                <form id="upload_form" enctype="multipart/form-data" novalidate method="post" action="">
+                    <div class="mb-3">
+                        <label for="upload_type" class="form-label">Upload Type</label><br/>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="upload_type" checked value="http://purl.org/net/provenance/ns#File" id="file-radio">
+                            <label class="form-check-label" for="file-radio">Single File</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="upload_type" value="http://purl.org/dc/dcmitype/Collection" id="collection-radio">
+                            <label class="form-check-label" for="collection-radio">Collection</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="upload_type" value="http://www.w3.org/ns/dcat#Dataset" id="dataset-radio">
+                            <label class="form-check-label" for="dataset-radio">Dataset</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file-input" class="form-label">Files</label>
+                        <input type="file" class="form-control" name="file" multiple id="file-input" placeholder="Add files here.">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="showUploadDialog = false">Close</button>
+                <button type="submit" class="btn btn-primary" form="upload_form">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endmacro %}
