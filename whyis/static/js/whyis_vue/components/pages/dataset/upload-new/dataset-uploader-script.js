@@ -1,4 +1,4 @@
-import uuidv4 from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 import { EventServices } from '../../../../modules';
 import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "../../../../utilities/dataset-upload";
 import lookupOrcid from "../../../../utilities/orcid-lookup";

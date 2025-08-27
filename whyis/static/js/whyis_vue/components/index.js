@@ -36,10 +36,10 @@ export const componentsList = [
   { name: 'vega-editor', component: () => import('./pages/vega/editor/vega-editor.vue') },
   { name: 'vega-gallery', component: () => import('./pages/vega/gallery/vega-gallery.vue') },
   { name: 'vega-sparql', component: () => import('./pages/vega/sparql/vega-sparql.vue') },
-  { name: 'data-voyager', component: () => import('./pages/vega/data-voyager/data-voyager.vue') },
-  { name: 'data-voyager-page', component: () => import('./pages/vega/data-voyager/data-voyager-page.vue') },
+//  { name: 'data-voyager', component: () => import('./pages/vega/data-voyager/data-voyager.vue') },
+//  { name: 'data-voyager-page', component: () => import('./pages/vega/data-voyager/data-voyager-page.vue') },
   { name: 'vega-viewer', component: () => import('./pages/vega/view/vega-viewer.vue') },
   { name: 'dataset-uploader', component: () => import('./pages/dataset/upload-new/dataset-uploader.vue') },
-  { name: 'sparql-template-page', component: () => import('./pages/sparql-templates/sparql-template-page.vue') }
+//  { name: 'sparql-template-page', component: () => import('./pages/sparql-templates/sparql-template-page.vue') }
 ]
 

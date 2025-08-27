@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/theme/default.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lib/bootstrap.min.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/style.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/whyis.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lib/bootstrap-theme.min.css')}}">
 
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -204,8 +204,8 @@
 {% block scripts %}{% endblock %}
 
 <script type="module">
-import {Vue, axios, createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
-var app = createApp();  
+  import {app, axios} from '{{ url_for('static', filename='dist/whyis.js')}}'
+  app.mount('body');
 </script>
 
 

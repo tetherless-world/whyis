@@ -1,8 +1,9 @@
 #Node install files
 node_modules/
 
-test_env
+test_env/
 venv_test_new/
+venv_test/
 dist/
 
 # Emacs backup files

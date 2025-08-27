@@ -1,4 +1,4 @@
-import uuidv4 from 'uuid'
+import { v4 as uuidv4 } from 'uuid';
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from './nanopub'
 import axios from 'axios'
