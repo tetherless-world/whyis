@@ -1,20 +1,30 @@
 <template>
-  <md-card class="btn--animated">
-      <md-card-media-cover md-solid @click.native.prevent="navigate(entity) " >
-          <md-card-media md-ratio="4:3" >
-          <img :src="getViewUrl(entity.thumbnail)" :alt="entity.label" v-if="entity.thumbnail">
-          <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" :alt="entity.label" v-else>
-          </md-card-media>
-          <md-card-area class="utility-gridbg">
-              <md-card-header class="utility-show_hide">
-                  <span class="md-subheading">
-                      <strong>{{ entity.label }}</strong>
-                  </span>
-                  <span class="md-body-1">{{ entity.description }}</span>
-              </md-card-header>
-          </md-card-area>
-      </md-card-media-cover>
-  </md-card>
+  <div class="card btn--animated h-100" @click="navigate(entity)" style="cursor: pointer;">
+    <div class="card-img-top-wrapper position-relative overflow-hidden">
+      <img 
+        :src="getViewUrl(entity.thumbnail)" 
+        :alt="entity.label" 
+        class="card-img-top" 
+        style="aspect-ratio: 4/3; object-fit: cover;"
+        v-if="entity.thumbnail"
+      >
+      <img 
+        :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" 
+        :alt="entity.label" 
+        class="card-img-top"
+        style="aspect-ratio: 4/3; object-fit: cover;"
+        v-else
+      >
+      <div class="card-img-overlay d-flex align-items-end p-0">
+        <div class="card-body bg-dark bg-opacity-75 text-white w-100 utility-gridbg utility-show_hide">
+          <h5 class="card-title mb-1">
+            <strong>{{ entity.label }}</strong>
+          </h5>
+          <p class="card-text small mb-0">{{ entity.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
