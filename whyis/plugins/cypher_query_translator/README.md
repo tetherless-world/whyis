@@ -65,6 +65,7 @@ This gets translated to SPARQL with reification statements for complex property 
 
 ## HTTP API
 
+### /cypher Endpoint
 The plugin exposes a `/cypher` endpoint for HTTP requests:
 
 ```bash
@@ -77,6 +78,22 @@ curl -X POST http://localhost:5000/cypher \
       "name": "http://schema.org/name"
     }
   }'
+```
+
+### /cql Blueprint
+A full RESTful CQL blueprint is available at `/cql` that provides:
+- Web interface at `/cql.html` 
+- Translation-only mode with `translate-only` parameter
+- Same functionality as `/sparql` but for CQL queries
+
+```bash
+# Execute CQL query
+curl -X POST http://localhost:5000/cql \
+  -d "query=MATCH (p:Person) RETURN p"
+
+# Get SPARQL translation only
+curl -X POST http://localhost:5000/cql \
+  -d "query=MATCH (p:Person) RETURN p&translate-only=true"
 ```
 
 ## Integration
