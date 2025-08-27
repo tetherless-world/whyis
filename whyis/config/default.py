@@ -88,6 +88,19 @@ class Config:
 
     PLUGINENGINE_NAMESPACE = "whyis"
     PLUGINENGINE_PLUGINS = ['whyis_sparql_entity_resolver']
+    
+    # Cypher Query Translator Plugin Configuration
+    CYPHER_DB = 'knowledge'
+    CYPHER_JSONLD_CONTEXT = {
+        "Person": "http://schema.org/Person",
+        "Organization": "http://schema.org/Organization", 
+        "name": "http://schema.org/name",
+        "email": "http://schema.org/email",
+        "knows": "http://schema.org/knows",
+        "worksFor": "http://schema.org/worksFor",
+        "foaf": "http://xmlns.com/foaf/0.1/",
+        "schema": "http://schema.org/"
+    }
 
     SECURITY_EMAIL_SENDER = "Name <email@example.com>"
     SECURITY_FLASH_MESSAGES = True

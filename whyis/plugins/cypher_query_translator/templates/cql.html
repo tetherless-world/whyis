@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}CQL Query Interface{% endblock %}
+{% block styles %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CQL Query Interface</title>
+    <link href='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.css' rel='stylesheet' type='text/css'/>
+    <style>
+      .yasgui .endpointText {display:none !important;}
+      .cql-header {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+      }
+      .cql-header h3 {
+        margin-top: 0;
+        color: #007bff;
+      }
+      .translate-only-option {
+        margin: 10px 0;
+      }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="cql-header">
+        <h3>CQL (Cypher Query Language) Interface</h3>
+        <p>Write CQL/Cypher queries that will be automatically translated to SPARQL and executed against the RDF graph.</p>
+        <div class="translate-only-option">
+            <label>
+                <input type="checkbox" id="translateOnly"> Show SPARQL translation only (don't execute)
+            </label>
+        </div>
+    </div>
+    <div id='yasgui'></div>
+    <script src='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.js'></script>
+    <script type="text/javascript">
+      var yasgui = YASGUI(document.getElementById("yasgui"), {
+        yasqe:{
+          sparql:{
+            endpoint:'{{endpoint}}',
+            requestMethod: "POST"
+          }
+        },
+        yasr : {
+          table : {
+            fetchTitlesFromPrefLabel : false
+          }
+        }
+    });
+    
+    // Override the query execution to add translate-only parameter when checked
+    var originalExecuteQuery = yasgui.yasqe.options.sparql.callbacks.beforeSend;
+    yasgui.yasqe.options.sparql.callbacks.beforeSend = function(xhr, settings) {
+        var translateOnly = document.getElementById('translateOnly').checked;
+        if (translateOnly) {
+            // Add translate-only parameter to the request
+            if (settings.type === 'POST') {
+                if (settings.data) {
+                    settings.data += '&translate-only=true';
+                } else {
+                    settings.data = 'translate-only=true';
+                }
+            } else {
+                // For GET requests, add to URL
+                var url = settings.url;
+                var separator = url.indexOf('?') > -1 ? '&' : '?';
+                settings.url = url + separator + 'translate-only=true';
+            }
+        }
+        
+        if (originalExecuteQuery) {
+            return originalExecuteQuery(xhr, settings);
+        }
+    };
+    
+    // Set default query to demonstrate CQL syntax
+    yasgui.yasqe.setValue(`// Example CQL queries:
+// Find all persons
+MATCH (p:Person) RETURN p
+
+// Find person by name
+MATCH (p:Person) WHERE p.name = 'Alice' RETURN p.name, p.email
+
+// Find relationships
+MATCH (a:Person)-[:KNOWS]->(b:Person) RETURN a.name, b.name`);
+    </script>
+
+{% endblock %}

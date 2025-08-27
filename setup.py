@@ -231,7 +231,8 @@ be managed and used.''',
         ],
         'whyis': [
          'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin',
-         'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
+         'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin',
+         'whyis_cypher_query_translator = whyis.plugins.cypher_query_translator:CypherQueryPlugin'
         ]
     },
     classifiers=[
