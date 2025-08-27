@@ -57,7 +57,7 @@
 
   </head>
 <body>
-  <div >
+  <div id="app" >
     <div id="page" v-cloak>
 {% block body %}
       <upload-knowledge :active.sync="nav.showAddKnowledgeMenu"></upload-knowledge>
@@ -209,11 +209,11 @@
 
 {% block scripts %}{% endblock %}
 
+
 <script type="module">
   import {app, axios} from '{{ url_for('static', filename='dist/whyis.js')}}'
-  app.mount('body');
+  app.mount('#app');
 </script>
-
 
 </body>
 </html>
