@@ -1,27 +1,33 @@
 <template>
-  <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-    <div style="margin:2em">
-      <md-dialog-title>Upload Knowledge</md-dialog-title>
-      <md-field>
-        <label>RDF File</label>
-        <md-file v-model="file.name" @md-change="handleFileUpload($event)" placeholder="Upload Knowledge in RDF" />
-      </md-field>
-      <md-field>
-        <label>Format</label>
-        <md-select :required="true" v-model="format" name="format" id="format">
-          <md-option v-for="f in formats" :value="f.name">{{f.name}}</md-option>
-        </md-select>
-      </md-field>
-      <md-dialog-actions>
-        <md-button @click.prevent="onCancel" class="md-primary">
-          Cancel
-        </md-button>
-        <md-button v-on:click="onSubmit()" class="md-primary">
-          Add
-        </md-button>
-      </md-dialog-actions>
+  <!-- Bootstrap Modal for Vue 3 -->
+  <div class="modal fade" :class="{ show: active }" tabindex="-1" v-show="active" @click.self="resetDialogBox()">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload Knowledge</h5>
+          <button type="button" class="btn-close" @click="resetDialogBox()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="rdf-file" class="form-label">RDF File</label>
+            <input type="file" class="form-control" @change="handleFileUpload($event)" placeholder="Upload Knowledge in RDF" id="rdf-file">
+            <div class="form-text">{{ file.name }}</div>
+          </div>
+          <div class="mb-3">
+            <label for="format-select" class="form-label">Format</label>
+            <select class="form-select" v-model="format" name="format" id="format-select" required>
+              <option value="" disabled>Select format</option>
+              <option v-for="f in formats" :key="f.name" :value="f.name">{{f.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="onCancel">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="onSubmit()">Add</button>
+        </div>
+      </div>
     </div>
-  </md-dialog>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
@@ -42,7 +48,9 @@ var format_map = {
 formats.forEach(function(f) { format_map[f.name] = f; });
 
 export default {
+    name: 'upload-knowledge',
     props: ['active'],
+    emits: ['update:active'],
     data: function() {
         return {
             formats: formats,
@@ -58,10 +66,9 @@ export default {
     methods: {
         // Create dialog boxes
         showDialogBox () {
-            this.active=true;
+            this.$emit('update:active', true);
         },
         resetDialogBox(){
-            this.active = false;
             this.$emit('update:active', false);
         },
         onCancel() {
@@ -74,7 +81,8 @@ export default {
         },
         handleFileUpload(event) {
             console.log(event);
-            this.fileobj = event[0];
+            this.fileobj = event.target.files[0];
+            this.file.name = this.fileobj ? this.fileobj.name : '';
         },
         async save() {
             let format = this.format;

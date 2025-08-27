@@ -1,22 +1,31 @@
 <template>
-<md-autocomplete
-   class="search"
-   md-input-name="query"
-   :md-options="items"
-   md-layout="box"
-   v-model="selected"
-   @md-changed="resolveEntity"
-   @md-selected="selectedItemChange">
-  <label>Search</label>
-  <template slot="md-autocomplete-item" slot-scope="{item,term}">
-    <span md-term="searchText" md-fuzzy-search="true">{{item.label}}</span>
-    <span v-if="item.label != item.preflabel">(preferred: {{item.preflabel}})</span>
-<!--    <span v-if="item.types.length > 0">
-      (<span v-for="t in item.types">{{t.label}}</span><span ng-if="!$last">, </span>)
-    </span>-->
-  </template>
-  <input type="hidden" name="search" v-model="query"/>
-</md-autocomplete>
+  <div class="search-autocomplete position-relative">
+    <input 
+      type="search" 
+      class="form-control" 
+      placeholder="Search" 
+      name="query"
+      v-model="searchText"
+      @input="resolveEntity"
+      @keydown.enter.prevent="handleEnter"
+      @focus="showDropdown = true"
+      @blur="hideDropdown"
+      autocomplete="off"
+    >
+    <div v-if="showDropdown && items.length > 0" class="dropdown-menu show position-absolute w-100 mt-1" style="z-index: 1050;">
+      <a 
+        v-for="item in items" 
+        :key="item.node"
+        class="dropdown-item d-flex flex-column"
+        href="#"
+        @mousedown.prevent="selectedItemChange(item)"
+      >
+        <span class="fw-bold">{{item.label}}</span>
+        <small v-if="item.label != item.preflabel" class="text-muted">(preferred: {{item.preflabel}})</small>
+      </a>
+    </div>
+    <input type="hidden" name="search" v-model="query"/>
+  </div>
 </template>
 
 <script>
@@ -26,24 +35,63 @@ export default {
   name: 'search-autocomplete',
     data: () => ({
       query: null,
+      searchText: '',
       selected: null,
-      items: []
+      items: [],
+      showDropdown: false
     }),
     methods: {
-        resolveEntity (query) {
-            this.items = axios.get('/',{params:{view:'resolve',term:query+"*"},
-                                 responseType:'json' })
-                .then(function(response) {
-                    var result = response.data;
-                    result.forEach(function (x) {
-                      x.toLowerCase = () => x.label.toLowerCase();
-                      x.toString = () => x.label;
-                    });
-                    return result;
+        async resolveEntity (event) {
+            const query = event.target ? event.target.value : event;
+            this.searchText = query;
+            
+            if (!query || query.length < 2) {
+                this.items = [];
+                this.showDropdown = false;
+                return;
+            }
+            
+            try {
+                const response = await axios.get('/', {
+                    params: { view: 'resolve', term: query + "*" },
+                    responseType: 'json'
                 });
+                
+                let result = response.data;
+                result.forEach(function (x) {
+                    x.toLowerCase = () => x.label.toLowerCase();
+                    x.toString = () => x.label;
+                });
+                
+                this.items = result;
+                this.showDropdown = true;
+            } catch (error) {
+                console.error('Search error:', error);
+                this.items = [];
+                this.showDropdown = false;
+            }
         },
         selectedItemChange(item) {
-            window.location.href = '/'+'about?view=view&uri='+window.encodeURIComponent(item.node);
+            this.searchText = item.label;
+            this.showDropdown = false;
+            window.location.href = '/' + 'about?view=view&uri=' + window.encodeURIComponent(item.node);
+        },
+        handleEnter() {
+            if (this.items.length > 0) {
+                this.selectedItemChange(this.items[0]);
+            } else {
+                // Submit the search form
+                const form = this.$el.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        },
+        hideDropdown() {
+            // Delay hiding to allow click events to fire
+            setTimeout(() => {
+                this.showDropdown = false;
+            }, 150);
         }
     },
     props: ['root_url', 'axios']
