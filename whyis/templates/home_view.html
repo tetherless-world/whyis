@@ -22,44 +22,46 @@
 <div class="row" >
     {{ content(this.description()) }}
 </div>
-<div>
-<p>
+<div class="container">
   {% if app.db | length == 0 %}
     {% if not current_user or current_user.is_anonymous %}
-      <div class="text-center py-5">
-        <div class="mb-4">
-          <i class="material-icons text-primary" style="font-size: 4rem;">account_circle</i>
-        </div>
-        <h3 class="mb-3">Log in or Register to begin</h3>
-        <p class="lead mb-4">Log in or create an account to begin populating your knowledge graph.</p>
-        <div class="d-flex justify-content-center gap-3">
-          <a class="btn btn-primary btn-lg" href="{{url_for('security.login')}}" aria-label="Log in">
-            <i class="material-icons me-2">login</i> Log in
-          </a>
-          <a class="btn btn-primary btn-lg" href="{{url_for('security.register')}}" aria-label="Register">
-            <i class="material-icons me-2">person_add</i> Register
-          </a>
+      <!-- Recreate md-empty-state component for anonymous users -->
+      <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; padding: 2rem;">
+        <div class="text-center">
+          <i class="material-icons text-primary mb-3" style="font-size: 5rem; color: #1976d2;">account_circle</i>
+          <h2 class="mb-3" style="font-weight: 500; color: #424242;">Log in or Register to begin</h2>
+          <p class="lead mb-4 text-muted" style="max-width: 400px;">Log in or create an account to begin populating your knowledge graph.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a class="btn btn-primary btn-lg" href="{{url_for('security.login')}}" aria-label="Log in" style="min-width: 120px;">
+              <i class="material-icons me-2">login</i> Log in
+            </a>
+            <a class="btn btn-primary btn-lg" href="{{url_for('security.register')}}" aria-label="Register" style="min-width: 120px;">
+              <i class="material-icons me-2">person_add</i> Register
+            </a>
+          </div>
         </div>
       </div>
     {% else %}
-      <div class="text-center py-5">
-        <div class="mb-4">
-          <i class="material-icons text-primary" style="font-size: 4rem;">hub</i>
+      <!-- Recreate md-empty-state component for authenticated users -->
+      <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; padding: 2rem;">
+        <div class="text-center">
+          <i class="material-icons text-primary mb-3" style="font-size: 5rem; color: #1976d2;">hub</i>
+          <h2 class="mb-3" style="font-weight: 500; color: #424242;">Add Knowledge</h2>
+          <p class="lead mb-4 text-muted" style="max-width: 400px;">Build your knowledge graph by adding ontologies and RDF.</p>
+          <button @click="nav.showAddKnowledgeMenu=true"
+                  class="btn btn-primary btn-lg"
+                  aria-label="Add Knowledge"
+                  type="button"
+                  style="min-width: 180px;">
+            <i class="material-icons me-2">publish</i>
+            Add Knowledge
+          </button>
         </div>
-        <h3 class="mb-3">Add Knowledge</h3>
-        <p class="lead mb-4">Build your knowledge graph by adding ontologies and RDF.</p>
-        <button @click="nav.showAddKnowledgeMenu=true"
-                class="btn btn-primary btn-lg"
-                aria-label="Add Knowledge"
-                type="button">
-          <i class="material-icons me-2">publish</i>
-          Add Knowledge
-        </button>
       </div>
     {% endif %}
   {% else %}
   <album instancetype="{{this.identifier}}"></album>
   {% endif %}
-</p>
+</div>
 
 {% endblock %}

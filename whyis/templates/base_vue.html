@@ -114,38 +114,38 @@
         </div>
       </nav>
       <main class="container-fluid">
-        <div class="row">
           {% block pageheader %}
-          <div class="col-12">
-            <h1 class="ms-3" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
-              {% if this is defined %}
-              <div class="float-end d-flex align-items-center" role="group">
-                {% block actions %}
-                {% if g.current_user and g.current_user.is_authenticated %}
-                <button type="button" class="btn btn-secondary me-2" @click="nav.showUploadDialog=true" aria-label="Upload File" title="Upload File">
-                  <i class="material-icons">file_upload</i>
-                </button>
-                <a class="btn btn-secondary me-2" href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" aria-label="Edit" title="Edit">
-                  <i class="material-icons">create</i>
-                </a>
+          <div class="row">
+            <div class="col-12">
+              <h1 class="ms-3" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
+                {% if this is defined %}
+                <div class="float-end d-flex align-items-center" role="group">
+                  {% block actions %}
+                  {% if g.current_user and g.current_user.is_authenticated %}
+                  <button type="button" class="btn btn-secondary me-2" @click="nav.showUploadDialog=true" aria-label="Upload File" title="Upload File">
+                    <i class="material-icons">file_upload</i>
+                  </button>
+                  <a class="btn btn-secondary me-2" href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" aria-label="Edit" title="Edit">
+                    <i class="material-icons">create</i>
+                  </a>
+                  {% endif %}
+                  {% if this.description().value(ns.whyis.hasFileID) %}
+                  <a class="btn btn-secondary me-2" href="{{url_for('entity.view',uri=this.identifier)}}" aria-label="Download File" title="Download File">
+                    <i class="material-icons">file_download</i>
+                  </a>
+                  {% endif %}
+                  {% if not this.identifier.startswith(ns.local) %}
+                  <a class="btn btn-secondary" href="{{this.identifier}}" aria-label="Visit Page" title="Visit Page">
+                    <i class="material-icons">launch</i>
+                  </a>
+                  {% endif %}
+                  {% endblock %}
+                </div>
                 {% endif %}
-                {% if this.description().value(ns.whyis.hasFileID) %}
-                <a class="btn btn-secondary me-2" href="{{url_for('entity.view',uri=this.identifier)}}" aria-label="Download File" title="Download File">
-                  <i class="material-icons">file_download</i>
-                </a>
-                {% endif %}
-                {% if not this.identifier.startswith(ns.local) %}
-                <a class="btn btn-secondary" href="{{this.identifier}}" aria-label="Visit Page" title="Visit Page">
-                  <i class="material-icons">launch</i>
-                </a>
-                {% endif %}
-                {% endblock %}
-              </div>
-              {% endif %}
-            </h1>
+              </h1>
+            </div>
           </div>
           {% endblock %}
-      </div>
       {% block content %}
       {% endblock %}
     </main>
