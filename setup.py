@@ -160,7 +160,7 @@ be managed and used.''',
         'celery_once==3.0.1',
         'cookiecutter==1.7.3',
         'email_validator==1.1.3',
-        'eventlet==0.33.0',
+        'eventlet>=0.36.1',
         'dnspython==2.2.1',
         'filedepot==0.10.0',
         # Upgrade to 2.0 when Celery can use click 8.0
@@ -211,7 +211,7 @@ be managed and used.''',
         'flask-testing',
         'unittest-xml-reporting==2.5.1'
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.7,<3.13',
     include_package_data=True,
     # package_data=package_data_with_recursive_dirs({
     #     'whyis.fuseki': ['jars/*.jar','webapp'],
