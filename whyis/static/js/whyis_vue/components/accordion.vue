@@ -1,27 +1,27 @@
 <template>
 <div class="accordion">
-  <md-toolbar>
+  <div class="bg-primary text-white p-3 rounded-top">
     <div class="accordion-toolbar-row" @click="toggleOpen">
-      <h3 class="md-title">{{title}}</h3>
+      <h3 class="h5 mb-0">{{title}}</h3>
       <div class="accordion-icons">
-        <md-icon v-show="!open">
+        <i class="material-icons" v-show="!open">
           expand_more
-        </md-icon>
-        <md-icon v-show="open">
+        </i>
+        <i class="material-icons" v-show="open">
           expand_less
-        </md-icon>
+        </i>
       </div>
     </div>
-  </md-toolbar>
-  <div class="accordion-content" v-if="open">
+  </div>
+  <div class="accordion-content border border-top-0 rounded-bottom p-3" v-if="open">
     <slot></slot>
   </div>
 </div>
 </template>
 <script>
-import Vue from "vue";
 
-export default Vue.component('accordion', {
+export default {
+  name: 'accordion',
   props: {
     startOpen: {
       type: Boolean,
@@ -42,7 +42,7 @@ export default Vue.component('accordion', {
     }
   }
 
-})
+}
 </script>
 
 <style scoped>
@@ -57,7 +57,7 @@ export default Vue.component('accordion', {
   justify-content: space-between;
   align-items: center;
 }
-.accordion .md-toolbar:hover {
+.bg-primary:hover {
   cursor: pointer;
 }
 </style>

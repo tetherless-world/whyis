@@ -3,9 +3,8 @@
 </template>
 
 <script>
-import Vue from "vue";
-
-export default Vue.component("yasqe", {
+export default {
+  name: "yasqe",
   props: {
     value: {
       type: String,
@@ -63,5 +62,5 @@ export default Vue.component("yasqe", {
       }
     }
   }
-});
+};
 </script>

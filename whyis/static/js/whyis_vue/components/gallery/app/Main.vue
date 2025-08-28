@@ -26,10 +26,11 @@
 </template>
 <style lang="scss" src="../../../assets/css/main.scss"></style>
 <script>
-  import Vue from 'vue'
+  
   import EventServices from '../../../modules/events/event-services'
   import vizGrid from './components/Vizgrid.vue'
-  export default Vue.component('viz-gallery', {
+  export default {
+  name: 'Main',
     props:{
       instancetype: {
         type: String,
@@ -52,7 +53,7 @@
     },
     methods: {
       showFilterBox () {
-        // EventServices.$emit('open-filter-box', {open: true, type: "filter"});
+        // EventServices.$emit('open-filter-box', {open: true, type: "filter"}
         // return this.filter = true
       },
       cancelFilter(){
@@ -64,5 +65,5 @@
       .$on('close-filter-box', (data) => this.filter = data)
       .$on('isauthenticated', (data) => this.authenticated = data)
     }
-  })
+  }
 </script>

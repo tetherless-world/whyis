@@ -1,7 +1,8 @@
-import Vue from 'vue'
+
 import { EventServices } from '../../../../modules'
 
-export default Vue.component('vega-sparql', {
+export default {
+  name: 'vega-sparql-script.js',
   data() {
     return {
       loading: false,
@@ -27,4 +28,4 @@ export default Vue.component('vega-sparql', {
       return EventServices.navTo('view', true)
     }
   }
-})
+}

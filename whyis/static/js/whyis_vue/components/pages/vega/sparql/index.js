@@ -1,4 +1,3 @@
-import Vue from 'vue';
-
-Vue.component('vega-sparql', () => import('./vega-sparql.vue'))
+// Component will be registered in the main components index
+export { default as VegaSparql } from './vega-sparql.vue'
 

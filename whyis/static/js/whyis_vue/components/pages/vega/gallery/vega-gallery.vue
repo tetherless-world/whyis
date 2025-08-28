@@ -34,10 +34,10 @@
 </template>
 <style lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
-  import Vue from 'vue';
   import vizGrid from '../../../gallery/app/components/Vizgrid.vue';
   import { EventServices } from '../../../../modules';
-  export default Vue.component('vega-gallery', {
+  export default {
+    name: 'vega-gallery',
     data() {
       return {
         filter: false,
@@ -76,5 +76,5 @@
       .$on('isauthenticated', (data) => this.authenticated = data)
       .$on('gotexistingbookmarks', data => this.existingBkmk = data)
     }
-  })
+  }
 </script>

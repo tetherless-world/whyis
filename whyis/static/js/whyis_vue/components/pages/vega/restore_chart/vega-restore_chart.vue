@@ -111,16 +111,17 @@
 </style>
 <style lang="scss" src="../../../../assets/css/main.scss"></style>
 <script>
-  import Vue from 'vue'
+  
   import { EventServices, Slug } from '../../../../modules'
   import { saveChart, getDefaultChart, } from '../../../../utilities/vega-chart'
   import { goToView } from '../../../../utilities/views'
 
   String.prototype.toProperCase = function () {
-    return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();}
   };
 
-  export default Vue.component('vega-restore', {
+  export default {
+  name: 'vega-restore_chart',
     data() {
       return {
         loading: false,
@@ -158,7 +159,7 @@
         return EventServices.navTo('view', 'http://semanticscience.org/resource/Chart')
       },
       restoreAllChart(){
-        return EventServices.$emit("dialoguebox", {status: true, diag:true, reset: true, title: "Reset Chart DB", message: `Are you sure you want to reset the chart database?`})
+        return EventServices.$emit("dialoguebox", {status: true, diag:true, reset: true, title: "Reset Chart DB", message: `Are you sure you want to reset the chart database?`}
       },
       searchOnTable () {
         this.searched = this.searchByName(this.newResults, this.search)
@@ -218,7 +219,7 @@
           sessionStorage.setItem("chart", JSON.stringify(args));
           return EventServices.navTo("restore", 'http://semanticscience.org/resource/Chart')
         }
-        EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'});
+        EventServices.$emit('snacks', {status:true, message: 'No Browser Support!!!'}
       },
       async disableChart(args){
         this.loading = true;
@@ -228,12 +229,12 @@
             if(el.name == args.name){
               el.enabled = false
             }
-          })
+          }
           this.actionManager('disable')
-          EventServices.$emit('snacks', {status:true, message: 'Chart Disabled Successfully'});
+          EventServices.$emit('snacks', {status:true, message: 'Chart Disabled Successfully'}
           this.loading = false;
         } else {
-          EventServices.$emit('snacks', {status:true, message: 'Error disabling chart'});
+          EventServices.$emit('snacks', {status:true, message: 'Error disabling chart'}
           this.loading = false;
         }
       },
@@ -245,12 +246,12 @@
             if(el.name == args.name){
               el.enabled = true
             }
-          })
+          }
           this.actionManager('enable')
-          EventServices.$emit('snacks', {status:true, message: 'Chart Enabled Successfully'});
+          EventServices.$emit('snacks', {status:true, message: 'Chart Enabled Successfully'}
           this.loading = false;
         } else {
-          EventServices.$emit('snacks', {status:true, message: 'Error enabling chart'});
+          EventServices.$emit('snacks', {status:true, message: 'Error enabling chart'}
           this.loading = false;
         }
       },
@@ -274,8 +275,8 @@
       .$on("reloadrestored", (data) => {
         this.results = EventServices.chartListings;
         this.filterResults()
-      })
+      }
       this.results = EventServices.chartListings;
     }
-  })
+  }
 </script>

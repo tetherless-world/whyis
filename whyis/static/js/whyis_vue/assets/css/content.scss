@@ -1,3 +1,6 @@
+@use "variables" as *;
+@use "screens" as *;
+
 @keyframes moveInBottom {
     0% {
         opacity: 0;

@@ -41,12 +41,12 @@
 </template>
 
 <script>
-import Vue from "vue";
 
-export default Vue.component('kg-card', {
+export default {
+  name: 'kg-card',
     data: function() {
         return {};
     },
     props: ['attributes']
-});
+}
 </script>

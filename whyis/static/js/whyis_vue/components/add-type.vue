@@ -93,11 +93,11 @@
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
-import Vue from "vue";
 import axios from 'axios'
 import { postNewNanopub } from '../utilities/nanopub'
 
-export default Vue.component('add-type', {
+export default {
+  name: 'add-type',
     props: ['uri', 'hideButton'],
     data: function() {
         return {
@@ -213,7 +213,7 @@ export default Vue.component('add-type', {
                 `${ROOT_URL}about?term=${query}*&view=resolve&type=http://www.w3.org/2002/07/owl%23Class`)
             ]).catch((err) => {
                 throw(err)
-            })
+            });
             combinedList = owlClass.data.concat(rdfsClass.data)
             .sort((a, b) => (a.score < b.score) ? 1 : -1);
             let grouped = this.groupBy(combinedList, "node")
@@ -228,7 +228,7 @@ export default Vue.component('add-type', {
             }, {});
             var values = Object.keys(groupedDictionary).map(function(key) {
                 return groupedDictionary[key]
-            })
+            });
             return values
         },
     },
@@ -239,6 +239,6 @@ export default Vue.component('add-type', {
             this.active=true;
         }
     }
-});
+}
 
 </script>

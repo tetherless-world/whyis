@@ -1,6 +1,4 @@
-import Vue from 'vue'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import splitPane from 'vue-splitpane'
 import VJsoneditor from 'v-jsoneditor'
 import { load } from 'js-yaml';
 
@@ -10,7 +8,8 @@ import { getDefaultChart, loadChart, saveChart, buildSparqlSpec } from '../../..
 import { getCurrentView } from '../../../../utilities/views'
 import { querySparql } from '../../../../utilities/sparql'
 
-export default Vue.component('vega-editor', {
+export default {
+  name: 'vega-editor',
   props:['instances'],
   data() {
     return {
@@ -42,7 +41,6 @@ export default Vue.component('vega-editor', {
     }
   },
   components: {
-    splitPane,
     VJsoneditor
   },
   methods: {
@@ -205,4 +203,4 @@ export default Vue.component('vega-editor', {
     this.defineAction();
     this.initializeChart();
   }
-})
+}

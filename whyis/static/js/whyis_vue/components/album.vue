@@ -18,9 +18,8 @@
 }
 </style>
 <script>
-    import Vue from "vue";
     import axios from 'axios'
-    export default Vue.component('album', {
+    export default {
         name: "album",
         props:{
           instancetype: {
@@ -53,7 +52,7 @@
                                                    limit: this.pageSize,
                                                    offset: this.results.length
                                                  }
-                                               })
+                                               });
                 this.results.push(...result.data)
             },
             async scrollBottom () {
@@ -73,5 +72,5 @@
         },
         created(){
         }
-    })
+    }
 </script>

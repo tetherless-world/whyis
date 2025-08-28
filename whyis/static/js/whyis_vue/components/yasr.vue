@@ -3,9 +3,8 @@
 </template>
 
 <script>
-import Vue from "vue"
-
-export default Vue.component('yasr', {
+export default {
+  name: 'yasr',
     props: {
         id: {
             type: String,
@@ -32,13 +31,13 @@ export default Vue.component('yasr', {
                     key: () => false
                 }
             }
-        })
-        this.setResults(this.results)
+        });
+        this.setResults(this.results);
     },
     watch: {
         results (newVal, oldVal) {
             this.setResults(newVal)
         }
     }
-})
+}
 </script>

@@ -128,12 +128,12 @@
 </template>
 <style lang="scss" src="../../assets/css/main.scss"></style>
 <script>
-  import Vue from 'vue'
+  
   import EventServices from '../../modules/events/event-services'
   import { processFloatList, resetProcessFloatList } from '../../utilities/dialog-box-adjust'
   import { goToView } from '../../utilities/views'
   import { lookupOrcid } from '../../utilities/orcid-lookup'
-  export default Vue.component('dialogBox', {
+  export default {
     data () {
       return {
         active: false,
@@ -283,5 +283,5 @@
         this.makeNew = data
       })
     }
-  })
+  }
 </script>

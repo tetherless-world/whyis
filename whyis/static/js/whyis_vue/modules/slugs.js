@@ -123,7 +123,7 @@ export default (str) => {
         swaps[swap].forEach(s => {
             str = str.replace(new RegExp(s, "g"), swap);
         })
-    });
+    })
     return str
         .replace(/[^\w!@#$%&*()_+\-=\[\]{};':"\\|,.<>\/? ]/g, "") // remove invalid chars
         .replace(/\s+/g, " ") // collapse whitespace and replace by -

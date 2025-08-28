@@ -5,14 +5,15 @@
 </template>
 
 <script>
-import Vue from 'vue';
-export default Vue.component('columnAddition', {
+
+export default {
+  name: 'columnAddition',
     data(){
         return {
             //isActive: false,
         }
     }
-});
+}
 </script>
 
 <style scoped>

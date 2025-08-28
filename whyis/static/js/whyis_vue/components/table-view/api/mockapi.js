@@ -8,7 +8,7 @@ export default class MockApi extends Api {
             resolve(file);
           }, 300)
           : reject();
-        });   
+        });
         x.then((value) => {
             //Set data in backend 
             console.log("File contents:", value);

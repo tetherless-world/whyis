@@ -9,8 +9,9 @@
   </div>
 </template>
 <script>
-import Vue from 'vue'
-export default Vue.component('Spinner', {
+
+export default {
+  name: 'spinner',
   props: {
     loading: {
       type: Boolean,
@@ -63,7 +64,7 @@ export default Vue.component('Spinner', {
       }
     };
   }
-});
+}
 
 </script>
 <style>

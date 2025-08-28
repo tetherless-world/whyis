@@ -1,4 +1,4 @@
-import uuidv4 from 'uuid'
+import { v4 as uuidv4 } from 'uuid';
 
 import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from './nanopub'
 import axios from 'axios'
@@ -302,7 +302,7 @@ async function saveDistribution(fileList, id){
       if(distrLDs[x]['http://www.w3.org/2000/01/rdf-schema#label'] != ''){
         postNewNanopub(distrLDs[x])
       }
-  });
+    });
 
 }
 

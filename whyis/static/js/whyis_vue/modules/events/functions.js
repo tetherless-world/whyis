@@ -139,7 +139,7 @@ const controller = {
                 return o1.name === o2.chart.name;
               }
             });
-          })
+          });
           await filter.forEach(el => {
             el.bookmark = true;
           })
@@ -174,7 +174,7 @@ const controller = {
           .then(nanopubs => nanopubs.map(nanopub => deleteNanopub(nanopub.np)))
           .then(() => {
             this.getState();
-            return this.$emit('snacks', {status:true, message: "Chart Deleted Successfully!"})
+            return this.$emit('snacks', {status:true, message: "Chart Deleted Successfully!"});
           })
           .catch(err => {
             throw err
@@ -250,7 +250,7 @@ const controller = {
   async tipController(arg) {
     const checkIntroStatus = await JSON.parse(localStorage.getItem('introstatus'));
     if(arg){
-      return this.$emit("dialoguebox", {status: true, intro: true})
+      return this.$emit("dialoguebox", {status: true, intro: true});
     }
 
     if(!checkIntroStatus){

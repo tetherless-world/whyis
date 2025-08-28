@@ -1,46 +1,116 @@
 <template>
   <div>
-    <md-app-toolbar class="md-primary md-large nav-bg">
-        <div class="md-toolbar-row">
-          <md-button class="md-icon-button" @click="toggle">
-            <md-icon>menu</md-icon>
-          </md-button>
-          <span class="md-title nav-title viz-u-mgup-md"> {{ site_name }} <span class="md-body-1 viz-u-display__show">{{ page_title }}</span></span>
-          <div class="md-toolbar-section-end">
-            <div class="nav-header-intro" v-if="authenticated !== undefined">
-              <span class="md-subheading" style="display:inline-block; padding-top:.5rem">Learn</span>
-              <md-button class="md-icon-button" style="margin-left: -.5rem !important;" href="http://tetherless-world.github.io/whyis/" target="_blank">
-                <md-icon>info</md-icon>
-              </md-button>
-            </div>
-            <div v-if="authenticated !== undefined" class="viz-u-display__desktop">
-              <div style="display:inline-block; padding-top:.5rem"><span class="md-subheading">{{ authenticated.name }}</span></div>
-              <md-button class="md-icon-button">
-                <md-avatar>
-                  <img src="/images/default.jpg" alt="Avatar">
-                </md-avatar>
-              </md-button>
-            </div>
-            <a class="md-subheading utility-cursor btn-text btn-text--white utility-margin-right" v-if="authenticated == undefined" :href="registerNav">Sign up</a>
-            <a class="md-subheading utility-cursor btn-text btn-text--white" v-if="authenticated == undefined" :href="loginNav">Login</a>
+    <!-- Bootstrap Navbar with Material Design styling -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <button 
+          class="btn btn-outline-light me-3" 
+          type="button" 
+          @click="toggle"
+          data-mdb-toggle="offcanvas"
+          data-mdb-target="#navigationDrawer"
+        >
+          <i class="material-icons">menu</i>
+        </button>
+        
+        <span class="navbar-brand mb-0 h1">
+          {{ site_name }} 
+          <span class="fs-6 text-light">{{ page_title }}</span>
+        </span>
+        
+        <div class="d-flex align-items-center">
+          <div v-if="authenticated !== undefined" class="me-3">
+            <span class="text-light me-2">Learn</span>
+            <a 
+              class="btn btn-outline-light btn-sm" 
+              href="http://tetherless-world.github.io/whyis/" 
+              target="_blank"
+            >
+              <i class="material-icons">info</i>
+            </a>
+          </div>
+          
+          <div v-if="authenticated !== undefined" class="d-none d-md-flex align-items-center">
+            <span class="text-light me-2">{{ authenticated.name }}</span>
+            <button class="btn btn-link p-0">
+              <img 
+                src="/images/default.jpg" 
+                alt="Avatar" 
+                class="rounded-circle"
+                width="32"
+                height="32"
+              >
+            </button>
+          </div>
+          
+          <a 
+            class="btn btn-outline-light me-2" 
+            v-if="authenticated == undefined" 
+            :href="registerNav"
+          >
+            Sign up
+          </a>
+          <a 
+            class="btn btn-light" 
+            v-if="authenticated == undefined" 
+            :href="loginNav"
+          >
+            Login
+          </a>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Bootstrap Toast for notifications -->
+    <div 
+      class="toast-container position-fixed top-0 end-0 p-3"
+      style="z-index: 11"
+    >
+      <div 
+        id="loginToast"
+        class="toast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        :class="{ show: showSnackbar }"
+        :data-mdb-autohide="!isInfinity"
+        :data-mdb-delay="duration"
+      >
+        <div class="toast-header">
+          <strong class="me-auto">Notification</strong>
+          <button 
+            type="button" 
+            class="btn-close" 
+            @click="showSnackbar = false"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="toast-body">
+          <span v-if="snackMssg == null">You are now logged in!</span>
+          <span v-else>{{ snackMssg }}</span>
+          <div class="mt-2 pt-2 border-top">
+            <button 
+              type="button" 
+              class="btn btn-primary btn-sm" 
+              @click="showSnackbar = false"
+            >
+              <span v-if="snackTip == null">OK, Let's Explore</span>
+              <span v-else>{{ snackTip }}</span>
+            </button>
           </div>
         </div>
-    </md-app-toolbar>
-    <md-snackbar :md-position="position" :md-duration="isInfinity ? Infinity : duration" :md-active.sync="showSnackbar" md-persistent>
-      <span v-if="snackMssg == null">You are now logged in!</span>
-      <span v-else>{{ snackMssg }}</span>
-      <md-button class="md-primary" @click="showSnackbar = false" v-if="snackTip == null">OK, Let's Explore</md-button>
-      <md-button class="md-primary" @click="showSnackbar = false" v-else>{{ snackTip }}</md-button>
-    </md-snackbar>
+      </div>
+    </div>
   </div>
 </template>
 
 <style lang="scss" src="../../assets/css/main.scss"></style>
 
 <script>
-import Vue from 'vue';
 import EventServices from '../../modules/events/event-services';
-export default Vue.component('Header', {
+
+export default {
+  name: 'Header',
   props: ['site_name', 'page_title', 'registerNav', 'loginNav'],
   data(){
     return {
@@ -86,5 +156,5 @@ export default Vue.component('Header', {
     })
     .$on('isauthenticated', data => this.authenticated = data)
   }
-})
+}
 </script>

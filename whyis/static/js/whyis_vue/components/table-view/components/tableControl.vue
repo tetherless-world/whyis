@@ -1,22 +1,18 @@
 <template>
   <div>
-      <md-button @click="$emit('apiPost')">Post File</md-button>
-      <md-button @click="$emit('apiGet')">Get File</md-button>
-      <md-button @click="$emit('createCol')" disabled>Add Column</md-button>
-      <md-button @click="$emit('createRow')" disabled>Add Row</md-button>
+      <button class="btn btn-primary me-2" @click="$emit('apiPost')">Post File</button>
+      <button class="btn btn-secondary me-2" @click="$emit('apiGet')">Get File</button>
+      <button class="btn btn-outline-secondary me-2" @click="$emit('createCol')" disabled>Add Column</button>
+      <button class="btn btn-outline-secondary" @click="$emit('createRow')" disabled>Add Row</button>
   </div>
 </template>
 
 <script>
-import Vue from 'vue';
-import { MdButton } from 'vue-material/dist/components';
-import 'vue-material/dist/vue-material.min.css'
-import 'vue-material/dist/theme/default.css'
-
-export default Vue.component('tableControl', {
+export default {
+  name: 'tableControl',
   props: {
     method: { type: Function },
   },
-});
-
+  emits: ['apiPost', 'apiGet', 'createCol', 'createRow']
+};
 </script>

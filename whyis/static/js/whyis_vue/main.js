@@ -1,74 +1,123 @@
 //__webpack_public_path__ = ROOT_URL+'static/dist/';
-import Vue from 'vue'
-import * as VueMaterial from 'vue-material'
+import { createApp } from 'vue'
 import axios from 'axios'
 import './modules'
-import './components'
+import { componentsList } from './components'
 
 import {store} from './store'
 import Header from './components/utils/header.vue'
 import Drawer from './components/utils/drawer.vue'
 import "./assets/css/main.scss";
 
+// MDBootstrap
+import 'mdb-vue-ui-kit/css/mdb.min.css'
+
 // import dialogBox from './components/utils/dialog'
 import viewMixin from './mixins/view-mixin'
 
-Vue.use(VueMaterial.default)
-Vue.mixin(viewMixin)
+// core/componentRegistry.js
+class ComponentRegistry {
+  constructor() {
+    this.components = new Map();
+    this.extensions = new Map();
+  }
 
-// As per https://github.com/vuematerial/vue-material/issues/2285#issuecomment-1059410143
-// Vue.component('MdSelect', Vue.options.components.MdFile.extend({
-//     methods: {
-//         isInvalidValue: function isInvalidValue () {
-//             return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-//         }
-//     }
-// }))
-
-import { MdField } from 'vue-material/dist/components'
-
-Vue.use(MdField)
-
-Vue.component('MdSelect', Vue.options.components.MdSelect.extend({
-    methods: {
-        isInvalidValue: function isInvalidValue () {
-            return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-        }
+  registerComponent(name, component, metadata = {}) {
+    this.components.set(name, {
+      component,
+      metadata,
+      timestamp: Date.now()
+    });
+    
+    // Auto-register with Vue if instance exists
+    if (window.vueApp) {
+      window.vueApp.component(name, component);
     }
-}))
+  }
 
-function createApp() {
-    let data = {}
-    if (typeof (ATTRIBUTES) !== 'undefined') {
-	data = {
-	    attributes: ATTRIBUTES,
-	    summary: SUMMARY,
-	    nav: NAVIGATION,
-	    uri: NODE_URI,
-	    description: DESCRIPTION,
-	    user: USER,
-	    node: NODE,
-	    root_url: ROOT_URL,
-	    base_rate: BASE_RATE,
-	    lod_prefix: LOD_PREFIX,
-	    showUploadDialog: false,
-	    window_state: {},
-	    axios: axios,
-	}
-    }
+  getComponent(name) {
+    return this.components.get(name);
+  }
 
-    var app = new Vue({
-	el: '#page',
-	data,
-	store,
-	
-	components: {
-	    //    mdAppToolbar: Header,
-	    //    mdAppDrawer: Drawer,
-	    // dialogBox
-	}
-    })
-    return app;
+  getAllComponents() {
+    return Array.from(this.components.entries());
+  }
 }
 
-export {Vue, axios, createApp}
+// Make globally available
+window.ComponentRegistry = new ComponentRegistry();
+
+class ExtensionLoader {
+  static createExtension(config) {
+    const extension = {
+      name: config.name,
+      version: config.version,
+      components: config.components || {},
+      init: config.init || (() => {}),
+      destroy: config.destroy || (() => {})
+    };
+
+    // Register all components from this extension
+    Object.entries(extension.components).forEach(([name, component]) => {
+      window.ComponentRegistry.registerComponent(name, component, {
+        extension: extension.name,
+        version: extension.version
+      });
+    });
+
+    // Store extension reference
+    window.ComponentRegistry.extensions.set(extension.name, extension);
+    
+    // Initialize extension
+    extension.init();
+    
+    return extension;
+  }
+}
+
+window.ExtensionLoader = ExtensionLoader;
+
+let data = {}
+if (typeof (ATTRIBUTES) !== 'undefined') {
+    data = {
+	attributes: ATTRIBUTES,
+	summary: SUMMARY,
+	nav: NAVIGATION,
+	uri: NODE_URI,
+	description: DESCRIPTION,
+	user: USER,
+	node: NODE,
+	root_url: ROOT_URL,
+	base_rate: BASE_RATE,
+	lod_prefix: LOD_PREFIX,
+	showUploadDialog: false,
+	window_state: {},
+	    axios: axios,
+    }
+}
+
+const app = createApp({
+    data() {
+	return data
+    },
+    components: {
+	//    mdAppToolbar: Header,
+	//    mdAppDrawer: Drawer,
+	// dialogBox
+    }
+})
+
+app.use(store)
+app.mixin(viewMixin)
+    
+// Register components
+componentsList.forEach(({ name, component }) => {
+    app.component(name, component)
+})
+
+// Register any pre-existing components
+window.ComponentRegistry.getAllComponents().forEach(([name, { component }]) => {
+  app.component(name, component);
+});
+
+export {app, axios}

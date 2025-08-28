@@ -22,34 +22,46 @@
 <div class="row" >
     {{ content(this.description()) }}
 </div>
-<div>
-<p>
+<div class="container">
   {% if app.db | length == 0 %}
     {% if not current_user or current_user.is_anonymous %}
-        <md-empty-state
-          md-icon="account_circle"
-          md-label="Log in or Register to begin"
-          md-description="Log in or create an account to begin populating your knowledge graph.">
-          <md-button class="md-raised md-primary" md-raised href="{{url_for('security.login')}}" aria-label="Log in" title=""><md-icon>login</md-icon> Log in</md-button>
-          <md-button class="md-raised md-primary" href="{{url_for('security.register')}}" aria-label="Register" title=""><md-icon>person_add</md-icon> Register</md-button>
-        </md-empty-state>
+      <!-- Recreate md-empty-state component for anonymous users -->
+      <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; padding: 2rem;">
+        <div class="text-center">
+          <i class="material-icons text-primary mb-3" style="font-size: 5rem; color: #1976d2;">account_circle</i>
+          <h2 class="mb-3" style="font-weight: 500; color: #424242;">Log in or Register to begin</h2>
+          <p class="lead mb-4 text-muted" style="max-width: 400px;">Log in or create an account to begin populating your knowledge graph.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a class="btn btn-primary btn-lg" href="{{url_for('security.login')}}" aria-label="Log in" style="min-width: 120px;">
+              <i class="material-icons me-2">login</i> Log in
+            </a>
+            <a class="btn btn-primary btn-lg" href="{{url_for('security.register')}}" aria-label="Register" style="min-width: 120px;">
+              <i class="material-icons me-2">person_add</i> Register
+            </a>
+          </div>
+        </div>
+      </div>
     {% else %}
-      <md-empty-state
-        md-icon="hub"
-        md-label="Add Knowledge"
-        md-description="Build your knowledge graph by adding ontologies and RDF.">
-        <md-button @click="nav.showAddKnowledgeMenu=true"
-                   class="md-raised md-primary"
-                   md-raised aria-label="Add Knowledge"
-                   title="">
-          <md-icon>publish</md-icon>
-          Add Knowledge
-        </md-button>
-      </md-empty-state>
+      <!-- Recreate md-empty-state component for authenticated users -->
+      <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; padding: 2rem;">
+        <div class="text-center">
+          <i class="material-icons text-primary mb-3" style="font-size: 5rem; color: #1976d2;">hub</i>
+          <h2 class="mb-3" style="font-weight: 500; color: #424242;">Add Knowledge</h2>
+          <p class="lead mb-4 text-muted" style="max-width: 400px;">Build your knowledge graph by adding ontologies and RDF.</p>
+          <button @click="nav.showAddKnowledgeMenu=true"
+                  class="btn btn-primary btn-lg"
+                  aria-label="Add Knowledge"
+                  type="button"
+                  style="min-width: 180px;">
+            <i class="material-icons me-2">publish</i>
+            Add Knowledge
+          </button>
+        </div>
+      </div>
     {% endif %}
   {% else %}
   <album instancetype="{{this.identifier}}"></album>
   {% endif %}
-</p>
+</div>
 
 {% endblock %}
