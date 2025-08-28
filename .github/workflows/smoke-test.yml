@@ -1,0 +1,82 @@
+name: Whyis Frontend Smoke Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  frontend-smoke-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: whyis/static/package-lock.json
+    
+    - name: Install and build frontend
+      run: |
+        cd whyis/static
+        npm install
+        npm run build-dev
+    
+    - name: Check for Vue 3 compatibility issues
+      run: |
+        echo "=== Checking for Vue 3 compatibility issues ==="
+        
+        # Check for problematic Vue Material imports that cause [object Promise] issues
+        echo "Checking for critical Vue Material components..."
+        CRITICAL_PROBLEMS=$(find whyis/static/js/whyis_vue/components -name "*.vue" | xargs grep -l "md-dialog\|md-autocomplete" 2>/dev/null || true)
+        if [ -n "$CRITICAL_PROBLEMS" ]; then
+          echo "⚠️  Found files with critical Vue Material components:"
+          echo "$CRITICAL_PROBLEMS"
+          echo "These components are known to cause [object Promise] rendering issues in Vue 3"
+          echo "They should be converted to Bootstrap components"
+          # Don't fail the build for now, just warn
+        else
+          echo "✅ No critical Vue Material components found"
+        fi
+        
+        # Check for deprecated Vue 2 syntax
+        echo "Checking for Vue 2 syntax issues..."
+        VUE2_SYNC=$(find whyis/static/js -name "*.vue" | xargs grep -l "\.sync" 2>/dev/null || true)
+        if [ -n "$VUE2_SYNC" ]; then
+          echo "❌ Found files using deprecated .sync syntax:"
+          echo "$VUE2_SYNC"
+          echo "Should use v-model: syntax for Vue 3"
+          exit 1
+        else
+          echo "✅ No deprecated .sync syntax found"
+        fi
+        
+        # Check build output for errors
+        echo "Checking build output..."
+        if [ -f "whyis/static/dist/whyis.js" ]; then
+          echo "✅ Main JavaScript bundle created successfully"
+        else
+          echo "❌ Main JavaScript bundle not found"
+          exit 1
+        fi
+        
+        if [ -f "whyis/static/dist/whyis.css" ]; then
+          echo "✅ Main CSS bundle created successfully"
+        else
+          echo "❌ Main CSS bundle not found"
+          exit 1
+        fi
+        
+        echo "✅ Frontend smoke test passed!"
+    
+    - name: Upload build artifacts for inspection
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build-artifacts
+        path: whyis/static/dist/
+        retention-days: 7
