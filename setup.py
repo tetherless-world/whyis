@@ -211,7 +211,7 @@ be managed and used.''',
         'flask-testing',
         'unittest-xml-reporting==2.5.1'
     ],
-    python_requires='>=3.7,<3.13',
+    python_requires='>=3.7',
     include_package_data=True,
     # package_data=package_data_with_recursive_dirs({
     #     'whyis.fuseki': ['jars/*.jar','webapp'],
