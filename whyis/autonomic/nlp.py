@@ -138,7 +138,7 @@ NP: {<DT|PP\$>?<JJ>*<NN>+}   # chunk determiner/possessive, adjectives and noun
             sentences = [nltk.pos_tag(sent) for sent in sentences]
             sentences = [self.cp.parse(s) for s in sentences]
             nps = [subtree for s in sentences for subtree in s.subtrees() if subtree.label() == "NP"]
-            mentions = [re.sub("\.$","",' '.join([word for word, pos in np.leaves()]).lower()) for np in nps]
+            mentions = [re.sub(r"\.$","",' '.join([word for word, pos in np.leaves()]).lower()) for np in nps]
             all_mentions.extend(mentions)
             for mention in mentions:
                 term_vector[mention] += 1
