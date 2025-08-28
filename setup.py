@@ -160,7 +160,7 @@ be managed and used.''',
         'celery_once==3.0.1',
         'cookiecutter==1.7.3',
         'email_validator==1.1.3',
-        'eventlet>=0.36.1',
+        'eventlet>=0.35.2',
         'dnspython==2.2.1',
         'filedepot==0.10.0',
         # Upgrade to 2.0 when Celery can use click 8.0
