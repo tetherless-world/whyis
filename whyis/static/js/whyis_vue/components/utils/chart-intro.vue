@@ -61,9 +61,27 @@
 </template>
 <style lang="scss" src="../../assets/css/main.scss"></style>
 <script>
-    import Vue from 'vue'
+/**
+ * Chart introduction component that displays different screens of onboarding content.
+ * Shows tutorial information about chart interactions and creation capabilities.
+ * 
+ * @component TipIntro
+ * @example
+ * <tip-intro :screen="currentScreen" />
+ */
+import Vue from 'vue'
 
-    export default Vue.component('tip-intro', {
-        props: ['screen']
-    })
+export default Vue.component('tip-intro', {
+    props: {
+        /**
+         * Current screen number to display (1-4)
+         * Controls which introduction content is shown
+         * @type {Number|String}
+         */
+        screen: {
+            type: [Number, String],
+            required: true
+        }
+    }
+})
 </script>
