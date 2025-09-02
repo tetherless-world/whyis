@@ -126,6 +126,22 @@ jobs:
           command: .circleci/lint-py.sh
       - store_artifacts:
           path: lint-results
+  test-js:
+    working_directory: /whyis
+    docker:
+      - image: node:18-bullseye
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd static && npm install
+      - run:
+          name: Run JavaScript tests
+          command: .circleci/test-js.sh
+      - store_artifacts:
+          path: test-results
+      - store_test_results:
+          path: test-results
 
 workflows:
   version: 2
@@ -133,6 +149,7 @@ workflows:
     jobs:
       - lint-js
       - lint-py
+      - test-js
       - build_test_and_deploy_monolithic_docker_image
       - build_and_deploy_split_docker_image:
           requires:

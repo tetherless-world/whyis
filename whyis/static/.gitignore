@@ -4,3 +4,7 @@ fonts/
 package-lock.json
 css/whyis_vue_bundle.css*
 dist/
+
+# Test output
+coverage/
+test-results/
