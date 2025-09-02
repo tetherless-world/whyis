@@ -1,3 +1,18 @@
+/**
+ * String slug utility for converting text to URL-safe identifiers.
+ * Converts Unicode characters to ASCII equivalents and removes invalid characters.
+ * 
+ * @module slugs
+ * @param {string} str - The input string to convert to a slug
+ * @returns {string} A cleaned, URL-safe version of the input string
+ * 
+ * @example
+ * import Slug from './slugs';
+ * 
+ * Slug('Hello World!'); // returns 'Hello World!'
+ * Slug('Café & Restaurant'); // returns 'Cafe & Restaurant'
+ * Slug('François Müller'); // returns 'Francois Muller'
+ */
 export default (str) => {
     str = String(str).toString();
     str = str.replace(/^\s+|\s+$/g, ""); // trim

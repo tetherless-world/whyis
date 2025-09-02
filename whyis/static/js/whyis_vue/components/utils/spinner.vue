@@ -9,29 +9,67 @@
   </div>
 </template>
 <script>
+/**
+ * Animated loading spinner component with customizable appearance.
+ * Displays three bouncing dots with configurable colors, sizes, and text.
+ * 
+ * @component Spinner
+ * @example
+ * <Spinner :loading="isLoading" color="#ff0000" size="20px" text="Loading data..." />
+ */
 import Vue from 'vue'
 export default Vue.component('Spinner', {
   props: {
+    /**
+     * Controls spinner visibility
+     * @type {Boolean}
+     * @default true
+     */
     loading: {
       type: Boolean,
       default: true
     },
+    /**
+     * Color of the spinning dots
+     * @type {String}
+     * @default "#08233c"
+     */
     color: {
       type: String,
       default: "#08233c"
     },
+    /**
+     * Size of each spinning dot
+     * @type {String}
+     * @default "15px"
+     */
     size: {
       type: String,
       default: "15px"
     },
+    /**
+     * Margin between spinning dots
+     * @type {String}
+     * @default "2px"
+     */
     margin: {
       type: String,
       default: "2px"
     },
+    /**
+     * Border radius of the dots (100% for circles)
+     * @type {String}
+     * @default "100%"
+     */
     radius: {
       type: String,
       default: "100%"
     },
+    /**
+     * Optional text to display above the spinner
+     * @type {String}
+     * @default null
+     */
     text: {
       type: String,
       default: null
