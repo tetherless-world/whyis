@@ -1,4 +1,11 @@
 
+/**
+ * Vega-Lite chart management utilities for creating, saving, and loading interactive visualizations.
+ * Provides functions for managing chart specifications, SPARQL data integration, and chart persistence.
+ * 
+ * @module vega-chart
+ */
+
 import { literal, namedNode } from '@rdfjs/data-model'
 import { fromRdf } from 'rdf-literal'
 import axios from 'axios'
@@ -57,6 +64,10 @@ const chartFieldPredicates = {
 const chartPrefix = 'viz'
 const chartIdLen = 16
 
+/**
+ * Generates a unique chart identifier using cryptographic random values
+ * @returns {string} A unique chart URI with the format lodPrefix/viz/randomId
+ */
 function generateChartId () {
   const intArr = new Uint8Array(chartIdLen / 2)
   window.crypto.getRandomValues(intArr)
@@ -65,6 +76,11 @@ function generateChartId () {
   return `${lodPrefix}/${chartPrefix}/${chartId}`
 }
 
+/**
+ * Converts a chart object to JSON-LD format for storage
+ * @param {Object} chart - The chart object to convert
+ * @returns {Object} JSON-LD representation of the chart
+ */
 function buildChartLd (chart) {
   chart = Object.assign({}, chart)
   chart.baseSpec = JSON.stringify(chart.baseSpec)
@@ -82,6 +98,11 @@ function buildChartLd (chart) {
   return chartLd
 }
 
+/**
+ * Extracts chart data from JSON-LD format into application format
+ * @param {Object} chartLd - JSON-LD representation of a chart
+ * @returns {Object} Chart object in application format with parsed baseSpec
+ */
 function extractChart (chartLd) {
   const chart = {uri: chartLd['@id']}
 
@@ -96,6 +117,11 @@ function extractChart (chartLd) {
   chart.baseSpec = JSON.parse(chart.baseSpec)
   return chart
 }
+
+/**
+ * Returns a default chart template with sample SPARQL query and Vega-Lite specification
+ * @returns {Object} Default chart object with query, baseSpec, title, and description
+ */
 
 function getDefaultChart () {
   return Object.assign({}, defaultChart)
@@ -113,6 +139,17 @@ function copyChart(sourceChart) {
   return newChart
 }
 
+/**
+ * Saves a chart to the knowledge graph as a nanopublication
+ * @param {Object} chart - The chart object to save
+ * @returns {Promise<Object>} Promise that resolves to the save response
+ * @example
+ * const result = await saveChart({
+ *   title: 'My Chart',
+ *   query: 'SELECT * WHERE { ?s ?p ?o }',
+ *   baseSpec: {...vegaLiteSpec}
+ * });
+ */
 function saveChart (chart) {
   let deletePromise = Promise.resolve()
   if (chart.uri) {
@@ -125,6 +162,11 @@ function saveChart (chart) {
     .then(() => postNewNanopub(chartLd))
 }
 
+/**
+ * Deletes all nanopublications associated with a chart
+ * @param {string} chartUri - URI of the chart to delete
+ * @returns {Promise} Promise that resolves when deletion is complete
+ */
 function deleteChart (chartUri) {
   console.log('Deleting chart', chartUri)
   return listNanopubs(chartUri)
@@ -152,6 +194,13 @@ const chartQuery = `
   }
   `
 
+/**
+ * Retrieves all charts from the knowledge graph
+ * @returns {Promise<Array>} Promise that resolves to an array of chart objects
+ * @example
+ * const allCharts = await getCharts();
+ * console.log(allCharts.length, 'charts found');
+ */
 async function getCharts () {
   const {results} = await querySparql(chartQuery)
   const charts = []
@@ -161,6 +210,14 @@ async function getCharts () {
   return charts
 }
 
+/**
+ * Loads a specific chart by its URI
+ * @param {string} chartUri - The URI of the chart to load
+ * @returns {Promise<Object>} Promise that resolves to the chart object
+ * @throws {string} If no chart is found for the given URI
+ * @example
+ * const chart = await loadChart('http://example.com/chart/123');
+ */
 async function loadChart(chartUri) {
   const singleChartQuery = chartQuery + `\n  VALUES (?uri) { (<${chartUri}>) }`
   const {results} = await querySparql(singleChartQuery)
@@ -171,6 +228,11 @@ async function loadChart(chartUri) {
   return await readChartSparqlRow(rows[0])
 }
 
+/**
+ * Processes a SPARQL result row into a chart object
+ * @param {Object} chartResult - Raw SPARQL result row
+ * @returns {Promise<Object>} Promise that resolves to a formatted chart object
+ */
 async function readChartSparqlRow(chartResult) {
   const chart = {}
   Object.entries(chartResult)
@@ -184,6 +246,14 @@ async function readChartSparqlRow(chartResult) {
   return chart
 }
 
+/**
+ * Transforms SPARQL result bindings into a format suitable for Vega-Lite visualization
+ * @param {Object} sparqlResults - SPARQL query results with bindings
+ * @returns {Array} Array of data objects with proper type conversion
+ * @example
+ * const data = transformSparqlData(sparqlResults);
+ * // Returns array of objects with converted literal types
+ */
 function transformSparqlData (sparqlResults) {
   const data = []
   if (sparqlResults) {
@@ -202,6 +272,15 @@ function transformSparqlData (sparqlResults) {
   return data
 }
 
+/**
+ * Combines a Vega-Lite specification with SPARQL results to create a complete chart spec
+ * @param {Object} baseSpec - Base Vega-Lite specification
+ * @param {Object} sparqlResults - SPARQL query results to embed in the chart
+ * @returns {Object|null} Complete Vega-Lite specification with data, or null if no baseSpec
+ * @example
+ * const spec = buildSparqlSpec(chartSpec, sparqlResults);
+ * // Returns Vega-Lite spec with embedded data from SPARQL
+ */
 function buildSparqlSpec (baseSpec, sparqlResults) {
   if (!baseSpec) {
     return null

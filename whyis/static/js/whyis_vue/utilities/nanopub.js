@@ -1,16 +1,50 @@
+/**
+ * Nanopublication utilities for managing scientific claims and assertions.
+ * Provides functions for creating, reading, updating, and deleting nanopublications
+ * in the Whyis knowledge graph.
+ * 
+ * @module nanopub
+ */
+
 import axios from 'axios'
 
+/**
+ * Base URL for nanopublication endpoints
+ * @constant {string} nanopubBaseUrl
+ */
 const nanopubBaseUrl = `${ROOT_URL}pub`
+
+/**
+ * Linked Open Data prefix used for generating URIs
+ * @constant {string} lodPrefix
+ */
 const lodPrefix = LOD_PREFIX
 
+/**
+ * Constructs a URL for a specific nanopublication ID
+ * @param {string} id - The nanopublication ID
+ * @returns {string} The complete nanopublication URL
+ */
 function getNanopubUrl (id) {
   return `${nanopubBaseUrl}/${id}`
 }
 
+/**
+ * Constructs an 'about' URL for a given URI
+ * @param {string} uri - The URI to construct an about URL for
+ * @returns {string} The about URL
+ */
 function getAboutUrl(uri) {
   return `${ROOT_URL}about?uri=${uri}`
 }
 
+/**
+ * Fetches detailed description data for a nanopublication
+ * @param {string} uri - The URI of the nanopublication to describe
+ * @returns {Promise<Object>} Promise that resolves to the nanopublication description data
+ * @example
+ * const nanopubData = await describeNanopub('http://example.com/nanopub/123');
+ */
 function describeNanopub (uri) {
   console.debug(`loading nanopub ${uri}`)
   return axios.get(`${ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
@@ -20,6 +54,13 @@ function describeNanopub (uri) {
     })
 }
 
+/**
+ * Retrieves a list of nanopublications associated with a given URI
+ * @param {string} uri - The URI to list nanopublications for
+ * @returns {Promise<Array>} Promise that resolves to an array of nanopublication objects
+ * @example
+ * const nanopubs = await listNanopubs('http://example.com/resource');
+ */
 function listNanopubs (uri) {
   return axios.get(`${ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
     .then(response => {
@@ -28,6 +69,11 @@ function listNanopubs (uri) {
     })
 }
 
+/**
+ * Retrieves a local nanopublication by its ID
+ * @param {string} id - The nanopublication ID
+ * @returns {Promise<Object>} Promise that resolves to the nanopublication data
+ */
 function getLocalNanopub (id) {
   console.debug(`loading nanopub ${id}`)
   const url = getNanopubUrl(id)
@@ -38,6 +84,10 @@ function getLocalNanopub (id) {
     })
 }
 
+/**
+ * Generates a unique nanopublication ID using random characters
+ * @returns {string} A unique nanopublication ID
+ */
 function makeNanopubId() {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
@@ -45,6 +95,13 @@ function makeNanopubId() {
   return Math.random().toString(36).substr(2, 10);
 }
 
+/**
+ * Creates a nanopublication skeleton structure with required components
+ * @returns {Object} A complete nanopublication skeleton with assertion, provenance, and publication info
+ * @example
+ * const skeleton = getNanopubSkeleton();
+ * // Returns a structured nanopublication template ready for data insertion
+ */
 function getNanopubSkeleton () {
   //doot
   const npId = `${lodPrefix}/pub/${makeNanopubId()}` //make sure this change doesn't break other things
@@ -81,6 +138,18 @@ function getNanopubSkeleton () {
   }
 }
 
+/**
+ * Posts a new nanopublication to the knowledge graph
+ * @param {Object} pubData - The publication data to include in the assertion
+ * @param {Object} [context] - Optional JSON-LD context to merge with the default context
+ * @returns {Promise<Object>} Promise that resolves to the server response
+ * @example
+ * const result = await postNewNanopub({
+ *   '@id': 'http://example.com/claim',
+ *   '@type': 'schema:Article',
+ *   'schema:name': 'Example Claim'
+ * });
+ */
 function postNewNanopub (pubData, context) {
   const nanopub = getNanopubSkeleton()
   if (context) {
@@ -99,6 +168,13 @@ function postNewNanopub (pubData, context) {
   return axios(request)
 }
 
+/**
+ * Deletes a nanopublication from the knowledge graph
+ * @param {string} uri - The URI of the nanopublication to delete
+ * @returns {Promise<Object>} Promise that resolves to the delete response
+ * @example
+ * await deleteNanopub('http://example.com/nanopub/123');
+ */
 function deleteNanopub (uri) {
   console.debug('deleting nanopub', uri)
   return axios.delete(getAboutUrl(uri))
