@@ -2,15 +2,9 @@
 @import "screens";
 @import "content";
 
-@import "vue-material/dist/theme/engine"; // Import the theme engine
-
-@include md-register-theme("default", (
-  primary: $primary-color, // The primary color of your brand
-  accent: orangered // The secondary color of your brand
-));
-
-@import "vue-material/dist/theme/all"; // Apply the theme
-
+// Bootstrap 5 Variables Override
+$primary: #08233c;
+$secondary: #64b5f6;
 
 html {
     font-family: 'Roboto', sans-serif !important;

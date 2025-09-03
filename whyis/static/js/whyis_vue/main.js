@@ -7,7 +7,6 @@
 
 //__webpack_public_path__ = ROOT_URL+'static/dist/';
 import Vue from 'vue'
-import * as VueMaterial from 'vue-material'
 import axios from 'axios'
 import './modules'
 import './components'
@@ -20,38 +19,8 @@ import "./assets/css/main.scss";
 // import dialogBox from './components/utils/dialog'
 import viewMixin from './mixins/view-mixin'
 
-// Configure Vue with Material Design components
-Vue.use(VueMaterial.default)
+// Configure Vue with mixin
 Vue.mixin(viewMixin)
-
-// As per https://github.com/vuematerial/vue-material/issues/2285#issuecomment-1059410143
-// Vue.component('MdSelect', Vue.options.components.MdFile.extend({
-//     methods: {
-//         isInvalidValue: function isInvalidValue () {
-//             return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-//         }
-//     }
-// }))
-
-import { MdField } from 'vue-material/dist/components'
-
-Vue.use(MdField)
-
-/**
- * Extended MdSelect component with improved form validation
- * Fixes badInput validation for select fields in Material Design components
- */
-Vue.component('MdSelect', Vue.options.components.MdSelect.extend({
-    methods: {
-        /**
-         * Validates the input field and returns validation state
-         * @returns {boolean} True if the input has validation errors
-         */
-        isInvalidValue: function isInvalidValue () {
-            return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector('input').validity.badInput
-        }
-    }
-}))
 
 /**
  * Creates and initializes the main Vue application instance

@@ -1,96 +1,98 @@
 <template>
-  <md-app-drawer :md-active.sync="menuVisible">
-    <md-toolbar class="md-transparent" md-elevation="0">
-      App Navigation
-    </md-toolbar>
-    <md-divider></md-divider>
-    <md-list class="utility-transparentbg">
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" @click.prevent="navTo('/')">
-          <md-icon class="utility-navfonticon">home</md-icon>
-          <span class="md-list-item-text utility-navfont">Home</span>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" @click.prevent="navTo('/wi/home')">
-          <md-icon class="utility-navfonticon">widgets</md-icon>
-          <span class="md-list-item-text utility-navfont">Facet Browser</span>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" @click="navTo('/sparql.html')">
-          <md-icon class="utility-navfonticon">web</md-icon>
-          <span class="md-list-item-text utility-navfont">Sparql</span>
-          <md-tooltip md-direction="bottom">Sparql Browser</md-tooltip>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div">
-        <md-list-item class="utility-navadjust" @click="navTo('gallery', 'http://semanticscience.org/resource/Chart')">
-          <md-icon class="utility-navfonticon">view_comfy</md-icon>
-          <span class="md-list-item-text utility-navfont">Browse Visualization</span>
-          <md-tooltip md-direction="bottom">Visualization Gallery</md-tooltip>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div" v-if="authenticated.email == undefined">
-        <md-list-item class="utility-navadjust" @click="navTo(loginNav)">
-          <md-icon class="utility-navfonticon">fingerprint</md-icon>
-          <span class="md-list-item-text utility-navfont">Login</span>
-        </md-list-item>
-      </div>
+  <div class="offcanvas offcanvas-start" tabindex="-1" :class="{'show': menuVisible}" data-bs-backdrop="false">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">App Navigation</h5>
+      <button type="button" class="btn-close text-reset" @click="menuVisible = false" aria-label="Close"></button>
+    </div>
+    <hr>
+    <div class="offcanvas-body utility-transparentbg">
+      <div class="list-group list-group-flush">
+        <div class="nav-item-wrapper">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click.prevent="navTo('/')">
+            <i class="bi bi-house-fill utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Home</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click.prevent="navTo('/wi/home')">
+            <i class="bi bi-grid-3x3-gap-fill utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Facet Browser</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo('/sparql.html')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Sparql Browser">
+            <i class="bi bi-globe utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Sparql</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo('gallery', 'http://semanticscience.org/resource/Chart')" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Visualization Gallery">
+            <i class="bi bi-grid utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Browse Visualization</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper" v-if="authenticated.email == undefined">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo(loginNav)">
+            <i class="bi bi-fingerprint utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Login</span>
+          </a>
+        </div>
 
-      <div class="utility-space" v-if="authenticated.email"></div>
+        <div class="utility-space" v-if="authenticated.email"></div>
 
-      <md-toolbar class="md-transparent" md-elevation="0" v-if="authenticated.email !== undefined">
-        User Dashboard
-      </md-toolbar>
+        <div v-if="authenticated.email !== undefined" class="mt-4">
+          <h6 class="text-muted ps-3">User Dashboard</h6>
+          <hr>
+        </div>
 
-      <md-divider v-if="authenticated.email !== undefined"></md-divider>
-      <div class="md-drawer-div" v-if="authenticated.email !== undefined">
-        <md-list-item class="utility-navadjust"  @click="navTo('new', 'http://semanticscience.org/resource/Chart')">
-          <md-icon class="utility-navfonticon">add</md-icon>
-          <span class="md-list-item-text utility-navfont">Create New Visualization</span>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div" v-if="authenticated.email !== undefined">
-        <md-list-item class="utility-navadjust"  @click.prevent="navDataSet">
-          <md-icon class="utility-navfonticon">publish</md-icon>
-          <span class="md-list-item-text utility-navfont">New Dataset Upload</span>
-        </md-list-item>
-      </div>
+        <div class="nav-item-wrapper" v-if="authenticated.email !== undefined">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo('new', 'http://semanticscience.org/resource/Chart')">
+            <i class="bi bi-plus-circle utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Create New Visualization</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper" v-if="authenticated.email !== undefined">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click.prevent="navDataSet">
+            <i class="bi bi-upload utility-navfonticon me-3"></i>
+            <span class="utility-navfont">New Dataset Upload</span>
+          </a>
+        </div>
 
-      <div class="md-drawer-div" v-if="authenticated.admin == 'False'">
-        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
-          <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
-          <span class="md-list-item-text utility-navfont">Sign Out</span>
-        </md-list-item>
-      </div>
-      <div class="utility-space" v-if="authenticated.admin=='True'"></div>
+        <div class="nav-item-wrapper" v-if="authenticated.admin == 'False'">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo(logoutNav)">
+            <i class="bi bi-arrow-left utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Sign Out</span>
+          </a>
+        </div>
+        
+        <div class="utility-space" v-if="authenticated.admin=='True'"></div>
 
-      <md-toolbar class="md-transparent" md-elevation="0" v-if="authenticated.admin=='True'">
-        Administration Dashboard
-      </md-toolbar>
+        <div v-if="authenticated.admin=='True'" class="mt-4">
+          <h6 class="text-muted ps-3">Administration Dashboard</h6>
+          <hr>
+        </div>
 
-      <md-divider v-if="authenticated.admin"></md-divider>
-       <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
-        <md-list-item class="utility-navadjust" @click="navTo('manage', 'http://semanticscience.org/resource/Chart')">
-          <md-icon class="utility-navfonticon">restore</md-icon>
-          <span class="md-list-item-text utility-navfont">Restore Chart</span>
-        </md-list-item>
+        <div class="nav-item-wrapper" v-if="authenticated.admin == 'True'">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo('manage', 'http://semanticscience.org/resource/Chart')">
+            <i class="bi bi-arrow-clockwise utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Restore Chart</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper" v-if="authenticated.admin == 'True'">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center">
+            <i class="bi bi-speedometer2 utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Admin Dashboard</span>
+          </a>
+        </div>
+        <div class="nav-item-wrapper" v-if="authenticated.admin == 'True'">
+          <a href="#" class="list-group-item list-group-item-action utility-navadjust d-flex align-items-center" @click="navTo(logoutNav)">
+            <i class="bi bi-arrow-left utility-navfonticon me-3"></i>
+            <span class="utility-navfont">Sign Out</span>
+          </a>
+        </div>
       </div>
-      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
-        <md-list-item class="utility-navadjust">
-          <md-icon class="utility-navfonticon">insights</md-icon>
-          <span class="md-list-item-text utility-navfont">Admin Dashboard</span>
-        </md-list-item>
-      </div>
-      <div class="md-drawer-div" v-if="authenticated.admin == 'True'">
-        <md-list-item class="utility-navadjust" @click="navTo(logoutNav)">
-          <md-icon class="utility-navfonticon">arrow_back_ios</md-icon>
-          <span class="md-list-item-text utility-navfont">Sign Out</span>
-        </md-list-item>
-      </div>
-    </md-list>
-  </md-app-drawer>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" src="../../assets/css/main.scss"></style>
