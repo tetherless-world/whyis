@@ -5,108 +5,125 @@
     </div>
     <div class="viz-setting">
       <div class="viz-setting-links">
-        <md-list>
-          <md-list-item id="restore" class="utility-gridborder" v-on:click.prevent="actionManager('restore')">
-            <md-icon class="utility-navfonticon">sync</md-icon>
-            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Restore From Backup</span>
-          </md-list-item>
-        </md-list>
-        <md-list>
-          <md-list-item id="enable" v-on:click.prevent="actionManager('enable')">
-            <md-icon class="utility-navfonticon">visibility</md-icon>
-            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Enable Charts</span>
-          </md-list-item>
-        </md-list>
-        <md-list>
-          <md-list-item id="disable" v-on:click.prevent="actionManager('disable')">
-            <md-icon class="utility-navfonticon">visibility_off</md-icon>
-            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Hide Charts</span>
-          </md-list-item>
-        </md-list>
-        <md-list>
-          <md-list-item v-on:click.prevent="navBack">
-            <md-icon class="utility-navfonticon">domain</md-icon>
-            <span id="css-adjust-navfont" class="md-list-item-text utility-navfont">Return Home</span>
-          </md-list-item>
-        </md-list>
+        <ul class="list-group">
+          <li class="list-group-item utility-gridborder d-flex align-items-center" id="restore" v-on:click.prevent="actionManager('restore')">
+            <i class="bi bi-arrow-clockwise utility-navfonticon me-2"></i>
+            <span id="css-adjust-navfont" class="utility-navfont">Restore From Backup</span>
+          </li>
+        </ul>
+        <ul class="list-group">
+          <li class="list-group-item d-flex align-items-center" id="enable" v-on:click.prevent="actionManager('enable')">
+            <i class="bi bi-eye utility-navfonticon me-2"></i>
+            <span id="css-adjust-navfont" class="utility-navfont">Enable Charts</span>
+          </li>
+        </ul>
+        <ul class="list-group">
+          <li class="list-group-item d-flex align-items-center" id="disable" v-on:click.prevent="actionManager('disable')">
+            <i class="bi bi-eye-slash utility-navfonticon me-2"></i>
+            <span id="css-adjust-navfont" class="utility-navfont">Hide Charts</span>
+          </li>
+        </ul>
+        <ul class="list-group">
+          <li class="list-group-item d-flex align-items-center" v-on:click.prevent="navBack">
+            <i class="bi bi-house utility-navfonticon me-2"></i>
+            <span id="css-adjust-navfont" class="utility-navfont">Return Home</span>
+          </li>
+        </ul>
       </div>
       <div class="viz-setting-content">
-        <div class="utility-gridicon-single" style="padding-right: 2rem">
+        <div class="utility-gridicon-single d-flex gap-2" style="padding-right: 2rem">
           <div>
-            <md-button class="md-icon-button" @click.native.prevent="navBack">
-              <md-tooltip class="utility-bckg" md-direction="bottom"> Go Back </md-tooltip>
-              <md-icon>arrow_back</md-icon>
-            </md-button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="navBack">
+              <i class="bi bi-arrow-left"></i>
+              <span class="visually-hidden">Go Back</span>
+            </button>
           </div>
           <div v-if="actionType == 'restore'">
-            <md-button class="md-icon-button" @click.native.prevent="restoreAllChart"> 
-              <md-tooltip class="utility-bckg" md-direction="top"> Reset All </md-tooltip>
-              <md-icon>cached</md-icon>
-            </md-button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="restoreAllChart">
+              <i class="bi bi-arrow-clockwise"></i>
+              <span class="visually-hidden">Reset All</span>
+            </button>
           </div>
           <div v-else-if="actionType == 'disable'">
-            <md-button class="md-icon-button" @click.native.prevent="chartQuery"> 
-              <md-tooltip class="utility-bckg" md-direction="bottom"> Disable All Charts </md-tooltip>
-              <md-icon>visibility_off</md-icon>
-            </md-button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="chartQuery">
+              <i class="bi bi-eye-slash"></i>
+              <span class="visually-hidden">Disable All Charts</span>
+            </button>
           </div>
           <div v-else-if="actionType == 'enable'">
-            <md-button class="md-icon-button" @click.native.prevent="chartQuery"> 
-              <md-tooltip class="utility-bckg" md-direction="bottom"> Enable All Charts </md-tooltip>
-              <md-icon>visibility</md-icon>
-            </md-button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="chartQuery">
+              <i class="bi bi-eye"></i>
+              <span class="visually-hidden">Enable All Charts</span>
+            </button>
           </div>
         </div>
         <div v-if="!userManage && !createTag">
-          <md-table v-model="searched" md-sort="name" md-sort-order="asc" style="margin-top: 3rem">
-            <md-table-toolbar style="margin-bottom: 1.8rem">
-              <div class="md-toolbar-section-start">
-                <h1 class="md-title">Charts List</h1>
+          <div class="table-responsive" style="margin-top: 3rem">
+            <!-- Bootstrap table header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h1 class="h4">Charts List</h1>
+              <div class="input-group" style="width: 300px;">
+                <input type="search" class="form-control" placeholder="Search By Chart Title..." v-model="search" @input="searchOnTable">
+                <button class="btn btn-outline-secondary" type="button" @click="search = ''">
+                  <i class="bi bi-x"></i>
+                </button>
               </div>
+            </div>
 
-              <md-field md-clearable class="md-toolbar-section-end">
-                <md-input placeholder="Search By Chart Title..." v-model="search" @input="searchOnTable" />
-              </md-field>
-            </md-table-toolbar>
-
-            <md-table-empty-state
-              md-label="No Chart Found"
-              :md-description="`No chart found for this '${search}' query. Try a different search title or create a new chart.`">
-              <md-button class="md-primary md-raised" @click="newChart">Create New Chart</md-button>
-            </md-table-empty-state>
+            <div v-if="searched.length === 0" class="text-center py-5">
+              <div class="mb-3">
+                <h5>No Chart Found</h5>
+                <p class="text-muted">No chart found for this '{{search}}' query. Try a different search title or create a new chart.</p>
+              </div>
+              <button type="button" class="btn btn-primary" @click="newChart">Create New Chart</button>
+            </div>
             
-            <md-table-row slot="md-table-row" slot-scope="{ item }">
-              <md-table-cell md-label="Nano Pub ID">{{ item.name.toUpperCase() }}</md-table-cell>
-              <md-table-cell md-label="Title" md-sort-by="backup.title">{{ item.backup.title }}</md-table-cell>
-              <md-table-cell md-label="Description" md-sort-by="backup.description">{{ reduceDescription(item.backup.description) }}</md-table-cell>
-              <md-table-cell md-label="Restore" v-if="actionType == 'restore'">
-                <md-button class="md-icon-button" @click.prevent="restoreChartsBk(item)">
-                  <md-tooltip class="utility-bckg" md-direction="left"> Restore </md-tooltip>
-                  <md-icon class="utility-color">cached</md-icon>
-                </md-button>
-            </md-table-cell>
-            <md-table-cell md-label="Disable" v-else-if="actionType == 'disable'">
-                <md-button class="md-icon-button" @click.prevent="disableChart(item)">
-                  <md-tooltip class="utility-bckg" md-direction="left"> Disable </md-tooltip>
-                  <md-icon class="utility-color">visibility_off</md-icon>
-                </md-button>
-            </md-table-cell>
-            <md-table-cell md-label="Enable" v-else-if="actionType == 'enable'">
-                <md-button class="md-icon-button" @click.prevent="enableChart(item)">
-                  <md-tooltip class="utility-bckg" md-direction="left"> Enable </md-tooltip>
-                  <md-icon class="utility-color">visibility</md-icon>
-                </md-button>
-            </md-table-cell>
-            </md-table-row>
-          </md-table>
+            <table v-else class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Nano Pub ID</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Description</th>
+                  <th scope="col" v-if="actionType == 'restore'">Restore</th>
+                  <th scope="col" v-else-if="actionType == 'disable'">Disable</th>
+                  <th scope="col" v-else-if="actionType == 'enable'">Enable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in searched" :key="item.name">
+                  <td>{{ item.name.toUpperCase() }}</td>
+                  <td>{{ item.backup.title }}</td>
+                  <td>{{ reduceDescription(item.backup.description) }}</td>
+                  <td v-if="actionType == 'restore'">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="restoreChartsBk(item)">
+                      <i class="bi bi-arrow-clockwise utility-color"></i>
+                      <span class="visually-hidden">Restore</span>
+                    </button>
+                  </td>
+                  <td v-else-if="actionType == 'disable'">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="disableChart(item)">
+                      <i class="bi bi-eye-slash utility-color"></i>
+                      <span class="visually-hidden">Disable</span>
+                    </button>
+                  </td>
+                  <td v-else-if="actionType == 'enable'">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="enableChart(item)">
+                      <i class="bi bi-eye utility-color"></i>
+                      <span class="visually-hidden">Enable</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 <style lang="scss" scoped>
-  .md-autocomplete {
-
+  .autocomplete {
+    /* Bootstrap autocomplete styles */
   }
 </style>
 <style lang="scss" src="../../../../assets/css/main.scss"></style>
@@ -141,7 +158,7 @@
     computed: {
       messageClass () {
         return {
-          'md-invalid': this.tagError
+          'is-invalid': this.tagError
         }
       }
     },

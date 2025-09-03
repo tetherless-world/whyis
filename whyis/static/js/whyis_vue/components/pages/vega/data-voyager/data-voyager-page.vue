@@ -6,43 +6,19 @@
         class="utility-gridicon-single"
         v-if="!loading"
       >
-        <div>
-          <md-button
-            class="md-icon-button"
-            @click.native.prevent="saveAsChart"
-            v-if="!isNewChart && voyagerSpec"
-          >
-            <md-tooltip
-              class="utility-bckg"
-              md-direction="bottom"
-            >
-              Save current spec as new chart
-            </md-tooltip>
-            <md-icon>save</md-icon>
-          </md-button>
-          <md-button
-            class="md-icon-button"
-            @click.native.prevent="selectSpec"
-            v-if="isNewChart && voyagerSpec"
-          >
-            <md-tooltip
-              class="utility-bckg"
-              md-direction="bottom"
-            >
-              Select current spec and return to Viz Editor
-            </md-tooltip>
-            <md-icon>check</md-icon>
-          </md-button>
-          <md-button
-            class="md-icon-button"
-            @click.native.prevent="goToChartView"
-          >
-            <md-tooltip
-              class="utility-bckg"
-              md-direction="bottom"
-            > Return to chart view </md-tooltip>
-            <md-icon>arrow_back</md-icon>
-          </md-button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="saveAsChart" v-if="!isNewChart && voyagerSpec">
+            <i class="bi bi-save"></i>
+            <span class="visually-hidden">Save current spec as new chart</span>
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="selectSpec" v-if="isNewChart && voyagerSpec">
+            <i class="bi bi-check"></i>
+            <span class="visually-hidden">Select current spec and return to Viz Editor</span>
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="goToChartView">
+            <i class="bi bi-arrow-left"></i>
+            <span class="visually-hidden">Return to chart view</span>
+          </button>
         </div>
       </div>
     </div>

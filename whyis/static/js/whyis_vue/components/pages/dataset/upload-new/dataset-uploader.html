@@ -10,183 +10,207 @@
           <div v-else>
            <div class=""></div>
             <!--------->
-            <md-card style="margin: 10px" >
+            <div class="card" style="margin: 10px">
                 <form class="modal-content" action="" method="post" 
                   enctype="multipart/form-data" 
                   upload_type="http://www.w3.org/ns/dcat#Dataset">
-                <md-steppers :md-active-step.sync="active" md-linear>
+                <!-- Bootstrap stepper equivalent using nav-tabs -->
+                <div class="card-body">
+                  <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" :class="{active: active === 'first'}" 
+                              type="button" role="tab" 
+                              :disabled="!first">Upload files</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" :class="{active: active === 'second'}" 
+                              type="button" role="tab" 
+                              :disabled="!second">Provide additional info</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" :class="{active: active === 'third'}" 
+                              type="button" role="tab" 
+                              :disabled="!third">Confirm and Submit</button>
+                    </li>
+                  </ul>
+                  <div class="tab-content">
         
-                  <md-step id="first" md-label="Upload files" :md-done.sync="first">  
+                  <div class="tab-pane fade" :class="{show: active === 'first', active: active === 'first'}" 
+                       id="first" role="tabpanel">  
                      <div style="margin: 20px">
 
-                      <md-field style="max-width: 100%;"> 
-                        <label>DOI of related publication (e.g., 10.1000/000)</label>
-                        <md-input v-model="doi"></md-input>
-                      </md-field>
+                      <div class="form-floating mb-3"> 
+                        <input type="text" class="form-control" id="doi" v-model="doi" placeholder="DOI of related publication">
+                        <label for="doi">DOI of related publication (e.g., 10.1000/000)</label>
+                      </div>
         
-                        <md-field style="max-width: none;" :class="{ 'md-invalid': isInvalidUpload }"> 
-                          <label>Select files to upload for this dataset</label>
-                          <md-file v-model="distr_upload" id="distrFiles" multiple required isInvalidValue=false
+                        <div class="mb-3" :class="{ 'is-invalid': isInvalidUpload }"> 
+                          <label for="distrFiles" class="form-label">Select files to upload for this dataset</label>
+                          <input type="file" class="form-control" id="distrFiles" multiple required
                             v-on:change="handleDistrUpload($event.target.files)"/> 
-                          <span style="color: red;" v-if="distrStatus === 3">Error in upload. Please try again</span>
-                          <span class="md-error" style="margin-left:40px">At least one distribution is required</span>
-                        </md-field>
+                          <div v-if="distrStatus === 3" class="invalid-feedback d-block">Error in upload. Please try again</div>
+                          <div v-if="isInvalidUpload" class="invalid-feedback">At least one distribution is required</div>
+                        </div>
                         <div class="large-12 medium-12 small-12 cell" style="margin:20px">
                           <div 
                             v-for="(file, key) in uploadedFiles" 
                             v-bind:key="key + 'listing'"
                             class="file-listing">
-                            <div class="md-layout" style="margin-left:10px; align-items: center;">
-                              <div class="md-layout-item">{{ file.name }} </div>
-                              <div class="md-layout-item">
-                                <md-field style="max-width: 90%;">
-                                  <label>Label</label>
-                                  <md-input v-model=file.label></md-input>
-                                  <md-tooltip md-delay="300">Provide a human-readable label or leave as the default</md-tooltip>
-                                </md-field>
+                            <div class="row align-items-center" style="margin-left:10px;">
+                              <div class="col">{{ file.name }} </div>
+                              <div class="col">
+                                <div class="form-floating">
+                                  <input type="text" class="form-control" v-model="file.label" id="label-{{key}}">
+                                  <label for="label-{{key}}">Label</label>
+                                  <div class="form-text">Provide a human-readable label or leave as the default</div>
+                                </div>
                               </div>
-                              <div class="md-layout-item">
-                                <md-button class="remove-file md-raised" v-on:click="removeFile( key )">Remove file</md-button> 
+                              <div class="col-auto">
+                                <button type="button" class="btn btn-outline-danger" v-on:click="removeFile( key )">Remove file</button> 
                               </div>
                             </div>
                           </div>
                         </div>  
               
-                        <md-field style="max-width: none;">
-                          <label>Select a representative image to use as thumbnail</label>
-                          <md-file 
-                            id="repImgUploader" v-model="rep_image" accept="image/*" 
+                        <div class="mb-3">
+                          <label for="repImgUploader" class="form-label">Select a representative image to use as thumbnail</label>
+                          <input type="file" class="form-control" id="repImgUploader" accept="image/*" 
                             v-on:change="handleImgUpload($event.target.files); previewFile()"/>
-                          <span style="color: red;" v-if="depictStatus === 3">Error in upload. Please try again</span>
-                        </md-field>
+                          <div v-if="depictStatus === 3" class="text-danger">Error in upload. Please try again</div>
+                        </div>
                         <div id="depictWrapper" style="margin-left: 40px; visibility: hidden;">
                           <figure>
                             <img id="depictImg" src="" alt="Image preview..."  style="height:200px"> 
                             <figcaption>{{ dataset.depiction.name }}</figcaption>
                           </figure> 
-                          <md-button style="margin-left: 40px;" type="button" class="close md-raised" @click="removeImage()">Remove image</md-button>
+                          <button type="button" class="btn btn-outline-secondary ms-2" @click="removeImage()">Remove image</button>
                         </div>
                       </div>
-                      <div class="md-layout" style="align-items: center;">
-                        <div class="md-layout-item">
-                          <md-button 
-                            class="md-raised md-primary" 
-                            @click="checkFirstPage()">
+                      <div class="row align-items-center">
+                        <div class="col-auto">
+                          <button type="button" class="btn btn-primary" @click="checkFirstPage()">
                             Upload and continue
-                          </md-button> 
+                          </button> 
                         </div>
-                        <div class="md-layout-item" v-if="doiLoading">
-                          <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+                        <div class="col-auto" v-if="doiLoading">
+                          <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
                         </div>
-                        <div class="md-layout-item">
+                        <div class="col">
                         </div>
-                        <div class="md-layout-item">
+                        <div class="col">
                         </div>
                       </div>
     
-                    </md-step>
+                    </div>
         
         
-                    <md-step id="second" md-label="Provide additional info" :md-done.sync="second">
+                    <div class="tab-pane fade" :class="{show: active === 'second', active: active === 'second'}" 
+                         id="second" role="tabpanel">
                     
-                      <div class="md-layout">
+                      <div class="row">
         
                         <!---------- General Info fields ---------->
-                        <md-content style="width: 100%; margin: 20px">
-                          <div class="md-headline" style="margin-top: 10px">
+                        <div class="col-12" style="margin: 20px">
+                          <h3 class="h4 mt-2">
                             General Information
-                          </div>
-                          <md-field style="max-width: 100%;" :class="{ 'md-invalid': (isInvalidForm && (dataset.title === ''))}"> 
-                            <label>Title</label>
-                            <md-input v-model="dataset.title" required></md-input>
-                            <span class="md-error">Title required</span>
-                          </md-field>
-
-
-                          <div class="md-subheading" style="margin-top: 40px;">Contact Point</div> 
-                          <div class="md-layout md-gutter" style="align-items: center;">  
-
-                            <div class="md-layout-item md-size-30">
-                              <md-field :class="{ 'md-invalid': (isInvalidForm && ((cpID === null) || (cpID==='')) )}" style="max-width: 100%;">
-                                <label>ORCID Identifier (e.g., 0000-0001-2345-6789)</label>
-                                <md-input v-model="cpID" required v-on:change="lookupOrcid()"></md-input>
-                                <span class="md-error">ORCID iD required</span>
-                              </md-field>
-                            </div>
-                      
-                            <div class="md-layout-item md-size-20">
-                              <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cpfirstname === ''))}">
-                                <label>First name</label>
-                                <md-input v-model="dataset.contactpoint.cpfirstname" required></md-input>
-                                <span class="md-error">Contact point required</span>
-                              </md-field>
-                            </div>
-                      
-                            <div class="md-layout-item md-size-20">
-                              <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cplastname === ''))}">
-                                <label>Last name</label>
-                                <md-input v-model="dataset.contactpoint.cplastname" required></md-input>
-                                <span class="md-error">Contact point required</span>
-                              </md-field>
-                            </div>
-                      
-                            <div class="md-layout-item md-size-25">
-                              <md-field :class="{ 'md-invalid': (isInvalidForm && (dataset.contactpoint.cpemail === ''))}" style="max-width: 100%;">
-                                <label>Email</label>
-                                <md-input v-model="dataset.contactpoint.cpemail" required></md-input>
-                                <span class="md-error">Valid email required</span>
-                              </md-field>
-                            </div>
+                          </h3>
+                          <div class="form-floating mb-3" :class="{ 'is-invalid': (isInvalidForm && (dataset.title === ''))}"> 
+                            <input type="text" class="form-control" id="title" v-model="dataset.title" required placeholder="Title">
+                            <label for="title">Title</label>
+                            <div v-if="isInvalidForm && (dataset.title === '')" class="invalid-feedback">Title required</div>
                           </div>
 
-                          <div style="color: red; margin-bottom: 20px; text-align: center;" v-if="cpIDError">
+
+                          <h5 class="mt-4">Contact Point</h5> 
+                          <div class="row g-3 align-items-center">  
+
+                            <div class="col-md-3">
+                              <div class="form-floating" :class="{ 'is-invalid': (isInvalidForm && ((cpID === null) || (cpID==='')) )}">
+                                <input type="text" class="form-control" id="cpID" v-model="cpID" required v-on:change="lookupOrcid()" placeholder="ORCID Identifier">
+                                <label for="cpID">ORCID Identifier (e.g., 0000-0001-2345-6789)</label>
+                                <div v-if="isInvalidForm && ((cpID === null) || (cpID===''))" class="invalid-feedback">ORCID iD required</div>
+                              </div>
+                            </div>
+                      
+                            <div class="col-md-2">
+                              <div class="form-floating" :class="{ 'is-invalid': (isInvalidForm && (dataset.contactpoint.cpfirstname === ''))}">
+                                <input type="text" class="form-control" id="cpfirstname" v-model="dataset.contactpoint.cpfirstname" required placeholder="First name">
+                                <label for="cpfirstname">First name</label>
+                                <div v-if="isInvalidForm && (dataset.contactpoint.cpfirstname === '')" class="invalid-feedback">Contact point required</div>
+                              </div>
+                            </div>
+                      
+                            <div class="col-md-2">
+                              <div class="form-floating" :class="{ 'is-invalid': (isInvalidForm && (dataset.contactpoint.cplastname === ''))}">
+                                <input type="text" class="form-control" id="cplastname" v-model="dataset.contactpoint.cplastname" required placeholder="Last name">
+                                <label for="cplastname">Last name</label>
+                                <div v-if="isInvalidForm && (dataset.contactpoint.cplastname === '')" class="invalid-feedback">Contact point required</div>
+                              </div>
+                            </div>
+                      
+                            <div class="col-md-3">
+                              <div class="form-floating" :class="{ 'is-invalid': (isInvalidForm && (dataset.contactpoint.cpemail === ''))}">
+                                <input type="email" class="form-control" id="cpemail" v-model="dataset.contactpoint.cpemail" required placeholder="Email">
+                                <label for="cpemail">Email</label>
+                                <div v-if="isInvalidForm && (dataset.contactpoint.cpemail === '')" class="invalid-feedback">Valid email required</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div v-if="cpIDError" class="alert alert-danger text-center" style="margin-bottom: 20px;">
                             No results found for {{cpID}}
                           </div>
 
-                          <div style="margin-bottom: 40px; text-align: center;">
+                          <div class="text-center mb-4">
                             Don't have an ORCID iD?
                             <a href="https://orcid.org/" target="_blank">Create one here</a>
                           </div>
         
-                          <md-field style="max-width: 100%;" :class="{ 'md-invalid': (isInvalidForm && (dataset.description === ''))}">
-                            <label>Text Description</label>
-                            <md-textarea v-model="dataset.description" required></md-textarea>
-                            <span class="md-error">Description required</span>
-                          </md-field>
+                          <div class="form-floating mb-3" :class="{ 'is-invalid': (isInvalidForm && (dataset.description === ''))}">
+                            <textarea class="form-control" id="description" v-model="dataset.description" required placeholder="Text Description" style="height: 120px"></textarea>
+                            <label for="description">Text Description</label>
+                            <div v-if="isInvalidForm && (dataset.description === '')" class="invalid-feedback">Description required</div>
+                          </div>
      
-                        </md-content>
+                        </div>
                     
-                        <md-divider style="border-style: solid" width="100%"></md-divider>
+                        <hr class="my-4">
         
         
                         <!---------- Contributor fields -------->
-                        <md-content style="width: 100%; margin: 20px">
-                          <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px"> 
+                        <div class="col-12" style="margin: 20px">
+                          <h3 class="h4 mt-2 mb-3"> 
                             Contributors
-                          </div>
+                          </h3>
 
                           <div>  
-                            <md-autocomplete
-                              style="min-width: 100%;"
-                              v-model="selectedAuthor" 
-                              :md-options="autocomplete.availableAuthors" 
-                              :md-open-on-focus="false" 
-                              @md-changed="resolveEntityAuthor"
-                              @md-selected="selectedAuthorChange"
-                              @md-opened="setListStyle"
-                              @md-closed="setListStyle(true)"
-                            >
-                              <label>Search for Author</label>
-                  
-                              <template style="width: 90% !important; left: 1px !important;" slot="md-autocomplete-item" slot-scope="{ item, term }">
-                                <label style="white-space: pre-wrap" md-term="term" md-fuzzy-search="true">{{item.label}}</label>
-                              </template>
-                          
-                              <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
-                                <p>No authors matching "{{ term }}" were found.</p>
-                                <a v-on:click="showNewAuthor" style="cursor: pointer">Create new</a>
-                              </template>
-                            </md-autocomplete>
+                            <!-- Custom Bootstrap autocomplete for authors -->
+                            <div class="dropdown" style="min-width: 100%;">
+                              <div class="form-floating">
+                                <input type="text" class="form-control" id="authorSearch" 
+                                       v-model="selectedAuthor" 
+                                       @input="resolveEntityAuthor"
+                                       @focus="setListStyle(false)"
+                                       @blur="setListStyle(true)"
+                                       placeholder="Search for Author">
+                                <label for="authorSearch">Search for Author</label>
+                              </div>
+                              <ul class="dropdown-menu w-100" :class="{show: showAuthorDropdown}">
+                                <li v-for="item in autocomplete.availableAuthors" :key="item.value">
+                                  <a class="dropdown-item" href="#" @click.prevent="selectedAuthorChange(item)">
+                                    {{item.label}}
+                                  </a>
+                                </li>
+                                <li v-if="autocomplete.availableAuthors.length === 0">
+                                  <div class="dropdown-item-text">
+                                    <p>No authors matching "{{ selectedAuthor }}" were found.</p>
+                                    <a @click="showNewAuthor" class="btn btn-link btn-sm">Create new</a>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
 
                           <table class="table" width="100%" style="border-collapse: collapse;">
                             <tbody>
@@ -200,25 +224,30 @@
                                     {{contributors[index]['name']}}
                                   </td>
                                   <td v-if="editableOrgs" style="width:40%">
-                                    <md-autocomplete 
-                                      style="max-width: 90%;" 
-                                      v-model="row['onbehalfof']['name']" 
-                                      :md-options="autocomplete.availableInstitutions" 
-                                      :md-open-on-focus="false"
-                                      @md-changed="resolveEntityInstitution"
-                                      @md-selected="selectedOrgChange(index, $event)"
-                                    >
-                                      <label>Organization</label>
-                          
-                                      <template style="max-width: 90%;" slot="md-autocomplete-item" slot-scope="{ item, term }">
-                                        <md-highlight-text :md-term="term">{{ item.label }}</md-highlight-text>
-                                      </template>
-                          
-                                      <template style="max-width: 90%;" slot="md-autocomplete-empty" slot-scope="{ term }">
-                                        <p>No organizations matching "{{ term }}" were found.</p>
-                                        <a v-on:click="showNewInstitution" style="cursor: pointer">Create new</a> 
-                                      </template>
-                                    </md-autocomplete>
+                                    <!-- Custom Bootstrap autocomplete for organizations -->
+                                    <div class="dropdown">
+                                      <div class="form-floating">
+                                        <input type="text" class="form-control" 
+                                               v-model="row['onbehalfof']['name']" 
+                                               @input="resolveEntityInstitution"
+                                               :id="'org-' + index"
+                                               placeholder="Organization">
+                                        <label :for="'org-' + index">Organization</label>
+                                      </div>
+                                      <ul class="dropdown-menu w-100" :class="{show: showOrgDropdown}">
+                                        <li v-for="item in autocomplete.availableInstitutions" :key="item.value">
+                                          <a class="dropdown-item" href="#" @click.prevent="selectedOrgChange(index, item)">
+                                            {{ item.label }}
+                                          </a>
+                                        </li>
+                                        <li v-if="autocomplete.availableInstitutions.length === 0">
+                                          <div class="dropdown-item-text">
+                                            <p>No organizations matching "{{ row['onbehalfof']['name'] }}" were found.</p>
+                                            <a @click="showNewInstitution" class="btn btn-link btn-sm">Create new</a> 
+                                          </div>
+                                        </li>
+                                      </ul>
+                                    </div>
 
                                   </td>
                                   <td v-else="editableOrgs" style="width:30%"></td>
@@ -232,58 +261,59 @@
 
                           </table> 
                           </div>
-                        </md-content>
+                        </div>
         
-                        <md-divider style="border-style: solid" width="100%"></md-divider>
+                        <hr class="my-4">
                     
                         <!-- -------- Publication Info fields -------- -->
-                        <md-content style="width: 100%; margin: 20px">
-                          <div class="md-headline" style="margin-top: 10px; margin-bottom: 10px">
+                        <div class="col-12" style="margin: 20px">
+                          <h3 class="h4 mt-2 mb-3">
                             Publication Information
-                          </div>
+                          </h3>
                       
-                          <div style="width: 100%">
-                            <div class="md-layout md-gutter">
-                              <div class="md-layout-item md-size-50">
-                                <label>Date Published</label>
-                                <md-field>
-                                  <md-input v-model="dataset.datepub['@value']" type="date"
-                                  :formatter="dateFormat"></md-input>
-                                </md-field>
+                          <div class="w-100">
+                            <div class="row g-3">
+                              <div class="col-md-6">
+                                <div class="form-floating">
+                                  <input type="date" class="form-control" id="datepub" v-model="dataset.datepub['@value']" placeholder="Date Published">
+                                  <label for="datepub">Date Published</label>
+                                </div>
                               </div>
                       
-                              <div class="md-layout-item md-size-50">
-                                <label>Date Last Modified</label>
-                                <md-field>
-                                  <md-input v-model="dataset.datemod['@value']" type="date" 
-                                  :formatter="dateFormat"></md-input>
-                                </md-field>
+                              <div class="col-md-6">
+                                <div class="form-floating">
+                                  <input type="date" class="form-control" id="datemod" v-model="dataset.datemod['@value']" placeholder="Date Last Modified">
+                                  <label for="datemod">Date Last Modified</label>
+                                </div>
                               </div>
                             </div>
                             
                           </div>
-                        </md-content> 
-                        <md-button class="md-raised md-primary" @click="checkSecondPage">Next</md-button>
-                        <span v-if="isInvalidForm" class="md-error" style="color:red">Check for errors in required fields</span>
+                        </div> 
+                        <div class="d-flex gap-2 mb-3">
+                          <button type="button" class="btn btn-primary" @click="checkSecondPage">Next</button>
+                          <div v-if="isInvalidForm" class="text-danger align-self-center">Check for errors in required fields</div>
+                        </div>
                       </div> 
-                    </md-step>
+                    </div>
         
-                    <md-step id="third" md-label="Confirm and Submit" :md-done.sync="third">
+                    <div class="tab-pane fade" :class="{show: active === 'third', active: active === 'third'}" 
+                         id="third" role="tabpanel">
         
-                      <div class="md-headline" style="margin: 10px">
+                      <h3 class="h4" style="margin: 10px">
                         Form Results
-                      </div>
-                      <md-content style="width: 100%; margin: 20px">
-                        <span>Title: {{ dataset.title }}</span>
+                      </h3>
+                      <div class="card-body" style="margin: 20px">
+                        <p><strong>Title:</strong> {{ dataset.title }}</p>
                         <p>
-                          Contact Point: {{ dataset.contactpoint.cpfirstname }} 
+                          <strong>Contact Point:</strong> {{ dataset.contactpoint.cpfirstname }} 
                           {{ dataset.contactpoint.cplastname }} - 
                           {{ dataset.contactpoint.cpemail }}
                         </p>
-                        <p>Text Description: {{ dataset.description }}</p>
-                        <span>Contributors</span>
+                        <p><strong>Text Description:</strong> {{ dataset.description }}</p>
+                        <p><strong>Contributors</strong></p>
                         <div
-                          style="margin-left: 20px"
+                          class="ms-3"
                           v-for="(elem, index) in contributors"
                           v-bind:key="index + 'resContr'"
                         >
@@ -291,32 +321,33 @@
                           <template v-if="(elem.onbehalfof !== null)&&(elem.onbehalfof.name !== undefined)"> - {{elem.onbehalfof.name}}</template>
                         </div> 
                         
-                        <p>Date Published: {{ dataset.datepub['@value'] }}</p>
-                        <p>Date Last Modified: {{ dataset.datemod['@value'] }}</p>
-                        <p> Related publication: </p>
-                        <div style="margin-left: 20px">
+                        <p><strong>Date Published:</strong> {{ dataset.datepub['@value'] }}</p>
+                        <p><strong>Date Last Modified:</strong> {{ dataset.datemod['@value'] }}</p>
+                        <p><strong>Related publication:</strong></p>
+                        <div class="ms-3">
                           {{ dataset.refby }}
                         </div>
-                        <p style="margin-top:10px">Distribution(s):</p> 
+                        <p class="mt-2"><strong>Distribution(s):</strong></p> 
                         <div 
                           v-for="(file, key) in uploadedFiles" 
                           v-bind:key="key+'confirm'" 
-                          style="margin-left:20px;"> 
+                          class="ms-3"> 
                           {{ file.name }} 
                         </div>
-                        <p>Representative Image: {{ rep_image }}</p>
-                      </md-content>
+                        <p><strong>Representative Image:</strong> {{ rep_image }}</p>
+                      </div>
         
-                      <md-card-actions>
-                        <md-button v-on:click="submitForm" class="md-primary"
-                          >Submit</md-button
-                        >
-                      </md-card-actions>
+                      <div class="d-flex gap-2 p-3">
+                        <button type="button" class="btn btn-primary" v-on:click="submitForm">
+                          Submit
+                        </button>
+                      </div>
         
-                    </md-step>
-                </md-steppers>
+                    </div>
+                  </div>
+                </div>
                 </form>
-              </md-card>
+              </div>
           </div>
         </div>
       </template>

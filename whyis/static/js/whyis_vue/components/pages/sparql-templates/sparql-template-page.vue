@@ -1,54 +1,38 @@
 <template>
   <div class="sparql-template-page">
     <div v-if="loadingTemplates">
-      <md-progress-spinner md-mode="indeterminate" />
+      <div class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
     </div>
     <div v-else-if="totalTemplateCount === 0">
       <p>No templates were loaded</p>
     </div>
     <div v-else>
       <div class="button-row">
-        <div>
-          <md-button
-            class="md-icon-button"
-            @click.native.prevent="selectQueryForVizEditor()"
-          >
-            <md-tooltip
-              class="utility-bckg"
-              md-direction="bottom"
-            >
-              Select current query and return to Viz Editor
-            </md-tooltip>
-            <md-icon>check</md-icon>
-          </md-button>
-          <md-button
-            class="md-icon-button"
-            @click.native.prevent="toVizEditor()"
-          >
-            <md-tooltip
-              class="utility-bckg"
-              md-direction="bottom"
-            > Return to viz editor </md-tooltip>
-            <md-icon>arrow_back</md-icon>
-          </md-button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="selectQueryForVizEditor()">
+            <i class="bi bi-check"></i>
+            <span class="visually-hidden">Select current query and return to Viz Editor</span>
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="toVizEditor()">
+            <i class="bi bi-arrow-left"></i>
+            <span class="visually-hidden">Return to viz editor</span>
+          </button>
         </div>
       </div>
-      <md-toolbar>
-        <h3 class="md-title">Query Template</h3>
-      </md-toolbar>
+      <div class="bg-primary text-white p-3 mb-3">
+        <h3 class="h5 mb-0">Query Template</h3>
+      </div>
       <div class="display">
-        <md-button
-          class="template-back"
-          @click="shiftTemplate(-1)"
-        >
-          <md-icon>chevron_left</md-icon>
-        </md-button>
-        <md-button
-          class="template-next"
-          @click="shiftTemplate(1)"
-        >
-          <md-icon>chevron_right</md-icon>
-        </md-button>
+        <button type="button" class="btn btn-outline-secondary template-back" @click="shiftTemplate(-1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button type="button" class="btn btn-outline-secondary template-next" @click="shiftTemplate(1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
         <p class="display-text">
           <span
             v-for="(segment, index) in selectedTemplate.displaySegments"
@@ -101,12 +85,11 @@
           <div v-if="results">
             <yasr :results="results"></yasr>
           </div>
-          <md-progress-spinner
-            v-else
-            :md-diameter="30"
-            :md-stroke="3"
-            md-mode="indeterminate"
-          ></md-progress-spinner>
+          <div class="text-center" v-else>
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
         </accordion>
       </div>
     </div>

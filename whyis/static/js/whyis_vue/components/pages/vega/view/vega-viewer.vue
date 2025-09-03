@@ -43,7 +43,7 @@
       <div class="loading-dialog__justify">
         <div class="viz-sample">
           <div class="viz-sample__header viz-u-mgbottom" v-if="vizOfTheDay">
-            <md-icon style="font-size: 2rem !important; color: gray !important">bar_chart</md-icon> Viz of the day
+            <i class="bi bi-bar-chart" style="font-size: 2rem !important; color: gray !important"></i> Viz of the day
           </div>
           <div class="viz-u-mgbottom-big viz-u-display__desktop" v-else> </div>
           <div class="viz-sample__header viz-u-mgbottom" v-if="!vizOfTheDay">

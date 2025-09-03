@@ -19,7 +19,7 @@ export default Vue.component('vega-editor', {
       showAllTabBtn: false,
       showAllTabs: {display: 'none'},
       paneResize: 18,
-      bottomPosition:'md-bottom-right',
+      bottomPosition:'position-fixed bottom-0 end-0 m-4',
       previewPane: true,
       authenticated: EventServices.authUser,
       restoredChartId: null,

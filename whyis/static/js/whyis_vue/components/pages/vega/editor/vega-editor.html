@@ -13,24 +13,21 @@
           </div>
           <div class="viz-editor-tabs-item tabselected" id="sparql" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
             Sparql
-            <md-tooltip md-direction="bottom">Enter Query</md-tooltip>
+            <span class="visually-hidden">Enter Query</span>
           </div>
           <div class="viz-editor-tabs-item" id="vegaE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
             Vega
-            <md-tooltip md-direction="bottom">Enter Vega Specs</md-tooltip>
+            <span class="visually-hidden">Enter Vega Specs</span>
           </div>
           <div class="viz-editor-tabs-item" id="saveE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
             {{actionType}}
-            <md-tooltip md-direction="bottom">{{actionType}}</md-tooltip>
+            <span class="visually-hidden">{{actionType}}</span>
           </div>
         </div>
         <div class="viz-editor viz-editor-show" id="sparqlc">
-          <md-button
-            class="md-raised"
-            @click="goToSparqlTemplates()"
-          >
+          <button type="button" class="btn btn-outline-primary mb-3" @click="goToSparqlTemplates()">
             Build query from template
-          </md-button>
+          </button>
           <yasqe v-if="query"
             :value="query"
             :readOnly="queryEditorReadOnly"
@@ -41,13 +38,9 @@
         </div>
         <div class="viz-editor" id="vegac">
           <div id="vega-spec-editor" style="height:100%">
-            <md-button
-              class="md-raised"
-              @click="goToDataVoyager()"
-              :disabled="sparqlError"
-            >
+            <button type="button" class="btn btn-outline-primary mb-3" @click="goToDataVoyager()" :disabled="sparqlError">
               Browse Data Voyager
-            </md-button>
+            </button>
             <v-jsoneditor v-if="baseSpec"
               :value="baseSpec"
               @input="setBaseSpec"
@@ -59,19 +52,19 @@
         <div class="viz-editor" id="savec">
           <form class="title-form" @submit.prevent="saveChart">
             <div style="display: block; flex: 1">
-              <md-field class="chart-title-field viz-u-maxwidth">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="chart-title" id="chart-title" :value="title" @input="setTitle" placeholder="Title">
                 <label for="chart-title">Title</label>
-                <md-input name="chart-title" id="chart-title" :value="title" @input="setTitle"/>
-              </md-field>
+              </div>
             </div>
             <div style="display: block;">
-              <md-field class="chart-description-field viz-u-maxwidth">
+              <div class="form-floating mb-3">
+                <textarea class="form-control" name="chart-description" id="chart-description" :value="description" @input="setDescription" placeholder="Description" style="height: 100px"></textarea>
                 <label for="chart-description">Description</label>
-                <md-textarea name="chart-description" id="chart-description" :value="description" @input="setDescription"/>
-              </md-field>
+              </div>
             </div>
             <div style="display: block;">
-              <button type="submit" class="btn btn--primary">{{ actionType }} <md-icon style="color:#32CD32">check</md-icon></button>
+              <button type="submit" class="btn btn-primary">{{ actionType }} <i class="bi bi-check text-success"></i></button>
             </div>
           </form>
         </div>
@@ -79,19 +72,19 @@
     </template>
     <template slot="paneR">
       <div v-if="sparqlError">
-        <md-content class="md-accent">
+        <div class="alert alert-danger">
           The SPARQL query failed to execute.  Please ensure syntax is valid and try again.
-        </md-content>
+        </div>
       </div>
       <div v-else>
         <div style="text-align: right;">
           <a @click.prevent="previewPane=true"  class="viz-editor-tabs-item" :class="{tabselected:previewPane}">
             Chart
-            <md-tooltip md-direction="bottom">Chart Preview</md-tooltip>
+            <span class="visually-hidden">Chart Preview</span>
           </a>
           <a @click.prevent="previewPane=false" class="viz-editor-tabs-item" :class="{tabselected:previewPane == false}">
             Table
-            <md-tooltip md-direction="bottom">Table Preview</md-tooltip>
+            <span class="visually-hidden">Table Preview</span>
           </a>
         </div>
         <div class="vega-container" v-if="previewPane">
@@ -107,9 +100,11 @@
       </div>
     </template>
   </split-pane>
-  <md-speed-dial :class="bottomPosition" >
-    <md-speed-dial-target class="utility-float-icon" @click.native.prevent="navBack">
-      <md-icon>arrow_back</md-icon>
-    </md-speed-dial-target>
-  </md-speed-dial>
+  <!-- Bootstrap floating action button replacement -->
+  <div class="position-fixed bottom-0 end-0 m-4">
+    <button type="button" class="btn btn-primary rounded-circle p-3" @click.prevent="navBack">
+      <i class="bi bi-arrow-left"></i>
+      <span class="visually-hidden">Go Back</span>
+    </button>
+  </div>
 </div>
