@@ -13,7 +13,7 @@
     
     <div>
     <!-- Bootstrap Modal -->
-    <div class="modal fade" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+    <div class="modal fade" id="addTypeModal" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header utility-dialog-box_header">
