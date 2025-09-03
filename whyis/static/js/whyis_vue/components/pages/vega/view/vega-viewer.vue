@@ -3,46 +3,39 @@
     <div class="utility-content__result">
       <div class="utility-gridicon-single" v-if="!loading">
         <div v-if="!vizOfTheDay">
-          <md-button class="md-icon-button" @click.native.prevent="navBack">
-            <md-tooltip class="utility-bckg" md-direction="bottom"> Go Back </md-tooltip>
-            <md-icon>arrow_back</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="navBack" title="Go Back">
+            <i class="bi bi-arrow-left"></i>
+          </button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="shareChart">
-            <md-tooltip class="utility-bckg" md-direction="top"> Share Chart </md-tooltip>
-            <md-icon>share</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="shareChart" title="Share Chart">
+            <i class="bi bi-share"></i>
+          </button>
         </div>
         <div v-if="chart.query">
-          <md-button class="md-icon-button" @click.native.prevent="chartQuery">
-            <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Query </md-tooltip>
-            <md-icon>preview</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="chartQuery" title="Preview Chart Query">
+            <i class="bi bi-eye"></i>
+          </button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="tableView">
-            <md-tooltip class="utility-bckg" md-direction="bottom"> View Data as Table </md-tooltip>
-            <md-icon>table_view</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="tableView" title="View Data as Table">
+            <i class="bi bi-table"></i>
+          </button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="specViewer.show = true">
-            <md-tooltip class="utility-bckg" md-direction="bottom"> Preview Chart Spec </md-tooltip>
-            <md-icon>integration_instructions</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="specViewer.show = true" title="Preview Chart Spec">
+            <i class="bi bi-code-slash"></i>
+          </button>
         </div>
         <div>
-          <md-button class="md-icon-button" @click.native.prevent="openVoyager()">
-            <md-tooltip class="utility-bckg" md-direction="bottom"> View Data in Voyager </md-tooltip>
-            <md-icon>dynamic_form</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="openVoyager()" title="View Data in Voyager">
+            <i class="bi bi-grid-3x3-gap"></i>
+          </button>
         </div>
         <div v-if="allowEdit">
-          <md-button class="md-icon-button" @click.native.prevent="editChart">
-            <md-tooltip class="utility-bckg" md-direction="top"> Edit Chart </md-tooltip>
-            <md-icon>edit</md-icon>
-          </md-button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="editChart" title="Edit Chart">
+            <i class="bi bi-pencil"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -59,7 +52,7 @@
           <div class="viz-sample__content">
             <temp-filler class="viz-sample__loading viz-sample__loading_anim" v-if="loading" />
             <div class="" v-else>
-              <div class="md-headline viz-u-mgup-sm btn--animated">{{chart.title}}</div>
+              <h3 class="h4 viz-u-mgup-sm btn--animated">{{ chart.title }}</h3>
               <div class="btn--animated">
                 {{ slugify(chart.description) }}
               </div>
@@ -87,22 +80,35 @@
         <vega-lite :spec="spec" class="btn--animated"/>
         <a @click.prevent="navBack(true)" class="btn btn_small btn--primary utility-margin-big viz-u-display__ph" v-if="vizOfTheDay">View Gallery</a>
       </div>
-      <md-dialog :md-active.sync="specViewer.show" class="chart-spec">
-        <md-dialog-title>Chart Vega Spec</md-dialog-title>
-        <md-content class="vega-spec-container">
-          <v-jsoneditor
-            v-model="specViewerSpec"
-            :options="specViewer.jsonEditorOpts"
-          >
-          </v-jsoneditor>
-        </md-content>
-        <div class="vega-spec-controls">
-          <md-checkbox v-model="specViewer.includeData">Include data in spec</md-checkbox>
+      <!-- Bootstrap Modal for Chart Spec -->
+      <div class="modal fade" tabindex="-1" :class="{'show': specViewer.show}" :style="{display: specViewer.show ? 'block' : 'none'}" v-if="specViewer.show">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Chart Vega Spec</h5>
+              <button type="button" class="btn-close" @click="specViewer.show = false" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="vega-spec-container">
+                <v-jsoneditor
+                  v-model="specViewerSpec"
+                  :options="specViewer.jsonEditorOpts"
+                >
+                </v-jsoneditor>
+              </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" v-model="specViewer.includeData" id="includeDataCheck">
+                <label class="form-check-label" for="includeDataCheck">
+                  Include data in spec
+                </label>
+              </div>
+              <button type="button" class="btn btn-primary" @click="specViewer.show = false">Close</button>
+            </div>
+          </div>
         </div>
-        <md-dialog-actions>
-          <md-button class="md-primary" @click="specViewer.show = false">Close</md-button>
-        </md-dialog-actions>
-      </md-dialog>
+      </div>
       <data-voyager v-if="voyager.show" :data="spec.data"></data-voyager>
     </div>
   </div>
