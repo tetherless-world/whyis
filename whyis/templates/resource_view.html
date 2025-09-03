@@ -5,8 +5,8 @@
 {% set attributes = this | include("attributes") | fromjson  %}
 {% set incoming = this | include("incoming") | fromjson  %}
 {% set outgoing = this | include("outgoing") | fromjson  %}
-    <md-card-header>
-        <md-card-header-text>
+    <div class="card">
+      <div class="card-header">
             <ul class="nav nav-tabs">
                 {% for v in this | get_views_list -%}
                 <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
@@ -38,26 +38,28 @@
                 </li>
                 {% endif %}
             </ul>
-            <div class="md-layout md-gutter md-alignment-center-left" style = "margin-top: 6px;">
-                <div class = "md-layout-item">
-                    <div class="md-title">{{attributes.label}}</div>
-                    {% if attributes.type | length > 0 %}<div class="md-subhead" style="max-width: fit-content;">
+            <div class="row align-items-center mt-2">
+                <div class="col">
+                    <h4 class="mb-1">{{attributes.label}}</h4>
+                    {% if attributes.type | length > 0 %}<p class="text-muted mb-0">
                         {% for type in attributes.type %}{{type.label}}{% if not loop.last %}, {% endif %} {% endfor %}
-                    </div>{% endif %}
+                    </p>{% endif %}
                 </div>
-                <add-knowledge-menu class="md-subhead md-layout-item"
-                    style="max-width: fit-content;"
-                    uri="{{attributes['@id']}}">
-                </add-knowledge-menu>
+                <div class="col-auto">
+                    <add-knowledge-menu class="text-muted"
+                        uri="{{attributes['@id']}}">
+                    </add-knowledge-menu>
+                </div>
             </div>
-        </md-card-header-text>
-        {% if attributes.thumbnail %}<md-card-media md-big >
-            <img src="{{url_for('entity.view', uri=attributes.thumbnail)}}" alt="{{attributes.label}}"/>
-        </md-card-media>{% endif %}
-    </md-card-header>
-    <md-card-content>
-        <div class="md-layout md-gutter">
-            <div class="md-layout-item">
+        {% if attributes.thumbnail %}
+        <div class="mt-3">
+            <img src="{{url_for('entity.view', uri=attributes.thumbnail)}}" alt="{{attributes.label}}" class="img-fluid"/>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="row">
+            <div class="col">
                 <dl>
                 {% for desc in attributes.description %}<dt>{{desc.label}}:</dt> <dd>{{desc.value}}</dd>
                 {% endfor %}
@@ -72,38 +74,38 @@
                 {% endfor %}
                 </dl>
             </div>
-            <div class="md-layout-item">
+            <div class="col">
                 {% for link_name, items in outgoing | groupby("link_label") %}
                 <h2>{{link_name.title() }}</h2>
-                <div class="md-layout md-gutter md-alignment-top-left">
+                <div class="row g-3">
                 {% for item in items %}
-                <md-card style="margin-bottom: 1em; width: 300px" class="md-layout-item">
-                    <md-card-header>
-                        <md-card-header-text>
-                            <div class="md-title">{{item.target_label}}</div>
-                        </md-card-header-text>
+                <div class="col-12 col-sm-6 col-lg-4">
+                  <div class="card mb-3" style="width: 300px">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">{{item.target_label}}</h5>
                         {% if this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
-                        <md-card-media md-medium>
-                            {% set depiction = this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
+                        {% set depiction = this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
+                        <div class="mt-2">
                             {% if depiction.startswith(config['LOD_PREFIX']) %}
-                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.target_label}}">
+                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.target_label}}" class="img-fluid">
                             {% else %}
-                            <img src="{{depiction}}" alt="{{item.target_label}}">
+                            <img src="{{depiction}}" alt="{{item.target_label}}" class="img-fluid">
                             {% endif %}
-                        </md-card-media>
+                        </div>
                         {% endif %}
-                    </md-card-header>
+                    </div>
 
-                    <md-card-actions>
-                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="md-button-icon">View</md-button>
+                    <div class="card-footer">
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="btn btn-sm btn-outline-primary">View</a>
                         {% if this.graph.value(rdflib.URIRef(item.target), ns.whyis.hasFileID) %}
-                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="md-button-icon">Download</md-button>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="btn btn-sm btn-outline-primary">Download</a>
                         {% endif %}
                         <add-knowledge-menu uri="{{item.target}}"></add-knowledge-menu>
-                    </md-card-actions>
-                </md-card>
+                    </div>
+                  </div>
+                </div>
                 {% endfor %}
-            </div>
+                </div>
                 {% endfor %}
                 {% for link_name, items in incoming | groupby("link_label") %}
                 <h2>
@@ -113,37 +115,38 @@
                   {{link_name.title()}} Of
                   {% endif %}
                 </h2>
-                <div class="md-layout md-gutter md-alignment-top-left">
+                <div class="row g-3">
                 {% for item in items %}
-                <md-card style="margin-bottom: 1em; width: 300px" class="md-layout-item">
-                    <md-card-header>
-                        <md-card-header-text>
-                            <div class="md-title">{{item.source_label}}</div>
-                        </md-card-header-text>
+                <div class="col-12 col-sm-6 col-lg-4">
+                  <div class="card mb-3" style="width: 300px">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">{{item.source_label}}</h5>
                         {% if this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
-                        <md-card-media md-medium>
-                            {% set depiction = this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
+                        {% set depiction = this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
+                        <div class="mt-2">
                             {% if depiction.startswith(config['LOD_PREFIX']) %}
-                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.source_label}}">
+                            <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.source_label}}" class="img-fluid">
                             {% else %}
-                            <img src="{{depiction}}" alt="{{item.source_label}}">
+                            <img src="{{depiction}}" alt="{{item.source_label}}" class="img-fluid">
                             {% endif %}
-                        </md-card-media>
+                        </div>
                         {% endif %}
-                    </md-card-header>
+                    </div>
 
-                    <md-card-actions>
-                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='view')}}" class="md-button-icon">View</md-button>
+                    <div class="card-footer">
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='view')}}" class="btn btn-sm btn-outline-primary">View</a>
                         {% if this.graph.value(rdflib.URIRef(item.source), ns.whyis.hasFileID) %}
-                        <md-button href="{{url_for('entity.view', uri=rdflib.URIRef(item.source))}}" class="md-button-icon">Download</md-button>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source))}}" class="btn btn-sm btn-outline-primary">Download</a>
                         {% endif %}
                         <add-knowledge-menu uri="{{item.source}}"></add-knowledge-menu>
-                    </md-card-actions>
-                </md-card>
+                    </div>
+                  </div>
+                </div>
                 {% endfor %}
-            </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
-    </md-card-content>
+      </div>
+    </div>
 {% endblock %}

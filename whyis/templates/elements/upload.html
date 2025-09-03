@@ -1,31 +1,37 @@
 {% from "_macros.html" import get_label %}
 {% macro upload_button_modal(resource) %}
 {% if g.current_user and g.current_user.is_authenticated %}
-<md-button md-secondary class="md-icon-button" aria-label="Upload File" title="Upload File" data-toggle="modal" data-target="#uploadModal">
-  <md-icon>file_upload</md-icon>
-</md-button>
+<button type="button" class="btn btn-outline-secondary" aria-label="Upload File" title="Upload File" data-bs-toggle="modal" data-bs-target="#uploadModal">
+  <i class="bi bi-upload"></i>
+</button>
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
   <div class="modal-dialog" role="document">
     <form class="modal-content" action="" method="post" enctype="multipart/form-data">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="uploadModalLabel">Upload File for {{get_label(resource)}}</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>
-          <div class="form-group">
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" selected="selected" value="http://purl.org/net/provenance/ns#File">Single File
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" value="http://purl.org/dc/dcmitype/Collection"> Collection
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" value="http://www.w3.org/ns/dcat#Dataset"> Dataset
-            </label>
+          <div class="form-group mb-3">
+            <label class="form-label">Upload Type</label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="upload-file" checked value="http://purl.org/net/provenance/ns#File">
+                <label class="form-check-label" for="upload-file">Single File</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="upload-collection" value="http://purl.org/dc/dcmitype/Collection">
+                <label class="form-check-label" for="upload-collection">Collection</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="upload-dataset" value="http://www.w3.org/ns/dcat#Dataset">
+                <label class="form-check-label" for="upload-dataset">Dataset</label>
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <input name="file" type="file" class="file" multiple>
+            <input name="file" type="file" class="form-control" multiple>
           </div>
         </p>
       </div>
@@ -37,31 +43,38 @@
 
 {% macro upload_button_tab_modal(resource) %}
 {% if g.current_user and g.current_user.is_authenticated %}
-<a class="nav-link" aria-label="Upload file for this entity" title="Upload file for this entity." data-toggle="modal" data-target="#uploadModal">
+<a class="nav-link" aria-label="Upload file for this entity" title="Upload file for this entity." data-bs-toggle="modal" data-bs-target="#uploadTabModal">
     Upload
 </a>
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel">
+<div class="modal fade" id="uploadTabModal" tabindex="-1" role="dialog" aria-labelledby="uploadTabModalLabel">
   <div class="modal-dialog" role="document">
     <form class="modal-content" action="" method="post" enctype="multipart/form-data">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="uploadModalLabel">Upload File for {{get_label(resource)}}</h4>
+        <h4 class="modal-title" id="uploadTabModalLabel">Upload File for {{get_label(resource)}}</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>
-          <div class="form-group">
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" selected="selected" value="http://purl.org/net/provenance/ns#File">Single File
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" value="http://purl.org/dc/dcmitype/Collection"> Collection
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="upload_type" value="http://www.w3.org/ns/dcat#Dataset"> Dataset
-            </label>
+          <div class="form-group mb-3">
+            <label class="form-label">Upload Type</label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="tab-upload-file" checked value="http://purl.org/net/provenance/ns#File">
+                <label class="form-check-label" for="tab-upload-file">Single File</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="tab-upload-collection" value="http://purl.org/dc/dcmitype/Collection">
+                <label class="form-check-label" for="tab-upload-collection">Collection</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="upload_type" id="tab-upload-dataset" value="http://www.w3.org/ns/dcat#Dataset">
+                <label class="form-check-label" for="tab-upload-dataset">Dataset</label>
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <input name="file" type="file" class="file" multiple>
+            <label class="form-label">Files</label>
+            <input name="file" type="file" class="form-control" multiple placeholder="Add files here.">
           </div>
         </p>
       </div>
@@ -78,26 +91,44 @@
     Upload
 </a>
 
-<md-dialog :md-active.sync="showUploadDialog">
-    <md-dialog-title>Upload File for {{get_label(resource)}}</md-dialog-title>
-    <md-dialog-content>
+<div class="modal fade" :class="{show: showUploadDialog}" :style="{display: showUploadDialog ? 'block' : 'none'}" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload File for {{get_label(resource)}}</h5>
+        <button type="button" class="btn-close" @click="showUploadDialog = false" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
         <form id="upload_form" enctype="multipart/form-data" novalidate method="post" action="">
+          <div class="mb-3">
+            <label class="form-label">Upload Type</label>
             <div>
-                <label for="upload_type">Upload Type</label><br/>
-                <input type="radio" name="upload_type" checked value="http://purl.org/net/provenance/ns#File">Single File</md-radio>
-                <input type="radio"  name="upload_type" value="http://purl.org/dc/dcmitype/Collection">Collection</md-radio>
-                <input type="radio"  name="upload_type" value="http://www.w3.org/ns/dcat#Dataset">Dataset</md-radio>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="vue-upload-file" checked value="http://purl.org/net/provenance/ns#File">
+                <label class="form-check-label" for="vue-upload-file">Single File</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="vue-upload-collection" value="http://purl.org/dc/dcmitype/Collection">
+                <label class="form-check-label" for="vue-upload-collection">Collection</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="vue-upload-dataset" value="http://www.w3.org/ns/dcat#Dataset">
+                <label class="form-check-label" for="vue-upload-dataset">Dataset</label>
+              </div>
             </div>
-            <md-field>
-                <label>Files</label>
-                <md-file name="file" multiple placeholder="Add files here." />
-            </md-field>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Files</label>
+            <input name="file" type="file" class="form-control" multiple placeholder="Add files here.">
+          </div>
         </form>
-    </md-dialog-content>
-    <md-dialog-actions>
-        <md-button class="md-primary" @click="showUploadDialog = false">Close</md-button>
-        <md-button class="md-primary" form="upload_form" type="submit" >Upload</md-button>
-    </md-dialog-actions>
-</md-dialog>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @click="showUploadDialog = false">Close</button>
+        <button type="submit" form="upload_form" class="btn btn-primary">Upload</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 {% endmacro %}
