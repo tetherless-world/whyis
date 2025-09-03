@@ -1,27 +1,38 @@
 <template>
-  <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-    <div style="margin:2em">
-      <md-dialog-title>Upload Knowledge</md-dialog-title>
-      <md-field>
-        <label>RDF File</label>
-        <md-file v-model="file.name" @md-change="handleFileUpload($event)" placeholder="Upload Knowledge in RDF" />
-      </md-field>
-      <md-field>
-        <label>Format</label>
-        <md-select :required="true" v-model="format" name="format" id="format">
-          <md-option v-for="f in formats" :value="f.name">{{f.name}}</md-option>
-        </md-select>
-      </md-field>
-      <md-dialog-actions>
-        <md-button @click.prevent="onCancel" class="md-primary">
-          Cancel
-        </md-button>
-        <md-button v-on:click="onSubmit()" class="md-primary">
-          Add
-        </md-button>
-      </md-dialog-actions>
+  <!-- Bootstrap Modal -->
+  <div class="modal fade" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload Knowledge</h5>
+          <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="margin:2em">
+          <div class="mb-3">
+            <label for="rdfFile" class="form-label">RDF File</label>
+            <input class="form-control" type="file" id="rdfFile" @change="handleFileUpload($event)" accept=".rdf,.json,.jsonld,.ttl,.trig,.nq,.nquads,.nt,.ntriples">
+            <div class="form-text">Upload Knowledge in RDF format</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="format" class="form-label">Format</label>
+            <select class="form-select" id="format" v-model="format" required>
+              <option value="">Select format...</option>
+              <option v-for="f in formats" :key="f.name" :value="f.name">{{ f.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click.prevent="onCancel">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" @click="onSubmit()">
+            Add
+          </button>
+        </div>
+      </div>
     </div>
-  </md-dialog>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
@@ -75,7 +86,8 @@ export default Vue.component('upload-knowledge', {
         },
         handleFileUpload(event) {
             console.log(event);
-            this.fileobj = event[0];
+            this.fileobj = event.target.files[0];
+            this.file.name = event.target.files[0] ? event.target.files[0].name : '';
         },
         async save() {
             let format = this.format;

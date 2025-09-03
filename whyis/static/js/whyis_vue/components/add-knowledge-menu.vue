@@ -1,14 +1,15 @@
 <template>
 <div>
-  <md-menu md-size="medium" md-align-trigger>
-    <md-button md-menu-trigger v-on:click="whichAdd = ''"><md-icon>menu</md-icon></md-button>
-
-    <md-menu-content>
-      <md-menu-item v-on:click="whichAdd = 'addLink'">Add Link</md-menu-item>
-      <md-menu-item v-on:click="whichAdd = 'addType'">Add Type</md-menu-item>
-      <md-menu-item v-on:click="whichAdd = 'addAttribute'">Add Attribute</md-menu-item>
-    </md-menu-content>
-  </md-menu>
+  <div class="dropdown">
+    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="addKnowledgeMenu" data-bs-toggle="dropdown" aria-expanded="false" @click="whichAdd = ''">
+      <i class="bi bi-list"></i>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="addKnowledgeMenu">
+      <li><button class="dropdown-item" type="button" @click="whichAdd = 'addLink'">Add Link</button></li>
+      <li><button class="dropdown-item" type="button" @click="whichAdd = 'addType'">Add Type</button></li>
+      <li><button class="dropdown-item" type="button" @click="whichAdd = 'addAttribute'">Add Attribute</button></li>
+    </ul>
+  </div>
   <add-link v-if="whichAdd == 'addLink'" v-bind:uri="uri" hideButton="true"></add-link>
   <add-type v-if="whichAdd == 'addType'" v-bind:uri="uri" hideButton="true"></add-type>
   <add-attribute v-if="whichAdd == 'addAttribute'" v-bind:uri="uri" hideButton="true"></add-attribute>

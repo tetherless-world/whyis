@@ -72,24 +72,26 @@
         </div>
 
         <div class="utility-dialog-box_login" v-else-if="makeNew.status">
-          <md-field v-if="makeNew.type === 'organization'">
-              <label>Name of Organization</label>
-              <md-input v-model="organization.name"></md-input>
-          </md-field>
+          <div v-if="makeNew.type === 'organization'" class="mb-3">
+            <div class="form-floating">
+              <input type="text" class="form-control" id="organizationName" v-model="organization.name" placeholder="Name of Organization">
+              <label for="organizationName">Name of Organization</label>
+            </div>
+          </div>
 
           <div v-else-if="makeNew.type === 'author'" >
-            <div class="md-layout md-gutter" style="align-items: center; justify-content:center">  
-              <div class="md-layout-item md-size-50">
-                <md-field>
-                  <label>Name</label>
-                  <md-input v-model="author.name" required=""></md-input> 
-                </md-field>
+            <div class="row g-3" style="align-items: center; justify-content:center">  
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="authorName" v-model="author.name" placeholder="Name" required>
+                  <label for="authorName">Name</label>
+                </div>
               </div> 
-              <div class="md-layout-item md-size-50">
-                <md-field>
-                  <label>ORCID Identifier</label>
-                  <md-input v-model="author['@id']" style="max-width: 100%" required></md-input> 
-                </md-field>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="authorOrcid" v-model="author['@id']" placeholder="ORCID Identifier" required>
+                  <label for="authorOrcid">ORCID Identifier</label>
+                </div>
               </div> 
             </div>
             <div style="margin-bottom: 40px; text-align: center;">
@@ -102,47 +104,46 @@
             <div class="utility-align--right utility-margin-top"> 
             </div>
             <div class="utility-align--right utility-margin-top">
-              <a @click.prevent="onCancel" class="btn-text btn-text--default"> &larr; Exit</a> &nbsp; &nbsp;
-              <a @click.prevent="onSubmitNew" class="btn-text btn-text--default">Submit &rarr; </a>
+              <button type="button" class="btn btn-secondary me-2" @click.prevent="onCancel">Exit</button>
+              <button type="button" class="btn btn-primary" @click.prevent="onSubmitNew">Submit</button>
             </div>
           </div>
         </div>
 
         <div class="utility-dialog-box_login" v-else>
-          <div class="md-layout-item">
-            <md-field>
-              <label for="movie">Filter By</label>
-              <md-select v-model="filterby" name="filterby" id="filterby" placeholder="Filter By">
-                <md-option value="title">Chart Title</md-option>
-                <md-option value="query">Chart Query</md-option>
-                <md-option value="description">Chart Description</md-option>
-              </md-select>
-            </md-field>
+          <div class="mb-3">
+            <div class="form-floating">
+              <select class="form-select" id="filterby" v-model="filterby">
+                <option value="title">Chart Title</option>
+                <option value="query">Chart Query</option>
+                <option value="description">Chart Description</option>
+              </select>
+              <label for="filterby">Filter By</label>
+            </div>
           </div>
-          <md-autocomplete v-model="selectedText" :md-options="filterby == 'title' ? chartResults.title: filterby == 'query' ? chartResults.query : chartResults.description" :md-open-on-focus="false">
-            <label>Filter Keyword</label>
-
-            <template slot="md-autocomplete-item" slot-scope="{ item, term }">
-              <md-highlight-text :md-term="term">{{ item }}</md-highlight-text>
-            </template>
-
-            <template slot="md-autocomplete-empty" slot-scope="{ term }">
-              No {{ filterby }} matching "{{ term }}" were found.
-            </template>
-          </md-autocomplete>
+          <!-- Bootstrap doesn't have direct autocomplete - using input with datalist for similar functionality -->
+          <div class="mb-3">
+            <div class="form-floating">
+              <input class="form-control" list="filterOptions" id="selectedText" v-model="selectedText" placeholder="Filter Keyword">
+              <label for="selectedText">Filter Keyword</label>
+            </div>
+            <datalist id="filterOptions">
+              <option v-for="item in (filterby == 'title' ? chartResults.title: filterby == 'query' ? chartResults.query : chartResults.description)" :value="item" :key="item">
+            </datalist>
+          </div>
           <div class="utility-margin-big viz-2-col">
             <div class="utility-align--right utility-margin-top">
               
             </div>
             <div class="utility-align--right utility-margin-top">
-              <a @click.prevent="onCancel" class="btn-text btn-text--default"> &larr; Exit</a> &nbsp; &nbsp;
-              <a @click.prevent="onConfirm" class="btn-text btn-text--default">Filter &rarr; </a>
+              <button type="button" class="btn btn-secondary me-2" @click.prevent="onCancel">Exit</button>
+              <button type="button" class="btn btn-primary" @click.prevent="onConfirm">Filter</button>
             </div>
           </div>
         </div>
       </div>
 
-    </md-dialog>
+    </div>
   </div>
 </template>
 <style lang="scss" src="../../assets/css/main.scss"></style>
@@ -191,7 +192,7 @@
     computed: {
       messageClass () {
         return {
-          'md-invalid': this.hasMessages
+          'is-invalid': this.hasMessages
         }
       },
     },

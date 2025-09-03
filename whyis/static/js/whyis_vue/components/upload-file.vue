@@ -1,23 +1,52 @@
 <template>
-
-<md-dialog :md-active.sync="active"  :md-click-outside-to-close="true" @md-clicked-outside="resetDialogBox()">
-  <md-dialog-title>Upload File for {{label}}</md-dialog-title>
-    <form style="margin:2em;" id="upload_form" enctype="multipart/form-data" novalidate method="post" action="">
-      <p>
-          <md-radio name="upload_type" v-model="upload_type" checked value="http://purl.org/net/provenance/ns#File">Single File</md-radio>
-          <md-radio name="upload_type" v-model="upload_type" value="http://purl.org/dc/dcmitype/Collection">Collection</md-radio>
-          <md-radio name="upload_type" v-model="upload_type" value="http://www.w3.org/ns/dcat#Dataset">Dataset</md-radio>
-      </p>
-      <md-field>
-        <label>File</label>
-        <md-file name="file" multiple placeholder="Add files here." />
-      </md-field>
-  </form>
-  <md-dialog-actions>
-    <md-button @click="resetDialogBox()" class="md-primary" >Close</md-button>
-    <md-button form="upload_form" type="submit" class="md-primary">Upload</md-button>
-  </md-dialog-actions>
-</md-dialog>
+  <!-- Bootstrap Modal -->
+  <div class="modal fade" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload File for {{ label }}</h5>
+          <button type="button" class="btn-close" @click="resetDialogBox" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form style="margin:2em;" id="upload_form" enctype="multipart/form-data" novalidate method="post" action="">
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="singleFile" 
+                       v-model="upload_type" value="http://purl.org/net/provenance/ns#File" checked>
+                <label class="form-check-label" for="singleFile">
+                  Single File
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="collection" 
+                       v-model="upload_type" value="http://purl.org/dc/dcmitype/Collection">
+                <label class="form-check-label" for="collection">
+                  Collection
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="upload_type" id="dataset" 
+                       v-model="upload_type" value="http://www.w3.org/ns/dcat#Dataset">
+                <label class="form-check-label" for="dataset">
+                  Dataset
+                </label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="fileInput" class="form-label">File</label>
+              <input class="form-control" type="file" id="fileInput" name="file" multiple>
+              <div class="form-text">Add files here.</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="resetDialogBox()">Close</button>
+          <button type="submit" form="upload_form" class="btn btn-primary">Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>

@@ -3,102 +3,107 @@
     <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
-            <button class="md-button-icon">
-                <i>+ Add Link</i>
-            <md-tooltip>Add a link to another entity.</md-tooltip>
+            <button class="btn btn-outline-primary btn-sm" style="border:none; background:transparent">
+                <i class="bi bi-plus"></i> Add Link
+                <span class="visually-hidden">Add a link to another entity.</span>
             </button>
         </slot>
     </div>
 
     <div>
-    <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-        <div class="utility-dialog-box_header" >
-            <md-dialog-title>New Link</md-dialog-title>
-        </div>
-        <div style="margin:20px;">
-            <div class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-autocomplete
-                        :value="propertyName"
-                        :md-options="propertyList"
-                        :md-open-on-focus="true"
-                        @md-changed="resolveProperty"
-                        v-on:md-selected="selectedPropertyChange"
-                        @md-opened="showSuggestedProperties"
-                    >
-                        <label>Link Type</label>
-
-                        <template slot="md-autocomplete-item" slot-scope="{ item }">
-                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                            {{item.preflabel}}
-                        </label>
-                        <label v-else md-term="term" md-fuzzy-search="true">
-                            {{item.label}}
-                        </label>
-                        <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
-                        </template>
-
-                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
-                        <p v-if = "term" >No link types matching "{{ term }}" were found.</p>
-                        <p v-else >Type a property name.</p>
-                        <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom property URI</a> 
-                        </template>
-                    </md-autocomplete>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header utility-dialog-box_header">
+            <h5 class="modal-title">New Link</h5>
+            <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="margin:20px;">
+            <div class="mb-3">
+                <!-- Property autocomplete -->
+                <div class="form-floating position-relative">
+                    <input type="text" 
+                           class="form-control" 
+                           id="propertySearch"
+                           v-model="propertyName"
+                           @input="resolveProperty($event.target.value)"
+                           @focus="showSuggestedProperties"
+                           placeholder="Link Type">
+                    <label for="propertySearch">Link Type</label>
+                </div>
+                
+                <!-- Property dropdown results -->
+                <div v-if="propertyList.length > 0" class="dropdown-menu show position-absolute w-100" style="max-height: 200px; overflow-y: auto; z-index: 1060;">
+                    <button v-for="item in propertyList" :key="item.node" 
+                            class="dropdown-item text-start" 
+                            @mousedown="selectedPropertyChange(item)">
+                        <div>
+                            <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                            <span v-else>{{ item.label }}</span>
+                            <small class="text-muted d-block">{{ item.node }}{{ item.property }}</small>
+                        </div>
+                    </button>
+                </div>
+                
+                <div v-if="propertyList.length === 0 && propertyName" class="alert alert-info mt-2">
+                    <p v-if="propertyName">No link types matching "{{ propertyName }}" were found.</p>
+                    <p v-else>Type a property name.</p>
+                    <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom property URI</button> 
                 </div>
             </div>
-            <div v-if="useCustom" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-field >
-                        <label>Full URI of property</label>
-                        <md-input v-model="customPropertyURI"></md-input>
-                    </md-field>
+            
+            <div v-if="useCustom" class="mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="customPropertyURI" v-model="customPropertyURI" placeholder="Full URI of property">
+                    <label for="customPropertyURI">Full URI of property</label>
                 </div>
             </div>
-            <div v-if="property" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-autocomplete
-                        :value="entityName"
-                        :md-options="entityList"
-                        :md-open-on-focus="true"
-                        @md-changed="resolveEntity"
-                        v-on:md-selected="selectedEntityChange"
-                        @md-opened="showNeighborEntities"
-                    >
-                        <label v-if="propertyName">{{propertyName}}</label>
-                        <label v-else>Linked entity</label>
-
-                        <template slot="md-autocomplete-item" slot-scope="{ item }">
-                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                            {{item.preflabel}}  ({{item.class_label}})
-                        </label>
-                        <label v-else md-term="term" md-fuzzy-search="true">
-                            {{item.label}}  ({{item.class_label}})
-                        </label>
-                        
-                        <md-tooltip>{{item.node}}{{item.uri}}</md-tooltip>
-                        </template>
-
-                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
-                        <p v-if = "term" >No entities matching "{{ term }}" were found.</p>
-                        <p v-else >Type an entity name.</p>
-                        </template>
-                    </md-autocomplete>
+            
+            <div v-if="property" class="mb-3">
+                <!-- Entity autocomplete -->
+                <div class="form-floating position-relative">
+                    <input type="text" 
+                           class="form-control" 
+                           id="entitySearch"
+                           v-model="entityName"
+                           @input="resolveEntity($event.target.value)"
+                           @focus="showNeighborEntities"
+                           :placeholder="propertyName || 'Linked entity'">
+                    <label for="entitySearch">{{ propertyName || 'Linked entity' }}</label>
+                </div>
+                
+                <!-- Entity dropdown results -->
+                <div v-if="entityList.length > 0" class="dropdown-menu show position-absolute w-100" style="max-height: 200px; overflow-y: auto; z-index: 1060;">
+                    <button v-for="item in entityList" :key="item.node || item.uri" 
+                            class="dropdown-item text-start" 
+                            @mousedown="selectedEntityChange(item)">
+                        <div>
+                            <span v-if="item.preflabel">{{ item.preflabel }} ({{ item.class_label }})</span>
+                            <span v-else>{{ item.label }} ({{ item.class_label }})</span>
+                            <small class="text-muted d-block">{{ item.node }}{{ item.uri }}</small>
+                        </div>
+                    </button>
+                </div>
+                
+                <div v-if="entityList.length === 0 && entityName" class="alert alert-info mt-2">
+                    <p v-if="entityName">No entities matching "{{ entityName }}" were found.</p>
+                    <p v-else>Type an entity name.</p>
                 </div>
             </div>
-            <div class="utility-margin-big viz-2-col">
-                <div class="utility-align--right utility-margin-top">
-                </div>
-                <div class="utility-align--right utility-margin-top">
-                <md-button @click.prevent="onCancel" class="md-raised">
+            
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" @click.prevent="onCancel">
                     Cancel
-                </md-button>
-                <md-button @click.prevent="onSubmit" class="md-raised">
+                </button>
+                <button type="button" class="btn btn-primary" @click.prevent="onSubmit">
                     Add Link
-                </md-button>
-                </div>
+                </button>
             </div>
+          </div>
         </div>
-    </md-dialog>
+      </div>
+    </div>
     </div>
 </div>
 </template>
@@ -248,7 +253,7 @@ export default Vue.component('add-link', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+            const itemListContainer = document.getElementsByClassName("dropdown-menu")
             if(itemListContainer.length >= 1) {
                 //itemListContainer[0].style['z-index'] = 12;
                 return status = true

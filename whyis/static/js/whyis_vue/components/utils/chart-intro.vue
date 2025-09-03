@@ -5,7 +5,7 @@
                 <img src="/js/whyis_vue/components/gallery/app/static/image/Slide1.gif" class="viz-intro-image" alt="slide-1">
             </div>
             <div style="margin-bottom: 1.5rem !important;">
-                <div><span class="md-display-1 btn--animated viz-intro-title-text">Welcome!</span></div>
+                <div><span class="display-1 btn--animated viz-intro-title-text">Welcome!</span></div>
                 <div class="utility-margin-top viz-intro-text btn--animated">
                     <div style="margin-bottom: .5rem !important;">
                         Inside the Gallery, you will find charts built from data in the NanoMine knowledge graph.
@@ -19,7 +19,7 @@
                 <img src="/js/whyis_vue/components/gallery/app/image/Slide2.gif" class="viz-intro-image" alt="slide-2">
             </div>
             <div style="margin-bottom: 1.5rem !important;">
-                <div><span class="md-display-1 btn--animated viz-intro-title-text">Interact.</span></div>
+                <div><span class="display-1 btn--animated viz-intro-title-text">Interact.</span></div>
                 <div class="utility-margin-top viz-intro-text btn--animated">
                     <div style="margin-bottom: 1rem !important;">
                         Charts are created using Vega-Lite, which brings data visualizations to life through various interactive elements.
@@ -33,7 +33,7 @@
                 <img src="/js/whyis_vue/components/gallery/app/image/Slide3.gif" class="viz-intro-image" alt="slide-3">
             </div>
             <div style="margin-bottom: 1.5rem !important;">
-                <div><span class="md-display-1 btn--animated viz-intro-title-text">Explore.</span></div>
+                <div><span class="display-1 btn--animated viz-intro-title-text">Explore.</span></div>
                 <div class="utility-margin-top viz-intro-text btn--animated">
                     <div style="margin-bottom: 1rem !important;">
                         Each chart offers a unique lens into the NanoMine database.
@@ -48,7 +48,7 @@
                 <img src="/js/whyis_vue/components/gallery/app/image/Slide4.gif" class="viz-intro-image" alt="slide-4">
             </div>
             <div style="margin-bottom: 1.5rem !important;">
-                <div><span class="md-display-1 btn--animated viz-intro-title-text">Create.</span></div>
+                <div><span class="display-1 btn--animated viz-intro-title-text">Create.</span></div>
                 <div class="utility-margin-top viz-intro-text btn--animated">
                     <div style="margin-bottom: 1rem !important;">
                         Users who want to learn more about SPARQL and Vega-Lite are encouraged to contribute to the Gallery.

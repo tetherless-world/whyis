@@ -3,91 +3,90 @@
     <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
-            <button class="md-button-icon"
+            <button class="btn btn-outline-primary btn-sm"
                 style="border:none; background:transparent">
-                <i>+ Add type(s)</i>
-            <md-tooltip>Specify additional type, subclass, or superclass.</md-tooltip>
+                <i class="bi bi-plus"></i> Add type(s)
+            <span class="visually-hidden">Specify additional type, subclass, or superclass.</span>
             </button>
         </slot>
     </div>
     
     <div>
-    <md-dialog :md-active.sync="active" :md-click-outside-to-close="true">
-        <div class="utility-dialog-box_header" >
-            <md-dialog-title> Specify additional types/classes</md-dialog-title>
-        </div>
-        <div style="margin:20px;">
-            <md-autocomplete
-                :value="selectedType" 
-                :md-options="typeList" 
-                :md-open-on-focus="true" 
-                @md-changed="resolveEntityType"
-                v-on:md-selected="selectedTypeChange"
-                @md-opened="showSuggestedTypes"
-                @md-closed="processAutocompleteMenu(true)"
-            >
-                <label>Search for types</label>
-
-                <template style="width: 90% !important; left: 1px !important;" slot="md-autocomplete-item" slot-scope="{ item }">
-                <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                    {{item.preflabel}}
-                </label>
-                <label v-else md-term="term" md-fuzzy-search="true">
-                    {{item.label}}
-                </label>
-                <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
-                </template>
-            
-                <template style="width: 90% !important; left: 1px !important" slot="md-autocomplete-empty" slot-scope="{ term }">
-                <p v-if="term">No types or classes matching "{{ term }}" were found.</p>
-                <p v-else> Enter a type name.</p>
-                <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom type URI</a>         
-                </template>
-            </md-autocomplete>
-            <div v-if="useCustom" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-field>
-                        <label>Full URI of type</label>
-                        <md-input v-model="customTypeURI"></md-input>
-                    <md-button v-on:click="submitCustomURI" class="md-raised">
-                        Confirm URI
-                    </md-button>
-                    </md-field>
-                </div>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header utility-dialog-box_header">
+            <h5 class="modal-title">Specify additional types/classes</h5>
+            <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="margin:20px;">
+            <!-- Custom autocomplete using Bootstrap form controls -->
+            <div class="mb-3">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="typeSearch" v-model="selectedType" 
+                       @input="resolveEntityType($event.target.value)" 
+                       @focus="showSuggestedTypes"
+                       @blur="processAutocompleteMenu(true)"
+                       placeholder="Search for types">
+                <label for="typeSearch">Search for types</label>
+              </div>
+              <!-- Dropdown results -->
+              <div v-if="typeList.length > 0" class="dropdown-menu show" style="position: relative; width: 100%; max-height: 200px; overflow-y: auto;">
+                <button v-for="item in typeList" :key="item.node" 
+                        class="dropdown-item" 
+                        @click="selectedTypeChange(item)">
+                  <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                  <span v-else>{{ item.label }}</span>
+                  <small class="text-muted d-block">{{ item.node }}{{ item.property }}</small>
+                </button>
+              </div>
+              <div v-if="typeList.length === 0 && selectedType" class="alert alert-info mt-2">
+                <p v-if="selectedType">No types or classes matching "{{ selectedType }}" were found.</p>
+                <p v-else>Enter a type name.</p>
+                <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom type URI</button>         
+              </div>
             </div>
-            <div
-                v-for="(chip, key) in typeChips" 
-                v-bind:key="key + 'chips'">
-                <md-chip class="md-layout md-alignment-center-left" v-model=typeChips[key] 
-                    style="margin-bottom:4px; max-width:fit-content">
-                    <div class="md-layout-item" style="max-width:fit-content">
-                        <div v-if= "typeChips[key].preflabel">
-                            {{typeChips[key].preflabel}}
-                        </div>
-                        <div v-else>
-                            {{typeChips[key].label}}
-                        </div>
-                    </div>
-                    <div class="md-layout-item" style="max-width:fit-content">
-                        <button @click="removeChip(key)" style="border:none; border-radius:50%; margin-left:4px">x</button>
-                    </div>
-                </md-chip>
+            
+            <div v-if="useCustom" class="mb-3">
+              <div class="row g-3">
+                <div class="col">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="customTypeURI" v-model="customTypeURI" placeholder="Full URI of type">
+                    <label for="customTypeURI">Full URI of type</label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-primary h-100" @click="submitCustomURI">
+                    Confirm URI
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Selected types as badges -->
+            <div class="mb-3">
+              <div v-for="(chip, key) in typeChips" :key="key + 'chips'" class="d-inline-block me-2 mb-2">
+                <span class="badge bg-secondary d-flex align-items-center">
+                  <span v-if="typeChips[key].preflabel">{{ typeChips[key].preflabel }}</span>
+                  <span v-else>{{ typeChips[key].label }}</span>
+                  <button type="button" class="btn-close btn-close-white ms-2" @click="removeChip(key)" aria-label="Remove"></button>
+                </span>
+              </div>
             </div>
         
-            <div class="utility-margin-big viz-2-col">
-                <div class="utility-align--right utility-margin-top">
-                </div>
-                <div class="utility-align--right utility-margin-top">
-                <md-button @click.prevent="onCancel" class="md-raised">
-                    Cancel
-                </md-button>
-                <md-button @click.prevent="onSubmit" class="md-raised">
-                    Submit
-                </md-button>
-                </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-secondary" @click.prevent="onCancel">
+                Cancel
+              </button>
+              <button type="button" class="btn btn-primary" @click.prevent="onSubmit">
+                Submit
+              </button>
             </div>
+          </div>
         </div>
-    </md-dialog>
+      </div>
+    </div>
     </div>
 </div>
 </template>
@@ -191,7 +190,7 @@ export default Vue.component('add-type', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+            const itemListContainer = document.getElementsByClassName("dropdown-menu")
             if(itemListContainer.length >= 1) {
                 //itemListContainer[0].style['z-index'] = 12;
                 return status = true
