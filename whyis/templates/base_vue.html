@@ -60,7 +60,6 @@
     <div id="page" v-cloak>
 {% block body %}
       <upload-knowledge :active.sync="nav.showAddKnowledgeMenu"></upload-knowledge>
-      <upload-file :active.sync="nav.showUploadDialog" label="{{get_label(this)}}"></upload-file>
       <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
           <div class="navbar-nav me-auto">
@@ -122,7 +121,7 @@
           <section class="d-flex justify-content-end flex-wrap">
             {% block actions %}
             {% if g.current_user and g.current_user.is_authenticated %}
-            <button class="btn btn-secondary btn-sm me-2" @click="nav.showUploadDialog=true" aria-label="Upload File" title="Upload File">
+            <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#vueUploadTabModal" aria-label="Upload File" title="Upload File">
               <i class="bi bi-upload"></i>
             </button>
             <a class="btn btn-secondary btn-sm me-2" href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" aria-label="Edit" title="Edit">
@@ -149,6 +148,12 @@
       {% endblock %}
     </div>
 {% endblock %}
+
+{% if this is defined %}
+{% from "elements/upload.html" import vue_upload_button_tab_modal %}
+{{ vue_upload_button_tab_modal(this) }}
+{% endif %}
+
 {% include "footer.html" %}
 </div>
   </div>
@@ -172,8 +177,7 @@
     {% endif %}
     {% if this is defined %}
     NAVIGATION = {
-      showAddKnowledgeMenu : false,
-      showUploadDialog : false
+      showAddKnowledgeMenu : false
     };
     NODE_URI = "{{this.identifier | safe}}";
     ATTRIBUTES = {{ this | include('attributes') | safe }};

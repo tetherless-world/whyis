@@ -1,5 +1,6 @@
 {% extends "base_vue.html" %}
 {% from "_macros.html" import render_resource_link, render_rdfa_resource_link, get_label, facts_panel, summary_panel, content %}
+{% from "elements/upload.html" import vue_upload_button_tab_modal %}
 {% block title %}{{get_label(this.description())}}{% endblock %}
 {% block content %}
 {% set attributes = this | include("attributes") | fromjson  %}
@@ -25,7 +26,7 @@
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a class="nav-link" @click="nav.showUploadDialog=true" aria-label="Upload file for this entity" title="Upload file for this entity." >
+                  <a class="nav-link" data-bs-toggle="modal" data-bs-target="#vueUploadTabModal" aria-label="Upload file for this entity" title="Upload file for this entity." >
                       Upload
                   </a>
                 </li>
@@ -149,4 +150,6 @@
         </div>
       </div>
     </div>
+
+{{ vue_upload_button_tab_modal(this) }}
 {% endblock %}
