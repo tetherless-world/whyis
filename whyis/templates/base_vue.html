@@ -61,30 +61,30 @@
 {% block body %}
       <upload-knowledge :active.sync="nav.showAddKnowledgeMenu"></upload-knowledge>
       <upload-file :active.sync="nav.showUploadDialog" label="{{get_label(this)}}"></upload-file>
-      <md-toolbar class="md-primary ">
-        <div class="md-toolbar-row">
-          <div class="md-toolbar-section-start"  >
-            <md-menu md-size="medium" md-align-trigger>
-              <md-button md-menu-trigger class="md-icon-button" aria-label="Account menu" >
-                <md-icon>menu</md-icon>
-              </md-button>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+          <div class="navbar-nav me-auto">
+            <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Account menu" >
+                <i class="bi bi-list"></i>
+              </button>
 
-              <md-menu-content>
+              <ul class="dropdown-menu">
                 {% if current_user and not current_user.is_anonymous %}
-                <md-menu-item @click="nav.showAddKnowledgeMenu=true">
+                <li><a class="dropdown-item" href="#" @click="nav.showAddKnowledgeMenu=true">
                   Add Knowledge
-                </md-menu-item>
+                </a></li>
                 {% endif %}
-                <md-menu-item href="{{url_for('sparql_blueprint.sparql_view')}}">Query Data</md-menu-item>
-                <md-menu-item href="{{url_for('entity.view', uri='http://semanticscience.org/resource/Chart', view='new')}}">Create Visualization</md-menu-item>
-                <md-menu-item href="{{url_for('entity.view', uri='http://www.w3.org/ns/dcat#Dataset', view='new')}}">Upload Dataset</md-menu-item>
-              </md-menu-content>
-            </md-menu>
-            <md-button class="md-icon-button" aria-label="Home" href="{{url_for('entity.view',name='')}}">
-              <md-icon>home</md-icon>
-            </md-button>
+                <li><a class="dropdown-item" href="{{url_for('sparql_blueprint.sparql_view')}}">Query Data</a></li>
+                <li><a class="dropdown-item" href="{{url_for('entity.view', uri='http://semanticscience.org/resource/Chart', view='new')}}">Create Visualization</a></li>
+                <li><a class="dropdown-item" href="{{url_for('entity.view', uri='http://www.w3.org/ns/dcat#Dataset', view='new')}}">Upload Dataset</a></li>
+              </ul>
+            </div>
+            <a class="btn btn-primary" aria-label="Home" href="{{url_for('entity.view',name='')}}">
+              <i class="bi bi-house"></i>
+            </a>
           </div>
-          <form class="md-layout-item"
+          <form class="d-flex flex-grow-1 mx-3"
                 novalidate
                 role="search"
                 action="{{url_for('entity.view',name='search')}}"
@@ -92,52 +92,52 @@
                  name="search" >
             <search-autocomplete></search-autocomplete>
           </form>
-          <div class="md-toolbar-section-end" >
+          <div class="navbar-nav">
             {% if not current_user or current_user.is_anonymous %}
-            <md-button href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</md-button>
-            <md-button href="{{url_for('security.register')}}" aria-label="Register" title="">Register</md-button>
+            <a class="btn btn-outline-light me-2" href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</a>
+            <a class="btn btn-outline-light" href="{{url_for('security.register')}}" aria-label="Register" title="">Register</a>
             {% else %}
 
-            <md-menu md-size="medium" md-align-trigger>
-              <md-button md-menu-trigger aria-label="Account menu" >
+            <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Account menu" >
                 Welcome, {{current_user.givenName}} <span class="caret"></span>
-              </md-button>
+              </button>
 
-              <md-menu-content>
-                <md-menu-item href="{{url_for('security.logout')}}" id="log-out">Log Out</md-menu-item>
-                <md-menu-item href="{{url_for('security.change_password')}}" id="change-password">Change Password</md-menu-item>
-              </md-menu-content>
-            </md-menu>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{url_for('security.logout')}}" id="log-out">Log Out</a></li>
+                <li><a class="dropdown-item" href="{{url_for('security.change_password')}}" id="change-password">Change Password</a></li>
+              </ul>
+            </div>
             {% endif %}
           </div>
         </div>
 
-      </md-toolbar>
-      <md-content class="" >
-        <div layout="row">
+      </nav>
+      <div class="container-fluid mt-3" >
+        <div class="row">
           {% block pageheader %}
           <h1 style="margin-left:1em" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
           {% if this is defined %}
 
-          <section class="pull-right" layout="row" layout-sm="column" layout-align="center center" layout-wrap ng-cloak>
+          <section class="d-flex justify-content-end flex-wrap">
             {% block actions %}
             {% if g.current_user and g.current_user.is_authenticated %}
-            <md-button md-secondary @click="nav.showUploadDialog=true"  class="md-icon-button" aria-label="Upload File" title="Upload File">
-              <md-icon>file_upload</md-icon>
-            </md-button>
-            <md-button md-secondary href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" class="md-icon-button" aria-label="Edit" title="Edit">
-              <md-icon>create</md-icon>
-            </md-button>
+            <button class="btn btn-secondary btn-sm me-2" @click="nav.showUploadDialog=true" aria-label="Upload File" title="Upload File">
+              <i class="bi bi-upload"></i>
+            </button>
+            <a class="btn btn-secondary btn-sm me-2" href="{{url_for('entity.view',view='edit', uri=this.identifier)}}" aria-label="Edit" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </a>
             {% endif %}
             {% if this.description().value(ns.whyis.hasFileID) %}
-            <md-button md-secondary href="{{url_for('entity.view',uri=this.identifier)}}" class="md-icon-button" aria-label="Download File" title="Download File">
-              <md-icon>file_download</md-icon>
-            </md-button>
+            <a class="btn btn-secondary btn-sm me-2" href="{{url_for('entity.view',uri=this.identifier)}}" aria-label="Download File" title="Download File">
+              <i class="bi bi-download"></i>
+            </a>
             {% endif %}
             {% if not this.identifier.startswith(ns.local) %}
-            <md-button md-secondary href="{{this.identifier}}" class="md-icon-button" aria-label="Visit Page" title="Visit Page">
-              <md-icon>launch</md-icon>
-            </md-button>
+            <a class="btn btn-secondary btn-sm me-2" href="{{this.identifier}}" aria-label="Visit Page" title="Visit Page">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
             {% endif %}
             {% endblock %}
           </section>
@@ -147,7 +147,7 @@
       </div>
       {% block content %}
       {% endblock %}
-    </md-content>
+    </div>
 {% endblock %}
 {% include "footer.html" %}
 </div>

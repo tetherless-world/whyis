@@ -174,14 +174,14 @@ html {
         }
     }
     &-show_hide {
-        & > span.md-body-1 {
+        & > span.body-1 {
             display: none !important;
             visibility: hidden !important;
             transition: all 3s ease-in-out;
         }
 
         &:hover {
-            & > span.md-body-1 {
+            & > span.body-1 {
                 display: block !important;
                 visibility: visible !important;
             }
@@ -261,58 +261,13 @@ html {
     }
 }
 
-.md {
-    &-app {
-        font-family: 'Roboto', sans-serif !important;
-        min-height: 99%;
-        overflow: hidden !important;
+.navbar {
+    &-brand {
+        font-size: 1.5rem;
     }
-
-    &-switch {
-        display: flex;
-    }
-
-    &-drawer {
-        width: 280px;
-        max-width: calc(100vw - 125px);
-        height: 100%;
-        background-color: rgba($primary-white, 0.9) !important;
-
-        &-div {
-            height: 3.5rem !important;
-            margin-bottom: 1.2rem !important;
-
-        }
-    }
-
-    &-dialog {
-        bottom: unset
-    }
-
-    &-dialog ::v-deep.md-dialog-container {
-        max-width: 90%;
-        height: auto;
-        @include respond(tab-land) {
-            max-width: 768px;
-        }
-    }
-
-    &-autocomplete + strong {
-        //margin-top: 36px;
-        display: block;
-        //z-index: 1000;
-    }
-
-    &-field {
-        max-width: 100%;
-    }
-
-    &-tabs {
-        margin-bottom: 24px;
-    }
-
-    &-menu-content {
-        z-index: 200;
+    &.nav-bg {
+        background: url('/images/random_network.png') no-repeat bottom center !important;
+        background-size: "cover" !important;
     }
 }
 
