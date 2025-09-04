@@ -1,11 +1,20 @@
 import Vue from 'vue';
-import uuidv4 from "uuid";
 import { EventServices } from '../../../../modules';
 import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "../../../../utilities/dataset-upload";
 import lookupOrcid from "../../../../utilities/orcid-lookup";
 import {processAutocompleteMenu, getAuthorList, getOrganizationlist} from "../../../../utilities/autocomplete-menu"
 import { goToView } from "../../../../utilities/views";
 
+// Simple UUID v4 generator
+function uuidv4() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
 
 const STATUS_INITIAL = 0, STATUS_SAVING = 1, STATUS_SUCCESS = 2, STATUS_FAILED = 3;
 const datasetId = uuidv4(); 
