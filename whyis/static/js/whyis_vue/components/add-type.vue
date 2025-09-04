@@ -68,8 +68,9 @@
             <div class="mb-3">
               <div v-for="(chip, key) in typeChips" :key="key + 'chips'" class="d-inline-block me-2 mb-2">
                 <span class="badge bg-secondary d-flex align-items-center">
-                  <span v-if="typeChips[key].preflabel">{{ typeChips[key].preflabel }}</span>
-                  <span v-else>{{ typeChips[key].label }}</span>
+                  <span v-if="chip.preflabel">{{ chip.preflabel }}</span>
+                  <span v-else-if="chip.label">{{ chip.label }}</span>
+                  <span v-else>{{ chip.node || chip }}</span>
                   <button type="button" class="btn-close btn-close-white ms-2" @click="removeChip(key)" aria-label="Remove"></button>
                 </span>
               </div>

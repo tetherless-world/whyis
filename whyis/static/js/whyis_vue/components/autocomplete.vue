@@ -326,7 +326,17 @@ export default {
         return String(item)
       }
       
-      return item[this.displayField] || String(item)
+      // Try multiple possible label fields in order of preference
+      return item[this.displayField] || 
+             item.preflabel || 
+             item.prefLabel || 
+             item.label || 
+             item.name || 
+             item.title ||
+             item.node ||
+             item.uri ||
+             item.id ||
+             'Unknown'
     },
     
     getOptionKey(option, index) {

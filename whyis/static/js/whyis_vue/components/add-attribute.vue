@@ -21,40 +21,34 @@
           </div>
           <div class="modal-body" style="margin:20px;">
             <div class="row g-3">
-                <div class="col-md-8">
-                    <!-- Custom autocomplete for attributes -->
-                    <div class="form-floating position-relative">
-                        <input type="text" 
-                               class="form-control" 
-                               id="attributeSearch"
-                               v-model="attributeName"
-                               @input="resolveAttribute($event.target.value)"
-                               @focus="showSuggestedAttributes"
-                               placeholder="Attribute">
-                        <label for="attributeSearch">Attribute</label>
-                    </div>
-                    
-                    <!-- Dropdown results -->
-                    <div v-if="propertyList.length > 0" class="dropdown-menu show position-absolute w-100" style="max-height: 200px; overflow-y: auto; z-index: 1060;">
-                        <button v-for="item in propertyList" :key="item.node" 
-                                class="dropdown-item text-start" 
-                                @mousedown="selectedAttributeChange(item)">
-                            <div>
-                                <span v-if="item.preflabel">{{ item.preflabel }}</span>
-                                <span v-else>{{ item.label }}</span>
-                                <small class="text-muted d-block">{{ item.node }}{{ item.property }}</small>
-                            </div>
-                        </button>
-                    </div>
-                    
-                    <div v-if="propertyList.length === 0 && attributeName" class="alert alert-info mt-2">
-                        <p v-if="attributeName">No attributes matching "{{ attributeName }}" were found.</p>
-                        <p v-else>Type a property name.</p>
-                        <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom attribute URI</button> 
-                    </div>
+                <div class="col-md-6">
+                    <!-- Datatype property autocomplete using new component -->
+                    <autocomplete 
+                      v-model="datatypeProperty"
+                      :fetch-data="fetchDatatypePropertyData"
+                      :display-field="'preflabel'"
+                      :key-field="'node'"
+                      @select="selectedDatatypePropertyChange"
+                      placeholder="Search for datatype property"
+                      input-class="form-control">
+                      <template #option="{ item }">
+                        <div>
+                          <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                          <span v-else>{{ item.label }}</span>
+                          <small class="text-muted d-block">{{ item.node || item.property }}</small>
+                        </div>
+                      </template>
+                      <template #no-results="{ query }">
+                        <div class="alert alert-info mt-2">
+                          <p v-if="query">No datatype properties matching "{{ query }}" were found.</p>
+                          <p v-else>Enter a datatype property name.</p>
+                          <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom property URI</button>         
+                        </div>
+                      </template>
+                    </autocomplete>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="form-floating">
                         <select class="form-select" id="datatype" v-model="datatype" @change="selectedDatatypeChange">
                             <option value="">Select data type...</option>
@@ -68,7 +62,7 @@
                     </div>
                 </div>
                 
-                <div v-if="!datatype" class="col-md-4">
+                <div v-if="!datatype" class="col-md-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" id="language" v-model="language" placeholder="Language">
                         <label for="language">Language</label>
@@ -79,29 +73,29 @@
             <div v-if="useCustom" class="row g-3 mt-3">
                 <div class="col">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="customAttributeURI" v-model="customAttributeURI" placeholder="Full URI of attribute">
-                        <label for="customAttributeURI">Full URI of attribute</label>
+                        <input type="text" class="form-control" id="customDatatypePropertyURI" v-model="customDatatypePropertyURI" placeholder="Full URI of datatype property">
+                        <label for="customDatatypePropertyURI">Full URI of datatype property</label>
                     </div>
                 </div>
             </div>
             
-            <div v-if="attribute" class="row g-3 mt-3">
+            <div v-if="datatypeProperty" class="row g-3 mt-3">
                 <div class="col">
                     <div class="form-floating" v-if="(datatype==null)||(datatypes[datatype] && datatypes[datatype].widget=='textarea')">
                         <textarea class="form-control" 
                                   id="valueTextarea"
                                   v-model="value" 
                                   style="height: 100px"
-                                  :placeholder="attribute.label || 'Value'"></textarea>
-                        <label for="valueTextarea">{{ attribute.label || 'Value' }}</label>
+                                  :placeholder="datatypeProperty.preflabel || datatypeProperty.label || 'Value'"></textarea>
+                        <label for="valueTextarea">{{ datatypeProperty.preflabel || datatypeProperty.label || 'Value' }}</label>
                     </div>
                     <div class="form-floating" v-else>
                         <input :type="datatypes[datatype] ? datatypes[datatype].widget : 'text'" 
                                class="form-control" 
                                id="valueInput"
                                v-model="value" 
-                               :placeholder="attribute.label || 'Value'">
-                        <label for="valueInput">{{ attribute.label || 'Value' }}</label>
+                               :placeholder="datatypeProperty.preflabel || datatypeProperty.label || 'Value'">
+                        <label for="valueInput">{{ datatypeProperty.preflabel || datatypeProperty.label || 'Value' }}</label>
                     </div>
                 </div>
             </div>
@@ -132,10 +126,10 @@ export default Vue.component('add-attribute', {
     data: function() {
         return {
             id: null,
-            attribute: null,
-            attributeName: null,
+            datatypeProperty: null,
+            datatypePropertyName: null,
             useCustom: false,
-            customAttributeURI: null,
+            customDatatypePropertyURI: null,
             query: null,
             awaitingResolve: false,
             propertyList: [],
@@ -255,52 +249,47 @@ export default Vue.component('add-attribute', {
         };
     },
     methods: {
-        showSuggestedAttributes(){
-            this.processAutocompleteMenu();
+        async fetchDatatypePropertyData(query) {
+            if (query && query.length > 2) {
+                try {
+                    return await this.getDatatypePropertyList(query);
+                } catch (error) {
+                    console.error('Error fetching datatype properties:', error);
+                    return [];
+                }
+            } else {
+                // Return suggested datatype properties for initial display
+                return await this.getSuggestedDatatypeProperties(this.uri);
+            }
         },
         useCustomURI(){
             this.useCustom = true;
-            this.attribute = "Custom attribute"
+            this.datatypeProperty = "Custom datatype property"
         },
-        resolveAttribute(query){
-            var thisVue = this;
-            this.query = query;
-            if (!thisVue.awaitingResolve) {
-                setTimeout(function () {
-                    console.log(thisVue.query);
-                    if (!thisVue.query.label) {
-                        if (thisVue.query.length > 2) {
-                            thisVue.propertyList = thisVue.getAttributeList(thisVue.query);
-                        } else
-                            thisVue.propertyList = thisVue.getSuggestedAttributes(thisVue.uri);
-                    }
-                    thisVue.awaitingResolve = false;
-                }, 1000);   
+        selectedDatatypePropertyChange(item){
+            this.datatypeProperty = item;
+            if(item.preflabel){
+                this.datatypePropertyName = item.preflabel;
+            } else {
+                this.datatypePropertyName = item.label; 
             }
-            thisVue.awaitingResolve = true;
-        },
-        selectedAttributeChange(item){
-            this.attribute = item;
-            console.log(item);
             if (item.range && this.datatypes[item.range]) {
-                this.datatype = this.datatypes[item.range];
+                this.datatype = item.range;
             }
-            console.log(this);
         },
         selectedDatatypeChange(item){
             console.log(this);
         },
         // Create dialog boxes
         showDialogBox () {
-            this.propertyList = this.getSuggestedAttributes(this.uri);
             this.active=true;
         },
         resetDialogBox(){
             this.active = !this.active;
-            this.attribute = null;
-            this.attributeName = null;
+            this.datatypeProperty = null;
+            this.datatypePropertyName = null;
             this.useCustom = false;
-            this.customAttributeURI = null;
+            this.customDatatypePropertyURI = null;
             this.value = null;
             this.language = null;
             this.datatype = null;
@@ -319,20 +308,22 @@ export default Vue.component('add-attribute', {
                 '@id': this.uri
             }
             if (this.datatype) this.language = null;
-            if (this.attribute.node){
-                jsonLd[this.attribute.node] = {
+            
+            let propertyUri = null;
+            if (this.datatypeProperty && this.datatypeProperty.node){
+                propertyUri = this.datatypeProperty.node;
+            } else if (this.customDatatypePropertyURI){
+                propertyUri = this.customDatatypePropertyURI;
+            }
+            
+            if (propertyUri) {
+                jsonLd[propertyUri] = {
                     "@value" : this.value,
                     "@lang" : this.language,
                     "@type" : this.datatype
                 }
             }
-            else if (this.customAttributeURI){
-                jsonLd[this.customAttributeURI] = {
-                    "@value" : this.value,
-                    "@lang" : this.language,
-                    "@type" : this.datatype
-                }
-            }
+            
             console.log(jsonLd);
             await p
             try {
@@ -350,13 +341,13 @@ export default Vue.component('add-attribute', {
             }
         },
 
-        async getSuggestedAttributes (uri){
-            const suggestedTypes = await axios.get(
+        async getSuggestedDatatypeProperties (uri){
+            const suggestedProperties = await axios.get(
                 `${ROOT_URL}about?view=suggested_attributes&uri=${uri}`)
-            return suggestedTypes.data
+            return suggestedProperties.data
         },
 
-        async getAttributeList (query) {
+        async getDatatypePropertyList (query) {
 	    var combinedList = [];
             const [rdfsProperty, owlDatatypeProperty] = await axios.all([
                 axios.get(
