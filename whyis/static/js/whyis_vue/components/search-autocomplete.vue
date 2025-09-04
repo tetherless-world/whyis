@@ -1,30 +1,26 @@
 <template>
   <div class="position-relative">
     <div class="form-floating">
-      <input type="text" 
-             class="form-control search" 
-             id="searchInput"
+      <autocomplete type="text" 
              v-model="selected" 
-             @input="resolveEntity($event.target.value)"
-             @focus="showDropdown = true"
-             @blur="hideDropdown"
+             :fetch-data="resolveEntity"
+             key-field="label"
+             @select="selectedItemChange"
              placeholder="Search">
-      <label for="searchInput">Search</label>
+        <template #option="{ item }">
+          <div>
+            <span>{{ item.prefLabel }}</span>
+            <span v-if="item.label != item.preflabel" class="text-muted">(match: {{ item.label }})</span>
+          </div>
+        </template>
+        <template #selected="{ item }">
+          <div>
+            <span>{{ item.prefLabel }}</span>
+          </div>
+        </template>
+      </autocomplete>
     </div>
-    
-    <!-- Dropdown results -->
-    <div v-if="showDropdown && items.length > 0" class="dropdown-menu show position-absolute w-100" style="max-height: 300px; overflow-y: auto; z-index: 1050;">
-      <button v-for="item in items" :key="item.node" 
-              class="dropdown-item text-start" 
-              @mousedown="selectedItemChange(item)">
-        <div>
-          <span>{{ item.label }}</span>
-          <span v-if="item.label != item.preflabel" class="text-muted">(preferred: {{ item.preflabel }})</span>
-        </div>
-      </button>
-    </div>
-    
-    <input type="hidden" name="search" v-model="query"/>
+
   </div>
 </template>
 

@@ -8,6 +8,7 @@
 //__webpack_public_path__ = ROOT_URL+'static/dist/';
 import Vue from 'vue'
 import axios from 'axios'
+import 'bootstrap'
 import './modules'
 import './components'
 

@@ -2,8 +2,8 @@
     <div class="">
         <spinner :loading="loading" text='Loading...' v-if="loading"/>
         <div v-else>
-            <div class="album">
-                <kgcard v-for="(entity, index) in results" :key="index" :entity="entity"/>
+            <div class="g-4 row row-cols-auto">
+                <kgcard v-for="(entity, index) in results" :key="index" :entity="entity" />
             </div>
         </div>
     </div>

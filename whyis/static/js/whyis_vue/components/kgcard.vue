@@ -1,14 +1,10 @@
 <template>
-  <div class="card btn--animated h-100">
-    <div class="card-img-top position-relative" @click.prevent="navigate(entity)" style="cursor: pointer;">
-      <img :src="getViewUrl(entity.thumbnail)" class="card-img-top" :alt="entity.label" v-if="entity.thumbnail" style="height: 200px; object-fit: cover;">
-      <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" class="card-img-top" :alt="entity.label" v-else style="height: 200px; object-fit: cover;">
-      <div class="card-img-overlay d-flex align-items-end utility-gridbg">
-        <div class="card-header-content utility-show_hide w-100">
-          <h6 class="card-title text-white fw-bold mb-1">{{ entity.label }}</h6>
-          <p class="card-text text-white-50 small mb-0">{{ entity.description }}</p>
-        </div>
-      </div>
+  <div class="card h-100" style="max-width: 20em; ">
+    <img :src="getViewUrl(entity.thumbnail)" class="card-img-top" :alt="entity.label" v-if="entity.thumbnail" style="height: 10em; object-fit: contain;">
+    <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" class="card-img-top" :alt="entity.label" v-else style="height: 10em; object-fit: contain;">
+    <div class="card-body">
+      <h6 class="card-title">{{ entity.label }}</h6>
+      <p class="card-text ">{{ entity.description }}</p>
     </div>
   </div>
 </template>

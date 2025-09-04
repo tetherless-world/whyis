@@ -1,95 +1,39 @@
 <template>
   <!-- Bootstrap Modal -->
-  <div class="modal fade" id="addKnowledgeModal" tabindex="-1" ref="addKnowledgeModal" aria-labelledby="addKnowledgeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+  <div class="modal fade" id="uploadKnowledgeModal" tabindex="-1" aria-labelledby="uploadKnowledgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addKnowledgeModalLabel">Add Knowledge</h5>
+          <h5 class="modal-title" id="uploadKnowledgeModalLabel">Upload Knowledge</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Knowledge Addition Options -->
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-file-earmark-arrow-up fs-1 text-primary mb-3"></i>
-                  <h6 class="card-title">Upload RDF Knowledge</h6>
-                  <p class="card-text">Upload knowledge in RDF format (Turtle, JSON-LD, etc.)</p>
-                  <button type="button" class="btn btn-primary" @click="showUploadRDF">
-                    Choose Option
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-plus-circle fs-1 text-success mb-3"></i>
-                  <h6 class="card-title">Add Attribute</h6>
-                  <p class="card-text">Add data properties and values to this entity</p>
-                  <button type="button" class="btn btn-success" @click="showAddAttribute">
-                    Choose Option
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-tag fs-1 text-info mb-3"></i>
-                  <h6 class="card-title">Add Type</h6>
-                  <p class="card-text">Specify additional types or classes for this entity</p>
-                  <button type="button" class="btn btn-info" @click="showAddType">
-                    Choose Option
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="bi bi-arrow-right-circle fs-1 text-warning mb-3"></i>
-                  <h6 class="card-title">Add Relationship</h6>
-                  <p class="card-text">Link this entity to other entities in the knowledge base</p>
-                  <button type="button" class="btn btn-warning" @click="showAddRelationship">
-                    Choose Option
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- RDF Upload Section (initially hidden) -->
-          <div v-if="showRDFUpload" class="mt-4 border-top pt-4">
             <h6>Upload RDF Knowledge</h6>
             <div class="mb-3">
               <label for="rdfFile" class="form-label">RDF File</label>
-              <input class="form-control" type="file" id="rdfFile" @change="handleFileUpload($event)" accept=".rdf,.json,.jsonld,.ttl,.trig,.nq,.nquads,.nt,.ntriples">
-              <div class="form-text">Upload Knowledge in RDF format</div>
+              <input class="form-control"
+                     type="file"
+                     id="rdfFile"
+                     @change="handleFileUpload($event)"
+                accept=".rdf,.json,.jsonld,.ttl,.trig,.nq,.nquads,.nt,.ntriples">
+              <div class="form-text">Upload Knowledge in RDF</div>
             </div>
             
             <div class="mb-3">
               <label for="format" class="form-label">Format</label>
               <select class="form-select" id="format" v-model="format" required>
-                <option value="">Select format...</option>
+                <option value="">Format</option>
                 <option v-for="f in formats" :key="f.name" :value="f.name">{{ f.name }}</option>
               </select>
             </div>
             
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-secondary" @click="hideAllForms">
-                Back
-              </button>
-              <button type="button" class="btn btn-primary" @click="onSubmitRDF">
-                Upload RDF
-              </button>
-            </div>
-          </div>
         </div>
         <div class="modal-footer" v-if="!showRDFUpload">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             Cancel
+          </button>
+          <button type="button" class="btn btn-primary" @click="onSubmitRDF">
+            Upload
           </button>
         </div>
       </div>
@@ -116,10 +60,10 @@ var format_map = {
 formats.forEach(function(f) { format_map[f.name] = f; })
 
 export default Vue.component('upload-knowledge', {
-    props: ['active'],
     data: function() {
         return {
             formats: formats,
+            
             file: {name: ''},
             format_map: format_map,
             format: null,
@@ -130,42 +74,9 @@ export default Vue.component('upload-knowledge', {
         };
     },
     methods: {
-        showUploadRDF() {
-            this.showRDFUpload = true;
-        },
-        showAddAttribute() {
-            this.hideModal();
-            // For now, show a simple alert indicating this feature
-            alert('Add Attribute functionality would go here. This requires a specific entity URI context.');
-        },
-        showAddType() {
-            this.hideModal();
-            // For now, show a simple alert indicating this feature
-            alert('Add Type functionality would go here. This requires a specific entity URI context.');
-        },
-        showAddRelationship() {
-            this.hideModal();
-            // For now, show a simple alert indicating this feature
-            alert('Add Relationship functionality would go here. This requires a specific entity URI context.');
-        },
-        hideAllForms() {
-            this.showRDFUpload = false;
-        },
-        showModal() {
-            if (this.$refs.addKnowledgeModal) {
-                this.modalInstance = new bootstrap.Modal(this.$refs.addKnowledgeModal);
-                this.modalInstance.show();
-            }
-        },
-        hideModal() {
-            if (this.modalInstance) {
-                this.modalInstance.hide();
-            }
-        },
         onSubmitRDF() {
             this.save()
             .then(() => {
-                this.hideModal();
                 window.location.reload();
             })
             .catch(err => {
@@ -204,24 +115,6 @@ export default Vue.component('upload-knowledge', {
             }
         },
     },
-    watch: {
-        active: function(newVal) {
-            if (newVal) {
-                this.$nextTick(() => {
-                    this.showModal();
-                });
-            }
-        }
-    },
-    mounted() {
-        // Set up modal event listeners
-        if (this.$refs.addKnowledgeModal) {
-            this.$refs.addKnowledgeModal.addEventListener('hidden.bs.modal', () => {
-                this.$emit('update:active', false);
-                this.showRDFUpload = false;
-            });
-        }
-    }
 });
 
 </script>

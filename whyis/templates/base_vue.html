@@ -66,18 +66,17 @@
   <div >
     <div id="page" v-cloak>
 {% block body %}
-      <upload-knowledge :active.sync="nav.showAddKnowledgeMenu"></upload-knowledge>
+      <upload-knowledge ></upload-knowledge>
       <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-          <div class="navbar-nav me-auto">
-            <div class="dropdown">
-              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Account menu" >
+        <div class="container-fluid d-flex">
+          <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" id="navDropdown" data-bs-toggle="dropdown" >
                 <i class="bi bi-list"></i>
               </button>
 
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu" aria-labelledby="navDropdown">
                 {% if current_user and not current_user.is_anonymous %}
-                <li><a class="dropdown-item" href="#" @click="nav.showAddKnowledgeMenu=true">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKnowledgeModal">
                   Add Knowledge
                 </a></li>
                 {% endif %}
@@ -89,16 +88,15 @@
             <a class="btn btn-primary" aria-label="Home" href="{{url_for('entity.view',name='')}}">
               <i class="bi bi-house"></i>
             </a>
-          </div>
-          <form class="d-flex flex-grow-1 mx-3"
+          <form class="flex-grow-1"
                 novalidate
                 role="search"
                 action="{{url_for('entity.view',name='search')}}"
                 method="get"
                  name="search" >
-            <search-autocomplete></search-autocomplete>
+            <search-autocomplete class="col-sm-auto"></search-autocomplete>
           </form>
-          <div class="navbar-nav">
+          <div class="">
             {% if not current_user or current_user.is_anonymous %}
             <a class="btn btn-outline-light me-2" href="{{url_for('security.login')}}" aria-label="Log in" title="">Log in</a>
             <a class="btn btn-outline-light" href="{{url_for('security.register')}}" aria-label="Register" title="">Register</a>
@@ -119,7 +117,7 @@
         </div>
 
       </nav>
-      <div class="container-fluid mt-3" >
+      <div style="margin-top:0rem !important" class="container-fluid mt-3"  >
         <div class="row">
           {% block pageheader %}
           <h1 style="margin-left:1em" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
@@ -156,13 +154,9 @@
     </div>
 {% endblock %}
 
-{% if this is defined %}
-{% from "elements/upload.html" import vue_upload_button_tab_modal %}
-{{ vue_upload_button_tab_modal(this) }}
-{% endif %}
 
+  </div>
 {% include "footer.html" %}
-</div>
   </div>
 
   <script type="application/javascript">
@@ -210,12 +204,13 @@
     <script type="application/javascript" src='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.bundled.min.js'></script>
     <script type="application/javascript" src='//cdn.jsdelivr.net/yasr/2.10.8/yasr.bundled.min.js'></script>
     <script type="application/javascript" src='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="{{ url_for('static', filename='dist/whyis.js')}}"></script>
 
 {% block scripts %}{% endblock %}
 
-<script>
+<script type="module">
+import {Vue, axios, createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+var app = createApp();  
 // Ensure Bootstrap modals work properly
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all Bootstrap components
@@ -233,20 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-</script>
-
-<script type="module">
-// Vue app initialization 
-try {
-    import('{{ url_for('static', filename='dist/whyis.js')}}').then(module => {
-        // Vue.js initialization handled by the whyis.js module
-        console.log('Whyis Vue.js components loaded');
-    }).catch(e => {
-        console.log('Vue.js module initialization failed:', e);
-    });
-} catch (e) {
-    console.log('Vue.js not available, continuing without Vue');
-}
 </script>
 
 
