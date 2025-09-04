@@ -186,30 +186,26 @@
                           </h3>
 
                           <div>  
-                            <!-- Custom Bootstrap autocomplete for authors -->
-                            <div class="dropdown" style="min-width: 100%;">
-                              <div class="form-floating">
-                                <input type="text" class="form-control" id="authorSearch" 
-                                       v-model="selectedAuthor" 
-                                       @input="resolveEntityAuthor"
-                                       @focus="setListStyle(false)"
-                                       @blur="setListStyle(true)"
-                                       placeholder="Search for Author">
-                                <label for="authorSearch">Search for Author</label>
-                              </div>
-                              <ul class="dropdown-menu w-100" :class="{show: showAuthorDropdown}">
-                                <li v-for="item in autocomplete.availableAuthors" :key="item.value">
-                                  <a class="dropdown-item" href="#" @click.prevent="selectedAuthorChange(item)">
-                                    {{item.label}}
-                                  </a>
-                                </li>
-                                <li v-if="autocomplete.availableAuthors.length === 0">
-                                  <div class="dropdown-item-text">
-                                    <p>No authors matching "{{ selectedAuthor }}" were found.</p>
-                                    <a @click="showNewAuthor" class="btn btn-link btn-sm">Create new</a>
+                            <!-- New Bootstrap autocomplete component for authors -->
+                            <div class="mb-3">
+                              <autocomplete 
+                                v-model="selectedAuthorModel"
+                                :fetch-data="resolveEntityAuthor"
+                                :display-field="'label'"
+                                :key-field="'node'"
+                                @select="selectedAuthorChange"
+                                placeholder="Search for Author"
+                                input-class="form-control">
+                                <template #option="{ item }">
+                                  <span>{{ item.label || item.name }}</span>
+                                </template>
+                                <template #no-results="{ query }">
+                                  <div>
+                                    <p>No authors matching "{{ query }}" were found.</p>
+                                    <button type="button" class="btn btn-link btn-sm" @click="showNewAuthor">Create new</button>
                                   </div>
-                                </li>
-                              </ul>
+                                </template>
+                              </autocomplete>
                             </div>
 
                           <table class="table" width="100%" style="border-collapse: collapse;">
@@ -224,31 +220,25 @@
                                     {{contributors[index]['name']}}
                                   </td>
                                   <td v-if="editableOrgs" style="width:40%">
-                                    <!-- Custom Bootstrap autocomplete for organizations -->
-                                    <div class="dropdown">
-                                      <div class="form-floating">
-                                        <input type="text" class="form-control" 
-                                               v-model="row['onbehalfof']['name']" 
-                                               @input="resolveEntityInstitution"
-                                               :id="'org-' + index"
-                                               placeholder="Organization">
-                                        <label :for="'org-' + index">Organization</label>
-                                      </div>
-                                      <ul class="dropdown-menu w-100" :class="{show: showOrgDropdown}">
-                                        <li v-for="item in autocomplete.availableInstitutions" :key="item.value">
-                                          <a class="dropdown-item" href="#" @click.prevent="selectedOrgChange(index, item)">
-                                            {{ item.label }}
-                                          </a>
-                                        </li>
-                                        <li v-if="autocomplete.availableInstitutions.length === 0">
-                                          <div class="dropdown-item-text">
-                                            <p>No organizations matching "{{ row['onbehalfof']['name'] }}" were found.</p>
-                                            <a @click="showNewInstitution" class="btn btn-link btn-sm">Create new</a> 
-                                          </div>
-                                        </li>
-                                      </ul>
-                                    </div>
-
+                                    <!-- New Bootstrap autocomplete component for organizations -->
+                                    <autocomplete 
+                                      v-model="row.onbehalfof"
+                                      :fetch-data="resolveEntityInstitution"
+                                      :display-field="'label'"
+                                      :key-field="'node'"
+                                      @select="(item) => selectedOrgChange(index, item)"
+                                      placeholder="Organization"
+                                      input-class="form-control">
+                                      <template #option="{ item }">
+                                        <span>{{ item.label || item.name }}</span>
+                                      </template>
+                                      <template #no-results="{ query }">
+                                        <div>
+                                          <p>No organizations matching "{{ query }}" were found.</p>
+                                          <button type="button" class="btn btn-link btn-sm" @click="showNewInstitution">Create new</button>
+                                        </div>
+                                      </template>
+                                    </autocomplete>
                                   </td>
                                   <td v-else="editableOrgs" style="width:30%"></td>
                                   <td>

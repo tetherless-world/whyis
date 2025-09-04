@@ -21,31 +21,31 @@
             <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
           </div>
           <div class="modal-body" style="margin:20px;">
-            <!-- Custom autocomplete using Bootstrap form controls -->
+            <!-- New autocomplete component for types -->
             <div class="mb-3">
-              <div class="form-floating">
-                <input type="text" class="form-control" id="typeSearch" v-model="selectedType" 
-                       @input="resolveEntityType($event.target.value)" 
-                       @focus="showSuggestedTypes"
-                       @blur="processAutocompleteMenu(true)"
-                       placeholder="Search for types">
-                <label for="typeSearch">Search for types</label>
-              </div>
-              <!-- Dropdown results -->
-              <div v-if="typeList.length > 0" class="dropdown-menu show" style="position: relative; width: 100%; max-height: 200px; overflow-y: auto;">
-                <button v-for="item in typeList" :key="item.node" 
-                        class="dropdown-item" 
-                        @click="selectedTypeChange(item)">
-                  <span v-if="item.preflabel">{{ item.preflabel }}</span>
-                  <span v-else>{{ item.label }}</span>
-                  <small class="text-muted d-block">{{ item.node }}{{ item.property }}</small>
-                </button>
-              </div>
-              <div v-if="typeList.length === 0 && selectedType" class="alert alert-info mt-2">
-                <p v-if="selectedType">No types or classes matching "{{ selectedType }}" were found.</p>
-                <p v-else>Enter a type name.</p>
-                <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom type URI</button>         
-              </div>
+              <autocomplete 
+                v-model="selectedTypeModel"
+                :fetch-data="fetchTypeData"
+                :display-field="'preflabel'"
+                :key-field="'node'"
+                @select="selectedTypeChange"
+                placeholder="Search for types"
+                input-class="form-control">
+                <template #option="{ item }">
+                  <div>
+                    <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                    <span v-else>{{ item.label }}</span>
+                    <small class="text-muted d-block">{{ item.node || item.property }}</small>
+                  </div>
+                </template>
+                <template #no-results="{ query }">
+                  <div class="alert alert-info mt-2">
+                    <p v-if="query">No types or classes matching "{{ query }}" were found.</p>
+                    <p v-else>Enter a type name.</p>
+                    <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom type URI</button>         
+                  </div>
+                </template>
+              </autocomplete>
             </div>
             
             <div v-if="useCustom" class="mb-3">
@@ -103,19 +103,25 @@ export default Vue.component('add-type', {
             id: null,
             useCustom: false,
             customTypeURI: null,
-            typeList: [],
-            selectedType: null,
+            selectedTypeModel: null,
             typeChips: [],
             status: false,
             active: false,
-            query: null,
-            awaitingResolve: false,
         };
     },
     methods: {
-        showSuggestedTypes(){
-            this.processAutocompleteMenu();
-            this.typeList = this.getSuggestedTypes(this.uri);
+        async fetchTypeData(query) {
+            if (query && query.length > 2) {
+                try {
+                    return await this.getTypeList(query);
+                } catch (error) {
+                    console.error('Error fetching types:', error);
+                    return [];
+                }
+            } else {
+                // Return suggested types for initial display
+                return await this.getSuggestedTypes(this.uri);
+            }
         },
         useCustomURI(){
             this.useCustom = true;
@@ -129,20 +135,9 @@ export default Vue.component('add-type', {
             this.customTypeURI = "";
             this.useCustom = false
         },
-        resolveEntityType(query){
-            var thisVue = this;
-            this.query = query
-            if (!thisVue.awaitingResolve) {
-                setTimeout(function () {
-                    console.log(thisVue.query)
-                    thisVue.typeList = thisVue.getTypeList(thisVue.query);
-                    thisVue.awaitingResolve = false;
-                }, 1000); 
-            }
-            thisVue.awaitingResolve = true;
-        },
         selectedTypeChange(item){
             this.typeChips.push(item);
+            this.selectedTypeModel = null; // Clear selection after adding
         },
         // Create dialog boxes
         showDialogBox () {
@@ -156,6 +151,7 @@ export default Vue.component('add-type', {
             this.typeChips = [];
             this.customTypeURI = "";
             this.useCustom = false;
+            this.selectedTypeModel = null;
         },
         onCancel() {
             return this.resetDialogBox();

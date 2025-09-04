@@ -74,16 +74,12 @@ data() {
       isInvalidForm: false,
 
       authenticated: EventServices.authUser,
-      autocomplete: {
-        availableInstitutions: [],
-        availableAuthors: [],
-      },
       loading: false,
       loadingText: "Loading Existing Datasets",
 
       /// search
       query: null,
-      selectedAuthor: [],
+      selectedAuthorModel: null,
 
       // TODO: deal with empty orgs
       editableOrgs: true,
@@ -322,15 +318,30 @@ methods: {
     },  
 
     async resolveEntityAuthor(query){
-      this.autocomplete.availableAuthors = await getAuthorList(query);
+      if (query && query.length > 2) {
+        try {
+          return await getAuthorList(query);
+        } catch (error) {
+          console.error('Error fetching authors:', error);
+          return [];
+        }
+      }
+      return [];
     },
 
-    async resolveEntityInstitution (query) {
-      this.autocomplete.availableInstitutions = await getOrganizationlist(query);
+    async resolveEntityInstitution(query) {
+      if (query && query.length > 2) {
+        try {
+          return await getOrganizationlist(query);
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+          return [];
+        }
+      }
+      return [];
     },
     
     selectedAuthorChange(item) {
-      var elem = document.createElement("tr");
       var name;
       if (item.label){
         name = item.label;
@@ -345,13 +356,13 @@ methods: {
           "name": null,
         },
       });
-      this.selectedAuthor = "";
+      this.selectedAuthorModel = null; // Clear selection after adding
     }, 
-    selectedOrgChange(row, event){
+    selectedOrgChange(row, item){
       var currentOrg = this.contributors[row]['onbehalfof'];
-      currentOrg['name'] = event.label;
-      currentOrg['@id'] = event.node;
-      return event.label;
+      currentOrg['name'] = item.label;
+      currentOrg['@id'] = item.node;
+      return item.label;
     },
 
     //TODO: decide how to deal with not having organizations available
