@@ -5,11 +5,6 @@
          ?source ?link_type ?target.
       }
       UNION {
-         # SHACL property shapes linking classes: NodeShape -> targetClass
-         ?source sh:targetClass ?target.
-         ?source ?link_type ?target.
-      }
-      UNION {
          # SHACL property shapes: PropertyShape with sh:class/sh:node pointing to target
          ?nodeshape sh:property ?source.
          ?source sh:class|sh:node ?target.
