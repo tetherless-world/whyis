@@ -17,8 +17,97 @@ function uuidv4() {
     return uuid;
 }
 
-import { listNanopubs, postNewNanopub, describeNanopub, deleteNanopub, lodPrefix } from './nanopub'
-import axios from 'axios'
+// Browser-compatible imports - access from global scope
+const axios = window.axios;
+const lodPrefix = typeof LOD_PREFIX !== 'undefined' ? LOD_PREFIX : '';
+
+// Inline nanopub utility functions to avoid import issues
+const nanopubBaseUrl = `${ROOT_URL}pub`;
+
+function getNanopubUrl(id) {
+    return `${nanopubBaseUrl}/${id}`;
+}
+
+function getAboutUrl(uri) {
+    return `${ROOT_URL}about?uri=${uri}`;
+}
+
+function makeNanopubId() {
+    return Math.random().toString(36).substr(2, 10);
+}
+
+function getNanopubSkeleton() {
+    const npId = `${lodPrefix}/pub/${makeNanopubId()}`;
+    return {
+        "@context": {
+            "@vocab": lodPrefix+'/',
+            "@base": lodPrefix+'/',
+            "np": "http://www.nanopub.org/nschema#",
+        },
+        "@id": npId,
+        "@graph": {
+            "@id": npId,
+            "@type": "np:Nanopublication",
+            "np:hasAssertion": {
+                "@id": npId + "_assertion",
+                "@type": "np:Assertion",
+                "@graph": []
+            },
+            "np:hasProvenance": {
+                "@id": npId + "_provenance",
+                "@type": "np:Provenance",
+                "@graph": {
+                    "@id": npId + "_assertion"
+                }
+            },
+            "np:hasPublicationInfo": {
+                "@id": npId + "_pubinfo",
+                "@type": "np:PublicationInfo",
+                "@graph": {
+                    "@id": npId,
+                }
+            }
+        }
+    };
+}
+
+function describeNanopub(uri) {
+    return axios.get(`${ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
+        .then((response) => {
+            return response.data;
+        });
+}
+
+function listNanopubs(uri) {
+    return axios.get(`${ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
+        .then(response => {
+            return response.data;
+        });
+}
+
+function postNewNanopub(pubData, context) {
+    const nanopub = getNanopubSkeleton();
+    if (context) {
+        nanopub['@context'] = {...nanopub['@context'], ...context};
+    }
+    nanopub['@graph']['np:hasAssertion']['@graph'].push(pubData);
+    const request = {
+        method: 'post',
+        url: nanopubBaseUrl,
+        data: nanopub,
+        headers: {
+            'Content-Type': 'application/ld+json'
+        }
+    };
+    return axios(request);
+}
+
+function deleteNanopub(uri) {
+    return axios.delete(getAboutUrl(uri))
+        .then(resp => {
+            return resp;
+        });
+}
 
 /**
  * Default dataset structure with all required fields
