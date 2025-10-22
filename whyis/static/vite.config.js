@@ -23,6 +23,15 @@ export default defineConfig({
 	    // the proper extensions will be added
 	    fileName: 'whyis',
 	},
+	rollupOptions: {
+	    external: ['jquery', 'node-fetch', 'solid-auth-cli', 'fs'],
+	    output: {
+		globals: {
+		    jquery: 'jQuery',
+		    'node-fetch': 'fetch',
+		}
+	    }
+	}
     },
     plugins: [
 	vue()
