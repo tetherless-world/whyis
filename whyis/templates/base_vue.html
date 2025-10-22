@@ -15,7 +15,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whyis.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/style.css')}}">
     <style>
         /* Ensure Bootstrap modals display properly */
         .modal {
@@ -52,6 +51,12 @@
 <link href='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.min.css' rel='stylesheet' type='text/css'/>
 <link href='//cdn.jsdelivr.net/yasr/2.10.8/yasr.min.css' rel='stylesheet' type='text/css'/>
 <link href='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.css' rel='stylesheet' type='text/css'/>
+
+<link rel="modulepreload" href="https://unpkg.com/htm@3.0.4/dist/htm.module.js?module">
+<link rel="modulepreload" href="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}">
+<link rel="modulepreload" href="{{ url_for('static', filename='js/lib/bootstrap.js')}}">
+
+<link rel="modulepreload" href="{{ url_for('static', filename='js/lib/fileinput.js')}}">
 
     {% block styles %}
     {% endblock %}
@@ -195,39 +200,28 @@
   
   </script>
 
-    <!-- Load jQuery first (required by whyis UMD bundle as external) -->
-    <script src="{{ url_for('static', filename='js/lib/jquery/dist/jquery.js')}}"></script>
-    
-    <!-- Load Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- TODO see if we can use the non-bundled versions -->
     <script type="application/javascript" src='//cdn.jsdelivr.net/npm/yasgui-yasqe@2.11.22/dist/yasqe.bundled.min.js'></script>
     <script type="application/javascript" src='//cdn.jsdelivr.net/yasr/2.10.8/yasr.bundled.min.js'></script>
     <script type="application/javascript" src='//cdn.jsdelivr.net/yasgui/2.5.0/yasgui.min.js'></script>
-    
-    <!-- Load Whyis UMD bundle -->
-    <script src="{{ url_for('static', filename='dist/whyis.umd.cjs')}}"></script>
+    <script type="module" src="{{ url_for('static', filename='dist/whyis.js')}}"></script>
 
 {% block scripts %}{% endblock %}
 
-<script type="application/javascript">
-// Initialize Whyis Vue application after DOM is loaded
+<script type="module">
+import {Vue, axios, createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+var app = createApp();  
+// Ensure Bootstrap modals work properly
 document.addEventListener('DOMContentLoaded', function() {
-    // The UMD bundle exposes whyis globally
-    if (typeof whyis !== 'undefined' && whyis.createApp) {
-        var app = whyis.createApp();
-    }
-    
-    // Initialize Bootstrap components
+    // Initialize all Bootstrap components
     if (typeof bootstrap !== 'undefined') {
-        // Initialize all modals
+        // Initialize modals
         var modalElements = document.querySelectorAll('.modal');
         modalElements.forEach(function(modalElement) {
             new bootstrap.Modal(modalElement);
         });
         
-        // Initialize all dropdowns
+        // Initialize dropdowns
         var dropdownElements = document.querySelectorAll('.dropdown-toggle');
         dropdownElements.forEach(function(dropdownElement) {
             new bootstrap.Dropdown(dropdownElement);
