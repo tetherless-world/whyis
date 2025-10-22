@@ -133,7 +133,7 @@ function generateDatasetId (guuid) {
   } else {
     datasetId = guuid;
   }
-  return `${lodPrefix}/${datasetPrefix}/${datasetId}`
+  return `${lodPrefix()}/${datasetPrefix}/${datasetId}`
 }
 
 /**
@@ -378,14 +378,14 @@ async function saveDistribution(fileList, id){
     .map(x => {
       distrData.append(fileList[x].label, fileList[x]);
       distrLDs[x] = {
-        '@id': `${lodPrefix}/dataset/${id}/${fileList[x].name.replace(/ /g, '_')}`,
+        '@id': `${lodPrefix()}/dataset/${id}/${fileList[x].name.replace(/ /g, '_')}`,
         'http://www.w3.org/2000/01/rdf-schema#label': fileList[x].label,
       }
     });
 
 
   // Where to save the distribution
-  const uri = `${lodPrefix}/dataset/${id}`;
+  const uri = `${lodPrefix()}/dataset/${id}`;
   const baseUrl = `${window.location.origin}/about?uri=${uri}`;
   axios.post( baseUrl,
       distrData,
@@ -413,7 +413,7 @@ async function saveDistribution(fileList, id){
  */
 async function saveImg(file, id){
   // Where to save the image
-  const uri = `${lodPrefix}/dataset/${id}/depiction`;
+  const uri = `${lodPrefix()}/dataset/${id}/depiction`;
   const baseUrl = `${window.location.origin}/about?uri=${uri}`
 
   let form = new FormData();

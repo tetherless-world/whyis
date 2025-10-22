@@ -15,10 +15,10 @@ import axios from 'axios'
 const nanopubBaseUrl = `${ROOT_URL}pub`
 
 /**
- * Linked Open Data prefix used for generating URIs
- * @constant {string} lodPrefix
+ * Gets the Linked Open Data prefix used for generating URIs (lazy evaluation to avoid build-time errors)
+ * @returns {string} The LOD prefix from global scope
  */
-const lodPrefix = LOD_PREFIX
+const lodPrefix = () => window.LOD_PREFIX
 
 /**
  * Constructs a URL for a specific nanopublication ID
@@ -104,11 +104,12 @@ function makeNanopubId() {
  */
 function getNanopubSkeleton () {
   //doot
-  const npId = `${lodPrefix}/pub/${makeNanopubId()}` //make sure this change doesn't break other things
+  const prefix = lodPrefix()
+  const npId = `${prefix}/pub/${makeNanopubId()}` //make sure this change doesn't break other things
   return {
     "@context": {
-      "@vocab": lodPrefix+'/',
-      "@base": lodPrefix+'/',
+      "@vocab": prefix+'/',
+      "@base": prefix+'/',
       "np" : "http://www.nanopub.org/nschema#",
     },
     "@id": npId,
