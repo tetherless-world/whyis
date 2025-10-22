@@ -22,13 +22,13 @@ export default defineConfig({
 	    name: 'whyis',
 	    // the proper extensions will be added
 	    fileName: 'whyis',
+	    formats: ['umd'],
 	},
 	rollupOptions: {
-	    external: ['jquery', 'node-fetch', 'solid-auth-cli', 'fs'],
+	    external: ['jquery'],
 	    output: {
 		globals: {
 		    jquery: 'jQuery',
-		    'node-fetch': 'fetch',
 		}
 	    }
 	}
