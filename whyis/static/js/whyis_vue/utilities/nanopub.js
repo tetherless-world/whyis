@@ -9,10 +9,10 @@
 import axios from 'axios'
 
 /**
- * Base URL for nanopublication endpoints
- * @constant {string} nanopubBaseUrl
+ * Gets the base URL for nanopublication endpoints (lazy evaluation to avoid build-time errors)
+ * @returns {string} The nanopub base URL
  */
-const nanopubBaseUrl = `${ROOT_URL}pub`
+const nanopubBaseUrl = () => `${window.ROOT_URL}pub`
 
 /**
  * Gets the Linked Open Data prefix used for generating URIs (lazy evaluation to avoid build-time errors)
@@ -26,7 +26,7 @@ const lodPrefix = () => window.LOD_PREFIX
  * @returns {string} The complete nanopublication URL
  */
 function getNanopubUrl (id) {
-  return `${nanopubBaseUrl}/${id}`
+  return `${nanopubBaseUrl()}/${id}`
 }
 
 /**
@@ -35,7 +35,7 @@ function getNanopubUrl (id) {
  * @returns {string} The about URL
  */
 function getAboutUrl(uri) {
-  return `${ROOT_URL}about?uri=${uri}`
+  return `${window.ROOT_URL}about?uri=${uri}`
 }
 
 /**
@@ -47,7 +47,7 @@ function getAboutUrl(uri) {
  */
 function describeNanopub (uri) {
   console.debug(`loading nanopub ${uri}`)
-  return axios.get(`${ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
+  return axios.get(`${window.ROOT_URL}about?view=describe&uri=${encodeURIComponent(uri)}`)
     .then((response) => {
       console.debug('received nanopub data for uri:', uri, response)
       return response.data
@@ -62,7 +62,7 @@ function describeNanopub (uri) {
  * const nanopubs = await listNanopubs('http://example.com/resource');
  */
 function listNanopubs (uri) {
-  return axios.get(`${ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
+  return axios.get(`${window.ROOT_URL}about?view=nanopublications&uri=${encodeURIComponent(uri)}`)
     .then(response => {
       console.debug('list nanopub response', response)
       return response.data
@@ -159,7 +159,7 @@ function postNewNanopub (pubData, context) {
   nanopub['@graph']['np:hasAssertion']['@graph'].push(pubData)
   const request = {
     method: 'post',
-    url: nanopubBaseUrl,
+    url: nanopubBaseUrl(),
     data: nanopub,
     headers: {
       'Content-Type': 'application/ld+json'
