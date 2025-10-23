@@ -5,30 +5,40 @@
     </div>
     <div v-else>
       <viz-grid :authenticated="authenticated" :instancetype="'http://semanticscience.org/resource/Chart'"/>
-      <md-speed-dial :class="bottomPosition" v-if="speedDials">
-        <md-speed-dial-target class="utility-float-icon">
-          <md-icon>menu</md-icon>
-        </md-speed-dial-target>
-
-        <md-speed-dial-content>
-          <md-button class="md-icon-button" @click.prevent="cancelFilter">
-            <md-tooltip class="utility-bckg" md-direction="left"> Cancel Filter </md-tooltip>
-            <md-icon class="utility-color">search_off</md-icon>
-          </md-button>
-          <md-button class="md-icon-button" @click="showFilterBox">
-            <md-tooltip class="utility-bckg" md-direction="left"> Filter </md-tooltip>
-            <md-icon class="utility-color">search</md-icon>
-          </md-button>
-          <md-button class="md-icon-button" @click.prevent="showIntro(true)">
-            <md-tooltip class="utility-bckg" md-direction="left">Replay Tips</md-tooltip>
-            <md-icon class="utility-color">info</md-icon>
-          </md-button>
-          <md-button class="md-icon-button" v-if="authenticated !== undefined" @click.prevent="newChart">
-            <md-tooltip class="utility-bckg" md-direction="left">Create New Chart</md-tooltip>
-            <md-icon class="utility-color">add</md-icon>
-          </md-button>
-        </md-speed-dial-content>
-      </md-speed-dial>
+      <!-- Bootstrap Speed Dial Replacement -->
+      <div class="position-fixed bottom-0 end-0 p-3" v-if="speedDials">
+        <div class="dropdown dropup">
+          <button class="btn btn-primary rounded-circle p-3 utility-float-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 56px; height: 56px;">
+            <i class="bi bi-list"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#" @click.prevent="cancelFilter" data-bs-toggle="tooltip" data-bs-placement="left" title="Cancel Filter">
+                <i class="bi bi-search-heart utility-color me-2"></i>
+                <span>Cancel Filter</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#" @click="showFilterBox" data-bs-toggle="tooltip" data-bs-placement="left" title="Filter">
+                <i class="bi bi-search utility-color me-2"></i>
+                <span>Filter</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#" @click.prevent="showIntro(true)" data-bs-toggle="tooltip" data-bs-placement="left" title="Replay Tips">
+                <i class="bi bi-info-circle utility-color me-2"></i>
+                <span>Replay Tips</span>
+              </a>
+            </li>
+            <li v-if="authenticated !== undefined">
+              <a class="dropdown-item d-flex align-items-center" href="#" @click.prevent="newChart" data-bs-toggle="tooltip" data-bs-placement="left" title="Create New Chart">
+                <i class="bi bi-plus-circle utility-color me-2"></i>
+                <span>Create New Chart</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -41,7 +51,7 @@
     data() {
       return {
         filter: false,
-        bottomPosition:'md-bottom-right',
+        bottomPosition:'bottom-0 end-0',
         speedDials: EventServices.speedDials,
         authenticated: EventServices.authUser,
         existingBkmk: {

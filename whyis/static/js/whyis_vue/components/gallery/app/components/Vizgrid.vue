@@ -10,31 +10,38 @@
                 <span v-else>No result (0.59 seconds)</span>
             </div>
             <div class="viz-content">
-                <md-card v-for="(result, index) in newResults" :key="index" class="btn--animated">
-                    <div class="utility-gridicon" v-if="authenticated && authenticated.admin=='True' && instanceType=='http://semanticscience.org/resource/Chart'">
-                        <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
-                        <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
-                        <div @click.prevent="deleteChart(result)"><md-icon>delete_outline</md-icon></div>
+                <div v-for="(result, index) in newResults" :key="index" class="card btn--animated h-100">
+                    <div class="utility-gridicon position-absolute top-0 end-0 p-2" style="z-index: 10;" v-if="authenticated && authenticated.admin=='True' && instanceType=='http://semanticscience.org/resource/Chart'">
+                        <button class="btn btn-link p-1" @click.prevent="bookmark(result.name, true)" v-if="result.bookmark">
+                            <i class="bi bi-bookmark-fill text-warning"></i>
+                        </button>
+                        <button class="btn btn-link p-1" @click.prevent="bookmark(result.name, false)" v-else>
+                            <i class="bi bi-bookmark text-muted"></i>
+                        </button>
+                        <button class="btn btn-link p-1" @click.prevent="deleteChart(result)">
+                            <i class="bi bi-trash text-danger"></i>
+                        </button>
                     </div>
-                    <div class="utility-gridicon" v-else-if="authenticated && instanceType=='http://semanticscience.org/resource/Chart'">
-                        <div @click.prevent="bookmark(result.name, true)" v-if="result.bookmark"><md-icon>bookmark</md-icon></div>
-                        <div @click.prevent="bookmark(result.name, false)" v-else><md-icon>bookmark_border</md-icon></div>
+                    <div class="utility-gridicon position-absolute top-0 end-0 p-2" style="z-index: 10;" v-else-if="authenticated && instanceType=='http://semanticscience.org/resource/Chart'">
+                        <button class="btn btn-link p-1" @click.prevent="bookmark(result.name, true)" v-if="result.bookmark">
+                            <i class="bi bi-bookmark-fill text-warning"></i>
+                        </button>
+                        <button class="btn btn-link p-1" @click.prevent="bookmark(result.name, false)" v-else>
+                            <i class="bi bi-bookmark text-muted"></i>
+                        </button>
                     </div>
-                    <md-card-media-cover md-solid @click.native.prevent="navigate(result)" >
-                        <md-card-media md-ratio="4:3" >
-                        <img :src="getViewUrl(result.thumbnail)" :alt="result.label" v-if="result.thumbnail">
-                        <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" :alt="result.label" v-else>
-                        </md-card-media>
-                        <md-card-area class="utility-gridbg">
-                            <md-card-header class="utility-show_hide">
-                                <span class="md-subheading">
-                                    <strong>{{ result.label }}</strong>
-                                </span>
-                                <span class="md-body-1">{{ reduceDescription(result.description) }}</span>
-                            </md-card-header>
-                        </md-card-area>
-                    </md-card-media-cover>
-                </md-card>
+                    
+                    <div class="card-img-top position-relative" @click.prevent="navigate(result)" style="cursor: pointer;">
+                        <img :src="getViewUrl(result.thumbnail)" class="card-img-top" :alt="result.label" v-if="result.thumbnail" style="height: 200px; object-fit: cover;">
+                        <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" class="card-img-top" :alt="result.label" v-else style="height: 200px; object-fit: cover;">
+                        <div class="card-img-overlay d-flex align-items-end utility-gridbg">
+                            <div class="card-header-content utility-show_hide w-100">
+                                <h6 class="card-title text-white fw-bold mb-1">{{ result.label }}</h6>
+                                <p class="card-text text-white-50 small mb-0">{{ reduceDescription(result.description) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <pagination v-if="results.length > basePage" :cpage="currentPage" :tpages="totalPages" />
         </div>

@@ -26,10 +26,13 @@ import './gallery';
 
 import Vue from 'vue';
 
+
+
 // Data visualization components
 Vue.component('vega-lite', () => import('./vega-lite-wrapper.vue'))
 
 // UI utility components
+Vue.component('autocomplete', () => import('./autocomplete.vue'))
 Vue.component('spinner', () => import('./utils/spinner.vue'))
 Vue.component('dialogBox', () => import('./utils/dialog.vue'))
 

@@ -1,20 +1,12 @@
 <template>
-  <md-card class="btn--animated">
-      <md-card-media-cover md-solid @click.native.prevent="navigate(entity) " >
-          <md-card-media md-ratio="4:3" >
-          <img :src="getViewUrl(entity.thumbnail)" :alt="entity.label" v-if="entity.thumbnail">
-          <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" :alt="entity.label" v-else>
-          </md-card-media>
-          <md-card-area class="utility-gridbg">
-              <md-card-header class="utility-show_hide">
-                  <span class="md-subheading">
-                      <strong>{{ entity.label }}</strong>
-                  </span>
-                  <span class="md-body-1">{{ entity.description }}</span>
-              </md-card-header>
-          </md-card-area>
-      </md-card-media-cover>
-  </md-card>
+  <div class="card h-100" style="max-width: 20em; ">
+    <img :src="getViewUrl(entity.thumbnail)" class="card-img-top" :alt="entity.label" v-if="entity.thumbnail" style="height: 10em; object-fit: contain;">
+    <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" class="card-img-top" :alt="entity.label" v-else style="height: 10em; object-fit: contain;">
+    <div class="card-body">
+      <h6 class="card-title">{{ entity.label }}</h6>
+      <p class="card-text ">{{ entity.description }}</p>
+    </div>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>

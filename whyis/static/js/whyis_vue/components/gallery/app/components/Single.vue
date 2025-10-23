@@ -5,18 +5,21 @@
       <spinner :loading="loading" text='loading data...'/>
     </div>
     <div class="loading-dialog" v-else>
-      <div class="md-subheading">{{args.label}}</div>
+      <div class="h6">{{args.label}}</div>
       <vega-lite :spec="spec" />
       <div class="utility-margin"><span><strong>Description:</strong></span>{{ args.description}}</div>
     </div>
-    <md-speed-dial :class="bottomPosition" >
-      <md-speed-dial-target class="utility-float-icon" @click.native.prevent="navBack">
-        <md-icon>arrow_back</md-icon>
-      </md-speed-dial-target>
-       <md-speed-dial-target class="utility-float-icon">
-        <md-icon>share</md-icon>
-      </md-speed-dial-target>
-    </md-speed-dial>
+    <!-- Bootstrap Speed Dial Replacement -->
+    <div class="position-fixed bottom-0 end-0 p-3">
+      <div class="d-flex flex-column gap-2">
+        <button class="btn btn-primary rounded-circle p-2 utility-float-icon" @click.prevent="navBack" aria-label="Go Back" style="width: 48px; height: 48px;">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <button class="btn btn-secondary rounded-circle p-2" aria-label="Share" style="width: 48px; height: 48px;">
+          <i class="bi bi-share"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 <style lang="scss" src="../../../../assets/css/main.scss"></style>
@@ -35,7 +38,7 @@
     data() {
       return {
         filter: false,
-        bottomPosition:'md-bottom-right',
+        bottomPosition:'bottom-0 end-0',
         loading: true,
         spec: null,
         chart: null,

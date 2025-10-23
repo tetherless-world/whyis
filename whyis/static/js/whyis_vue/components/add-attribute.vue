@@ -3,103 +3,115 @@
     <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
-            <button class="md-button-icon">
-                <i>+ Add attribute</i>
-            <md-tooltip>Add data about this entity.</md-tooltip>
+            <button class="btn btn-outline-primary btn-sm" style="border:none; background:transparent">
+                <i class="bi bi-plus"></i> Add attribute
+                <span class="visually-hidden">Add data about this entity.</span>
             </button>
         </slot>
     </div>
 
     <div>
-    <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-        <div class="utility-dialog-box_header" >
-            <md-dialog-title> New Attribute</md-dialog-title>
-        </div>
-        <div style="margin:20px;">
-            <div class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-autocomplete
-                        :value="attributeName"
-                        :md-options="propertyList"
-                        :md-open-on-focus="true"
-                        @md-changed="resolveAttribute"
-                        v-on:md-selected="selectedAttributeChange"
-                        @md-opened="showSuggestedAttributes"
-                    >
-                        <label>Attribute</label>
-
-                        <template slot="md-autocomplete-item" slot-scope="{ item }">
-                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                            {{item.preflabel}}
-                        </label>
-                        <label v-else md-term="term" md-fuzzy-search="true">
-                            {{item.label}}
-                        </label>
-                        <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
-                        </template>
-
-                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
-                        <p v-if = "term" >No attributes matching "{{ term }}" were found.</p>
-                        <p v-else >Type a property name.</p>
-                        <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom attribute URI</a> 
-                        </template>
-                    </md-autocomplete>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="addAttributeModal" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header utility-dialog-box_header">
+            <h5 class="modal-title">New Attribute</h5>
+            <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="margin:20px;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <!-- Datatype property autocomplete using new component -->
+                    <autocomplete 
+                      v-model="datatypeProperty"
+                      :fetch-data="fetchDatatypePropertyData"
+                      :display-field="'preflabel'"
+                      :key-field="'node'"
+                      @select="selectedDatatypePropertyChange"
+                      placeholder="Search for datatype property"
+                      input-class="form-control">
+                      <template #option="{ item }">
+                        <div>
+                          <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                          <span v-else>{{ item.label }}</span>
+                          <small class="text-muted d-block">{{ item.node || item.property }}</small>
+                        </div>
+                      </template>
+                      <template #no-results="{ query }">
+                        <div class="alert alert-info mt-2">
+                          <p v-if="query">No datatype properties matching "{{ query }}" were found.</p>
+                          <p v-else>Enter a datatype property name.</p>
+                          <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom property URI</button>         
+                        </div>
+                      </template>
+                    </autocomplete>
                 </div>
-                <div class="md-layout-item md-size-20">
-                    <md-field>
-                        <label>Data type</label>
-                        <md-select
-                            v-model="datatype"
-                            v-on:md-selected="selectedDatatypeChange"
-                            name="datatype">
-                            <md-option v-for="item in datatypes"
-                                    v-bind:key="item.uri"
-                                    v-bind:value="item.uri">
-                                {{item.label}}
-                            </md-option>
-                        </md-select>
-                    </md-field>
+                
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select class="form-select" id="datatype" v-model="datatype" @change="selectedDatatypeChange">
+                            <option value="">Select data type...</option>
+                            <option v-for="item in Object.values(datatypes)" 
+                                    :key="item.uri"
+                                    :value="item.uri">
+                                {{ item.label }}
+                            </option>
+                        </select>
+                        <label for="datatype">Data type</label>
+                    </div>
                 </div>
-                <div v-if="!datatype" class="md-layout-item  md-size-20">
-                    <md-field >
-                        <label>Language</label>
-                        <md-input v-model="language"></md-input>
-                    </md-field>
-                </div>
-            </div>
-            <div v-if="useCustom" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-field >
-                        <label>Full URI of attribute</label>
-                        <md-input v-model="customAttributeURI"></md-input>
-                    </md-field>
+                
+                <div v-if="!datatype" class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="language" v-model="language" placeholder="Language">
+                        <label for="language">Language</label>
+                    </div>
                 </div>
             </div>
-            <div v-if="attribute" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-field >
-                        <label v-if="attribute.label">{{attribute.label}}</label>
-                        <label v-else>Value</label>
-                        <md-textarea v-if="(datatype==null)||(datatypes[datatype].widget=='textarea')" 
-                            v-model="value" md-autogrow></md-textarea>
-                        <md-input v-else v-model="value" :type=datatypes[datatype].widget> </md-input>
-                    </md-field>
+            
+            <div v-if="useCustom" class="row g-3 mt-3">
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="customDatatypePropertyURI" v-model="customDatatypePropertyURI" placeholder="Full URI of datatype property">
+                        <label for="customDatatypePropertyURI">Full URI of datatype property</label>
+                    </div>
                 </div>
             </div>
-            <div class="utility-margin-big viz-2-col">
-                <div class="utility-align--right utility-margin-top">
+            
+            <div v-if="datatypeProperty" class="row g-3 mt-3">
+                <div class="col">
+                    <div class="form-floating" v-if="(datatype==null)||(datatypes[datatype] && datatypes[datatype].widget=='textarea')">
+                        <textarea class="form-control" 
+                                  id="valueTextarea"
+                                  v-model="value" 
+                                  style="height: 100px"
+                                  :placeholder="datatypeProperty.preflabel || datatypeProperty.label || 'Value'"></textarea>
+                        <label for="valueTextarea">{{ datatypeProperty.preflabel || datatypeProperty.label || 'Value' }}</label>
+                    </div>
+                    <div class="form-floating" v-else>
+                        <input :type="datatypes[datatype] ? datatypes[datatype].widget : 'text'" 
+                               class="form-control" 
+                               id="valueInput"
+                               v-model="value" 
+                               :placeholder="datatypeProperty.preflabel || datatypeProperty.label || 'Value'">
+                        <label for="valueInput">{{ datatypeProperty.preflabel || datatypeProperty.label || 'Value' }}</label>
+                    </div>
                 </div>
-                <div class="utility-align--right utility-margin-top">
-                <md-button @click.prevent="onCancel" class="md-raised">
+            </div>
+            
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" @click.prevent="onCancel">
                     Cancel
-                </md-button>
-                <md-button @click.prevent="onSubmit" class="md-raised">
+                </button>
+                <button type="button" class="btn btn-primary" @click.prevent="onSubmit">
                     Add Attribute
-                </md-button>
-                </div>
+                </button>
             </div>
+          </div>
         </div>
-    </md-dialog>
+      </div>
+    </div>
     </div>
 </div>
 </template>
@@ -114,10 +126,10 @@ export default Vue.component('add-attribute', {
     data: function() {
         return {
             id: null,
-            attribute: null,
-            attributeName: null,
+            datatypeProperty: null,
+            datatypePropertyName: null,
             useCustom: false,
-            customAttributeURI: null,
+            customDatatypePropertyURI: null,
             query: null,
             awaitingResolve: false,
             propertyList: [],
@@ -237,52 +249,47 @@ export default Vue.component('add-attribute', {
         };
     },
     methods: {
-        showSuggestedAttributes(){
-            this.processAutocompleteMenu();
+        async fetchDatatypePropertyData(query) {
+            if (query && query.length > 2) {
+                try {
+                    return await this.getDatatypePropertyList(query);
+                } catch (error) {
+                    console.error('Error fetching datatype properties:', error);
+                    return [];
+                }
+            } else {
+                // Return suggested datatype properties for initial display
+                return await this.getSuggestedDatatypeProperties(this.uri);
+            }
         },
         useCustomURI(){
             this.useCustom = true;
-            this.attribute = "Custom attribute"
+            this.datatypeProperty = "Custom datatype property"
         },
-        resolveAttribute(query){
-            var thisVue = this;
-            this.query = query;
-            if (!thisVue.awaitingResolve) {
-                setTimeout(function () {
-                    console.log(thisVue.query);
-                    if (!thisVue.query.label) {
-                        if (thisVue.query.length > 2) {
-                            thisVue.propertyList = thisVue.getAttributeList(thisVue.query);
-                        } else
-                            thisVue.propertyList = thisVue.getSuggestedAttributes(thisVue.uri);
-                    }
-                    thisVue.awaitingResolve = false;
-                }, 1000);   
+        selectedDatatypePropertyChange(item){
+            this.datatypeProperty = item;
+            if(item.preflabel){
+                this.datatypePropertyName = item.preflabel;
+            } else {
+                this.datatypePropertyName = item.label; 
             }
-            thisVue.awaitingResolve = true;
-        },
-        selectedAttributeChange(item){
-            this.attribute = item;
-            console.log(item);
             if (item.range && this.datatypes[item.range]) {
-                this.datatype = this.datatypes[item.range];
+                this.datatype = item.range;
             }
-            console.log(this);
         },
         selectedDatatypeChange(item){
             console.log(this);
         },
         // Create dialog boxes
         showDialogBox () {
-            this.propertyList = this.getSuggestedAttributes(this.uri);
             this.active=true;
         },
         resetDialogBox(){
             this.active = !this.active;
-            this.attribute = null;
-            this.attributeName = null;
+            this.datatypeProperty = null;
+            this.datatypePropertyName = null;
             this.useCustom = false;
-            this.customAttributeURI = null;
+            this.customDatatypePropertyURI = null;
             this.value = null;
             this.language = null;
             this.datatype = null;
@@ -301,20 +308,22 @@ export default Vue.component('add-attribute', {
                 '@id': this.uri
             }
             if (this.datatype) this.language = null;
-            if (this.attribute.node){
-                jsonLd[this.attribute.node] = {
+            
+            let propertyUri = null;
+            if (this.datatypeProperty && this.datatypeProperty.node){
+                propertyUri = this.datatypeProperty.node;
+            } else if (this.customDatatypePropertyURI){
+                propertyUri = this.customDatatypePropertyURI;
+            }
+            
+            if (propertyUri) {
+                jsonLd[propertyUri] = {
                     "@value" : this.value,
                     "@lang" : this.language,
                     "@type" : this.datatype
                 }
             }
-            else if (this.customAttributeURI){
-                jsonLd[this.customAttributeURI] = {
-                    "@value" : this.value,
-                    "@lang" : this.language,
-                    "@type" : this.datatype
-                }
-            }
+            
             console.log(jsonLd);
             await p
             try {
@@ -325,20 +334,20 @@ export default Vue.component('add-attribute', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+            const itemListContainer = document.getElementsByClassName("dropdown-menu")
             if(itemListContainer.length >= 1) {
                 //itemListContainer[0].style['z-index'] = 12;
                 return status = true
             }
         },
 
-        async getSuggestedAttributes (uri){
-            const suggestedTypes = await axios.get(
+        async getSuggestedDatatypeProperties (uri){
+            const suggestedProperties = await axios.get(
                 `${ROOT_URL}about?view=suggested_attributes&uri=${uri}`)
-            return suggestedTypes.data
+            return suggestedProperties.data
         },
 
-        async getAttributeList (query) {
+        async getDatatypePropertyList (query) {
 	    var combinedList = [];
             const [rdfsProperty, owlDatatypeProperty] = await axios.all([
                 axios.get(

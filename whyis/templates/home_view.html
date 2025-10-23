@@ -4,7 +4,7 @@
 {% block title %}{{config['SITE_NAME']}}{% endblock %}
 
 {% block pageheader %}
-<div class="jumbotron" style="color: #eee; background-color: #08233c; background: url('{{config['SITE_HEADER_IMAGE']}}') no-repeat top center; background-size:cover">
+<div class="jumbotron" style="color: #eee; background-color: #08233c; background: url('{{config['SITE_HEADER_IMAGE']}}') no-repeat top center; background-size:cover; padding-top:2rem; padding-bottom:2rem;">
   <div class="container" style="text-shadow: 0px 0px 20px black;">
     <h1 class="">{{title()}}</h1>
     {% if 'SITE_DESCRIPTION' in config %}
@@ -26,26 +26,36 @@
 <p>
   {% if app.db | length == 0 %}
     {% if not current_user or current_user.is_anonymous %}
-        <md-empty-state
-          md-icon="account_circle"
-          md-label="Log in or Register to begin"
-          md-description="Log in or create an account to begin populating your knowledge graph.">
-          <md-button class="md-raised md-primary" md-raised href="{{url_for('security.login')}}" aria-label="Log in" title=""><md-icon>login</md-icon> Log in</md-button>
-          <md-button class="md-raised md-primary" href="{{url_for('security.register')}}" aria-label="Register" title=""><md-icon>person_add</md-icon> Register</md-button>
-        </md-empty-state>
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <i class="bi bi-person-circle display-1 text-muted"></i>
+          </div>
+          <h3 class="mb-3">Log in or Register to begin</h3>
+          <p class="text-muted mb-4">Log in or create an account to begin populating your knowledge graph.</p>
+          <div class="d-flex gap-3 justify-content-center">
+            <a href="{{url_for('security.login')}}" class="btn btn-primary" aria-label="Log in" title="">
+              <i class="bi bi-box-arrow-in-right"></i> Log in
+            </a>
+            <a href="{{url_for('security.register')}}" class="btn btn-primary" aria-label="Register" title="">
+              <i class="bi bi-person-plus"></i> Register
+            </a>
+          </div>
+        </div>
     {% else %}
-      <md-empty-state
-        md-icon="hub"
-        md-label="Add Knowledge"
-        md-description="Build your knowledge graph by adding ontologies and RDF.">
-        <md-button @click="nav.showAddKnowledgeMenu=true"
-                   class="md-raised md-primary"
-                   md-raised aria-label="Add Knowledge"
-                   title="">
-          <md-icon>publish</md-icon>
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <i class="bi bi-diagram-3 display-1 text-muted"></i>
+        </div>
+        <h3 class="mb-3">Add Knowledge</h3>
+        <p class="text-muted mb-4">Build your knowledge graph by adding ontologies and RDF.</p>
+        <button type="button" class="btn btn-primary"  data-bs-toggle="modal"
+                data-bs-target="#uploadKnowledgeModal"
+                aria-label="Add Knowledge"
+                title="">
+          <i class="bi bi-upload"></i>
           Add Knowledge
-        </md-button>
-      </md-empty-state>
+        </button>
+      </div>
     {% endif %}
   {% else %}
   <album instancetype="{{this.identifier}}"></album>

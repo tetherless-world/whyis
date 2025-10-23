@@ -1,27 +1,44 @@
 <template>
-  <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-    <div style="margin:2em">
-      <md-dialog-title>Upload Knowledge</md-dialog-title>
-      <md-field>
-        <label>RDF File</label>
-        <md-file v-model="file.name" @md-change="handleFileUpload($event)" placeholder="Upload Knowledge in RDF" />
-      </md-field>
-      <md-field>
-        <label>Format</label>
-        <md-select :required="true" v-model="format" name="format" id="format">
-          <md-option v-for="f in formats" :value="f.name">{{f.name}}</md-option>
-        </md-select>
-      </md-field>
-      <md-dialog-actions>
-        <md-button @click.prevent="onCancel" class="md-primary">
-          Cancel
-        </md-button>
-        <md-button v-on:click="onSubmit()" class="md-primary">
-          Add
-        </md-button>
-      </md-dialog-actions>
+  <!-- Bootstrap Modal -->
+  <div class="modal fade" id="uploadKnowledgeModal" tabindex="-1" aria-labelledby="uploadKnowledgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadKnowledgeModalLabel">Upload Knowledge</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Upload RDF Knowledge</h6>
+            <div class="mb-3">
+              <label for="rdfFile" class="form-label">RDF File</label>
+              <input class="form-control"
+                     type="file"
+                     id="rdfFile"
+                     @change="handleFileUpload($event)"
+                accept=".rdf,.json,.jsonld,.ttl,.trig,.nq,.nquads,.nt,.ntriples">
+              <div class="form-text">Upload Knowledge in RDF</div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="format" class="form-label">Format</label>
+              <select class="form-select" id="format" v-model="format" required>
+                <option value="">Format</option>
+                <option v-for="f in formats" :key="f.name" :value="f.name">{{ f.name }}</option>
+              </select>
+            </div>
+            
+        </div>
+        <div class="modal-footer" v-if="!showRDFUpload">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" @click="onSubmitRDF">
+            Upload
+          </button>
+        </div>
+      </div>
     </div>
-  </md-dialog>
+  </div>
 </template>
 <style lang="scss" src="../assets/css/main.scss"></style>
 <script>
@@ -43,39 +60,33 @@ var format_map = {
 formats.forEach(function(f) { format_map[f.name] = f; })
 
 export default Vue.component('upload-knowledge', {
-    props: ['active'],
     data: function() {
         return {
             formats: formats,
+            
             file: {name: ''},
             format_map: format_map,
             format: null,
             fileobj: "",
             status: false,
-            awaitingResolve: false,
-            awaitingEntity: false,
+            showRDFUpload: false,
+            modalInstance: null,
         };
     },
     methods: {
-        // Create dialog boxes
-        showDialogBox () {
-            this.active=true;
-        },
-        resetDialogBox(){
-            this.active = false;
-            this.$emit('update:active', false);
-        },
-        onCancel() {
-            return this.resetDialogBox();
-        },
-        onSubmit() {
+        onSubmitRDF() {
             this.save()
-            .then(() => window.location.reload());
-            return this.resetDialogBox();
+            .then(() => {
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error('Upload failed:', err);
+            });
         },
         handleFileUpload(event) {
             console.log(event);
-            this.fileobj = event[0];
+            this.fileobj = event.target.files[0];
+            this.file.name = event.target.files[0] ? event.target.files[0].name : '';
         },
         async save() {
             let format = this.format;
@@ -103,7 +114,6 @@ export default Vue.component('upload-knowledge', {
                 return alert(err)
             }
         },
-
     },
 });
 

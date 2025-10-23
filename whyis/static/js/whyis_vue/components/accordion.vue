@@ -1,20 +1,18 @@
 <template>
 <div class="accordion">
-  <md-toolbar>
-    <div class="accordion-toolbar-row" @click="toggleOpen">
-      <h3 class="md-title">{{title}}</h3>
+  <div class="accordion-header bg-light border" @click="toggleOpen">
+    <div class="accordion-toolbar-row p-3">
+      <h3 class="h5 mb-0">{{ title }}</h3>
       <div class="accordion-icons">
-        <md-icon v-show="!open">
-          expand_more
-        </md-icon>
-        <md-icon v-show="open">
-          expand_less
-        </md-icon>
+        <i class="bi bi-chevron-down" v-show="!open"></i>
+        <i class="bi bi-chevron-up" v-show="open"></i>
       </div>
     </div>
-  </md-toolbar>
-  <div class="accordion-content" v-if="open">
-    <slot></slot>
+  </div>
+  <div class="accordion-content border border-top-0" v-if="open">
+    <div class="p-3">
+      <slot></slot>
+    </div>
   </div>
 </div>
 </template>
@@ -48,7 +46,7 @@ export default Vue.component('accordion', {
 <style scoped>
 .accordion-content {
   max-height: 40vh;
-  overflow: auto
+  overflow: auto;
 }
 .accordion-toolbar-row {
   width: 100%;
@@ -57,8 +55,9 @@ export default Vue.component('accordion', {
   justify-content: space-between;
   align-items: center;
 }
-.accordion .md-toolbar:hover {
+.accordion-header:hover {
   cursor: pointer;
+  background-color: #f8f9fa !important;
 }
 </style>
 

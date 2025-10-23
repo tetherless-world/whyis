@@ -35,7 +35,7 @@ const VIEW_URIS = Object.freeze({
  * @returns {string} The current node URI
  */
 function getCurrentUri () {
-  return NODE_URI
+  return window.NODE_URI
 }
 
 /**
@@ -63,10 +63,10 @@ function getCurrentView () {
 function getViewUrl(uri, view) {
     uri  = encodeURIComponent(uri);
     if (view != null) {
-        return `${ROOT_URL}about?view=${view || 'view'}&uri=${uri}`
+        return `${window.ROOT_URL}about?view=${view || 'view'}&uri=${uri}`
     }
     else {
-        return `${ROOT_URL}about?uri=${uri}`
+        return `${window.ROOT_URL}about?uri=${uri}`
     }
 }
 

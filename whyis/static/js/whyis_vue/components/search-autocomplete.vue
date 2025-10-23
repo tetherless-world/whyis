@@ -1,22 +1,25 @@
 <template>
-<md-autocomplete
-   class="search"
-   md-input-name="query"
-   :md-options="items"
-   md-layout="box"
-   v-model="selected"
-   @md-changed="resolveEntity"
-   @md-selected="selectedItemChange">
-  <label>Search</label>
-  <template slot="md-autocomplete-item" slot-scope="{item,term}">
-    <span md-term="searchText" md-fuzzy-search="true">{{item.label}}</span>
-    <span v-if="item.label != item.preflabel">(preferred: {{item.preflabel}})</span>
-<!--    <span v-if="item.types.length > 0">
-      (<span v-for="t in item.types">{{t.label}}</span><span ng-if="!$last">, </span>)
-    </span>-->
-  </template>
-  <input type="hidden" name="search" v-model="query"/>
-</md-autocomplete>
+  <div class="position-relative">
+    <autocomplete 
+      v-model="selected" 
+      :fetch-data="resolveEntity"
+      :display-field="'prefLabel'"
+      :key-field="'node'"
+      @select="selectedItemChange"
+      placeholder="Search knowledge base..."
+      input-class="form-control-lg"
+      :min-chars="3">
+      <template #option="{ item }">
+        <div>
+          <span>{{ item.prefLabel || item.label }}</span>
+          <span v-if="item.label && item.label !== item.prefLabel" class="text-muted ms-1">({{ item.label }})</span>
+        </div>
+      </template>
+      <template #selected="{ item }">
+        <span>{{ item.prefLabel || item.label }}</span>
+      </template>
+    </autocomplete>
+  </div>
 </template>
 
 <script>
@@ -25,25 +28,29 @@ import axios from 'axios';
 
 export default Vue.component('search-autocomplete', {
     data: () => ({
-      query: null,
-      selected: null,
-      items: []
+      selected: null
     }),
     methods: {
-        resolveEntity (query) {
-            this.items = axios.get('/',{params:{view:'resolve',term:query+"*"},
-                                 responseType:'json' })
-                .then(function(response) {
-                    var result = response.data;
-                    result.forEach(function (x) {
-                      x.toLowerCase = () => x.label.toLowerCase();
-                      x.toString = () => x.label;
+        async resolveEntity(query) {
+            if (query && query.length > 2) {
+                try {
+                    const response = await axios.get('/', {
+                        params: { view: 'resolve', term: query + "*" },
+                        responseType: 'json'
                     });
-                    return result;
-                });
+                    return response.data || [];
+                } catch (error) {
+                    console.error('Error resolving entities:', error);
+                    return [];
+                }
+            } else {
+                return [];
+            }
         },
         selectedItemChange(item) {
-            window.location.href = '/'+'about?view=view&uri='+window.encodeURIComponent(item.node);
+            if (item && item.node) {
+                window.location.href = '/about?view=view&uri=' + encodeURIComponent(item.node);
+            }
         }
     },
     props: ['root_url', 'axios']

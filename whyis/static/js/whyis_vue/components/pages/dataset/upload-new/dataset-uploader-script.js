@@ -1,13 +1,20 @@
 import Vue from 'vue';
-import uuidv4 from "uuid";
 import { EventServices } from '../../../../modules';
-import VueMaterial from "vue-material";
 import { getDefaultDataset, loadDataset, saveDataset, deleteDataset, saveDistribution, saveImg, getDoi, getDatasetAuthor} from "../../../../utilities/dataset-upload";
 import lookupOrcid from "../../../../utilities/orcid-lookup";
 import {processAutocompleteMenu, getAuthorList, getOrganizationlist} from "../../../../utilities/autocomplete-menu"
-import { goToView } from "../../../../utilities/views"; 
-Vue.use(VueMaterial);
+import { goToView } from "../../../../utilities/views";
 
+// Simple UUID v4 generator
+function uuidv4() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
 
 const STATUS_INITIAL = 0, STATUS_SAVING = 1, STATUS_SUCCESS = 2, STATUS_FAILED = 3;
 const datasetId = uuidv4(); 
@@ -76,16 +83,12 @@ data() {
       isInvalidForm: false,
 
       authenticated: EventServices.authUser,
-      autocomplete: {
-        availableInstitutions: [],
-        availableAuthors: [],
-      },
       loading: false,
       loadingText: "Loading Existing Datasets",
 
       /// search
       query: null,
-      selectedAuthor: [],
+      selectedAuthorModel: null,
 
       // TODO: deal with empty orgs
       editableOrgs: true,
@@ -94,7 +97,7 @@ data() {
 methods: {
 
 
-    loadDataset () {
+    load () {
         let getDatasetPromise
         if (this.pageView === 'new') {
           getDatasetPromise = Promise.resolve(getDefaultDataset())
@@ -324,15 +327,30 @@ methods: {
     },  
 
     async resolveEntityAuthor(query){
-      this.autocomplete.availableAuthors = await getAuthorList(query);
+      if (query && query.length > 2) {
+        try {
+          return await getAuthorList(query);
+        } catch (error) {
+          console.error('Error fetching authors:', error);
+          return [];
+        }
+      }
+      return [];
     },
 
-    async resolveEntityInstitution (query) {
-      this.autocomplete.availableInstitutions = await getOrganizationlist(query);
+    async resolveEntityInstitution(query) {
+      if (query && query.length > 2) {
+        try {
+          return await getOrganizationlist(query);
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+          return [];
+        }
+      }
+      return [];
     },
     
     selectedAuthorChange(item) {
-      var elem = document.createElement("tr");
       var name;
       if (item.label){
         name = item.label;
@@ -347,13 +365,13 @@ methods: {
           "name": null,
         },
       });
-      this.selectedAuthor = "";
+      this.selectedAuthorModel = null; // Clear selection after adding
     }, 
-    selectedOrgChange(row, event){
+    selectedOrgChange(row, item){
       var currentOrg = this.contributors[row]['onbehalfof'];
-      currentOrg['name'] = event.label;
-      currentOrg['@id'] = event.node;
-      return event.label;
+      currentOrg['name'] = item.label;
+      currentOrg['@id'] = item.node;
+      return item.label;
     },
 
     //TODO: decide how to deal with not having organizations available
@@ -485,7 +503,7 @@ created() {
   if(EventServices.authUser == undefined){
       return this.loading=false;
   } 
-  this.loadDataset();
+  this.load();
   EventServices
   .$on('isauthenticated', (data) => this.authenticated = data)
 }

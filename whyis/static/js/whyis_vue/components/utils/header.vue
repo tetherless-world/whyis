@@ -1,37 +1,50 @@
 <template>
   <div>
-    <md-app-toolbar class="md-primary md-large nav-bg">
-        <div class="md-toolbar-row">
-          <md-button class="md-icon-button" @click="toggle">
-            <md-icon>menu</md-icon>
-          </md-button>
-          <span class="md-title nav-title viz-u-mgup-md"> {{ site_name }} <span class="md-body-1 viz-u-display__show">{{ page_title }}</span></span>
-          <div class="md-toolbar-section-end">
-            <div class="nav-header-intro" v-if="authenticated !== undefined">
-              <span class="md-subheading" style="display:inline-block; padding-top:.5rem">Learn</span>
-              <md-button class="md-icon-button" style="margin-left: -.5rem !important;" href="http://tetherless-world.github.io/whyis/" target="_blank">
-                <md-icon>info</md-icon>
-              </md-button>
+    <nav class="navbar navbar-expand-lg navbar-dark nav-bg">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" @click="toggle" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <span class="navbar-brand nav-title viz-u-mgup-md"> 
+          {{ site_name }} 
+          <span class="navbar-text viz-u-display__show">{{ page_title }}</span>
+        </span>
+        <div class="d-flex align-items-center">
+          <div class="nav-header-intro me-3" v-if="authenticated !== undefined">
+            <span class="navbar-text">Learn</span>
+            <a class="btn btn-link text-white p-1" href="http://tetherless-world.github.io/whyis/" target="_blank" aria-label="Info">
+              <i class="bi bi-info-circle"></i>
+            </a>
+          </div>
+          <div v-if="authenticated !== undefined" class="viz-u-display__desktop d-flex align-items-center">
+            <span class="navbar-text me-2">{{ authenticated.name }}</span>
+            <div class="dropdown">
+              <img src="/images/default.jpg" alt="Avatar" class="rounded-circle" style="width: 32px; height: 32px;">
             </div>
-            <div v-if="authenticated !== undefined" class="viz-u-display__desktop">
-              <div style="display:inline-block; padding-top:.5rem"><span class="md-subheading">{{ authenticated.name }}</span></div>
-              <md-button class="md-icon-button">
-                <md-avatar>
-                  <img src="/images/default.jpg" alt="Avatar">
-                </md-avatar>
-              </md-button>
-            </div>
-            <a class="md-subheading utility-cursor btn-text btn-text--white utility-margin-right" v-if="authenticated == undefined" :href="registerNav">Sign up</a>
-            <a class="md-subheading utility-cursor btn-text btn-text--white" v-if="authenticated == undefined" :href="loginNav">Login</a>
+          </div>
+          <a class="btn btn-outline-light me-2" v-if="authenticated == undefined" :href="registerNav">Sign up</a>
+          <a class="btn btn-outline-light" v-if="authenticated == undefined" :href="loginNav">Login</a>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Bootstrap Toast for Snackbar replacement -->
+    <div class="toast-container position-fixed top-50 start-50 translate-middle">
+      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" ref="toast" :class="{'show': showSnackbar}">
+        <div class="toast-body">
+          <span v-if="snackMssg == null">You are now logged in!</span>
+          <span v-else>{{ snackMssg }}</span>
+          <div class="mt-2 pt-2 border-top">
+            <button type="button" class="btn btn-primary btn-sm" @click="showSnackbar = false" v-if="snackTip == null">
+              OK, Let's Explore
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" @click="showSnackbar = false" v-else>
+              {{ snackTip }}
+            </button>
           </div>
         </div>
-    </md-app-toolbar>
-    <md-snackbar :md-position="position" :md-duration="isInfinity ? Infinity : duration" :md-active.sync="showSnackbar" md-persistent>
-      <span v-if="snackMssg == null">You are now logged in!</span>
-      <span v-else>{{ snackMssg }}</span>
-      <md-button class="md-primary" @click="showSnackbar = false" v-if="snackTip == null">OK, Let's Explore</md-button>
-      <md-button class="md-primary" @click="showSnackbar = false" v-else>{{ snackTip }}</md-button>
-    </md-snackbar>
+      </div>
+    </div>
   </div>
 </template>
 

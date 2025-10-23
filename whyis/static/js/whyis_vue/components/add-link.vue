@@ -3,102 +3,95 @@
     <div v-if="!hideButton" v-on:click="showDialogBox" >
         <slot>
             <!--Default button -->
-            <button class="md-button-icon">
-                <i>+ Add Link</i>
-            <md-tooltip>Add a link to another entity.</md-tooltip>
+            <button class="btn btn-outline-primary btn-sm" style="border:none; background:transparent">
+                <i class="bi bi-plus"></i> Add Link
+                <span class="visually-hidden">Add a link to another entity.</span>
             </button>
         </slot>
     </div>
 
     <div>
-    <md-dialog :md-active.sync="active"  :md-click-outside-to-close="true">
-        <div class="utility-dialog-box_header" >
-            <md-dialog-title>New Link</md-dialog-title>
-        </div>
-        <div style="margin:20px;">
-            <div class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-autocomplete
-                        :value="propertyName"
-                        :md-options="propertyList"
-                        :md-open-on-focus="true"
-                        @md-changed="resolveProperty"
-                        v-on:md-selected="selectedPropertyChange"
-                        @md-opened="showSuggestedProperties"
-                    >
-                        <label>Link Type</label>
-
-                        <template slot="md-autocomplete-item" slot-scope="{ item }">
-                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                            {{item.preflabel}}
-                        </label>
-                        <label v-else md-term="term" md-fuzzy-search="true">
-                            {{item.label}}
-                        </label>
-                        <md-tooltip>{{item.node}}{{item.property}}</md-tooltip>
-                        </template>
-
-                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
-                        <p v-if = "term" >No link types matching "{{ term }}" were found.</p>
-                        <p v-else >Type a property name.</p>
-                        <a v-on:click="useCustomURI" style="cursor: pointer">Use a custom property URI</a> 
-                        </template>
-                    </md-autocomplete>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="addLinkModal" tabindex="-1" :class="{'show': active}" :style="{display: active ? 'block' : 'none'}" v-if="active">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header utility-dialog-box_header">
+            <h5 class="modal-title">New Link</h5>
+            <button type="button" class="btn-close" @click="onCancel" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="margin:20px;">
+            <div class="mb-3">
+                <!-- Property autocomplete using new component -->
+                <autocomplete 
+                  v-model="property"
+                  :fetch-data="fetchPropertyData"
+                  :display-field="'preflabel'"
+                  :key-field="'node'"
+                  @select="selectedPropertyChange"
+                  placeholder="Link Type"
+                  input-class="form-control">
+                  <template #option="{ item }">
+                    <div>
+                      <span v-if="item.preflabel">{{ item.preflabel }}</span>
+                      <span v-else>{{ item.label }}</span>
+                      <small class="text-muted d-block">{{ item.node || item.property }}</small>
+                    </div>
+                  </template>
+                  <template #no-results="{ query }">
+                    <div class="alert alert-info mt-2">
+                      <p v-if="query">No link types matching "{{ query }}" were found.</p>
+                      <p v-else>Type a property name.</p>
+                      <button type="button" class="btn btn-link p-0" @click="useCustomURI">Use a custom property URI</button> 
+                    </div>
+                  </template>
+                </autocomplete>
+            </div>
+            
+            <div v-if="useCustom" class="mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="customPropertyURI" v-model="customPropertyURI" placeholder="Full URI of property">
+                    <label for="customPropertyURI">Full URI of property</label>
                 </div>
             </div>
-            <div v-if="useCustom" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-field >
-                        <label>Full URI of property</label>
-                        <md-input v-model="customPropertyURI"></md-input>
-                    </md-field>
-                </div>
+            
+            <div v-if="property" class="mb-3">
+                <!-- Entity autocomplete using new component -->
+                <autocomplete 
+                  v-model="entity"
+                  :fetch-data="fetchEntityData"
+                  :display-field="'preflabel'"
+                  :key-field="'node'"
+                  @select="selectedEntityChange"
+                  :placeholder="propertyName || 'Linked entity'"
+                  input-class="form-control">
+                  <template #option="{ item }">
+                    <div>
+                      <span v-if="item.preflabel">{{ item.preflabel }} ({{ item.class_label }})</span>
+                      <span v-else>{{ item.label }} ({{ item.class_label }})</span>
+                      <small class="text-muted d-block">{{ item.node || item.uri }}</small>
+                    </div>
+                  </template>
+                  <template #no-results="{ query }">
+                    <div class="alert alert-info mt-2">
+                      <p v-if="query">No entities matching "{{ query }}" were found.</p>
+                      <p v-else>Type an entity name.</p>
+                    </div>
+                  </template>
+                </autocomplete>
             </div>
-            <div v-if="property" class="md-layout md-gutter">
-                <div class="md-layout-item">
-                    <md-autocomplete
-                        :value="entityName"
-                        :md-options="entityList"
-                        :md-open-on-focus="true"
-                        @md-changed="resolveEntity"
-                        v-on:md-selected="selectedEntityChange"
-                        @md-opened="showNeighborEntities"
-                    >
-                        <label v-if="propertyName">{{propertyName}}</label>
-                        <label v-else>Linked entity</label>
-
-                        <template slot="md-autocomplete-item" slot-scope="{ item }">
-                        <label v-if = "item.preflabel" md-term="term" md-fuzzy-search="true">
-                            {{item.preflabel}}  ({{item.class_label}})
-                        </label>
-                        <label v-else md-term="term" md-fuzzy-search="true">
-                            {{item.label}}  ({{item.class_label}})
-                        </label>
-                        
-                        <md-tooltip>{{item.node}}{{item.uri}}</md-tooltip>
-                        </template>
-
-                        <template slot="md-autocomplete-empty" slot-scope="{ term }">
-                        <p v-if = "term" >No entities matching "{{ term }}" were found.</p>
-                        <p v-else >Type an entity name.</p>
-                        </template>
-                    </md-autocomplete>
-                </div>
-            </div>
-            <div class="utility-margin-big viz-2-col">
-                <div class="utility-align--right utility-margin-top">
-                </div>
-                <div class="utility-align--right utility-margin-top">
-                <md-button @click.prevent="onCancel" class="md-raised">
+            
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" @click.prevent="onCancel">
                     Cancel
-                </md-button>
-                <md-button @click.prevent="onSubmit" class="md-raised">
+                </button>
+                <button type="button" class="btn btn-primary" @click.prevent="onSubmit">
                     Add Link
-                </md-button>
-                </div>
+                </button>
             </div>
+          </div>
         </div>
-    </md-dialog>
+      </div>
+    </div>
     </div>
 </div>
 </template>
@@ -115,20 +108,13 @@ export default Vue.component('add-link', {
             id: null,
             property: null,
             propertyName: null,
-            propertyQuery: null,
-            propertyList: [],
             useCustom: false,
             customPropertyURI: null,
 
             entity: null,
-            entityName: null,
-            entityQuery: null,
-            entityList: [],
 
             status: false,
             active: false,
-            awaitingResolve: false,
-            awaitingEntity: false,
         };
     },
     methods: {
@@ -136,24 +122,32 @@ export default Vue.component('add-link', {
             this.useCustom = true;
             this.property = "Custom attribute"
         },
-        // property selection methods
-        showSuggestedProperties(){
-            this.processAutocompleteMenu();
-            this.propertyList = this.getSuggestedProperties(this.uri);
-        },
-        resolveProperty(query){
-            var thisVue = this;
-            this.propertyQuery = query
-            if (!thisVue.awaitingResolve) {
-                setTimeout(function () {
-                    console.log(thisVue.propertyQuery);
-                    if (!query.label) {
-                        thisVue.propertyList = thisVue.getPropertyList(thisVue.propertyQuery);        
-                    }
-                    thisVue.awaitingResolve = false;
-                }, 1000); 
+        // Property and entity fetch methods for autocomplete
+        async fetchPropertyData(query) {
+            if (query && query.length > 2) {
+                try {
+                    return await this.getPropertyList(query);
+                } catch (error) {
+                    console.error('Error fetching properties:', error);
+                    return [];
+                }
+            } else {
+                // Return suggested properties for initial display
+                return await this.getSuggestedProperties(this.uri);
             }
-            thisVue.awaitingResolve = true;
+        },
+        async fetchEntityData(query) {
+            if (query && query.length > 2) {
+                try {
+                    return await this.getEntityList(query);
+                } catch (error) {
+                    console.error('Error fetching entities:', error);
+                    return [];
+                }
+            } else {
+                // Return neighbor entities for initial display  
+                return await this.getNeighborEntities(this.uri);
+            }
         },
         selectedPropertyChange(item){
             this.property = item;
@@ -161,39 +155,12 @@ export default Vue.component('add-link', {
                 this.propertyName = item.preflabel;
             }
             else {this.propertyName = item.label; }
-            console.log(item);
-        },
-        // entity selection methods
-        showNeighborEntities(){
-            this.processAutocompleteMenu();
-            this.entityList = this.getNeighborEntities(this.uri);
-        },
-        resolveEntity(query){
-            var thisVue = this;
-            this.entityQuery = query
-            // Debounce for entity search 
-            if (!thisVue.awaitingEntity) {
-                setTimeout(function () {
-                    let entityQuery = thisVue.entityQuery;
-                    if (!entityQuery.label) {
-                        if (entityQuery.length > 2) {
-                            thisVue.entityList = thisVue.getEntityList(entityQuery);
-                        } else
-                            thisVue.entityList = thisVue.getNeighborEntities(thisVue.uri);
-                    }
-                    thisVue.awaitingEntity = false;
-                }, 1000); 
-            }
-            thisVue.awaitingEntity = true;
         },
         selectedEntityChange(item){
             this.entity = item;
-            this.entityName = item.label;
-            console.log(item);
         },
         // Create dialog boxes
         showDialogBox () {
-            this.propertyList = this.getSuggestedProperties(this.uri);
             this.active=true;
         },
         resetDialogBox(){
@@ -203,7 +170,6 @@ export default Vue.component('add-link', {
             this.useCustom = false;
             this.customPropertyURI = null;
             this.entity = null;
-            this.entityName = null;
         },
         onCancel() {
             return this.resetDialogBox();
@@ -248,7 +214,7 @@ export default Vue.component('add-link', {
         },
         // Formats the dropdown menu. Runs only while the menu is open
         processAutocompleteMenu (param) {
-            const itemListContainer = document.getElementsByClassName("md-menu-content-bottom-start")
+            const itemListContainer = document.getElementsByClassName("dropdown-menu")
             if(itemListContainer.length >= 1) {
                 //itemListContainer[0].style['z-index'] = 12;
                 return status = true
