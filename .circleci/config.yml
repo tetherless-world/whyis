@@ -21,6 +21,9 @@ jobs:
           name: Run unit tests
           command: .circleci/test-unit.sh tetherlessworld/whyis:latest
       - run:
+          name: Run Vue.js unit tests
+          command: .circleci/test-vue.sh tetherlessworld/whyis:latest
+      - run:
           name: Build downstream whyis-demo monolithic Docker image for integration testing
           command: |
             cd /apps
