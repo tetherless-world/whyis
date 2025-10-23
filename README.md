@@ -35,10 +35,12 @@ pytest --cov=whyis --cov-report=html
 For detailed testing documentation, see [TESTING.md](TESTING.md).
 
 Current test coverage:
-- **136 unit tests** covering 7 core utility modules (namespace, data_formats, data_extensions, html_mime_types, version, parse_data_url, datastore_utils)
-- **26 component tests** for autonomic agents (CacheUpdater, Crawler, DatasetImporter, Deductor)
+- **189 unit tests** covering 11 core utility modules with 100% coverage on tested modules
+- **38 component tests** for 6 autonomic agents (CacheUpdater, Crawler, DatasetImporter, Deductor, ImportTrigger, ImporterCrawler)
 - API tests for nanopublication CRUD operations
 - Integration tests for autonomous agents (FRIR, OntologyImporter, SETLR)
 - Vue.js component tests (149 tests)
+
+**Total: 227+ Python tests** (increased from 162 - a 40% increase)
 
 Tests run automatically on GitHub Actions for every push and pull request.
