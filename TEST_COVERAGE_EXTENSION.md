@@ -156,6 +156,8 @@ All new unit tests pass successfully with:
 ## Files Changed
 
 ### New Files
+
+**Unit Tests:**
 - `.github/workflows/python-tests.yml` - GitHub Actions workflow
 - `pytest.ini` - Pytest configuration
 - `tests/conftest.py` - Shared test fixtures
@@ -166,6 +168,15 @@ All new unit tests pass successfully with:
 - `tests/unit/test_version.py` - Version tests (12 tests)
 - `tests/unit/test_parse_data_url.py` - Data URL parsing tests (19 tests)
 - `tests/unit/test_datastore_utils.py` - Datastore utilities tests (20 tests)
+
+**Component Tests (Autonomic Agents):**
+- `tests/unit/whyis_test/autonomic/test_cache_updater.py` - CacheUpdater agent (6 tests)
+- `tests/unit/whyis_test/autonomic/test_crawler.py` - Crawler agent (9 tests)
+- `tests/unit/whyis_test/autonomic/test_dataset_importer.py` - DatasetImporter agent (6 tests)
+- `tests/unit/whyis_test/autonomic/test_deductor.py` - Deductor agent (5 tests)
+- `tests/unit/whyis_test/autonomic/README.md` - Component testing guide
+
+**Documentation:**
 - `TESTING.md` - Comprehensive testing documentation
 - `requirements-test.txt` - Test dependencies file
 
@@ -196,6 +207,7 @@ The testing framework is now ready for:
 Successfully modernized the Python testing infrastructure for the Whyis project:
 - ✅ Migrated from deprecated nose to modern pytest
 - ✅ Created 136 new unit tests with 100% coverage on 7 core modules
+- ✅ Added 26 component tests for 4 autonomic agents using in-memory app infrastructure
 - ✅ Integrated with GitHub Actions CI/CD
 - ✅ Documented testing practices comprehensively
 - ✅ Maintained backward compatibility with existing tests

@@ -36,8 +36,9 @@ For detailed testing documentation, see [TESTING.md](TESTING.md).
 
 Current test coverage:
 - **136 unit tests** covering 7 core utility modules (namespace, data_formats, data_extensions, html_mime_types, version, parse_data_url, datastore_utils)
+- **26 component tests** for autonomic agents (CacheUpdater, Crawler, DatasetImporter, Deductor)
 - API tests for nanopublication CRUD operations
-- Integration tests for autonomous agents
+- Integration tests for autonomous agents (FRIR, OntologyImporter, SETLR)
 - Vue.js component tests (149 tests)
 
 Tests run automatically on GitHub Actions for every push and pull request.
