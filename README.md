@@ -35,7 +35,7 @@ pytest --cov=whyis --cov-report=html
 For detailed testing documentation, see [TESTING.md](TESTING.md).
 
 Current test coverage:
-- **97 unit tests** covering core utility modules (namespace, data formats, version, etc.)
+- **136 unit tests** covering 7 core utility modules (namespace, data_formats, data_extensions, html_mime_types, version, parse_data_url, datastore_utils)
 - API tests for nanopublication CRUD operations
 - Integration tests for autonomous agents
 - Vue.js component tests (149 tests)

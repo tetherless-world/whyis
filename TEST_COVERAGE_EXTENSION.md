@@ -35,7 +35,7 @@ Extend the coverage and update unit tests to reflect current behavior for the Py
 
 ### 2. New Unit Tests
 
-Created **97 new unit tests** covering core utility modules with **100% code coverage**:
+Created **136 new unit tests** covering core utility modules with **100% code coverage**:
 
 #### test_namespace.py (36 tests)
 - Tests all RDF namespace definitions (RDF, RDFS, OWL, FOAF, DC, PROV, SKOS, SIO, etc.)
@@ -65,6 +65,18 @@ Created **97 new unit tests** covering core utility modules with **100% code cov
 - Validates version string structure
 - Tests version accessibility from package
 - **Coverage**: 100% of whyis._version module
+
+#### test_parse_data_url.py (19 tests)
+- Tests data URL parsing for various formats
+- Validates base64 encoding/decoding
+- Tests URL encoding and special characters
+- **Coverage**: 100% of whyis.dataurl.parse_data_url module
+
+#### test_datastore_utils.py (20 tests)
+- Tests create_id function for generating unique IDs
+- Tests value2object function for RDF term conversion
+- Validates handling of various data types
+- **Coverage**: 100% of create_id and value2object functions
 
 ### 3. CI/CD Integration
 
@@ -113,7 +125,7 @@ Created `.github/workflows/python-tests.yml`:
 
 ```bash
 $ pytest tests/unit/test_*.py -v
-============================== 97 passed in 0.11s ===============================
+============================== 136 passed in 0.14s ===============================
 ```
 
 All new unit tests pass successfully with:
@@ -152,6 +164,8 @@ All new unit tests pass successfully with:
 - `tests/unit/test_data_extensions.py` - Data extensions tests (22 tests)
 - `tests/unit/test_html_mime_types.py` - HTML MIME types tests (10 tests)
 - `tests/unit/test_version.py` - Version tests (12 tests)
+- `tests/unit/test_parse_data_url.py` - Data URL parsing tests (19 tests)
+- `tests/unit/test_datastore_utils.py` - Datastore utilities tests (20 tests)
 - `TESTING.md` - Comprehensive testing documentation
 - `requirements-test.txt` - Test dependencies file
 
@@ -181,7 +195,7 @@ The testing framework is now ready for:
 
 Successfully modernized the Python testing infrastructure for the Whyis project:
 - ✅ Migrated from deprecated nose to modern pytest
-- ✅ Created 97 new unit tests with 100% coverage on core modules
+- ✅ Created 136 new unit tests with 100% coverage on 7 core modules
 - ✅ Integrated with GitHub Actions CI/CD
 - ✅ Documented testing practices comprehensively
 - ✅ Maintained backward compatibility with existing tests
