@@ -70,8 +70,7 @@ jobs:
             --cov=whyis \
             --cov-report=xml:test-results/py/coverage-unit.xml \
             --cov-report=html:test-results/py/htmlcov-unit \
-            --cov-report=term \
-            || true
+            --cov-report=term
       
       - name: Run API tests with pytest  
         env:
@@ -86,7 +85,7 @@ jobs:
             --cov-report=xml:test-results/py/coverage-api.xml \
             --cov-report=html:test-results/py/htmlcov-api \
             --cov-report=term \
-            || true
+            || echo "API tests failed or not found, continuing..."
       
       - name: Generate combined coverage report
         if: matrix.python-version == '3.11'

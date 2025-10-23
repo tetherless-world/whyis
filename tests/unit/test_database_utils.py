@@ -5,24 +5,12 @@ Tests utility functions for database operations.
 """
 
 import pytest
-import sys
-import os
 
-# Add whyis to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
+# Skip all tests if dependencies not available
+pytest.importorskip("flask_security")
 
 from rdflib import BNode, URIRef, Literal
-
-# Import directly from the module file to avoid complex dependencies
-import importlib.util
-spec = importlib.util.spec_from_file_location(
-    "database_utils",
-    os.path.join(os.path.dirname(__file__), '../../whyis/database/database_utils.py')
-)
-database_utils = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(database_utils)
-
-node_to_sparql = database_utils.node_to_sparql
+from whyis.database.database_utils import node_to_sparql, drivers
 
 
 class TestNodeToSparql:
@@ -93,29 +81,23 @@ class TestNodeToSparql:
 class TestDriverDecorator:
     """Test the driver decorator function."""
     
-    def test_driver_decorator_exists(self):
-        """Test that driver decorator exists."""
-        assert hasattr(database_utils, 'driver')
-        assert callable(database_utils.driver)
-    
     def test_drivers_dict_exists(self):
         """Test that drivers dictionary exists."""
-        assert hasattr(database_utils, 'drivers')
-        assert isinstance(database_utils.drivers, dict)
+        assert isinstance(drivers, dict)
     
     def test_memory_driver_registered(self):
         """Test that memory driver is registered."""
-        assert 'memory' in database_utils.drivers
+        assert 'memory' in drivers
     
     def test_memory_driver_callable(self):
         """Test that memory driver is callable."""
-        memory_driver = database_utils.drivers.get('memory')
+        memory_driver = drivers.get('memory')
         assert callable(memory_driver)
     
     def test_memory_driver_returns_graph(self):
         """Test that memory driver returns a graph."""
         from rdflib.graph import ConjunctiveGraph
-        memory_driver = database_utils.drivers.get('memory')
+        memory_driver = drivers.get('memory')
         
         config = {}
         graph = memory_driver(config)

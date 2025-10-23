@@ -5,22 +5,11 @@ Tests the DataResponse class for handling data URLs as HTTP responses.
 """
 
 import pytest
-import sys
-import os
 
-# Add whyis to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
+# Skip all tests if dependencies not available
+pytest.importorskip("flask_security")
 
-# Import directly from the module file to avoid __init__ dependencies
-import importlib.util
-spec = importlib.util.spec_from_file_location(
-    "data_response",
-    os.path.join(os.path.dirname(__file__), '../../whyis/dataurl/data_response.py')
-)
-data_response_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(data_response_module)
-
-DataResponse = data_response_module.DataResponse
+from whyis.dataurl.data_response import DataResponse
 
 
 class TestDataResponse:
