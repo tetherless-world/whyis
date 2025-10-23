@@ -1,5 +1,8 @@
 # Whyis
 
+[![Vue.js Tests](https://github.com/tetherless-world/whyis/workflows/Vue.js%20Tests/badge.svg)](https://github.com/tetherless-world/whyis/actions/workflows/vue-tests.yml)
+[![Frontend CI](https://github.com/tetherless-world/whyis/workflows/Frontend%20CI/badge.svg)](https://github.com/tetherless-world/whyis/actions/workflows/frontend-ci.yml)
+
 [Visit our project web site for more details on how to use Whyis.](http://whyis.readthedocs.io)
 
 Whyis is a nano-scale knowledge graph publishing, management, and analysis framework.

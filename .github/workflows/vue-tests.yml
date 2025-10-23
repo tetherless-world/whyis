@@ -1,0 +1,52 @@
+name: Vue.js Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  vue-tests:
+    name: Run Vue.js Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: whyis/static/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd whyis/static
+          npm ci
+
+      - name: Run Vue.js tests
+        run: |
+          cd whyis/static
+          npm test -- --ci --coverage --maxWorkers=2
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./whyis/static/coverage/lcov.info
+          flags: vue-tests
+          name: vue-coverage
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: vue-test-results
+          path: |
+            whyis/static/coverage/
+            whyis/static/test-results/
+          retention-days: 30

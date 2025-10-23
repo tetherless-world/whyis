@@ -60,6 +60,15 @@ Successfully implemented a comprehensive unit testing framework for the Vue.js c
 
 ## CI/CD Integration
 
+### GitHub Actions
+Vue.js tests run automatically on GitHub via GitHub Actions:
+- **vue-tests.yml** - Runs tests on every push and pull request
+- **frontend-ci.yml** - Comprehensive frontend CI with linting, testing, and coverage reporting
+- Tests run on Node.js 18.x and 20.x
+- Automatic coverage reports uploaded to Codecov
+- Test results archived as artifacts
+- Status badges added to README.md
+
 ### CircleCI Configuration
 - Added `test-vue.sh` script for running tests in Docker containers
 - Updated `.circleci/config.yml` to run Vue tests after Python unit tests

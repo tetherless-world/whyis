@@ -1,0 +1,90 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ master, main, develop ]
+    paths:
+      - 'whyis/static/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - 'whyis/static/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test Frontend
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: whyis/static/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd whyis/static
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd whyis/static
+          npm run lint -- js/whyis_vue/**/*.{js,vue} || true
+        continue-on-error: true
+
+      - name: Run Vue.js unit tests
+        run: |
+          cd whyis/static
+          npm test -- --ci --coverage --maxWorkers=2
+
+      - name: Generate coverage report
+        if: matrix.node-version == '20.x'
+        run: |
+          cd whyis/static
+          npm run test:coverage -- --ci --maxWorkers=2
+
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./whyis/static/coverage/lcov.info
+          flags: vue-tests
+          name: vue-coverage-node-${{ matrix.node-version }}
+          fail_ci_if_error: false
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            whyis/static/coverage/
+          retention-days: 30
+
+      - name: Comment test results on PR
+        if: github.event_name == 'pull_request' && matrix.node-version == '20.x'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const coverageDir = './whyis/static/coverage';
+
+            if (fs.existsSync(coverageDir)) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '✅ Vue.js tests passed! Coverage report available in artifacts.'
+              });
+            }

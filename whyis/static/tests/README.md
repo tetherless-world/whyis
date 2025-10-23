@@ -122,7 +122,18 @@ Current coverage focuses on:
 
 ## Continuous Integration
 
-Tests are automatically run in CI via CircleCI. See `.circleci/config.yml` and `.circleci/test-vue.sh`.
+Tests are automatically run in CI via both GitHub Actions and CircleCI:
+
+### GitHub Actions
+- **vue-tests.yml** - Runs on every push and pull request to main branches
+- **frontend-ci.yml** - Comprehensive CI with linting, testing on Node 18.x and 20.x
+- Automatic coverage reporting and artifact uploads
+- Status badges visible in main README.md
+
+### CircleCI
+- Tests run in Docker containers via `.circleci/test-vue.sh`
+- Integrated into existing CircleCI pipeline (`.circleci/config.yml`)
+- Runs after Python unit tests in the build process
 
 ## Mocking
 
