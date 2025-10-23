@@ -5,35 +5,43 @@ Successfully implemented a comprehensive unit testing framework for the Vue.js c
 
 ## Components Tested
 
-### Utility Functions (6 modules)
+### Utility Functions (7 modules)
 1. **debounce.js** - Function delay utility (5 tests)
 2. **slugs.js** - String to URL-safe conversion (15 tests)
 3. **views.js** - View and navigation management (13 tests)
 4. **common-namespaces.js** - RDF namespace constants (9 tests)
+5. **sparql.js** - SPARQL query execution (17 tests)
+6. **autocomplete-menu.js** - Autocomplete UI utilities (18 tests)
+7. **dialog-box-adjust.js** - Dialog positioning (8 tests)
 
 ### Vue Mixins (1 module)
-5. **view-mixin.js** - Common view functionality (6 tests)
+8. **view-mixin.js** - Common view functionality (6 tests)
 
-### Vuex Store Modules (1 module)
-6. **viz-editor.js** - Chart editor state management (7 tests)
+### Vuex Store Modules (2 modules)
+9. **viz-editor.js** - Chart editor state management (7 tests)
+10. **index.js** - Store configuration (6 tests)
 
-### Vue Components (1 component)
-7. **spinner.vue** - Loading spinner component logic (6 tests)
+### Vue Components (4 components)
+11. **spinner.vue** - Loading spinner component logic (6 tests)
+12. **header.vue** - Navigation header logic (9 tests)
+13. **drawer.vue** - Sidebar drawer logic (15 tests)
+14. **chart-intro.vue** - Intro screen logic (13 tests)
 
 ### Application Modules (1 module)
-8. **event-services.js** - Event bus structure (7 tests)
+15. **event-services.js** - Event bus structure (7 tests)
 
 ## Test Statistics
-- **Total Test Suites**: 8
-- **Total Tests**: 68
+- **Total Test Suites**: 15
+- **Total Tests**: 149
 - **Pass Rate**: 100%
-- **Coverage**: Focused on utility functions, mixins, and store modules
+- **Coverage**: Comprehensive coverage of utilities, mixins, store modules, and component logic
 
 ## Test Coverage Highlights
-- ✅ **100%** coverage: debounce, slugs, views, common-namespaces, view-mixin
+- ✅ **100%** coverage: debounce, slugs, views, common-namespaces, sparql, autocomplete-menu, dialog-box-adjust, view-mixin
 - ✅ **80%** coverage: viz-editor store module
-- ✅ Component logic tested for spinner
+- ✅ Component logic tested for spinner, header, drawer, chart-intro
 - ✅ Event services data structure validated
+- ✅ Store configuration tested
 
 ## Framework Configuration
 
@@ -148,10 +156,10 @@ This implementation provides:
 
 All tests pass successfully:
 ```
-Test Suites: 8 passed, 8 total
-Tests:       68 passed, 68 total
+Test Suites: 15 passed, 15 total
+Tests:       149 passed, 149 total
 Snapshots:   0 total
-Time:        ~1.2s
+Time:        ~2.6s
 ```
 
 ## Conclusion
