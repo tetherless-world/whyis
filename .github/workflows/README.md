@@ -80,7 +80,8 @@ npm test -- --ci --coverage --maxWorkers=2
 
 ### Artifacts not uploading
 - Check workflow permissions in repository settings
-- Ensure `actions/upload-artifact@v3` has write permissions
+- Ensure `actions/upload-artifact@v4` has write permissions
+- Verify artifact names don't contain invalid characters
 
 ### Coverage not appearing on Codecov
 - Verify Codecov token is set in repository secrets (if repo is private)
