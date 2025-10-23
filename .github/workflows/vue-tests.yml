@@ -19,13 +19,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: whyis/static/package-lock.json
 
       - name: Install dependencies
         run: |
           cd whyis/static
-          npm ci
+          npm install
 
       - name: Run Vue.js tests
         run: |

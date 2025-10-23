@@ -67,14 +67,14 @@ To run the same tests that CI runs:
 
 ```bash
 cd whyis/static
-npm ci
+npm install
 npm test -- --ci --coverage --maxWorkers=2
 ```
 
 ## Troubleshooting
 
 ### Tests fail in CI but pass locally
-- Ensure you're using `npm ci` instead of `npm install`
+- Ensure dependencies are installed with `npm install`
 - Check Node.js version matches CI (18.x or 20.x)
 - Run with `--ci` flag: `npm test -- --ci`
 

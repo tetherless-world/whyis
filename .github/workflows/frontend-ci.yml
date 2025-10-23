@@ -29,13 +29,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: whyis/static/package-lock.json
 
       - name: Install dependencies
         run: |
           cd whyis/static
-          npm ci
+          npm install
 
       - name: Run ESLint
         run: |
