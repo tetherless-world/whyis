@@ -97,7 +97,7 @@ data() {
 methods: {
 
 
-    loadDataset () {
+    load () {
         let getDatasetPromise
         if (this.pageView === 'new') {
           getDatasetPromise = Promise.resolve(getDefaultDataset())
@@ -503,7 +503,7 @@ created() {
   if(EventServices.authUser == undefined){
       return this.loading=false;
   } 
-  this.loadDataset();
+  this.load();
   EventServices
   .$on('isauthenticated', (data) => this.authenticated = data)
 }
