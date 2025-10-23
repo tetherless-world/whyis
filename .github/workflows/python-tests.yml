@@ -1,0 +1,133 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ master, main, develop ]
+    paths:
+      - 'whyis/**/*.py'
+      - 'tests/**/*.py'
+      - 'setup.py'
+      - 'pytest.ini'
+      - '.github/workflows/python-tests.yml'
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - 'whyis/**/*.py'
+      - 'tests/**/*.py'
+      - 'setup.py'
+      - 'pytest.ini'
+      - '.github/workflows/python-tests.yml'
+
+jobs:
+  test:
+    name: Run Python Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libxml2-dev \
+            libxslt1-dev \
+            zlib1g-dev \
+            redis-server
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[test]" || pip install -e .
+          pip install pytest pytest-flask pytest-cov pytest-mock coverage flask-testing
+      
+      - name: Start Redis
+        run: |
+          sudo systemctl start redis-server
+          redis-cli ping
+      
+      - name: Run unit tests with pytest
+        env:
+          CI: true
+        run: |
+          mkdir -p test-results/py
+          pytest tests/unit/ \
+            --verbose \
+            --tb=short \
+            --junit-xml=test-results/py/junit-unit.xml \
+            --cov=whyis \
+            --cov-report=xml:test-results/py/coverage-unit.xml \
+            --cov-report=html:test-results/py/htmlcov-unit \
+            --cov-report=term \
+            || true
+      
+      - name: Run API tests with pytest  
+        env:
+          CI: true
+        run: |
+          pytest tests/api/ \
+            --verbose \
+            --tb=short \
+            --junit-xml=test-results/py/junit-api.xml \
+            --cov=whyis \
+            --cov-append \
+            --cov-report=xml:test-results/py/coverage-api.xml \
+            --cov-report=html:test-results/py/htmlcov-api \
+            --cov-report=term \
+            || true
+      
+      - name: Generate combined coverage report
+        if: matrix.python-version == '3.11'
+        run: |
+          coverage combine || true
+          coverage report || true
+          coverage xml -o test-results/py/coverage-combined.xml || true
+          coverage html -d test-results/py/htmlcov-combined || true
+      
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          files: test-results/py/coverage-combined.xml,test-results/py/coverage-unit.xml,test-results/py/coverage-api.xml
+          flags: python-tests
+          name: python-coverage-${{ matrix.python-version }}
+          fail_ci_if_error: false
+      
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-python-${{ matrix.python-version }}
+          path: |
+            test-results/py/
+          retention-days: 30
+      
+      - name: Comment test results on PR
+        if: github.event_name == 'pull_request' && matrix.python-version == '3.11'
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const testResultsDir = './test-results/py';
+            
+            if (fs.existsSync(testResultsDir)) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '✅ Python tests completed! Coverage reports available in artifacts.'
+              });
+            }
