@@ -91,6 +91,13 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Proper cleanup on unbind
    - Migrated from: Angular directive "whenScrolled" (lines 2625-2639)
 
+2. **file-model.js** - Vue directive for file input handling
+   - Reads file content and detects format based on extension
+   - Automatic format detection using formats utility
+   - Event emission for file-loaded and file-error
+   - Migrated from: Angular directive "fileModel" (lines 1214-1238)
+   - Tests: tests/directives/file-model.spec.js (3 tests)
+
 #### Components (whyis_vue/components/)
 
 1. **resource-link.vue** - Link to resource with automatic label fetching
@@ -197,7 +204,8 @@ These utilities were already migrated to Vue in previous work:
 
 These are lower priority as they may already have Vue equivalents or are not critical:
 
-1. **fileModel** directive (lines 1214-1238) - File input handling
+1. ~~**fileModel** directive (lines 1214-1238)~~
+   - ✅ **COMPLETED** - Migrated to file-model.js directive
 2. **globalJsonContext** directive (lines 3654-3666) - JSON-LD context injection
 3. **whyisSmartFacet** directive (lines 615-627) - Smart facet widget
 4. **whyisTextFacet** directive (lines 629-641) - Text facet widget
