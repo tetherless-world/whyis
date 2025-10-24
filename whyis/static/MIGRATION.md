@@ -69,6 +69,14 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular service "resolveURI" (lines 3495-3517)
    - Tests: tests/utilities/uri-resolver.spec.js (25 tests)
 
+9. **kg-links.js** - Knowledge graph links service
+   - `createLinksService()` - Create links service for KG exploration
+   - `createGraphElements()` - Create empty graph structure
+   - Node and edge management for Cytoscape.js graphs
+   - Probability filtering and type-based styling
+   - Migrated from: Angular factory "links" (lines 1945-2076)
+   - Tests: tests/utilities/kg-links.spec.js (20 tests)
+
 #### Directives (whyis_vue/directives/)
 
 1. **when-scrolled.js** - Vue directive for scroll triggers
@@ -143,7 +151,10 @@ These components were already migrated to Vue in previous work:
 1. ~~**resolveEntity** (lines 1391-1416)~~
    - ✅ **COMPLETED** - Migrated to resolve-entity.js utility
 
-2. **Nanopub** factory (lines 994-1185)
+2. ~~**links** (lines 1945-2076)~~
+   - ✅ **COMPLETED** - Migrated to kg-links.js utility
+
+3. **Nanopub** factory (lines 994-1185)
    - Nanopublication CRUD operations
    - Complex service with many methods
    - Status: **Pending**
