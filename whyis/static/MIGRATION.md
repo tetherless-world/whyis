@@ -39,6 +39,20 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular service "resolveEntity" (lines 1391-1416)
    - Tests: tests/utilities/resolve-entity.spec.js (13 tests)
 
+5. **rdf-utils.js** - RDF and Linked Data utilities
+   - `listify()` - Convert values to arrays
+   - `getSummary()` - Extract descriptions from LD entities
+   - Support for SKOS, Dublin Core, and other vocabularies
+   - Migrated from: Angular factories "listify" and "getSummary" (lines 669-674, 2078-2100)
+   - Tests: tests/utilities/rdf-utils.spec.js (22 tests)
+
+6. **id-generator.js** - ID generation utilities
+   - `makeID()` - Generate random base-36 IDs
+   - `generateUUID()` - Generate UUID v4
+   - `makePrefixedID()`, `makeTimestampID()` - Specialized ID generators
+   - Migrated from: Angular service "makeID" (lines 3485-3493)
+   - Tests: tests/utilities/id-generator.spec.js (20 tests)
+
 #### Components (whyis_vue/components/)
 
 1. **resource-link.vue** - Link to resource with automatic label fetching
