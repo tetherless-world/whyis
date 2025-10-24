@@ -10,6 +10,7 @@ jobs:
   vue-tests:
     name: Run Vue.js Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -21,11 +22,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        timeout-minutes: 10
         run: |
           cd whyis/static
           npm install
 
       - name: Run Vue.js tests
+        timeout-minutes: 10
         run: |
           cd whyis/static
           npm test -- --ci --coverage --maxWorkers=2

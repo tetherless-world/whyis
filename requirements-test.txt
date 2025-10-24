@@ -1,0 +1,10 @@
+# Test dependencies for Whyis
+# Install with: pip install -r requirements-test.txt
+
+pytest>=7.0.0
+pytest-flask>=1.2.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-xdist>=3.0.0
+coverage>=6.0
+flask-testing>=0.8.1

@@ -11,16 +11,15 @@
         "ajv": "^6.11.0",
         "axios": "^0.21.1",
         "bootstrap": "^5.2.0-beta1",
-        "datavoyager": "^2.0.0-alpha.24",
         "js-yaml": "^4.0.0",
         "jsonschema": "^1.2.5",
         "prismjs": "^1.19.0",
         "rdf-literal": "^1.1.0",
         "tabulator-tables": "^4.4.3",
         "v-jsoneditor": "^1.2.3",
-        "vega": "^5.9.1",
-        "vega-embed": "^6.2.2",
-        "vega-lite": "^4.17.0",
+        "vega": "5.21.0",
+        "vega-embed": "6.20.2",
+        "vega-lite": "5.1.1",
         "vue": "^2.6.10",
         "vue-prism-editor": "^0.3.0",
         "vue-splitpane": "^1.0.6",
@@ -47,5 +46,8 @@
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"
+    },
+    "overrides": {
+        "vega-util": "2.1.0"
     }
 }

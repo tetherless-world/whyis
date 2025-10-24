@@ -1,5 +1,6 @@
 # Whyis
 
+[![Python Tests](https://github.com/tetherless-world/whyis/workflows/Python%20Tests/badge.svg)](https://github.com/tetherless-world/whyis/actions/workflows/python-tests.yml)
 [![Vue.js Tests](https://github.com/tetherless-world/whyis/workflows/Vue.js%20Tests/badge.svg)](https://github.com/tetherless-world/whyis/actions/workflows/vue-tests.yml)
 [![Frontend CI](https://github.com/tetherless-world/whyis/workflows/Frontend%20CI/badge.svg)](https://github.com/tetherless-world/whyis/actions/workflows/frontend-ci.yml)
 
@@ -15,3 +16,31 @@ Every entity in the resource is visible through its own Uniform Resource Identif
 # Nano-scale?
 
 Nano-scale knowledge graphs are built of many *[nanopublications](http://nanopub.org)*, where each nanopublication is tracked individually, with the ability to provide provenance-based justifications and publication credit for each tiny bit of knowledge in the graph.
+
+## Testing
+
+Whyis uses pytest for its Python testing framework. To run the tests:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-flask pytest-cov
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=whyis --cov-report=html
+```
+
+For detailed testing documentation, see [TESTING.md](TESTING.md).
+
+Current test coverage:
+- **189 unit tests** covering 11 core utility modules with 100% coverage on tested modules
+- **38 component tests** for 6 autonomic agents (CacheUpdater, Crawler, DatasetImporter, Deductor, ImportTrigger, ImporterCrawler)
+- API tests for nanopublication CRUD operations
+- Integration tests for autonomous agents (FRIR, OntologyImporter, SETLR)
+- Vue.js component tests (149 tests)
+
+**Total: 227+ Python tests** (increased from 162 - a 40% increase)
+
+Tests run automatically on GitHub Actions for every push and pull request.
