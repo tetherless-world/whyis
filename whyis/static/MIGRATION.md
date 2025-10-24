@@ -84,6 +84,68 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular factory "Resource" (lines 676-750)
    - Tests: tests/utilities/resource.spec.js (24 tests)
 
+#### Components (whyis_vue/components/)
+
+1. **resource-link.vue** - Display links to resources with automatic label fetching
+   - Automatically fetches and displays labels for URIs
+   - Falls back to local part while loading
+   - Props: uri (required), label (optional)
+   - Migrated from: Angular directive "resourceLink" (lines 923-941)
+   - Tests: tests/components/resource-link.spec.js (11 tests)
+
+2. **resource-action.vue** - Links to resource views/actions
+   - Creates links for specific actions (edit, view, delete)
+   - Props: uri, action (required), label (optional)
+   - Migrated from: Angular directive "resourceAction" (lines 943-956)
+   - Tests: tests/components/resource-action.spec.js (12 tests)
+
+3. **search-result.vue** - Search results display
+   - Displays search results with loading/error states
+   - Props: query (required), results (optional)
+   - Migrated from: Angular directive "searchResult" (lines 1303-1333)
+   - Tests: tests/components/search-result.spec.js (10 tests)
+
+4. **latest-items.vue** - Recent items display
+   - Shows recently updated items with labels
+   - Props: limit (optional)
+   - Migrated from: Angular directive "latest" (lines 1418-1440)
+   - Tests: tests/components/latest-items.spec.js (11 tests)
+
+5. **knowledge-explorer.vue** - Knowledge graph visualization
+   - Full Cytoscape.js integration for interactive graphs
+   - Search, load relationships, probability filtering
+   - Props: elements, style, layout, title, start, startList
+   - Migrated from: Angular directive "explore" (lines 2163-2620)
+   - Tests: tests/components/knowledge-explorer.spec.js (35 tests)
+
+6. **nanopubs.vue** - Nanopublication display and management
+   - Lists nanopubs with create/edit/delete functionality
+   - Permission-based editing (owner or admin)
+   - Props: resource, disableNanopubing, currentUser
+   - Migrated from: Angular directive "nanopubs" (lines 1240-1300)
+   - Tests: tests/components/nanopubs.spec.js (16 tests)
+
+7. **new-nanopub.vue** - Nanopub creation/editing form
+   - Multi-graph editing (assertion, provenance, pubinfo)
+   - Format selection and file upload
+   - Props: nanopub, verb, editing
+   - Migrated from: Angular directive "newnanopub" (lines 1187-1212)
+   - Tests: tests/components/new-nanopub.spec.js (21 tests)
+
+8. **new-instance-form.vue** - New instance creation form
+   - Form for creating new instances with nanopub structure
+   - Label, description, references, provenance support
+   - Props: nodeType, lodPrefix, rootUrl
+   - Migrated from: Angular controller "NewInstanceController" (lines 3522-3652)
+   - Tests: tests/components/new-instance-form.spec.js (27 tests)
+
+9. **edit-instance-form.vue** - Instance editing form
+   - Form for editing existing instances
+   - Loads instance data via describe endpoint
+   - Props: nodeUri, lodPrefix, rootUrl
+   - Migrated from: Angular controller "EditInstanceController" (lines 3668-3804)
+   - Tests: tests/components/edit-instance-form.spec.js (29 tests)
+
 #### Directives (whyis_vue/directives/)
 
 1. **when-scrolled.js** - Vue directive for scroll triggers
@@ -182,7 +244,7 @@ These utilities were already migrated to Vue in previous work:
 
 ### Pending Migrations
 
-#### High Priority Angular Components
+#### High Priority Angular Components (COMPLETED)
 
 1. ~~**nanopubs** directive (lines 1240-1300)~~
    - ✅ **COMPLETED** - Migrated to nanopubs.vue component
@@ -190,31 +252,28 @@ These utilities were already migrated to Vue in previous work:
 2. ~~**newnanopub** directive (lines 1187-1212)~~
    - ✅ **COMPLETED** - Migrated to new-nanopub.vue component
 
-3. **NewInstanceController** (lines 3522-3652)
-   - New instance creation with form handling
-   - Status: **Pending** - Complex controller logic
+3. ~~**NewInstanceController** (lines 3522-3652)~~
+   - ✅ **COMPLETED** - Migrated to new-instance-form.vue component
 
-4. **EditInstanceController** (lines 3668-3804)
-   - Instance editing with form handling
-   - Status: **Pending** - Similar to NewInstanceController
+4. ~~**EditInstanceController** (lines 3668-3804)~~
+   - ✅ **COMPLETED** - Migrated to edit-instance-form.vue component
 
 #### Medium Priority Angular Components
 
 1. **vegaController** directive (lines 2970-3184)
    - Vega chart controller with interactive controls
-   - Status: **Pending** - Complex visualization component
+   - Status: **Optional/Low Priority** - Complex visualization component for interactive charts
+   - Note: Basic Vega visualization already supported via vega-lite-wrapper.vue
 
-2. **instanceFacets** directive (lines 3190-3424)
-   - Instance facet filtering interface
-   - Status: **Pending** - Complex facet UI
+2. ~~**instanceFacets** directive (lines 3190-3424)~~
+   - Status: **Skipped** - Faceted browser no longer used per user request
 
-3. **instanceFacetService** service (lines 2645-2947)
-   - Service for instance facet operations
-   - Status: **Pending** - Used by instanceFacets
+3. ~~**instanceFacetService** service (lines 2645-2947)~~
+   - Status: **Skipped** - Related to faceted browser, no longer used
 
 4. **loadAttributes** factory (lines 3461-3483)
    - Load attribute information for entities
-   - Status: **Pending** - Used by instance controllers
+   - Status: **Optional** - May be needed if instance forms need more metadata
 
 #### Low Priority Angular Components
 
@@ -223,10 +282,38 @@ These are lower priority as they may already have Vue equivalents or are not cri
 1. ~~**fileModel** directive (lines 1214-1238)~~
    - ✅ **COMPLETED** - Migrated to file-model.js directive
 2. **globalJsonContext** directive (lines 3654-3666) - JSON-LD context injection
-3. **whyisSmartFacet** directive (lines 615-627) - Smart facet widget
-4. **whyisTextFacet** directive (lines 629-641) - Text facet widget
-5. **RecursionHelper** factory (lines 881-921) - Angular recursion helper
+3. **whyisSmartFacet** directive (lines 615-627) - Smart facet widget (part of faceted browser)
+4. **whyisTextFacet** directive (lines 629-641) - Text facet widget (part of faceted browser)
+5. **RecursionHelper** factory (lines 881-921) - Angular recursion helper (may not be needed in Vue)
 6. Various services: topClasses, ontologyService, generateLink, getView, transformSparqlData
+
+## Migration Summary
+
+### Completed Work
+
+**Total Migrated:**
+- **10 utilities** with 229 tests
+- **9 Vue components** with 172 tests  
+- **2 Vue directives** with 3 tests
+
+**Grand Total: 404 new tests, all passing ✓**
+
+### Key Achievements
+
+1. **Complete RDF Infrastructure**: All core RDF utilities (Graph, Resource, URI resolution) migrated
+2. **Complete Knowledge Graph Exploration**: Full interactive KG explorer with Cytoscape.js
+3. **Complete Nanopub Management**: Full CRUD operations with permissions
+4. **Complete Instance Management**: Create and edit forms for instances
+5. **No Duplication**: Properly identified and reused existing Vue components
+
+### What's Remaining
+
+Only optional/low-priority items remain:
+- vegaController for advanced interactive chart controls (optional)
+- Various facet widgets (faceted browser deprecated)
+- Some helper utilities that may not be needed in Vue
+
+The core migration is **essentially complete**. All high-priority functionality has been migrated to Vue with comprehensive test coverage.
 
 ## Migration Principles
 
@@ -254,17 +341,34 @@ These are lower priority as they may already have Vue equivalents or are not cri
 
 ## Test Coverage
 
-- **Total Test Suites**: 24
-- **Total Tests**: 275
+- **Total Test Suites**: 39
+- **Total Tests**: 585
 - **All Passing**: Yes ✓
 
-### New Test Files
+### New Test Files Added in This PR
 
 1. `tests/utilities/url-utils.spec.js` - 23 tests
 2. `tests/utilities/label-fetcher.spec.js` - 16 tests
 3. `tests/utilities/formats.spec.js` - 29 tests
-4. `tests/components/resource-link.spec.js` - 11 tests
-5. `tests/components/resource-action.spec.js` - 12 tests
+4. `tests/utilities/resolve-entity.spec.js` - 13 tests
+5. `tests/utilities/rdf-utils.spec.js` - 22 tests
+6. `tests/utilities/id-generator.spec.js` - 20 tests
+7. `tests/utilities/graph.spec.js` - 37 tests
+8. `tests/utilities/uri-resolver.spec.js` - 25 tests
+9. `tests/utilities/kg-links.spec.js` - 20 tests
+10. `tests/utilities/resource.spec.js` - 24 tests
+11. `tests/components/resource-link.spec.js` - 11 tests
+12. `tests/components/resource-action.spec.js` - 12 tests
+13. `tests/components/search-result.spec.js` - 10 tests
+14. `tests/components/latest-items.spec.js` - 11 tests
+15. `tests/components/knowledge-explorer.spec.js` - 35 tests
+16. `tests/components/nanopubs.spec.js` - 16 tests
+17. `tests/components/new-nanopub.spec.js` - 21 tests
+18. `tests/components/new-instance-form.spec.js` - 27 tests
+19. `tests/components/edit-instance-form.spec.js` - 29 tests
+20. `tests/directives/file-model.spec.js` - 3 tests
+
+**Total: 404 new tests**
 
 ## Build Configuration
 
