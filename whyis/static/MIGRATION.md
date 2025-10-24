@@ -127,15 +127,6 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular directive "explore" (lines 2163-2620)
    - Tests: tests/components/knowledge-explorer.spec.js (35 tests)
 
-6. **vega-visualization.vue** - Vega/Vega-Lite visualization wrapper
-   - Props: `spec`, `then`, `opt`
-   - Renders Vega specifications using vega-embed
-   - Automatic re-rendering on spec changes
-   - Event emission for rendered/error states
-   - Proper cleanup on component destruction
-   - Migrated from: Angular directive "vega" (lines 2950-2968)
-   - Tests: tests/components/vega-visualization.spec.js (13 tests)
-
 ### Already Existing Vue Components
 
 These components were already migrated to Vue in previous work:
@@ -144,71 +135,74 @@ These components were already migrated to Vue in previous work:
    - Already exists in whyis_vue/components/
    - Equivalent to Angular directive "searchAutocomplete" (lines 1335-1389)
 
+2. **vega-lite-wrapper.vue** - Vega/Vega-Lite visualization wrapper
+   - Already exists in whyis_vue/components/
+   - Equivalent to Angular directive "vega" (lines 2950-2968)
+
+3. **kg-card.vue** - Knowledge graph entity card display
+   - Already exists in whyis_vue/components/
+   - Equivalent to Angular directive "kgCard" (lines 2133-2161)
+
+### Already Existing Vue Utilities
+
+These utilities were already migrated to Vue in previous work:
+
+1. **nanopub.js** - Nanopublication CRUD operations
+   - Already exists in whyis_vue/utilities/
+   - Equivalent to Angular factory "Nanopub" (lines 994-1185)
+
+2. **vega-chart.js** - Vega chart management utilities
+   - Already exists in whyis_vue/utilities/
+   - Chart specifications, SPARQL data integration, persistence
+
 ### Pending Migrations
 
-#### High Priority Angular Directives
+#### High Priority Angular Components
 
-1. ~~**nanopubs** (lines 1240-1300)~~
+1. **nanopubs** directive (lines 1240-1300)
    - Nanopublication display and management
-   - Status: **Pending** (complex component)
+   - Status: **Pending** - Complex component with nanopub utilities already exist
 
-2. ~~**newnanopub** (lines 1187-1212)~~
+2. **newnanopub** directive (lines 1187-1212)
    - New nanopublication creation form
-   - Status: **Pending** (requires nanopub utilities)
+   - Status: **Pending** - Nanopub utilities already exist in whyis_vue/utilities/nanopub.js
 
-3. ~~**searchResult** (lines 1303-1333)~~
-   - ✅ **COMPLETED** - Migrated to search-result.vue
+3. **NewInstanceController** (lines 3522-3652)
+   - New instance creation with form handling
+   - Status: **Pending** - Complex controller logic
 
-4. ~~**latest** (lines 1418-1440)~~
-   - ✅ **COMPLETED** - Migrated to latest-items.vue
+4. **EditInstanceController** (lines 3668-3804)
+   - Instance editing with form handling
+   - Status: **Pending** - Similar to NewInstanceController
 
-5. ~~**explore** (lines 2163-2620)~~
-   - ✅ **COMPLETED** - Migrated to knowledge-explorer.vue
-   - Full knowledge graph visualization with Cytoscape.js
+#### Medium Priority Angular Components
 
-6. ~~**vega** (lines 2950-2968)~~
-   - ✅ **COMPLETED** - Migrated to vega-visualization.vue
-   - Vega/Vega-Lite visualization wrapper
-
-7. **vegaController** (lines 2970-3184)
+1. **vegaController** directive (lines 2970-3184)
    - Vega chart controller with interactive controls
-   - Complex visualization logic
-   - Status: **Pending**
+   - Status: **Pending** - Complex visualization component
 
-#### Angular Services to Migrate
+2. **instanceFacets** directive (lines 3190-3424)
+   - Instance facet filtering interface
+   - Status: **Pending** - Complex facet UI
 
-1. ~~**resolveEntity** (lines 1391-1416)~~
-   - ✅ **COMPLETED** - Migrated to resolve-entity.js utility
+3. **instanceFacetService** service (lines 2645-2947)
+   - Service for instance facet operations
+   - Status: **Pending** - Used by instanceFacets
 
-2. ~~**links** (lines 1945-2076)~~
-   - ✅ **COMPLETED** - Migrated to kg-links.js utility
+4. **loadAttributes** factory (lines 3461-3483)
+   - Load attribute information for entities
+   - Status: **Pending** - Used by instance controllers
 
-3. **Nanopub** factory (lines 994-1185)
-   - Nanopublication CRUD operations
-   - Complex service with many methods
-   - Status: **Pending**
+#### Low Priority Angular Components
 
-3. **Graph** factory (lines 778-879)
-   - ✅ **COMPLETED** - Migrated to graph.js utility
+These are lower priority as they may already have Vue equivalents or are not critical:
 
-4. ~~**Resource** factory (lines 676-750)~~
-   - ✅ **COMPLETED** - Migrated to resource.js utility
-   - Resource object handling with RDF methods
-   - Used throughout the codebase
-
-#### Angular Controllers to Consider
-
-1. **NewInstanceController** (lines 3522-3649)
-   - New instance creation
-   - Complex form handling
-
-2. **EditInstanceController** (lines 3668-3804)
-   - Instance editing
-   - Similar to NewInstanceController
-
-3. **SmartFacetController** (lines 556-562)
-   - Faceted search controller
-   - May be part of existing facet system
+1. **fileModel** directive (lines 1214-1238) - File input handling
+2. **globalJsonContext** directive (lines 3654-3666) - JSON-LD context injection
+3. **whyisSmartFacet** directive (lines 615-627) - Smart facet widget
+4. **whyisTextFacet** directive (lines 629-641) - Text facet widget
+5. **RecursionHelper** factory (lines 881-921) - Angular recursion helper
+6. Various services: topClasses, ontologyService, generateLink, getView, transformSparqlData
 
 ## Migration Principles
 
