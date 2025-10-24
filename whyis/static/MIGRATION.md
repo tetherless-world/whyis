@@ -53,6 +53,14 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular service "makeID" (lines 3485-3493)
    - Tests: tests/utilities/id-generator.spec.js (20 tests)
 
+7. **graph.js** - RDF Graph and Resource management
+   - `createGraph()` - Create new graph instances
+   - `Graph` class - RDF graph with resource management
+   - `Resource` class - RDF resource with property handling
+   - Support for JSON-LD merge and export
+   - Migrated from: Angular factory "Graph" (lines 778-879)
+   - Tests: tests/utilities/graph.spec.js (37 tests)
+
 #### Components (whyis_vue/components/)
 
 1. **resource-link.vue** - Link to resource with automatic label fetching
@@ -126,8 +134,7 @@ These components were already migrated to Vue in previous work:
    - Status: **Pending**
 
 3. **Graph** factory (lines 778-879)
-   - RDF graph manipulation
-   - Core utility for RDF handling
+   - ✅ **COMPLETED** - Migrated to graph.js utility
 
 4. **Resource** factory (lines 676-750)
    - Resource object handling
