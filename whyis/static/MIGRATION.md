@@ -61,6 +61,21 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular factory "Graph" (lines 778-879)
    - Tests: tests/utilities/graph.spec.js (37 tests)
 
+8. **uri-resolver.js** - URI resolution for JSON-LD contexts
+   - `resolveURI()` - Resolve compact IRIs to full URIs
+   - `compactURI()` - Compact full URIs using context
+   - `isFullURI()` - Check if string is a full URI
+   - Supports @vocab, prefix expansion, and term mappings
+   - Migrated from: Angular service "resolveURI" (lines 3495-3517)
+   - Tests: tests/utilities/uri-resolver.spec.js (25 tests)
+
+#### Directives (whyis_vue/directives/)
+
+1. **when-scrolled.js** - Vue directive for scroll triggers
+   - Executes callback when element scrolled to bottom
+   - Proper cleanup on unbind
+   - Migrated from: Angular directive "whenScrolled" (lines 2625-2639)
+
 #### Components (whyis_vue/components/)
 
 1. **resource-link.vue** - Link to resource with automatic label fetching
