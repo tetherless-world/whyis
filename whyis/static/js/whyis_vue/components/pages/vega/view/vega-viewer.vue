@@ -27,11 +27,6 @@
             <i class="bi bi-code-slash"></i>
           </button>
         </div>
-        <div>
-          <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="openVoyager()" title="View Data in Voyager">
-            <i class="bi bi-grid-3x3-gap"></i>
-          </button>
-        </div>
         <div v-if="allowEdit">
           <button type="button" class="btn btn-outline-secondary btn-sm" @click.prevent="editChart" title="Edit Chart">
             <i class="bi bi-pencil"></i>
@@ -109,7 +104,6 @@
           </div>
         </div>
       </div>
-      <data-voyager v-if="voyager.show" :data="spec.data"></data-voyager>
     </div>
   </div>
 </template>
@@ -152,9 +146,6 @@
         authenticated: EventServices.authUser,
         allowEdit: false,
         vizOfTheDay: false,
-        voyager: {
-          show: false
-        },
         specViewer: {
           show: false,
           includeData: false,
@@ -196,9 +187,6 @@
           EventServices.toggleVizOfTheDay(args)
         }
         return EventServices.navTo('view', true)
-      },
-      openVoyager() {
-        goToView(this.chart.uri, 'voyager')
       },
       shareChart() {
         return EventServices.$emit("dialoguebox", {status: true, share: true,
