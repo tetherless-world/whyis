@@ -11,6 +11,8 @@
         "ajv": "^6.11.0",
         "axios": "^0.21.1",
         "bootstrap": "^5.2.0-beta1",
+        "cytoscape": "^3.33.1",
+        "cytoscape-fcose": "^2.2.0",
         "js-yaml": "^4.0.0",
         "jsonschema": "^1.2.5",
         "prismjs": "^1.19.0",

@@ -110,6 +110,16 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular directive "latest" (lines 1418-1440)
    - Tests: tests/components/latest-items.spec.js (11 tests)
 
+5. **knowledge-explorer.vue** - Knowledge graph exploration and visualization
+   - Props: `elements`, `style`, `layout`, `title`, `start`, `startList`
+   - Full Cytoscape.js integration for graph rendering
+   - Interactive node/edge selection and manipulation
+   - Search and entity resolution
+   - Probability-based filtering
+   - Loading states and details sidebar
+   - Migrated from: Angular directive "explore" (lines 2163-2620)
+   - Tests: tests/components/knowledge-explorer.spec.js (35 tests)
+
 ### Already Existing Vue Components
 
 These components were already migrated to Vue in previous work:
@@ -122,15 +132,13 @@ These components were already migrated to Vue in previous work:
 
 #### High Priority Angular Directives
 
-1. **nanopubs** (lines 1240-1300)
+1. ~~**nanopubs** (lines 1240-1300)~~
    - Nanopublication display and management
-   - Complex component with nested directives
-   - Status: **Pending**
+   - Status: **Pending** (complex component)
 
-2. **newnanopub** (lines 1187-1212)
+2. ~~**newnanopub** (lines 1187-1212)~~
    - New nanopublication creation form
-   - Requires nanopub utilities
-   - Status: **Pending**
+   - Status: **Pending** (requires nanopub utilities)
 
 3. ~~**searchResult** (lines 1303-1333)~~
    - ✅ **COMPLETED** - Migrated to search-result.vue
@@ -138,7 +146,11 @@ These components were already migrated to Vue in previous work:
 4. ~~**latest** (lines 1418-1440)~~
    - ✅ **COMPLETED** - Migrated to latest-items.vue
 
-5. **vega** (lines 2950-2968)
+5. ~~**explore** (lines 2163-2620)~~
+   - ✅ **COMPLETED** - Migrated to knowledge-explorer.vue
+   - Full knowledge graph visualization with Cytoscape.js
+
+6. **vega** (lines 2950-2968)
    - Vega visualization wrapper
    - May already have Vue equivalent
 
