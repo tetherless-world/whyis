@@ -33,6 +33,12 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular factory "formats" (lines 752-776)
    - Tests: tests/utilities/formats.spec.js (29 tests)
 
+4. **resolve-entity.js** - Entity resolution for search/autocomplete
+   - `resolveEntity()` - Search and resolve entities by query
+   - Supports type filtering and wildcard search
+   - Migrated from: Angular service "resolveEntity" (lines 1391-1416)
+   - Tests: tests/utilities/resolve-entity.spec.js (13 tests)
+
 #### Components (whyis_vue/components/)
 
 1. **resource-link.vue** - Link to resource with automatic label fetching
@@ -46,6 +52,18 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Supports custom views and actions
    - Migrated from: Angular directive "resourceAction" (lines 943-956)
    - Tests: tests/components/resource-action.spec.js (12 tests)
+
+3. **search-result.vue** - Search results display
+   - Props: `query`, `results` (optional)
+   - Fetches and displays search results with error handling
+   - Migrated from: Angular directive "searchResult" (lines 1303-1333)
+   - Tests: tests/components/search-result.spec.js (10 tests)
+
+4. **latest-items.vue** - Latest/recent items display
+   - Props: `limit` (optional)
+   - Shows latest updated items with timestamps
+   - Migrated from: Angular directive "latest" (lines 1418-1440)
+   - Tests: tests/components/latest-items.spec.js (11 tests)
 
 ### Already Existing Vue Components
 
@@ -62,18 +80,18 @@ These components were already migrated to Vue in previous work:
 1. **nanopubs** (lines 1240-1300)
    - Nanopublication display and management
    - Complex component with nested directives
+   - Status: **Pending**
 
 2. **newnanopub** (lines 1187-1212)
    - New nanopublication creation form
    - Requires nanopub utilities
+   - Status: **Pending**
 
-3. **searchResult** (lines 1303-1333)
-   - Search results display
-   - Fairly straightforward
+3. ~~**searchResult** (lines 1303-1333)~~
+   - ✅ **COMPLETED** - Migrated to search-result.vue
 
-4. **latest** (lines 1418-1440)
-   - Latest items display
-   - Uses getLabel service
+4. ~~**latest** (lines 1418-1440)~~
+   - ✅ **COMPLETED** - Migrated to latest-items.vue
 
 5. **vega** (lines 2950-2968)
    - Vega visualization wrapper
@@ -85,13 +103,13 @@ These components were already migrated to Vue in previous work:
 
 #### Angular Services to Migrate
 
-1. **resolveEntity** (lines 1391-1416)
-   - Entity resolution for search
-   - Used by search-autocomplete (may already be migrated)
+1. ~~**resolveEntity** (lines 1391-1416)~~
+   - ✅ **COMPLETED** - Migrated to resolve-entity.js utility
 
 2. **Nanopub** factory (lines 994-1185)
    - Nanopublication CRUD operations
    - Complex service with many methods
+   - Status: **Pending**
 
 3. **Graph** factory (lines 778-879)
    - RDF graph manipulation
