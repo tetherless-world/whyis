@@ -70,11 +70,29 @@ def runner(app):
     return app.test_cli_runner()
 
 
+# Check if full whyis environment is available
+def has_whyis_environment():
+    """Check if the full Whyis environment with config is available."""
+    try:
+        try:
+            import config
+            return True
+        except ImportError:
+            from whyis import config_defaults
+            return True
+    except (ImportError, AttributeError):
+        return False
+
+WHYIS_ENV_AVAILABLE = has_whyis_environment()
+
 # Add markers for CI environment
 def pytest_configure(config):
     """Configure pytest with custom settings."""
     config.addinivalue_line(
         "markers", "skipif_ci: skip test if running in CI environment"
+    )
+    config.addinivalue_line(
+        "markers", "requires_whyis_env: test requires full Whyis environment with config"
     )
 
 
@@ -85,3 +103,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skipif_ci" in item.keywords:
                 item.add_marker(skip_ci)
+    
+    # Skip tests that require full Whyis environment if it's not available
+    if not WHYIS_ENV_AVAILABLE:
+        skip_no_env = pytest.mark.skip(reason="Requires full Whyis environment with config module")
+        for item in items:
+            # Skip tests in whyis_test directories that use the test infrastructure
+            if "whyis_test" in str(item.fspath):
+                item.add_marker(skip_no_env)
