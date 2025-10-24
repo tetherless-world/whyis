@@ -77,6 +77,13 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular factory "links" (lines 1945-2076)
    - Tests: tests/utilities/kg-links.spec.js (20 tests)
 
+10. **resource.js** - RDF Resource factory
+   - `createResource()` - Create Resource objects with RDF methods
+   - Methods: values(), has(), value(), add(), set(), del(), resource()
+   - Nested resource management
+   - Migrated from: Angular factory "Resource" (lines 676-750)
+   - Tests: tests/utilities/resource.spec.js (24 tests)
+
 #### Directives (whyis_vue/directives/)
 
 1. **when-scrolled.js** - Vue directive for scroll triggers
@@ -120,6 +127,15 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular directive "explore" (lines 2163-2620)
    - Tests: tests/components/knowledge-explorer.spec.js (35 tests)
 
+6. **vega-visualization.vue** - Vega/Vega-Lite visualization wrapper
+   - Props: `spec`, `then`, `opt`
+   - Renders Vega specifications using vega-embed
+   - Automatic re-rendering on spec changes
+   - Event emission for rendered/error states
+   - Proper cleanup on component destruction
+   - Migrated from: Angular directive "vega" (lines 2950-2968)
+   - Tests: tests/components/vega-visualization.spec.js (13 tests)
+
 ### Already Existing Vue Components
 
 These components were already migrated to Vue in previous work:
@@ -150,13 +166,14 @@ These components were already migrated to Vue in previous work:
    - ✅ **COMPLETED** - Migrated to knowledge-explorer.vue
    - Full knowledge graph visualization with Cytoscape.js
 
-6. **vega** (lines 2950-2968)
-   - Vega visualization wrapper
-   - May already have Vue equivalent
+6. ~~**vega** (lines 2950-2968)~~
+   - ✅ **COMPLETED** - Migrated to vega-visualization.vue
+   - Vega/Vega-Lite visualization wrapper
 
-6. **vegaController** (lines 2970-3184)
-   - Vega chart controller
+7. **vegaController** (lines 2970-3184)
+   - Vega chart controller with interactive controls
    - Complex visualization logic
+   - Status: **Pending**
 
 #### Angular Services to Migrate
 
@@ -174,8 +191,9 @@ These components were already migrated to Vue in previous work:
 3. **Graph** factory (lines 778-879)
    - ✅ **COMPLETED** - Migrated to graph.js utility
 
-4. **Resource** factory (lines 676-750)
-   - Resource object handling
+4. ~~**Resource** factory (lines 676-750)~~
+   - ✅ **COMPLETED** - Migrated to resource.js utility
+   - Resource object handling with RDF methods
    - Used throughout the codebase
 
 #### Angular Controllers to Consider
