@@ -134,6 +134,24 @@ This document tracks the migration of Angular.js code from `whyis/static/js/whyi
    - Migrated from: Angular directive "explore" (lines 2163-2620)
    - Tests: tests/components/knowledge-explorer.spec.js (35 tests)
 
+6. **nanopubs.vue** - Nanopublication display and management
+   - Props: `resource`, `disableNanopubing`, `currentUser`
+   - Lists nanopublications for a resource
+   - Create, edit, and delete nanopublications
+   - Permission-based editing (owner or admin)
+   - Delete confirmation modal
+   - Migrated from: Angular directive "nanopubs" (lines 1240-1300)
+   - Tests: tests/components/nanopubs.spec.js (16 tests)
+
+7. **new-nanopub.vue** - New/edit nanopublication form
+   - Props: `nanopub`, `verb`, `editing`
+   - Multi-graph editing (assertion, provenance, pubinfo)
+   - Format selection for RDF input
+   - File upload with format detection
+   - Graph content textarea
+   - Migrated from: Angular directive "newnanopub" (lines 1187-1212)
+   - Tests: tests/components/new-nanopub.spec.js (21 tests)
+
 ### Already Existing Vue Components
 
 These components were already migrated to Vue in previous work:
@@ -166,13 +184,11 @@ These utilities were already migrated to Vue in previous work:
 
 #### High Priority Angular Components
 
-1. **nanopubs** directive (lines 1240-1300)
-   - Nanopublication display and management
-   - Status: **Pending** - Complex component with nanopub utilities already exist
+1. ~~**nanopubs** directive (lines 1240-1300)~~
+   - ✅ **COMPLETED** - Migrated to nanopubs.vue component
 
-2. **newnanopub** directive (lines 1187-1212)
-   - New nanopublication creation form
-   - Status: **Pending** - Nanopub utilities already exist in whyis_vue/utilities/nanopub.js
+2. ~~**newnanopub** directive (lines 1187-1212)~~
+   - ✅ **COMPLETED** - Migrated to new-nanopub.vue component
 
 3. **NewInstanceController** (lines 3522-3652)
    - New instance creation with form handling
