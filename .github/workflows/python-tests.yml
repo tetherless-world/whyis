@@ -3,20 +3,8 @@ name: Python Tests
 on:
   push:
     branches: [ master, main, develop ]
-    paths:
-      - 'whyis/**/*.py'
-      - 'tests/**/*.py'
-      - 'setup.py'
-      - 'pytest.ini'
-      - '.github/workflows/python-tests.yml'
   pull_request:
     branches: [ master, main, develop ]
-    paths:
-      - 'whyis/**/*.py'
-      - 'tests/**/*.py'
-      - 'setup.py'
-      - 'pytest.ini'
-      - '.github/workflows/python-tests.yml'
 
 jobs:
   test:

@@ -115,8 +115,9 @@ describe('NewInstanceForm', () => {
     expect(wrapper.vm.provenance.references).toEqual([]);
   });
 
-  it('trims whitespace from URIs', () => {
+  it('trims whitespace from URIs', async () => {
     wrapper.setData({ referencesInput: '  http://ref1.org  ,  http://ref2.org  ' });
+    await wrapper.vm.$nextTick(); // Wait for watcher to process
     expect(wrapper.vm.provenance.references).toEqual([
       { '@id': 'http://ref1.org' },
       { '@id': 'http://ref2.org' }
