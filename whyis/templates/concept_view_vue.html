@@ -1,0 +1,305 @@
+{% extends "base_vue.html" %}
+
+{% macro render_reference(ref) %}
+{{ref.value(ns.dc.creator)}}.
+<em>{{ref.value(ns.dc.title)}}</em>,
+{{ref.value(ns.dc.bibliographicCitation)}}
+{% for also in ref[ns.RDFS.seeAlso] %}
+<a href="{{also.identifier}}">
+{% if also[ns.RDF.type:ns.hbgd.PubMedCentralArticle] %}
+<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/3977009" alt="PMC">
+{% elif also[ns.RDF.type:ns.hbgd.PubMedArticle] %}
+<img style="height: 1em" src="http://static.pubmed.gov/portal/portal3rc.fcgi/4066669/img/2318832" alt="PubMed">
+{% endif %}
+</a>
+{% endfor %}
+{% endmacro %}
+
+{% macro render_definition(def) %}
+<div class="card mb-3 {% if def[ns.RDF.type:ns.hbgd.UnreviewedDefinition] %}border-warning{% endif %} {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}border-primary{% endif %}">
+  <div class="card-body">
+    <blockquote class="blockquote">
+      <p>{{def.value(ns.prov.value)}}</p>
+    </blockquote>
+
+    <dl class="row">
+      <dt class="col-sm-3">Status</dt>
+      <dd class="col-sm-9">
+      {% for type in def[ns.RDF.type] %}
+      {% if type[ns.RDFS.subClassOf:ns.sio.definition] %}
+        <span class="badge bg-secondary">{{type.value(ns.RDFS.label)}}</span>
+      {% endif %}
+      {% endfor %}
+      </dd>
+    </dl>
+    
+    <div class="collapse" id="{{def.identifier.split('/')[-1]}}_more">
+      {% if def.value(ns.skos.editorialNote) %}  
+      <dl class="row">
+        <dt class="col-sm-3">Editorial Notes</dt>
+        <dd class="col-sm-9">
+          {% for note in def[ns.skos.editorialNote] %}
+            <p>{{note}}</p>
+          {% endfor %}
+        </dd>
+      </dl>
+      {% endif %}
+      
+      {% if def.value(ns.skos.example) %}  
+      <dl class="row">
+        <dt class="col-sm-3">Appears in</dt>
+        <dd class="col-sm-9">
+          {% for ex in def[ns.skos.example] %}
+            {% if ex.value(ns.dc.title) %} <p>{{render_reference(ex)}}</p>{% endif %}
+          {% endfor %}
+        </dd>
+      </dl>
+      {% endif %}
+      
+      {% if def.value(ns.RDFS.isDefinedBy) %}  
+      <dl class="row">
+        <dt class="col-sm-3">Definition Source</dt>
+        <dd class="col-sm-9">
+          {% for defsource in def[ns.RDFS.isDefinedBy] %}
+          <p><a href="{{defsource.identifier}}">{{defsource.value(ns.RDFS.label) or defsource.identifier}}</a></p>
+          {% endfor %}
+        </dd>
+      </dl>
+      {% endif %}
+      
+      {% if def.value(ns.RDFS.seeAlso) %}  
+      <dl class="row">
+        <dt class="col-sm-3">See also</dt>
+        <dd class="col-sm-9">
+          {% for quoted in def[ns.RDFS.seeAlso] %}
+            <p><a href="{{quoted.identifier}}">{{quoted.value(ns.RDFS.label) or quoted.identifier}}</a></p>
+          {% endfor %}
+        </dd>
+      </dl>
+      {% endif %}
+      
+      {% if def.value(ns.prov.wasAttributedTo) %}  
+      <dl class="row">
+        <dt class="col-sm-3">Attributed To</dt>
+        <dd class="col-sm-9">
+          {% for attrib in def[ns.prov.wasAttributedTo] %}
+            <p><a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.identifier}}</a></p>
+          {% endfor %}
+        </dd>
+      </dl>
+      {% endif %}
+    </div>
+    
+    <button class="btn btn-sm btn-outline-secondary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#{{def.identifier.split('/')[-1]}}_more" aria-expanded="false">
+      More
+    </button>
+  </div>
+</div>
+{% endmacro %}
+
+{% block title %}{{this.value(ns.RDFS.label)}}{% endblock %}
+{% block subtitle %}Class{% endblock %}
+
+{% block styles %}
+<style>
+  .HighRatingDefinition .rating:after {
+    content: " ★★★";
+  }
+  .MediumRatingDefinition .rating:after {
+    content: " ★★☆";
+  }
+  .LowRatingDefinition .rating:after {
+    content: " ★☆☆";
+  }
+  .PreferredDefinition .status:before {
+    content: "Preferred";
+  }
+  .AlternateDefinition .status:before {
+    content: "Alternate";
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-lg-5 mb-4">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h2 class="card-title mb-0">Super Classes</h2>
+        </div>
+        <div class="card-body">
+          <p>Super class definitions also apply to this class.</p>
+          <ul class="list-group list-group-flush">
+            {% for superClass in this[ns.RDFS.subClassOf] %}
+              <li class="list-group-item">
+                <a class="fw-bold" href="{{superClass.identifier}}">
+                  {{superClass.value(ns.RDFS.label)}}
+                  {% if not superClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+                  <i class="bi bi-box-arrow-up-right"></i>
+                  {% endif %}
+                </a>
+                {% if superClass.value(ns.skos.definition) %}
+                <p class="mb-0 text-muted">{{superClass.value(ns.skos.definition)}}</p>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h2 class="card-title mb-0">Definitions</h2>
+        </div>
+        <div class="card-body">
+          <div class="PreferredDefinition mb-3">
+            {% for def in this[ns.hbgd.hasDefinition] %}
+            {% if def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
+            {{ render_definition(def) }}
+            {% endif %}
+            {% endfor %}
+          </div>
+          <div class="AlternateDefinition">
+            {% for def in this[ns.hbgd.hasDefinition] %}
+            {% if not def[ns.RDF.type:ns.hbgd.PreferredDefinition] %}
+            {{ render_definition(def) }}
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header bg-secondary text-white">
+          <h2 class="card-title mb-0">Details</h2>
+        </div>
+        <div class="card-body">
+          <p class="fw-bold"><a href="{{this.identifier}}">{{this.identifier}}</a></p>
+          
+          <dl class="row">
+            <dt class="col-sm-4">Term</dt>
+            <dd class="col-sm-8">{{this.value(ns.RDFS.label)}}</dd>
+          </dl>
+          
+          {% if this.value(ns.skos.altLabel) %}  
+          <dl class="row">
+            <dt class="col-sm-4">Alternate Labels</dt>
+            <dd class="col-sm-8">
+              {% for term in this[ns.skos.altLabel] %}
+              <span class="badge bg-info text-dark">{{term}}</span>
+              {% endfor %}
+            </dd>
+          </dl>
+          {% endif %}
+          
+          {% if this.graph.value(predicate=ns.RDFS.subClassOf, object=this.identifier) %}  
+          <dl class="row">
+            <dt class="col-sm-4">Sub Classes</dt>
+            <dd class="col-sm-8">
+              {% for subClass in this.subjects(ns.RDFS.subClassOf) %}
+              <div class="mb-2">
+                <a class="fw-bold" href="{{subClass.identifier}}">
+                  {{subClass.value(ns.RDFS.label)}}
+                  {% if not subClass[ns.RDF.type:ns.hbgd.HBGDkiConcept] %}
+                  <i class="bi bi-box-arrow-up-right"></i>
+                  {% endif %}
+                </a>
+                {% if subClass.value(ns.skos.definition) %}
+                <p class="mb-0 text-muted small">{{subClass.value(ns.skos.definition)}}</p>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </dd>
+          </dl>
+          {% endif %}
+          
+          <dl class="row">
+            <dt class="col-sm-4">Prioritized Questions</dt>
+            <dd class="col-sm-8">
+              {% for question in this[ns.hbgd.raisedBy] %}
+              {% if question[ns.RDF.type:ns.hbgd.PrioritizedQuestion] %}
+              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
+              {% endif %}
+              {% endfor %}
+            </dd>
+          </dl>
+          
+          <dl class="row">
+            <dt class="col-sm-4">Sub-Questions</dt>
+            <dd class="col-sm-8">
+              {% for question in this[ns.hbgd.raisedBy] %}
+              {% if question[ns.RDF.type:ns.hbgd.SubQuestion] %}
+              <p><a href="{{question.identifier}}">{{question.value(ns.RDFS.label)}}</a></p>
+              {% endif %}
+              {% endfor %}
+            </dd>
+          </dl>
+          
+          {% if this.value(ns.cmo.hasPrimaryConcept) %}  
+          <dl class="row">
+            <dt class="col-sm-4">Terminology Reference</dt>
+            <dd class="col-sm-8">
+              {% for concept in this[ns.cmo.hasPrimaryConcept] %}
+              <p><a href="{{concept.identifier}}">{{concept.value(ns.skos.prefLabel) or concept.identifier}}</a></p>
+              {% endfor %}
+            </dd>
+          </dl>
+          {% endif %}
+          
+          {% if this.value(ns.OWL.equivalentClass) %}  
+          <dl class="row">
+            <dt class="col-sm-4">Equivalent To</dt>
+            <dd class="col-sm-8">
+              {% for concept in this[ns.OWL.equivalentClass] %}
+              <p><a href="{{concept.identifier}}">{{concept.value(ns.RDFS.label) or concept.identifier}}</a></p>
+              {% endfor %}
+            </dd>
+          </dl>
+          {% endif %}
+          
+          {% if this.value(ns.prov.wasAttributedTo) %}
+          {% set attrib = this.value(ns.prov.wasAttributedTo) %}
+          <dl class="row">
+            <dt class="col-sm-4">Attributed to</dt>
+            <dd class="col-sm-8">
+              <a href="{{attrib.identifier}}">{{attrib.value(ns.RDFS.label) or attrib.value(ns.dc.identifier) or attrib.identifier}}</a>
+            </dd>
+          </dl>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3" id="commentary-app">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h3 class="card-title mb-0">Commentary</h3>
+        </div>
+        <div class="card-body">
+          <nanopubs
+            :resource="'{{this.identifier}}'"
+            :current-user="USER"
+            :disable-nanopubing="false">
+          </nanopubs>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+import Nanopubs from '{{ url_for('static', filename='js/whyis_vue/components/nanopubs.vue')}}'
+
+const app = createApp({
+  components: {
+    Nanopubs
+  }
+});
+
+app.mount('#commentary-app');
+</script>
+{% endblock %}
