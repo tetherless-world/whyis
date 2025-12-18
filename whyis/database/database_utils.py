@@ -88,9 +88,9 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.query_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} publish returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
 
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -104,12 +104,12 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.put(store.query_endpoint,
+        r = s.put(store.gsp_endpoint,
                   params=dict(graph=graph.identifier),
                   data=data,
                   **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
         else:
             print(r.text, r.status_code)
 
@@ -124,9 +124,9 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.query_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} POST returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
 
     def delete(c):
         s = requests.session()
@@ -136,11 +136,11 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.delete(store.query_endpoint,
+        r = s.delete(store.gsp_endpoint,
                      params=dict(graph=c),
                      **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
         
     store.publish = publish
     store.put = put
@@ -164,6 +164,8 @@ def sparql_driver(config):
         kwargs['auth'] = (config['_username'], config['_password'])
     store = WhyisSPARQLUpdateStore(**kwargs)
     store.query_endpoint = config["_endpoint"]
+    # Set GSP endpoint: use _gsp_endpoint if provided, otherwise fall back to query_endpoint
+    store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
     if 'auth' in kwargs:
         store.auth = kwargs['auth']
     else:
