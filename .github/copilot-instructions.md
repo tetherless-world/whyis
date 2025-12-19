@@ -130,7 +130,7 @@ pylint whyis/namespace.py
 
 ### Flask Conventions
 
-- **Blueprints**: Organize routes using Flask blueprints (but avoid new routes when possible)
+- **Blueprints**: Organize routes using Flask blueprints (but prefer view infrastructure over new routes)
 - **Templates**: Use Jinja2 templates in `whyis/templates/` with the view infrastructure
 - **Static files**: Place in `whyis/static/`
 - **Configuration**: Use Flask configuration system
@@ -157,9 +157,14 @@ return current_app.render_view(resource)
 return current_app.render_view(resource, view='describe')
 ```
 
-Resources are accessed via URI paths (e.g., `/about`, `/home`, `/<path:name>`) and the view infrastructure automatically:
-- Resolves the entity URI
-- Loads the resource and its properties
+Resources are accessed via URI paths that get resolved by the view infrastructure. For example:
+- `/about` - resolves to the "about" resource URI
+- `/home` - resolves to the "home" resource URI  
+- `/<path:name>` - resolves to any resource by its path
+
+The view infrastructure automatically:
+- Resolves the entity URI from the path
+- Loads the resource and its properties from the knowledge graph
 - Selects the appropriate template based on resource type
 - Renders the view with all resource data
 
@@ -312,7 +317,7 @@ npm run build          # Production build
 1. Use the existing view infrastructure with templates in `whyis/templates/`
 2. Resources are automatically rendered using `current_app.render_view(resource)`
 3. Views can be customized per resource type using the template system
-4. Access resources via their URI paths (e.g., `/<path:name>`)
+4. Access resources via their URI paths (handled by existing entity routes)
 
 **For write operations:**
 1. Post nanopublications to the `/pub` route (see nanopublication blueprint)
@@ -320,7 +325,14 @@ npm run build          # Production build
 3. Represent data changes as nanopublications in the knowledge graph
 
 **Only if a new route is absolutely necessary:**
-1. Justify why existing infrastructure cannot be used
+
+New routes should only be added in rare cases, such as:
+- Custom API endpoints that cannot be represented as resource views
+- Integration endpoints for external services
+- Administrative or system-level operations not tied to specific resources
+
+If adding a route:
+1. Document justification for why existing infrastructure cannot be used
 2. Add route to appropriate blueprint in `whyis/blueprint/`
 3. Implement route handler function
 4. Add template if needed in `whyis/templates/`
