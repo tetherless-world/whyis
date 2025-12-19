@@ -232,6 +232,7 @@ be managed and used.''',
         ],
         'whyis': [
          'whyis_fuseki_search = whyis.plugins.fuseki_search:FusekiSearchPlugin',
+         'whyis_neptune_search = whyis.plugins.neptune_search:NeptuneSearchPlugin',
          'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
         ]
     },
