@@ -120,7 +120,8 @@
       <div style="margin-top:0rem !important" class="container-fluid mt-3"  >
         <div class="row">
           {% block pageheader %}
-          <h1 style="margin-left:1em" property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
+          <h1 property="rdfs:label">{{ title() }} <small>{% block subtitle %}{% endblock %}</small>
+        </h1>
           {% if this is defined %}
 
           <section class="d-flex justify-content-end flex-wrap">
@@ -146,7 +147,6 @@
             {% endblock %}
           </section>
           {% endif %}
-        </h1>
         {% endblock %}
       </div>
       {% block content %}

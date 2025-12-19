@@ -31,11 +31,11 @@
             <!-- Results Container -->
             <div v-else class="row">
                 <!-- Main Results Column -->
-                <div :class="hasTopResult ? 'col-lg-8' : 'col-12'">
+                <div :class="'col-12'">
                     <div v-if="searchPerformed && searchQuery" class="results-info mb-3">
                         <span v-if="results.length === 0">No results found for "{{ searchQuery }}"</span>
                         <span v-else-if="results.length === 1">1 result for "{{ searchQuery }}"</span>
-                        <span v-else>About {{ totalResults }} results for "{{ searchQuery }}"</span>
+                        <span v-else>{{ totalResults }} results for "{{ searchQuery }}"</span>
                     </div>
 
                     <!-- Results List -->
@@ -56,6 +56,9 @@
                                         {{ type.label }}<span v-if="idx < result.type.length - 1">, </span>
                                     </span>
                                 </div>
+                                <blockquote v-if="result.text" class="card-text blockquote"
+				   v-html="highlightQuery(result.text, searchQuery)">
+                                </blockquote>
                                 <p v-if="result.description" class="card-text">
                                     {{ truncateDescription(result.description) }}
                                 </p>
@@ -83,13 +86,6 @@
                     </div>
                 </div>
 
-                <!-- Top Result Sidebar -->
-                <div v-if="hasTopResult" class="col-lg-4">
-                    <div class="sticky-top" style="top: 20px;">
-                        <h6 class="text-muted mb-3">Top Result</h6>
-                        <kg-card :attributes="topResultAttributes" />
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -153,7 +149,7 @@ export default Vue.component('search-page', {
             return this.displayedResults.length < this.results.length;
         },
         hasTopResult() {
-            return this.topResultAttributes !== null && this.results.length > 0;
+            return false; //this.topResultAttributes !== null && this.results.length > 0;
         }
     },
     methods: {
@@ -172,7 +168,7 @@ export default Vue.component('search-page', {
             try {
                 const response = await axios.get('/about', {
                     params: { 
-                        view: 'search', 
+                        view: 'search_data', 
                         query: this.searchQuery 
                     },
                     responseType: 'json'
@@ -258,6 +254,111 @@ export default Vue.component('search-page', {
         getViewUrl(uri) {
             if (!uri) return '#';
             return '/about?view=view&uri=' + encodeURIComponent(uri);
+        },
+
+        highlightQuery(text, query) {
+  	    if (!text || !query) return text;
+
+            // Split query into individual words
+            const words = query.split(/\s+/).filter(Boolean);
+
+            // Escape regex special characters
+            const escapedWords = words.map(word =>
+                  word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            );
+
+            // Create a regex that matches any of the words (whole words, case-insensitive)
+            const regex = new RegExp(`\\b(${escapedWords.join("|")})\\b`, "gi");
+
+            // Wrap matches in <mark>
+            return text.replace(regex, "<mark>$1</mark>");
+        },
+
+        trimToMarked(markedText, maxWords) {
+            if (!markedText || maxWords <= 0) return "";
+
+            // Split into HTML tags and text
+            const tokens = markedText.match(/(<[^>]+>|[^<]+)/g) || [];
+
+            // Build a list of visible words with their token indices
+            const words = [];
+            tokens.forEach((token, tokenIndex) => {
+                if (token.startsWith("<")) return;
+
+                const parts = token.split(/\b/);
+                parts.forEach((part, partIndex) => {
+                    if (/\w+/.test(part)) {
+                        words.push({
+                            word: part,
+                            tokenIndex,
+                            partIndex
+                        });
+                    }
+                });
+            });
+
+            if (words.length === 0) return markedText;
+
+            // Find word indices that are inside <mark> tags
+            const markedWordIndexes = [];
+            let insideMark = false;
+
+            tokens.forEach((token, tokenIndex) => {
+                if (token.match(/<mark\b/i)) insideMark = true;
+                if (!token.startsWith("<") && insideMark) {
+                    const wordMatches = token.match(/\b\w+\b/g) || [];
+                    wordMatches.forEach(() => {
+                        markedWordIndexes.push(markedWordIndexes.length);
+                    });
+                }
+                if (token.match(/<\/mark>/i)) insideMark = false;
+            });
+
+            if (markedWordIndexes.length === 0) {
+                return words.length > maxWords
+                       ? words.slice(0, maxWords).map(w => w.word).join(" ") + "…"
+                       : markedText;
+            }
+
+            const first = markedWordIndexes[0];
+            const last = markedWordIndexes[markedWordIndexes.length - 1];
+
+            const markedCount = last - first + 1;
+            const remaining = Math.max(0, maxWords - markedCount);
+            const before = Math.floor(remaining / 2);
+            const after = remaining - before;
+
+            const startWord = Math.max(0, first - before);
+            const endWord = Math.min(words.length - 1, last + after);
+
+            // Determine which tokens to keep
+            const keepTokenIndexes = new Set();
+            for (let i = startWord; i <= endWord; i++) {
+                keepTokenIndexes.add(words[i].tokenIndex);
+            }
+
+            let result = "";
+            let openMarks = 0;
+
+            tokens.forEach((token, i) => {
+                if (!keepTokenIndexes.has(i) && !token.match(/<\/?mark/i)) return;
+
+                if (token.match(/<mark\b/i)) openMarks++;
+                if (token.match(/<\/mark>/i)) openMarks--;
+
+                result += token;
+            });
+
+            // Close any unclosed <mark> tags
+            while (openMarks > 0) {
+                result += "</mark>";
+                openMarks--;
+            }
+
+            if (startWord > 0) result = "…" + result;
+            if (endWord < words.length - 1) result += "…";
+
+            return result;
         },
 
         truncateDescription(description) {
