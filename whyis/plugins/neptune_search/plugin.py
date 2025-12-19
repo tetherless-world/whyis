@@ -77,7 +77,7 @@ where {
 
         type_query = ''
         if type is not None:
-             type_query = self.type_query% type
+             type_query = self.type_query % type
 
         query =  self.query % (term, type_query, context_query)
         #print(query)
@@ -111,3 +111,4 @@ class NeptuneSearchPlugin(Plugin):
         if resolver_type in self.resolvers:
             resolver = self.resolvers[resolver_type](resolver_db)
             self.app.add_listener(resolver)
+        # Silently skip if not in resolvers - another plugin may handle this type

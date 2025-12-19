@@ -76,7 +76,7 @@ where {
 
         type_query = ''
         if type is not None:
-             type_query = self.type_query% type
+             type_query = self.type_query % type
 
         query =  self.query % (term, type_query, context_query)
         #print(query)
@@ -108,5 +108,7 @@ class FusekiSearchPlugin(Plugin):
     def init(self):
         resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
         resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")
+        if resolver_type not in self.resolvers:
+            raise ValueError(f"Invalid RESOLVER_TYPE '{resolver_type}'. Valid options: {list(self.resolvers.keys())}")
         resolver = self.resolvers[resolver_type](resolver_db)
         self.app.add_listener(resolver)

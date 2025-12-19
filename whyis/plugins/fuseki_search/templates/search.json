@@ -2,7 +2,7 @@
   SELECT ?identifier (sample(?d) as ?description) (max(?s) as ?score) (sample(?o) as ?text)
   WHERE {
       (?o ?s) text:search ?query .
-      filter(lang(?d) = "" || langMatches(lang(?o), "en"))
+      filter(lang(?o) = "" || langMatches(lang(?o), "en"))
       ?identifier ?p ?o .
       filter(!isBlank(?identifier))
       OPTIONAL {

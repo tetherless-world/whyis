@@ -3,7 +3,7 @@
   WHERE {
       ?o fts:search ?query .
       ?o fts:score ?s .
-      filter(lang(?d) = "" || langMatches(lang(?o), "en"))
+      filter(lang(?o) = "" || langMatches(lang(?o), "en"))
       ?identifier ?p ?o .
       filter(!isBlank(?identifier))
       OPTIONAL {
