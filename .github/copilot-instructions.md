@@ -205,10 +205,13 @@ Common fixtures available from `tests/conftest.py`:
 
 When adding a new Python dependency:
 
-1. Add to `install_requires` in `setup.py` with version constraints
-2. Pin exact versions for stability
+1. Add to `install_requires` in `setup.py` with appropriate version constraints
+2. Use version constraints that match the project's pattern:
+   - Exact pins (==) for known stable versions
+   - Upper bounds (<) to prevent breaking changes
+   - Lower bounds (>=) when requiring specific features
 3. Test compatibility with Python 3.8-3.11 (versions tested in CI)
-4. Document why the dependency is needed
+4. Document why the dependency is needed (especially with version constraints)
 
 ### Frontend Dependencies
 
