@@ -1,0 +1,10 @@
+@prefix : <http://vocab.rpi.edu/whyis/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
+
+# Search data view registration for Fuseki full-text search
+whyis:HomePage whyis:searchData "search.json".
+
+whyis:searchData rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "search_data".

@@ -87,7 +87,7 @@ class Config:
     MULTIUSER = True
 
     PLUGINENGINE_NAMESPACE = "whyis"
-    PLUGINENGINE_PLUGINS = ['whyis_sparql_entity_resolver']
+    PLUGINENGINE_PLUGINS = ['whyis_fuseki_search']
 
     SECURITY_EMAIL_SENDER = "Name <email@example.com>"
     SECURITY_FLASH_MESSAGES = True

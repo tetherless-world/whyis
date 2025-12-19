@@ -231,7 +231,8 @@ be managed and used.''',
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
         ],
         'whyis': [
-         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin',
+         'whyis_fuseki_search = whyis.plugins.fuseki_search:FusekiSearchPlugin',
+         'whyis_neptune_search = whyis.plugins.neptune_search:NeptuneSearchPlugin',
          'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
         ]
     },

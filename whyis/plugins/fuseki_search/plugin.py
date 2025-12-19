@@ -1,4 +1,4 @@
-from whyis.plugin import Plugin, EntityResolverListener
+from whyis.plugin import Plugin, EntityResolverListener, PluginBlueprint
 import rdflib
 from flask import current_app
 
@@ -14,7 +14,7 @@ prefixes = dict(
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
 )
 
-class SPARQLEntityResolver(EntityResolverListener):
+class FusekiEntityResolver(EntityResolverListener):
 
     context_query="""
   optional {
@@ -76,7 +76,7 @@ where {
 
         type_query = ''
         if type is not None:
-             type_query = self.type_query% type
+             type_query = self.type_query % type
 
         query =  self.query % (term, type_query, context_query)
         #print(query)
@@ -94,15 +94,21 @@ where {
         return results
 
 
-class SPARQLEntityResolverPlugin(Plugin):
+class FusekiSearchPlugin(Plugin):
 
     resolvers = {
-        "sparql" : SPARQLEntityResolver,
-        "fuseki" : SPARQLEntityResolver
+        "sparql" : FusekiEntityResolver,
+        "fuseki" : FusekiEntityResolver
     }
+
+    def create_blueprint(self):
+        blueprint = PluginBlueprint('fuseki_search', __name__, template_folder='templates')
+        return blueprint
 
     def init(self):
         resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
         resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")
+        if resolver_type not in self.resolvers:
+            raise ValueError(f"Invalid RESOLVER_TYPE '{resolver_type}'. Valid options: {list(self.resolvers.keys())}")
         resolver = self.resolvers[resolver_type](resolver_db)
         self.app.add_listener(resolver)
