@@ -130,12 +130,38 @@ pylint whyis/namespace.py
 
 ### Flask Conventions
 
-- **Blueprints**: Organize routes using Flask blueprints
-- **Templates**: Use Jinja2 templates in `whyis/templates/`
+- **Blueprints**: Organize routes using Flask blueprints (but avoid new routes when possible)
+- **Templates**: Use Jinja2 templates in `whyis/templates/` with the view infrastructure
 - **Static files**: Place in `whyis/static/`
 - **Configuration**: Use Flask configuration system
+- **Views**: Prefer `current_app.render_view(resource)` over custom route handlers
+- **Plugins**: Use Flask-PluginEngine for modular functionality
 
 ## Common Patterns
+
+### Using the View Infrastructure
+
+The preferred way to display resources is through the existing view infrastructure:
+
+```python
+from flask import current_app
+
+# Get a resource by URI
+resource = current_app.get_resource(entity_uri)
+
+# Render the resource using the view system
+# This automatically selects the appropriate template based on resource type
+return current_app.render_view(resource)
+
+# Render with a specific view
+return current_app.render_view(resource, view='describe')
+```
+
+Resources are accessed via URI paths (e.g., `/about`, `/home`, `/<path:name>`) and the view infrastructure automatically:
+- Resolves the entity URI
+- Loads the resource and its properties
+- Selects the appropriate template based on resource type
+- Renders the view with all resource data
 
 ### Working with Nanopublications
 
@@ -278,13 +304,28 @@ npm run build          # Production build
 4. Import and expose in `__init__.py` if needed
 5. Update documentation if it's a public API
 
-### Adding a New Route
+### Adding Features (Routes and Views)
 
-1. Add route to appropriate blueprint in `whyis/blueprint/`
-2. Implement route handler function
-3. Add template if needed in `whyis/templates/`
-4. Write API tests in `tests/api/`
-5. Update documentation
+**IMPORTANT**: Avoid adding new routes whenever possible. The existing view infrastructure should be used instead.
+
+**For read operations:**
+1. Use the existing view infrastructure with templates in `whyis/templates/`
+2. Resources are automatically rendered using `current_app.render_view(resource)`
+3. Views can be customized per resource type using the template system
+4. Access resources via their URI paths (e.g., `/<path:name>`)
+
+**For write operations:**
+1. Post nanopublications to the `/pub` route (see nanopublication blueprint)
+2. Avoid creating new write endpoints
+3. Represent data changes as nanopublications in the knowledge graph
+
+**Only if a new route is absolutely necessary:**
+1. Justify why existing infrastructure cannot be used
+2. Add route to appropriate blueprint in `whyis/blueprint/`
+3. Implement route handler function
+4. Add template if needed in `whyis/templates/`
+5. Write API tests in `tests/api/`
+6. Update documentation
 
 ### Adding a New Autonomous Agent
 
@@ -294,6 +335,48 @@ npm run build          # Production build
 4. Write unit tests in `tests/unit/whyis_test/autonomic/`
 5. Register agent in configuration
 6. Document agent purpose and configuration
+
+### Creating a Plugin for Modularity
+
+**IMPORTANT**: Encapsulate logically related functionality in plugins to maximize application modularity.
+
+Plugins provide:
+- Self-contained functionality with their own blueprints, templates, and static files
+- Event listeners (NanopublicationListener, EntityResolverListener)
+- Custom filters and template functions
+- Optional vocabulary (vocab.ttl) to extend the knowledge graph
+
+**To create a plugin:**
+
+1. Create plugin directory in `whyis/plugins/<plugin_name>/`
+2. Implement plugin class inheriting from `whyis.plugin.Plugin`
+3. Define plugin structure:
+   ```python
+   from whyis.plugin import Plugin, PluginBlueprint
+   
+   class MyPlugin(Plugin):
+       def create_blueprint(self):
+           # Optional: create blueprint for routes
+           blueprint = PluginBlueprint('my_plugin', __name__)
+           # Add routes to blueprint
+           return blueprint
+       
+       def vocab(self, store):
+           # Optional: load plugin vocabulary
+           super().vocab(store)
+   ```
+4. Optionally add listener classes (NanopublicationListener, EntityResolverListener)
+5. Register plugin in `setup.py` entry_points under 'whyis'
+6. Add plugin templates in plugin directory
+7. Write tests for plugin functionality
+8. Document plugin purpose and configuration
+
+**Use plugins for:**
+- Domain-specific functionality
+- Integrations with external services
+- Custom entity resolvers
+- Specialized views or data transformations
+- Event-driven processing of nanopublications
 
 ## Documentation
 
@@ -315,6 +398,9 @@ When making changes:
 
 ## Tips for Copilot
 
+- **Architecture first**: Before adding routes, consider using the view infrastructure or plugins
+- **Avoid new routes**: Use `render_view()` for reads, `/pub` route for writes via nanopublications
+- **Plugin modularity**: Encapsulate logically related functionality in plugins
 - **Minimal changes**: Make the smallest possible changes to fix issues
 - **Test-driven**: Write tests first when adding features
 - **Follow patterns**: Look at existing code for patterns and conventions
