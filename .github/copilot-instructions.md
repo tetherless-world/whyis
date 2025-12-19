@@ -8,7 +8,7 @@ Whyis is a nano-scale knowledge graph publishing, management, and analysis frame
 
 ### Key Technologies
 
-- **Backend**: Python 3.7+ with Flask web framework
+- **Backend**: Python 3.8+ with Flask web framework (CI tests 3.8-3.11)
 - **Knowledge Graph**: RDF, OWL, SPARQL, rdflib
 - **Database**: Apache Jena Fuseki (included in setup)
 - **Frontend**: Vue.js components, JavaScript
@@ -207,7 +207,7 @@ When adding a new Python dependency:
 
 1. Add to `install_requires` in `setup.py` with version constraints
 2. Pin exact versions for stability
-3. Test compatibility with Python 3.7-3.11
+3. Test compatibility with Python 3.8-3.11 (versions tested in CI)
 4. Document why the dependency is needed
 
 ### Frontend Dependencies
@@ -318,7 +318,7 @@ When making changes:
 - **Coverage**: Maintain or improve test coverage
 - **Documentation**: Update docs when changing APIs
 - **Dependencies**: Avoid adding unnecessary dependencies
-- **Python version**: Ensure compatibility with Python 3.7+
+- **Python version**: Ensure compatibility with Python 3.8-3.11 (versions tested in CI)
 - **Type hints**: Add type hints to new functions
 - **Error handling**: Add appropriate error handling and logging
 - **RDF best practices**: Follow semantic web standards and conventions
