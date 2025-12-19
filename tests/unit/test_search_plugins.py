@@ -236,7 +236,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
         self.assertIn("fts:matchQuery", context_query)
         self.assertIn("optional", context_query.lower())
 
-    # Removed patch decorator
     def test_resolver_on_resolve_basic(self):
         """Test basic entity resolution."""
         with patch('flask.current_app') as mock_app:
@@ -266,7 +265,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
             self.assertIn('types', results[0])
             self.assertEqual(len(results[0]['types']), 2)
 
-        # Removed patch decorator
     def test_resolver_on_resolve_with_empty_types(self):
         """Test entity resolution handles empty types correctly."""
         with patch('flask.current_app') as mock_app:
@@ -291,7 +289,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0]['types'], [])
 
-        # Removed patch decorator
     def test_resolver_on_resolve_with_type(self):
         """Test entity resolution with type filtering."""
         with patch('flask.current_app') as mock_app:
@@ -311,7 +308,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
             # Check that type filter is in query
             self.assertIn(type_uri, call_args)
 
-        # Removed patch decorator
     def test_resolver_on_resolve_with_context(self):
         """Test entity resolution with context."""
         with patch('flask.current_app') as mock_app:
@@ -331,7 +327,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
             # Check that context is in query (appears twice for matchQuery)
             self.assertEqual(call_args.count(context), 2)
 
-        # Removed patch decorator
     def test_resolver_match_query_parameter(self):
         """Test that matchQuery parameter is included correctly."""
         with patch('flask.current_app') as mock_app:
@@ -368,7 +363,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
                                                    'whyis.plugins.neptune_search.plugin',
                                                    template_folder='templates')
 
-    # Removed patch decorator
     def test_plugin_init_valid_type(self):
         """Test plugin initialization with valid resolver type."""
         mock_app = Mock()
@@ -382,7 +376,6 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
         # Verify add_listener was called
         mock_app.add_listener.assert_called_once()
 
-    # Removed patch decorator
     def test_plugin_init_invalid_type_silent(self):
         """Test plugin initialization silently skips invalid resolver type."""
         mock_app = Mock()
