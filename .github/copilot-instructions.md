@@ -95,7 +95,7 @@ pylint whyis/namespace.py
 ### Python Style
 
 - **Follow PEP 8** for Python code style
-- **Python 3.7+ syntax**: Use type hints where appropriate
+- **Python 3.8+ syntax**: Use type hints where appropriate
 - **Docstrings**: Use clear docstrings for modules, classes, and functions
 - **Imports**: Group imports (standard library, third-party, local) with blank lines between groups
 - **Line length**: Keep lines under 100 characters when possible
