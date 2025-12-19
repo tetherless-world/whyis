@@ -225,9 +225,7 @@ export default Vue.component('search-autocomplete', {
       if (this.debounceTimer) {
         clearTimeout(this.debounceTimer);
       }
-    },
-    
-    props: ['root_url', 'axios']
+    }
 });
 </script>
 

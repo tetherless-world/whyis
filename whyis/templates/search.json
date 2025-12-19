@@ -9,4 +9,4 @@
       }
   } group by ?identifier 
   ORDER BY DESC(?score)
-  LIMIT 100''' | query(values={"query":rdflib.Literal(args['query'])}) | iter_labelize("identifier","label") | tojson }}
+  LIMIT 1000''' | query(values={"query":rdflib.Literal(args['query'])}) | iter_labelize("identifier","label") | tojson }}

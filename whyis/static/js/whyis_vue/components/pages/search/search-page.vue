@@ -240,10 +240,9 @@ export default Vue.component('search-page', {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && this.hasMore && !this.loadingMore) {
                         this.loadingMore = true;
-                        setTimeout(() => {
-                            this.loadNextPage();
-                            this.loadingMore = false;
-                        }, 500);
+                        // Load next page immediately
+                        this.loadNextPage();
+                        this.loadingMore = false;
                     }
                 });
             }, {
