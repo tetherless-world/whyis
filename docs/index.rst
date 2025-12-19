@@ -12,6 +12,7 @@
 
    install
    gettingstarted
+   plugins
    views
    inference
    usecases
