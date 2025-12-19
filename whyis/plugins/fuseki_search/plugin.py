@@ -1,4 +1,4 @@
-from whyis.plugin import Plugin, EntityResolverListener
+from whyis.plugin import Plugin, EntityResolverListener, PluginBlueprint
 import rdflib
 from flask import current_app
 
@@ -14,7 +14,7 @@ prefixes = dict(
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
 )
 
-class SPARQLEntityResolver(EntityResolverListener):
+class FusekiEntityResolver(EntityResolverListener):
 
     context_query="""
   optional {
@@ -94,12 +94,16 @@ where {
         return results
 
 
-class SPARQLEntityResolverPlugin(Plugin):
+class FusekiSearchPlugin(Plugin):
 
     resolvers = {
-        "sparql" : SPARQLEntityResolver,
-        "fuseki" : SPARQLEntityResolver
+        "sparql" : FusekiEntityResolver,
+        "fuseki" : FusekiEntityResolver
     }
+
+    def create_blueprint(self):
+        blueprint = PluginBlueprint('fuseki_search', __name__, template_folder='templates')
+        return blueprint
 
     def init(self):
         resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')

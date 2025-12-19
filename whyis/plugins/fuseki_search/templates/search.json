@@ -1,0 +1,14 @@
+{{'''
+  SELECT ?identifier (sample(?d) as ?description) (max(?s) as ?score) (sample(?o) as ?text)
+  WHERE {
+      (?o ?s) text:search ?query .
+      filter(lang(?d) = "" || langMatches(lang(?o), "en"))
+      ?identifier ?p ?o .
+      filter(!isBlank(?identifier))
+      OPTIONAL {
+          ?identifier dc:description|skos:definition|rdfs:comment|sioc:content|dc:abstract|dc:summary|rdfs:comment|dcelements:description|<http://purl.obolibrary.org/obo/IAO_0000115>|prov:value|sio:hasValue|<http://dbpedia.org/ontology/abstract> ?d.
+          filter(lang(?d) = "" || langMatches(lang(?d), "en"))
+      }
+  } group by ?identifier having max(?s)
+  ORDER BY DESC(?score)
+  LIMIT 1000''' | query(values={"query":rdflib.Literal(args['query'])}) | iter_labelize("identifier","label") | tojson }}
