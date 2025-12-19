@@ -180,6 +180,10 @@ Views are defined in:
 
 ```turtle
 # In vocab.ttl file
+@prefix my: <http://example.org/my/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc: <http://purl.org/dc/terms/> .
 @prefix whyis: <http://vocab.rpi.edu/whyis/> .
 
 # Register a view template for a class
@@ -253,6 +257,12 @@ Vocabulary files (`.ttl` format) define:
 **Common vocabulary patterns:**
 
 ```turtle
+@prefix my: <http://example.org/my/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
+
 # Define a new class with views
 my:CustomClass a owl:Class;
   rdfs:label "Custom Resource Type";
