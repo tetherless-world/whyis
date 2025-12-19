@@ -168,6 +168,42 @@ The view infrastructure automatically:
 - Selects the appropriate template based on resource type
 - Renders the view with all resource data
 
+#### Registering Views in Vocabulary Files
+
+**IMPORTANT**: The `render_view()` system is driven by the vocabulary system. New views must be registered in vocabulary files to be used.
+
+Views are defined in:
+- `whyis/default_vocab.ttl` - System-level view definitions
+- Application `vocab.ttl` - Application-specific view definitions
+
+**To register a new view for a resource type:**
+
+```turtle
+# In vocab.ttl file
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
+
+# Register a view template for a class
+my:CustomClass a owl:Class;
+  whyis:hasView "custom_view.html";
+  whyis:editInstanceView "custom_edit.html".
+
+# Or define a custom view property
+whyis:hasCustomView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "custom".
+
+# Then associate it with a class
+rdfs:Resource whyis:hasCustomView "custom_template.html".
+```
+
+Common view properties:
+- `whyis:hasView` - Default view template
+- `whyis:editInstanceView` - Edit form template
+- `whyis:hasGraphView` - RDF graph view
+- `whyis:hasDescribe` - JSON-LD describe view
+- Custom properties that extend `whyis:hasView`
+
+Without vocabulary registration, `render_view()` won't know which template to use for a resource type.
+
 ### Working with Nanopublications
 
 ```python
@@ -201,6 +237,43 @@ results = database.query("""
     LIMIT 10
 """)
 ```
+
+### Working with Vocabulary Files
+
+Vocabulary files (`.ttl` format) define:
+- Resource type definitions and hierarchies
+- View template associations for resource types
+- Property definitions and constraints
+- Application ontology
+
+**Key vocabulary files:**
+- `whyis/default_vocab.ttl` - System vocabulary (typically don't modify)
+- Application `vocab.ttl` - Application-specific vocabulary
+
+**Common vocabulary patterns:**
+
+```turtle
+# Define a new class with views
+my:CustomClass a owl:Class;
+  rdfs:label "Custom Resource Type";
+  whyis:hasView "custom_view.html";
+  whyis:editInstanceView "custom_edit.html".
+
+# Define properties
+my:customProperty a owl:DatatypeProperty;
+  rdfs:label "Custom Property";
+  rdfs:domain my:CustomClass;
+  rdfs:range xsd:string.
+
+# Register navigation items
+my:CustomClass whyis:hasNavigation (
+  whyis:hasView
+  whyis:hasGraphView
+  whyis:editInstanceView
+).
+```
+
+When adding templates, remember to register them in the vocabulary file so `render_view()` can find them.
 
 ## Testing Guidelines
 
@@ -318,6 +391,7 @@ npm run build          # Production build
 2. Resources are automatically rendered using `current_app.render_view(resource)`
 3. Views can be customized per resource type using the template system
 4. Access resources via their URI paths (handled by existing entity routes)
+5. **Register new views in vocabulary files** (`default_vocab.ttl` or app `vocab.ttl`)
 
 **For write operations:**
 1. Post nanopublications to the `/pub` route (see nanopublication blueprint)
