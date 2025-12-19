@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
-from rdflib.plugins.stores.sparqlconnector import SPARQLConnectorException, _response_mime_types
+#from rdflib.plugins.stores.sparqlconnector import SPARQLConnectorException, _response_mime_types
 import re
 
 class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
