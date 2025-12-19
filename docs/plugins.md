@@ -118,9 +118,15 @@ The main difference between the plugins is the SPARQL syntax used:
 
 **Neptune Search:**
 ```sparql
-?label fts:search 'search_term' .
-?label fts:score ?relevance .
+SERVICE <http://aws.amazon.com/neptune/vocab/v01/services/fts> {
+  [] fts:search 'search_term' ;
+     fts:matchQuery '*' ;
+     fts:entity ?node ;
+     fts:score ?relevance .
+}
 ```
+
+Neptune uses a SERVICE clause to invoke OpenSearch integration, while Fuseki uses a direct predicate-based approach with Apache Lucene.
 
 ### Searched Properties
 

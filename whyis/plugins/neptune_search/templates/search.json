@@ -1,11 +1,15 @@
 {{'''
-  SELECT ?identifier (sample(?d) as ?description) (max(?s) as ?score) (sample(?o) as ?text)
+  SELECT ?identifier (sample(?d) as ?description) (max(?s) as ?score) (sample(?label) as ?text)
   WHERE {
-      ?o fts:search ?query .
-      ?o fts:score ?s .
-      filter(lang(?o) = "" || langMatches(lang(?o), "en"))
-      ?identifier ?p ?o .
+      SERVICE <http://aws.amazon.com/neptune/vocab/v01/services/fts> {
+          [] fts:search ?query ;
+             fts:matchQuery "*" ;
+             fts:entity ?identifier ;
+             fts:score ?s .
+      }
+      ?identifier ?p ?label .
       filter(!isBlank(?identifier))
+      filter(lang(?label) = "" || langMatches(lang(?label), "en"))
       OPTIONAL {
           ?identifier dc:description|skos:definition|rdfs:comment|sioc:content|dc:abstract|dc:summary|rdfs:comment|dcelements:description|<http://purl.obolibrary.org/obo/IAO_0000115>|prov:value|sio:hasValue|<http://dbpedia.org/ontology/abstract> ?d.
           filter(lang(?d) = "" || langMatches(lang(?d), "en"))

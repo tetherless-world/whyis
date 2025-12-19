@@ -36,14 +36,24 @@ The plugin registers a `search.json` view that provides full-text search results
 
 ## SPARQL Query Syntax
 
-The plugin uses AWS Neptune's full-text search syntax with OpenSearch:
+The plugin uses AWS Neptune's full-text search syntax with OpenSearch via a SERVICE clause:
 
 ```sparql
-?label fts:search 'search_term' .
-?label fts:score ?relevance .
+SERVICE <http://aws.amazon.com/neptune/vocab/v01/services/fts> {
+  [] fts:search 'search_term' ;
+     fts:matchQuery '*' ;
+     fts:entity ?node ;
+     fts:score ?relevance .
+}
 ```
 
 This requires that Neptune is configured with OpenSearch integration enabled. See [Neptune Full-Text Search documentation](https://docs.aws.amazon.com/neptune/latest/userguide/full-text-search.html) for configuration details.
+
+The SERVICE clause parameters:
+- `fts:search` - The search term/query string
+- `fts:matchQuery` - The field pattern to search (use '*' for all indexed fields)
+- `fts:entity` - Returns the matching RDF resource URI
+- `fts:score` - Returns the relevance score
 
 ## Neptune OpenSearch Configuration
 
@@ -90,9 +100,32 @@ The main differences between Neptune and Fuseki search plugins are:
 1. **Namespace**: Neptune uses `fts:` (http://aws.amazon.com/neptune/vocab/v01/services/fts#) instead of `text:` (http://jena.apache.org/fulltext#)
 2. **Query Syntax**: 
    - Fuseki: `(?label ?relevance) text:search 'term'`
-   - Neptune: `?label fts:search 'term' . ?label fts:score ?relevance`
-3. **Backend**: Fuseki uses Apache Lucene; Neptune uses Amazon OpenSearch Service
-4. **Configuration**: Fuseki configuration is in assembler files; Neptune is configured via AWS console/API
+   - Neptune: Uses SERVICE clause with `fts:search`, `fts:matchQuery`, `fts:entity`, and `fts:score`
+3. **SERVICE Clause**: Neptune requires a SERVICE clause pointing to `<http://aws.amazon.com/neptune/vocab/v01/services/fts>`
+4. **Backend**: Fuseki uses Apache Lucene; Neptune uses Amazon OpenSearch Service
+5. **Configuration**: Fuseki configuration is in assembler files; Neptune is configured via AWS console/API
+
+### Example Comparison
+
+**Fuseki:**
+```sparql
+SELECT ?node ?score WHERE {
+  (?label ?score) text:search 'term' .
+  ?node rdfs:label ?label .
+}
+```
+
+**Neptune:**
+```sparql
+SELECT ?node ?score WHERE {
+  SERVICE <http://aws.amazon.com/neptune/vocab/v01/services/fts> {
+    [] fts:search 'term' ;
+       fts:matchQuery '*' ;
+       fts:entity ?node ;
+       fts:score ?score .
+  }
+}
+```
 
 ## Connection String
 

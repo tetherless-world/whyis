@@ -7,6 +7,7 @@ prefixes = dict(
     skos = rdflib.URIRef("http://www.w3.org/2004/02/skos/core#"),
     foaf = rdflib.URIRef("http://xmlns.com/foaf/0.1/"),
     fts = rdflib.URIRef("http://aws.amazon.com/neptune/vocab/v01/services/fts#"),
+    ftsEndpoint = rdflib.URIRef("http://aws.amazon.com/neptune/vocab/v01/services/fts"),
     schema = rdflib.URIRef("http://schema.org/"),
     owl = rdflib.OWL,
     rdfs = rdflib.RDFS,
@@ -18,13 +19,20 @@ prefixes = dict(
 class NeptuneEntityResolver(EntityResolverListener):
     """
     Entity resolver for AWS Neptune with OpenSearch full-text search integration.
-    Uses the Neptune fts:search predicate for full-text queries.
+    Uses Neptune's SERVICE clause with fts:search for full-text queries.
+    
+    Based on AWS Neptune documentation:
+    https://docs.aws.amazon.com/neptune/latest/userguide/full-text-search-sparql-examples.html
     """
 
     context_query="""
   optional {
-    ?context fts:search '%s' .
-    ?context fts:score ?cr .
+    SERVICE ftsEndpoint {
+      [] fts:search '%s' ;
+         fts:matchQuery '%s' ;
+         fts:entity ?context ;
+         fts:score ?cr .
+    }
     ?node ?p ?context.
   }
 """
@@ -37,10 +45,14 @@ select distinct
 ?node
 ?label
 (group_concat(distinct ?type; separator="||") as ?types)
-(coalesce(?relevance+?cr, ?relevance) as ?score)
+?relevance as ?score
 where {
-  ?label fts:search '%s' .
-  ?label fts:score ?relevance .
+  SERVICE ftsEndpoint {
+    [] fts:search '%s' ;
+       fts:matchQuery '%s' ;
+       fts:entity ?node ;
+       fts:score ?relevance .
+  }
   ?node dc:title|rdfs:label|skos:prefLabel|skos:altLabel|foaf:name|dc:identifier|schema:name|skos:notation ?label.
   %s
   optional {
@@ -64,7 +76,7 @@ where {
   filter not exists {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
-} group by ?node ?label ?score ?cr ?relevance order by desc(?score) limit 10"""
+} group by ?node ?label ?relevance ?type order by desc(?relevance) limit 10"""
 
     def __init__(self, database="knowledge"):
         self.database = database
@@ -73,18 +85,20 @@ where {
         graph = current_app.databases[self.database]
         context_query = ''
         if context is not None:
-            context_query = self.context_query % context
+            context_query = self.context_query % (context, context)
 
         type_query = ''
         if type is not None:
              type_query = self.type_query % type
 
-        query =  self.query % (term, type_query, context_query)
+        # Neptune requires the search term and matchQuery (field to search)
+        # For entity resolution, we search across label-like properties
+        query =  self.query % (term, '*', type_query, context_query)
         #print(query)
         results = []
         for hit in graph.query(query, initNs=prefixes):
             result = hit.asdict()
-            result['types'] = [{'uri':x} for x in result.get('types','').split('||')]
+            result['types'] = [{'uri':x} for x in result.get('types','').split('||') if x]
             if label:
                 current_app.labelize(result,'node','preflabel')
                 result['types'] = [
