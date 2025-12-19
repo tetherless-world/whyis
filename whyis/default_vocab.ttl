@@ -495,7 +495,14 @@ whyis:searchApi whyis:hasView "search-api.json".
 
 <search> a whyis:search .
 
-whyis:search whyis:hasView "search-view.html".
+whyis:search whyis:hasView "search.html";
+  whyis:searchData "search.json".
+
+whyis:searchView rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "search".
+
+whyis:searchData rdfs:subPropertyOf whyis:hasView;
+  dc:identifier "search".
 
 # whyis:search whyis:hasView "search-view.html";
 #   whyis:searchApi "search-api.json".
