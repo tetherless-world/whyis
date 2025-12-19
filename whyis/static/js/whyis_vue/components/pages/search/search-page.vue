@@ -240,9 +240,12 @@ export default Vue.component('search-page', {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && this.hasMore && !this.loadingMore) {
                         this.loadingMore = true;
-                        // Load next page immediately
+                        // Load next page (synchronous operation on already-fetched data)
                         this.loadNextPage();
-                        this.loadingMore = false;
+                        // Clear loading flag after DOM updates
+                        this.$nextTick(() => {
+                            this.loadingMore = false;
+                        });
                     }
                 });
             }, {
