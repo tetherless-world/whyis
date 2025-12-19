@@ -230,16 +230,25 @@ Autonomous agents process data automatically. They are located in `whyis/autonom
 ### Database Operations
 
 ```python
-from whyis.database import database
+from flask import current_app
 
+# Access the full knowledge graph via current_app.db
 # Query using SPARQL
-results = database.query("""
+results = current_app.db.query("""
     SELECT ?s ?p ?o
     WHERE {
         ?s ?p ?o .
     }
     LIMIT 10
 """)
+
+# Access the database store
+current_app.db.store.nsBindings = {}
+
+# Check if a triple exists in the database
+if (entity, RDF.type, current_app.NS.np.Nanopublication) in current_app.db:
+    # Process nanopublication
+    pass
 ```
 
 ### Working with Vocabulary Files
