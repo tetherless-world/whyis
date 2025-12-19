@@ -79,6 +79,20 @@ def oxigraph_driver(config):
     return graph
 
 def _remote_sparql_store_protocol(store):
+    """
+    Add Graph Store Protocol (GSP) operations to a SPARQL store.
+    
+    This function adds publish, put, post, and delete methods to the store
+    that use the store.gsp_endpoint for all HTTP operations. The gsp_endpoint
+    should be configured separately from query_endpoint to allow different
+    endpoints for SPARQL queries vs. graph manipulation.
+    
+    Args:
+        store: A SPARQL store object with gsp_endpoint and auth attributes
+        
+    Returns:
+        The store object with GSP methods attached
+    """
     def publish(data, format='text/trig;charset=utf-8'):
         s = requests.session()
         s.keep_alive = False
@@ -88,9 +102,9 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.query_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} publish returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
 
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -104,12 +118,12 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.put(store.query_endpoint,
+        r = s.put(store.gsp_endpoint,
                   params=dict(graph=graph.identifier),
                   data=data,
                   **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
         else:
             print(r.text, r.status_code)
 
@@ -124,9 +138,9 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.query_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} POST returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
 
     def delete(c):
         s = requests.session()
@@ -136,11 +150,11 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.delete(store.query_endpoint,
+        r = s.delete(store.gsp_endpoint,
                      params=dict(graph=c),
                      **kwargs)
         if not r.ok:
-            print(f"Error: {store.query_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
+            print(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
         
     store.publish = publish
     store.put = put
@@ -150,6 +164,24 @@ def _remote_sparql_store_protocol(store):
 
 @driver(name="sparql")
 def sparql_driver(config):
+    """
+    Create a SPARQL-based RDF graph store.
+    
+    Configuration options (via Flask config with prefix like KNOWLEDGE_ or ADMIN_):
+    - _endpoint: SPARQL query/update endpoint (required)
+    - _gsp_endpoint: Graph Store Protocol endpoint (optional, defaults to _endpoint)
+    - _username: Authentication username (optional)
+    - _password: Authentication password (optional)
+    - _default_graph: Default graph URI (optional)
+    
+    Example configuration in system.conf:
+        KNOWLEDGE_ENDPOINT = 'http://localhost:3030/knowledge/sparql'
+        KNOWLEDGE_GSP_ENDPOINT = 'http://localhost:3030/knowledge/data'  # optional
+    
+    If _gsp_endpoint is not provided, all Graph Store Protocol operations
+    (publish, put, post, delete) will use the _endpoint value, maintaining
+    backward compatibility with existing configurations.
+    """
     defaultgraph = None
     if "_default_graph" in config:
         defaultgraph = URIRef(config["_default_graph"])
@@ -164,6 +196,8 @@ def sparql_driver(config):
         kwargs['auth'] = (config['_username'], config['_password'])
     store = WhyisSPARQLUpdateStore(**kwargs)
     store.query_endpoint = config["_endpoint"]
+    # Set GSP endpoint: use _gsp_endpoint if provided, otherwise fall back to query_endpoint
+    store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
     if 'auth' in kwargs:
         store.auth = kwargs['auth']
     else:
