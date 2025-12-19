@@ -76,7 +76,7 @@ where {
   filter not exists {
     ?node a <http://www.nanopub.org/nschema#PublicationInfo>
   }
-} group by ?node ?label ?relevance ?type order by desc(?relevance) limit 10"""
+} group by ?node ?label ?relevance order by desc(?relevance) limit 10"""
 
     def __init__(self, database="knowledge"):
         self.database = database
@@ -92,7 +92,7 @@ where {
              type_query = self.type_query % type
 
         # Neptune requires the search term and matchQuery (field to search)
-        # For entity resolution, we search across label-like properties
+        # For entity resolution, we search across all indexed fields using '*'
         query =  self.query % (term, '*', type_query, context_query)
         #print(query)
         results = []
