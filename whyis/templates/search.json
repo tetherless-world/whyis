@@ -1,0 +1,12 @@
+{{'''
+  SELECT ?identifier (sample(?d) as ?description) (max(?s) as ?score)
+  WHERE {
+      (?o ?s) text:search ?query .
+      ?identifier ?p ?o .
+      filter(!isBlank(?identifier))
+      OPTIONAL {
+          ?identifier dc:description|skos:definition|rdfs:comment ?d.
+      }
+  } group by ?identifier 
+  ORDER BY DESC(?score)
+  LIMIT 100''' | query(values={"query":rdflib.Literal(args['query'])}) | iter_labelize("identifier","label") | tojson }}
