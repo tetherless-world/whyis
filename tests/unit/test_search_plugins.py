@@ -58,72 +58,72 @@ class TestFusekiSearchPlugin(unittest.TestCase):
         self.assertIn("text:search", context_query)
         self.assertIn("optional", context_query.lower())
 
-    @patch('whyis.plugins.fuseki_search.plugin.current_app')
-    def test_resolver_on_resolve_basic(self, mock_app):
+    def test_resolver_on_resolve_basic(self):
         """Test basic entity resolution."""
-        resolver = self.resolver_class()
-        
-        # Mock the database and query results
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        
-        # Mock query result
-        mock_result = Mock()
-        mock_result.asdict.return_value = {
-            'node': 'http://example.org/entity1',
-            'label': 'Test Entity',
-            'types': 'http://example.org/Type1||http://example.org/Type2',
-            'score': 1.0
-        }
-        mock_graph.query.return_value = [mock_result]
-        
-        # Mock labelize
-        mock_app.labelize.side_effect = lambda d, k, v: d.update({v: 'Labeled'})
-        
-        results = resolver.on_resolve("test", label=False)
-        
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['node'], 'http://example.org/entity1')
-        self.assertIn('types', results[0])
-        self.assertEqual(len(results[0]['types']), 2)
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
+            
+            # Mock the database and query results
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            
+            # Mock query result
+            mock_result = Mock()
+            mock_result.asdict.return_value = {
+                'node': 'http://example.org/entity1',
+                'label': 'Test Entity',
+                'types': 'http://example.org/Type1||http://example.org/Type2',
+                'score': 1.0
+            }
+            mock_graph.query.return_value = [mock_result]
+            
+            # Mock labelize
+            mock_app.labelize.side_effect = lambda d, k, v: d.update({v: 'Labeled'})
+            
+            results = resolver.on_resolve("test", label=False)
+            
+            self.assertEqual(len(results), 1)
+            self.assertEqual(results[0]['node'], 'http://example.org/entity1')
+            self.assertIn('types', results[0])
+            self.assertEqual(len(results[0]['types']), 2)
 
-    @patch('whyis.plugins.fuseki_search.plugin.current_app')
-    def test_resolver_on_resolve_with_type(self, mock_app):
+    def test_resolver_on_resolve_with_type(self):
         """Test entity resolution with type filtering."""
-        resolver = self.resolver_class()
-        
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        mock_graph.query.return_value = []
-        
-        type_uri = "http://example.org/TestType"
-        results = resolver.on_resolve("test", type=type_uri, label=False)
-        
-        # Verify query was called
-        mock_graph.query.assert_called_once()
-        call_args = mock_graph.query.call_args[0][0]
-        
-        # Check that type filter is in query
-        self.assertIn(type_uri, call_args)
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
+            
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            mock_graph.query.return_value = []
+            
+            type_uri = "http://example.org/TestType"
+            results = resolver.on_resolve("test", type=type_uri, label=False)
+            
+            # Verify query was called
+            mock_graph.query.assert_called_once()
+            call_args = mock_graph.query.call_args[0][0]
+            
+            # Check that type filter is in query
+            self.assertIn(type_uri, call_args)
 
-    @patch('whyis.plugins.fuseki_search.plugin.current_app')
-    def test_resolver_on_resolve_with_context(self, mock_app):
+    def test_resolver_on_resolve_with_context(self):
         """Test entity resolution with context."""
-        resolver = self.resolver_class()
-        
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        mock_graph.query.return_value = []
-        
-        context = "test context"
-        results = resolver.on_resolve("test", context=context, label=False)
-        
-        # Verify query was called
-        mock_graph.query.assert_called_once()
-        call_args = mock_graph.query.call_args[0][0]
-        
-        # Check that context is in query
-        self.assertIn(context, call_args)
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
+            
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            mock_graph.query.return_value = []
+            
+            context = "test context"
+            results = resolver.on_resolve("test", context=context, label=False)
+            
+            # Verify query was called
+            mock_graph.query.assert_called_once()
+            call_args = mock_graph.query.call_args[0][0]
+            
+            # Check that context is in query
+            self.assertIn(context, call_args)
 
     def test_plugin_resolvers_dict(self):
         """Test that plugin has correct resolver mappings."""
@@ -134,21 +134,21 @@ class TestFusekiSearchPlugin(unittest.TestCase):
         self.assertEqual(plugin.resolvers["fuseki"], self.resolver_class)
         self.assertEqual(plugin.resolvers["sparql"], self.resolver_class)
 
-    @patch('whyis.plugins.fuseki_search.plugin.PluginBlueprint')
-    def test_plugin_create_blueprint(self, mock_blueprint):
+    def test_plugin_create_blueprint(self):
         """Test plugin blueprint creation."""
-        plugin = self.plugin_class()
-        blueprint = plugin.create_blueprint()
-        
-        # Verify PluginBlueprint was called with correct arguments
-        mock_blueprint.assert_called_once_with('fuseki_search', 
-                                               'whyis.plugins.fuseki_search.plugin',
-                                               template_folder='templates')
+        with patch('whyis.plugins.fuseki_search.plugin.PluginBlueprint') as mock_blueprint:
+            plugin = self.plugin_class()
+            blueprint = plugin.create_blueprint()
+            
+            # Verify PluginBlueprint was called with correct arguments
+            mock_blueprint.assert_called_once_with('fuseki_search', 
+                                                   'whyis.plugins.fuseki_search.plugin',
+                                                   template_folder='templates')
 
-    @patch('whyis.plugins.fuseki_search.plugin.current_app')
-    def test_plugin_init_valid_type(self, mock_app):
+    def test_plugin_init_valid_type(self):
         """Test plugin initialization with valid resolver type."""
         plugin = self.plugin_class()
+        mock_app = Mock()
         plugin.app = mock_app
         mock_app.config.get.side_effect = lambda k, d: {'RESOLVER_TYPE': 'fuseki', 
                                                           'RESOLVER_DB': 'knowledge'}.get(k, d)
@@ -158,10 +158,10 @@ class TestFusekiSearchPlugin(unittest.TestCase):
         # Verify add_listener was called
         mock_app.add_listener.assert_called_once()
 
-    @patch('whyis.plugins.fuseki_search.plugin.current_app')
-    def test_plugin_init_invalid_type(self, mock_app):
+    def test_plugin_init_invalid_type(self):
         """Test plugin initialization with invalid resolver type."""
         plugin = self.plugin_class()
+        mock_app = Mock()
         plugin.app = mock_app
         mock_app.config.get.side_effect = lambda k, d: {'RESOLVER_TYPE': 'invalid', 
                                                           'RESOLVER_DB': 'knowledge'}.get(k, d)
@@ -236,114 +236,119 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
         self.assertIn("fts:matchQuery", context_query)
         self.assertIn("optional", context_query.lower())
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_resolver_on_resolve_basic(self, mock_app):
+    # Removed patch decorator
+    def test_resolver_on_resolve_basic(self):
         """Test basic entity resolution."""
-        resolver = self.resolver_class()
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
         
-        # Mock the database and query results
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
+            # Mock the database and query results
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
         
-        # Mock query result
-        mock_result = Mock()
-        mock_result.asdict.return_value = {
-            'node': 'http://example.org/entity1',
-            'label': 'Test Entity',
-            'types': 'http://example.org/Type1||http://example.org/Type2',
-            'score': 1.0
-        }
-        mock_graph.query.return_value = [mock_result]
+            # Mock query result
+            mock_result = Mock()
+            mock_result.asdict.return_value = {
+                'node': 'http://example.org/entity1',
+                'label': 'Test Entity',
+                'types': 'http://example.org/Type1||http://example.org/Type2',
+                'score': 1.0
+            }
+            mock_graph.query.return_value = [mock_result]
         
-        # Mock labelize
-        mock_app.labelize.side_effect = lambda d, k, v: d.update({v: 'Labeled'})
+            # Mock labelize
+            mock_app.labelize.side_effect = lambda d, k, v: d.update({v: 'Labeled'})
         
-        results = resolver.on_resolve("test", label=False)
+            results = resolver.on_resolve("test", label=False)
         
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['node'], 'http://example.org/entity1')
-        self.assertIn('types', results[0])
-        self.assertEqual(len(results[0]['types']), 2)
+            self.assertEqual(len(results), 1)
+            self.assertEqual(results[0]['node'], 'http://example.org/entity1')
+            self.assertIn('types', results[0])
+            self.assertEqual(len(results[0]['types']), 2)
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_resolver_on_resolve_with_empty_types(self, mock_app):
+        # Removed patch decorator
+    def test_resolver_on_resolve_with_empty_types(self):
         """Test entity resolution handles empty types correctly."""
-        resolver = self.resolver_class()
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
         
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
         
-        # Mock query result with empty types
-        mock_result = Mock()
-        mock_result.asdict.return_value = {
-            'node': 'http://example.org/entity1',
-            'label': 'Test Entity',
-            'types': '',  # Empty types string
-            'score': 1.0
-        }
-        mock_graph.query.return_value = [mock_result]
+            # Mock query result with empty types
+            mock_result = Mock()
+            mock_result.asdict.return_value = {
+                'node': 'http://example.org/entity1',
+                'label': 'Test Entity',
+                'types': '',  # Empty types string
+                'score': 1.0
+            }
+            mock_graph.query.return_value = [mock_result]
         
-        results = resolver.on_resolve("test", label=False)
+            results = resolver.on_resolve("test", label=False)
         
-        # Should handle empty types gracefully
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['types'], [])
+            # Should handle empty types gracefully
+            self.assertEqual(len(results), 1)
+            self.assertEqual(results[0]['types'], [])
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_resolver_on_resolve_with_type(self, mock_app):
+        # Removed patch decorator
+    def test_resolver_on_resolve_with_type(self):
         """Test entity resolution with type filtering."""
-        resolver = self.resolver_class()
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
         
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        mock_graph.query.return_value = []
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            mock_graph.query.return_value = []
         
-        type_uri = "http://example.org/TestType"
-        results = resolver.on_resolve("test", type=type_uri, label=False)
+            type_uri = "http://example.org/TestType"
+            results = resolver.on_resolve("test", type=type_uri, label=False)
         
-        # Verify query was called
-        mock_graph.query.assert_called_once()
-        call_args = mock_graph.query.call_args[0][0]
+            # Verify query was called
+            mock_graph.query.assert_called_once()
+            call_args = mock_graph.query.call_args[0][0]
         
-        # Check that type filter is in query
-        self.assertIn(type_uri, call_args)
+            # Check that type filter is in query
+            self.assertIn(type_uri, call_args)
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_resolver_on_resolve_with_context(self, mock_app):
+        # Removed patch decorator
+    def test_resolver_on_resolve_with_context(self):
         """Test entity resolution with context."""
-        resolver = self.resolver_class()
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
         
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        mock_graph.query.return_value = []
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            mock_graph.query.return_value = []
         
-        context = "test context"
-        results = resolver.on_resolve("test", context=context, label=False)
+            context = "test context"
+            results = resolver.on_resolve("test", context=context, label=False)
         
-        # Verify query was called
-        mock_graph.query.assert_called_once()
-        call_args = mock_graph.query.call_args[0][0]
+            # Verify query was called
+            mock_graph.query.assert_called_once()
+            call_args = mock_graph.query.call_args[0][0]
         
-        # Check that context is in query (appears twice for matchQuery)
-        self.assertEqual(call_args.count(context), 2)
+            # Check that context is in query (appears twice for matchQuery)
+            self.assertEqual(call_args.count(context), 2)
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_resolver_match_query_parameter(self, mock_app):
+        # Removed patch decorator
+    def test_resolver_match_query_parameter(self):
         """Test that matchQuery parameter is included correctly."""
-        resolver = self.resolver_class()
+        with patch('flask.current_app') as mock_app:
+            resolver = self.resolver_class()
         
-        mock_graph = Mock()
-        mock_app.databases = {"knowledge": mock_graph}
-        mock_graph.query.return_value = []
+            mock_graph = Mock()
+            mock_app.databases = {"knowledge": mock_graph}
+            mock_graph.query.return_value = []
         
-        results = resolver.on_resolve("test", label=False)
+            results = resolver.on_resolve("test", label=False)
         
-        # Verify query was called
-        mock_graph.query.assert_called_once()
-        call_args = mock_graph.query.call_args[0][0]
+            # Verify query was called
+            mock_graph.query.assert_called_once()
+            call_args = mock_graph.query.call_args[0][0]
         
-        # Check that matchQuery with '*' is in query
-        self.assertIn("fts:matchQuery '*'", call_args)
+            # Check that matchQuery with '*' is in query
+            self.assertIn("fts:matchQuery '*'", call_args)
 
     def test_plugin_resolvers_dict(self):
         """Test that plugin has correct resolver mappings."""
@@ -352,20 +357,21 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
         self.assertIn("neptune", plugin.resolvers)
         self.assertEqual(plugin.resolvers["neptune"], self.resolver_class)
 
-    @patch('whyis.plugins.neptune_search.plugin.PluginBlueprint')
-    def test_plugin_create_blueprint(self, mock_blueprint):
+    def test_plugin_create_blueprint(self):
         """Test plugin blueprint creation."""
-        plugin = self.plugin_class()
-        blueprint = plugin.create_blueprint()
-        
-        # Verify PluginBlueprint was called with correct arguments
-        mock_blueprint.assert_called_once_with('neptune_search',
-                                               'whyis.plugins.neptune_search.plugin',
-                                               template_folder='templates')
+        with patch('whyis.plugins.neptune_search.plugin.PluginBlueprint') as mock_blueprint:
+            plugin = self.plugin_class()
+            blueprint = plugin.create_blueprint()
+            
+            # Verify PluginBlueprint was called with correct arguments
+            mock_blueprint.assert_called_once_with('neptune_search',
+                                                   'whyis.plugins.neptune_search.plugin',
+                                                   template_folder='templates')
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_plugin_init_valid_type(self, mock_app):
+    # Removed patch decorator
+    def test_plugin_init_valid_type(self):
         """Test plugin initialization with valid resolver type."""
+        mock_app = Mock()
         plugin = self.plugin_class()
         plugin.app = mock_app
         mock_app.config.get.side_effect = lambda k, d: {'RESOLVER_TYPE': 'neptune',
@@ -376,9 +382,10 @@ class TestNeptuneSearchPlugin(unittest.TestCase):
         # Verify add_listener was called
         mock_app.add_listener.assert_called_once()
 
-    @patch('whyis.plugins.neptune_search.plugin.current_app')
-    def test_plugin_init_invalid_type_silent(self, mock_app):
+    # Removed patch decorator
+    def test_plugin_init_invalid_type_silent(self):
         """Test plugin initialization silently skips invalid resolver type."""
+        mock_app = Mock()
         plugin = self.plugin_class()
         plugin.app = mock_app
         mock_app.config.get.side_effect = lambda k, d: {'RESOLVER_TYPE': 'fuseki',
