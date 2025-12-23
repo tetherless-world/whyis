@@ -51,6 +51,7 @@ class NamespaceContainer(object):
     sdd = rdflib.Namespace("http://purl.org/twc/sdd/")
     csvw = rdflib.Namespace("http://www.w3.org/ns/csvw#")
     text = rdflib.Namespace("http://jena.apache.org/fulltext#")
+    sh = rdflib.Namespace("http://www.w3.org/ns/shacl#")
 
     @property
     def prefixes(self):

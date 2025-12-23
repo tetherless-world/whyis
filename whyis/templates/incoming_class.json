@@ -1,7 +1,22 @@
 {{'''graph ?assertion {
       {
+         # Original class hierarchy relationships
          ?source rdfs:subClassOf|owl:equivalentClass ?target.
          ?source ?link_type ?target.
+      }
+      UNION {
+         # SHACL property shapes: PropertyShape with sh:class/sh:node pointing to target
+         ?nodeshape sh:property ?source.
+         ?source sh:class|sh:node ?target.
+         ?source ?link_type ?target.
+      }
+      UNION {
+         # Classes used directly as NodeShapes with property shapes
+         ?source rdf:type sh:NodeShape.
+         ?source sh:property ?propshape.
+         ?propshape sh:class|sh:node ?target.
+         ?propshape ?link_type ?target.
+         bind(?source as ?source)
       }
     }
     bind(1 as ?probability)
