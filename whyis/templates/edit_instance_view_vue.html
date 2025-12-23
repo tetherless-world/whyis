@@ -1,0 +1,45 @@
+{% extends "base_vue.html" %}
+
+{% block title %}Edit {{this.description().value(ns.RDFS.label)}}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" id="edit-instance-app">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">Edit Instance</h2>
+    </div>
+    <div class="card-body">
+      <edit-instance-form
+        :node-uri="'{{this.identifier}}'"
+        :lod-prefix="LOD_PREFIX"
+        :root-url="ROOT_URL"
+        @saved="handleSaved"
+        @cancelled="handleCancelled">
+      </edit-instance-form>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+import EditInstanceForm from '{{ url_for('static', filename='js/whyis_vue/components/edit-instance-form.vue')}}'
+
+const app = createApp({
+  components: {
+    EditInstanceForm
+  },
+  methods: {
+    handleSaved(nanopub) {
+      // Redirect to view page after successful save
+      window.location.href = ROOT_URL + 'view?uri=' + encodeURIComponent('{{this.identifier}}');
+    },
+    handleCancelled() {
+      // Redirect back to view page
+      window.location.href = ROOT_URL + 'view?uri=' + encodeURIComponent('{{this.identifier}}');
+    }
+  }
+});
+
+app.mount('#edit-instance-app');
+</script>
+{% endblock %}
