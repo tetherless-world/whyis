@@ -237,7 +237,8 @@ be managed and used.''',
         ]
     },
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+#        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
