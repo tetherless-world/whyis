@@ -17,7 +17,7 @@ __pycache__/
 env/
 build/
 develop-eggs/
-#dist/
+dist/
 downloads/
 eggs/
 .eggs/
@@ -74,6 +74,7 @@ venv/
 tmpvenv/
 blazegraph.jar
 blazegraph.jnl
+whyis/fuseki/jars/*.jar
 
 nanopublications/
 
