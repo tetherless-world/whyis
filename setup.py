@@ -1,12 +1,11 @@
 import os
-from distutils.core import setup
+from setuptools import setup, find_packages
 import distutils.command.build
 import distutils.command.sdist
 import subprocess
 
 from os import path as osp
 from fnmatch import fnmatch
-from setuptools import find_packages
 
 from whyis._version import __version__
 
