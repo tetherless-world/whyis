@@ -155,6 +155,226 @@ class TestNeptuneGSPOperations:
         
         # Verify a session was created
         assert mock_requests_session.called
+    
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    @patch('whyis.plugins.neptune.plugin.requests.Session')
+    @patch('whyis.plugins.neptune.plugin.uuid.uuid4')
+    def test_publish_uses_temp_graph_by_default(self, mock_uuid, mock_requests_session):
+        """Test that publish uses temporary UUID graph by default."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        
+        # Mock UUID generation
+        test_uuid = 'test-uuid-1234'
+        mock_uuid.return_value = test_uuid
+        
+        # Mock requests session
+        mock_session_instance = Mock()
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_session_instance.post.return_value = mock_response
+        mock_session_instance.delete.return_value = mock_response
+        mock_requests_session.return_value = mock_session_instance
+        
+        config = {
+            '_endpoint': 'https://neptune.example.com/sparql',
+            '_region': 'us-east-1'
+        }
+        
+        graph = neptune_driver(config)
+        
+        # Call publish
+        test_data = b'<http://example.org/s> <http://example.org/p> <http://example.org/o> .'
+        graph.store.publish(test_data)
+        
+        # Verify POST was called with temporary graph parameter
+        assert mock_session_instance.post.called
+        post_call_args = mock_session_instance.post.call_args
+        assert post_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+        
+        # Verify DELETE was called to clean up temporary graph
+        assert mock_session_instance.delete.called
+        delete_call_args = mock_session_instance.delete.call_args
+        assert delete_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+    
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    @patch('whyis.plugins.neptune.plugin.requests.Session')
+    def test_publish_without_temp_graph(self, mock_requests_session):
+        """Test that publish uses default graph when use_temp_graph=False."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        
+        # Mock requests session
+        mock_session_instance = Mock()
+        mock_response = Mock()
+        mock_response.ok = True
+        mock_session_instance.post.return_value = mock_response
+        mock_session_instance.delete.return_value = mock_response
+        mock_requests_session.return_value = mock_session_instance
+        
+        config = {
+            '_endpoint': 'https://neptune.example.com/sparql',
+            '_region': 'us-east-1',
+            '_use_temp_graph': False
+        }
+        
+        graph = neptune_driver(config)
+        
+        # Call publish
+        test_data = b'<http://example.org/s> <http://example.org/p> <http://example.org/o> .'
+        graph.store.publish(test_data)
+        
+        # Verify POST was called WITHOUT graph parameter
+        assert mock_session_instance.post.called
+        post_call_args = mock_session_instance.post.call_args
+        assert 'params' not in post_call_args[1] or post_call_args[1].get('params') is None
+        
+        # Verify DELETE was NOT called
+        assert not mock_session_instance.delete.called
+    
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    @patch('whyis.plugins.neptune.plugin.ConjunctiveGraph')
+    @patch('whyis.plugins.neptune.plugin.uuid.uuid4')
+    def test_post_uses_temp_graph_by_default(self, mock_uuid, mock_conjunctive_graph):
+        """Test that post uses temporary UUID graph by default."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        from rdflib import URIRef
+        import whyis.plugins.neptune.plugin as plugin_module
+        
+        # Mock UUID generation
+        test_uuid = 'test-uuid-5678'
+        mock_uuid.return_value = test_uuid
+        
+        # Mock requests.Session at module level - need to mock it before creating driver
+        with patch.object(plugin_module.requests, 'Session') as mock_session_class:
+            mock_session_instance = Mock()
+            mock_response = Mock()
+            mock_response.ok = True
+            mock_session_instance.post.return_value = mock_response
+            mock_session_instance.delete.return_value = mock_response
+            mock_session_class.return_value = mock_session_instance
+            
+            # Mock ConjunctiveGraph.serialize
+            mock_cg_instance = Mock()
+            mock_cg_instance.serialize.return_value = b'<http://example.org/s> <http://example.org/p> <http://example.org/o> .'
+            mock_conjunctive_graph.return_value = mock_cg_instance
+            
+            config = {
+                '_endpoint': 'https://neptune.example.com/sparql',
+                '_region': 'us-east-1'
+            }
+            
+            graph = neptune_driver(config)
+            
+            # Create a simple mock graph to post
+            test_graph = Mock()
+            test_graph.store = graph.store
+            test_graph.identifier = URIRef('http://example.org/test-graph')
+            
+            # Call post
+            graph.store.post(test_graph)
+            
+            # Verify POST was called with temporary graph parameter
+            assert mock_session_instance.post.called
+            post_call_args = mock_session_instance.post.call_args
+            assert post_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+            
+            # Verify DELETE was called to clean up temporary graph
+            assert mock_session_instance.delete.called
+            delete_call_args = mock_session_instance.delete.call_args
+            assert delete_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+    
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    @patch('whyis.plugins.neptune.plugin.ConjunctiveGraph')
+    @patch('whyis.plugins.neptune.plugin.uuid.uuid4')
+    def test_put_uses_temp_graph_by_default(self, mock_uuid, mock_conjunctive_graph):
+        """Test that put uses temporary UUID graph by default."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        from rdflib import URIRef
+        import whyis.plugins.neptune.plugin as plugin_module
+        
+        # Mock UUID generation
+        test_uuid = 'test-uuid-9999'
+        mock_uuid.return_value = test_uuid
+        
+        # Mock requests.Session at module level
+        with patch.object(plugin_module.requests, 'Session') as mock_session_class:
+            mock_session_instance = Mock()
+            mock_response = Mock()
+            mock_response.ok = True
+            mock_session_instance.put.return_value = mock_response
+            mock_session_instance.delete.return_value = mock_response
+            mock_session_class.return_value = mock_session_instance
+            
+            # Mock ConjunctiveGraph.serialize
+            mock_cg_instance = Mock()
+            mock_cg_instance.serialize.return_value = b'<http://example.org/s> <http://example.org/p> <http://example.org/o> .'
+            mock_conjunctive_graph.return_value = mock_cg_instance
+            
+            config = {
+                '_endpoint': 'https://neptune.example.com/sparql',
+                '_region': 'us-east-1'
+            }
+            
+            graph = neptune_driver(config)
+            
+            # Create a simple mock graph to put
+            test_graph = Mock()
+            test_graph.store = graph.store
+            test_graph.identifier = URIRef('http://example.org/test-graph')
+            
+            # Call put
+            graph.store.put(test_graph)
+            
+            # Verify PUT was called with temporary graph parameter
+            assert mock_session_instance.put.called
+            put_call_args = mock_session_instance.put.call_args
+            assert put_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+            
+            # Verify DELETE was called to clean up temporary graph
+            assert mock_session_instance.delete.called
+            delete_call_args = mock_session_instance.delete.call_args
+            assert delete_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
+    
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    @patch('whyis.plugins.neptune.plugin.requests.Session')
+    @patch('whyis.plugins.neptune.plugin.uuid.uuid4')
+    def test_temp_graph_cleanup_on_error(self, mock_uuid, mock_requests_session):
+        """Test that temporary graph is still deleted even if POST fails."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        
+        # Mock UUID generation
+        test_uuid = 'test-uuid-error'
+        mock_uuid.return_value = test_uuid
+        
+        # Mock requests session - POST fails but DELETE succeeds
+        mock_session_instance = Mock()
+        mock_post_response = Mock()
+        mock_post_response.ok = False
+        mock_post_response.status_code = 500
+        mock_post_response.text = 'Internal Server Error'
+        mock_delete_response = Mock()
+        mock_delete_response.ok = True
+        mock_session_instance.post.return_value = mock_post_response
+        mock_session_instance.delete.return_value = mock_delete_response
+        mock_requests_session.return_value = mock_session_instance
+        
+        config = {
+            '_endpoint': 'https://neptune.example.com/sparql',
+            '_region': 'us-east-1'
+        }
+        
+        graph = neptune_driver(config)
+        
+        # Call publish (should fail but still clean up)
+        test_data = b'<http://example.org/s> <http://example.org/p> <http://example.org/o> .'
+        graph.store.publish(test_data)
+        
+        # Verify POST was called
+        assert mock_session_instance.post.called
+        
+        # Verify DELETE was still called for cleanup despite POST failure
+        assert mock_session_instance.delete.called
+        delete_call_args = mock_session_instance.delete.call_args
+        assert delete_call_args[1]['params']['graph'] == f'urn:uuid:{test_uuid}'
 
 
 class TestNeptuneEntityResolver:
