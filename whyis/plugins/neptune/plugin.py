@@ -7,9 +7,8 @@ from rdflib import URIRef
 from rdflib.graph import ConjunctiveGraph
 import requests
 import logging
-
-# Import the Neptune store classes from this plugin
-from .neptune_sparql_store import NeptuneSPARQLStore, NeptuneSPARQLUpdateStore
+import boto3
+from requests_aws4auth import AWS4Auth
 
 logger = logging.getLogger(__name__)
 
@@ -136,8 +135,8 @@ def neptune_driver(config):
     """
     Create an AWS Neptune SPARQL-based RDF graph store with IAM authentication.
     
-    This driver extends the sparql_driver to support AWS IAM authentication using
-    SigV4 request signing. It's designed specifically for Amazon Neptune databases.
+    This driver follows the same pattern as sparql_driver but adds AWS IAM authentication
+    using SigV4 request signing for both SPARQL operations and GSP operations.
     
     Configuration options (via Flask config with prefix like KNOWLEDGE_ or ADMIN_):
     - _endpoint: Neptune SPARQL query/update endpoint (required)
@@ -155,7 +154,7 @@ def neptune_driver(config):
         Uses AWS credentials from the environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
         or IAM roles. All requests are signed with SigV4, including full text search queries.
     """
-    from whyis.database.database_utils import node_to_sparql, _remote_sparql_store_protocol
+    from whyis.database.database_utils import node_to_sparql, WhyisSPARQLUpdateStore
     
     defaultgraph = None
     if "_default_graph" in config:
@@ -168,53 +167,7 @@ def neptune_driver(config):
     
     service_name = config.get("_service_name", "neptune-db")
     
-    kwargs = dict(
-        query_endpoint=config["_endpoint"],
-        update_endpoint=config["_endpoint"],
-        method="POST",
-        returnFormat='json',
-        node_to_sparql=node_to_sparql,
-        region_name=region_name,
-        service_name=service_name
-    )
-    
-    # Create Neptune store with IAM authentication
-    store = NeptuneSPARQLUpdateStore(**kwargs)
-    store.query_endpoint = config["_endpoint"]
-    # Set GSP endpoint: use _gsp_endpoint if provided, otherwise fall back to query_endpoint
-    store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
-    
-    # For Neptune, we need to use AWS auth instead of basic auth
-    store.auth = None  # Neptune uses AWS SigV4, not basic auth
-    
-    # Add GSP protocol methods with AWS authentication
-    store = _remote_sparql_store_protocol(store)
-    
-    # Override the GSP methods to use AWS authentication
-    # The store's connector already handles auth for SPARQL queries
-    # We need to make sure GSP operations also use AWS auth
-    _add_neptune_gsp_auth(store, region_name, service_name)
-    
-    graph = ConjunctiveGraph(store, defaultgraph)
-    return graph
-
-
-def _add_neptune_gsp_auth(store, region_name, service_name):
-    """
-    Add AWS IAM authentication to Graph Store Protocol operations.
-    
-    This function wraps the GSP methods (publish, put, post, delete) to add
-    AWS SigV4 signing to their HTTP requests.
-    
-    Args:
-        store: The Neptune store object
-        region_name: AWS region name
-        service_name: AWS service name for signing
-    """
-    import boto3
-    from requests_aws4auth import AWS4Auth
-    
-    # Get AWS credentials
+    # Create AWS authenticated session for GSP operations
     credentials = boto3.Session().get_credentials()
     aws_auth = AWS4Auth(
         credentials.access_key,
@@ -224,16 +177,99 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
         session_token=credentials.token
     )
     
-    # Wrap the original methods to add AWS auth
-    original_publish = store.publish
-    original_put = store.put
-    original_post = store.post
-    original_delete = store.delete
+    # Create store with standard WhyisSPARQLUpdateStore
+    kwargs = dict(
+        query_endpoint=config["_endpoint"],
+        update_endpoint=config["_endpoint"],
+        method="POST",
+        returnFormat='json',
+        node_to_sparql=node_to_sparql
+    )
     
-    def publish_with_auth(data, format='text/trig;charset=utf-8'):
-        s = requests.session()
-        s.keep_alive = False
+    store = WhyisSPARQLUpdateStore(**kwargs)
+    store.query_endpoint = config["_endpoint"]
+    store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
+    store.auth = None  # Neptune uses AWS SigV4, not basic auth
+    
+    # Monkey-patch the store's connector to use AWS authentication
+    _inject_neptune_auth(store, aws_auth)
+    
+    # Add GSP protocol methods compatible with sparql_driver but with AWS auth
+    store = _remote_sparql_store_protocol_with_aws(store, aws_auth)
+    
+    graph = ConjunctiveGraph(store, defaultgraph)
+    return graph
+
+
+def _inject_neptune_auth(store, aws_auth):
+    """
+    Inject AWS authentication into the SPARQL store's query method.
+    
+    This monkey-patches the store's query and update methods to use requests with AWS auth
+    instead of rdflib's default urllib-based implementation.
+    
+    Args:
+        store: The SPARQL store object
+        aws_auth: AWS4Auth object for request signing
+    """
+    original_query = store.query
+    
+    def query_with_aws_auth(query_str, *args, **kwargs):
+        """Execute SPARQL query with AWS IAM authentication."""
+        session = requests.Session()
+        session.auth = aws_auth
+        
+        params = {}
+        default_graph = kwargs.get('default_graph')
+        if default_graph:
+            params["default-graph-uri"] = default_graph
+            
+        headers = {"Accept": store.response_mime_types()}
+        
+        if store.method == "POST":
+            headers["Content-Type"] = "application/sparql-query"
+            response = session.post(
+                store.query_endpoint,
+                params=params,
+                data=query_str.encode('utf-8'),
+                headers=headers
+            )
+        else:
+            params["query"] = query_str
+            response = session.get(
+                store.query_endpoint,
+                params=params,
+                headers=headers
+            )
+        
+        response.raise_for_status()
+        
+        # Return the response in the format rdflib expects
+        from rdflib.plugins.stores.sparqlconnector import SPARQLConnector, Result
+        from io import BytesIO
+        return Result((response.status_code, response.reason), response.headers.get('content-type'), BytesIO(response.content))
+    
+    store.query = query_with_aws_auth
+
+
+def _remote_sparql_store_protocol_with_aws(store, aws_auth):
+    """
+    Add Graph Store Protocol (GSP) operations with AWS authentication.
+    
+    This is similar to _remote_sparql_store_protocol but uses AWS SigV4 auth
+    instead of basic auth.
+    
+    Args:
+        store: A SPARQL store object with gsp_endpoint attribute
+        aws_auth: AWS4Auth object for request signing
+        
+    Returns:
+        The store object with GSP methods attached
+    """
+    def publish(data, format='text/trig;charset=utf-8'):
+        s = requests.Session()
         s.auth = aws_auth
+        s.keep_alive = False
         
         kwargs = dict(
             headers={'Content-Type': format},
@@ -241,13 +277,13 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
         r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
             logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
-    
-    def put_with_auth(graph):
+
+    def put(graph):
         g = ConjunctiveGraph(store=graph.store)
         data = g.serialize(format='turtle')
-        s = requests.session()
-        s.keep_alive = False
+        s = requests.Session()
         s.auth = aws_auth
+        s.keep_alive = False
         
         kwargs = dict(
             headers={'Content-Type': 'text/turtle;charset=utf-8'},
@@ -260,13 +296,13 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
             logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
         else:
             logger.debug(f"{r.text} {r.status_code}")
-    
-    def post_with_auth(graph):
+
+    def post(graph):
         g = ConjunctiveGraph(store=graph.store)
         data = g.serialize(format='trig')
-        s = requests.session()
-        s.keep_alive = False
+        s = requests.Session()
         s.auth = aws_auth
+        s.keep_alive = False
         
         kwargs = dict(
             headers={'Content-Type': 'text/trig;charset=utf-8'},
@@ -274,11 +310,11 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
         r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
             logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
-    
-    def delete_with_auth(c):
-        s = requests.session()
-        s.keep_alive = False
+
+    def delete(c):
+        s = requests.Session()
         s.auth = aws_auth
+        s.keep_alive = False
         
         kwargs = dict()
         r = s.delete(store.gsp_endpoint,
@@ -286,37 +322,13 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
                      **kwargs)
         if not r.ok:
             logger.error(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
-    
-    # Replace methods with authenticated versions
-    store.publish = publish_with_auth
-    store.put = put_with_auth
-    store.post = post_with_auth
-    store.delete = delete_with_auth
 
-
-def create_neptune_query_store(store):
-    """
-    Create a read-only query store from an existing Neptune store.
+    store.publish = publish
+    store.put = put
+    store.post = post
+    store.delete = delete
     
-    This function creates a query-only store that can be used for read operations
-    without update capabilities, while preserving AWS authentication.
-    
-    Args:
-        store: The source Neptune store object
-        
-    Returns:
-        A new Neptune store configured for queries only
-    """
-    from whyis.database.database_utils import node_to_sparql
-    
-    new_store = NeptuneSPARQLStore(
-        endpoint=store.query_endpoint,
-        query_endpoint=store.query_endpoint,
-        region_name=store.region_name,
-        service_name=getattr(store, 'service_name', 'neptune-db'),
-        node_to_sparql=node_to_sparql
-    )
-    return new_store
+    return store
 
 
 class NeptuneSearchPlugin(Plugin):
