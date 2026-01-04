@@ -29,7 +29,6 @@ from whyis import commands
 from whyis.app_factory import app_factory
 from re import finditer
 
-import sys
 import os
 from cookiecutter.main import cookiecutter
 from pkg_resources import resource_filename, resource_listdir

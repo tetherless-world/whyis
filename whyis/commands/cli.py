@@ -11,7 +11,13 @@ import datetime
 import flask
 import sys
 import os
-from flask_security.utils import hash_password
+
+# Flask-Security-Too renamed encrypt_password to hash_password
+try:
+    from flask_security.utils import hash_password
+except ImportError:
+    # Fallback for older versions
+    from flask_security.utils import encrypt_password as hash_password
 
 
 @click.command('createuser')
@@ -163,8 +169,11 @@ def run_command(host, port, threaded, watch):
     if not is_running_from_reloader():
         if current_app.config.get('EMBEDDED_CELERY', False):
             click.echo("Starting embedded Celery...")
-            import sys
-            celery_command = os.path.join(os.path.dirname(sys.argv[0]), 'celery')
+            import shutil
+            celery_command = shutil.which('celery')
+            if not celery_command:
+                # Fallback to sys.argv[0] path
+                celery_command = os.path.join(os.path.dirname(sys.argv[0]), 'celery')
             celery_args = ['-A', 'wsgi.celery']
             worker_args = ['--beat', '-l', 'INFO', '--logfile', 'run/logs/celery.log']
             command = [celery_command] + celery_args + ['worker'] + worker_args

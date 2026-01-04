@@ -14,9 +14,9 @@ class TestFlaskEcosystem:
         """Test that Flask can be imported."""
         import flask
         assert hasattr(flask, '__version__')
-        # Flask 3.x should be installed
+        # Flask 3.x should be installed (accepting 2.x+ for forward compatibility)
         major_version = int(flask.__version__.split('.')[0])
-        assert major_version >= 2, "Flask should be version 2.x or 3.x"
+        assert major_version >= 3, "Flask should be version 3.x or higher"
     
     def test_flask_basics(self):
         """Test basic Flask functionality."""
