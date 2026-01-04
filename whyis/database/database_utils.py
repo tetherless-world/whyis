@@ -212,11 +212,23 @@ def sparql_driver(config):
     return graph
 
 def create_query_store(store):
-    new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
-                                 query_endpoint=store.query_endpoint,
-#                            method="POST",
-#                            returnFormat='json',
-                            node_to_sparql=node_to_sparql)
+    """
+    Create a read-only query store from an existing store.
+    
+    This function creates a query-only store that can be used for read operations
+    without update capabilities.
+    
+    Args:
+        store: The source store object
+        
+    Returns:
+        A new store configured for queries only
+    """
+    new_store = WhyisSPARQLStore(
+        endpoint=store.query_endpoint,
+        query_endpoint=store.query_endpoint,
+        node_to_sparql=node_to_sparql
+    )
     return new_store
 
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)
