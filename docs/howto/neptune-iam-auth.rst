@@ -59,31 +59,116 @@ Then install them in your application environment:
 Step 3: Configure Neptune Connection
 -------------------------------------
 
-Add Neptune configuration to your application's ``whyis.conf`` or ``system.conf``:
+Configuring the Knowledge Database Endpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Whyis uses a "knowledge database" to store and query RDF data. To use Neptune as your knowledge database, add the following configuration to your application's ``whyis.conf`` or ``system.conf``:
 
 .. code-block:: python
 
-    # Configure Neptune as the knowledge database
+    # Configure Neptune as the knowledge database backend
     KNOWLEDGE_TYPE = 'neptune'
+    
+    # Neptune SPARQL endpoint (required)
+    # This is the main endpoint for SPARQL queries and updates
     KNOWLEDGE_ENDPOINT = 'https://my-cluster.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/sparql'
     
-    # AWS region (required for Neptune driver)
+    # AWS region where your Neptune cluster is located (required for IAM auth)
     KNOWLEDGE_REGION = 'us-east-1'
-    
-    # Optional: Custom service name (defaults to 'neptune-db')
-    KNOWLEDGE_SERVICE_NAME = 'neptune-db'
-    
-    # Optional: Separate Graph Store Protocol endpoint
-    KNOWLEDGE_GSP_ENDPOINT = 'https://my-cluster.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/data'
-    
-    # Optional: Default graph URI
-    KNOWLEDGE_DEFAULT_GRAPH = 'http://example.org/default-graph'
-    
-    # Neptune Full-Text Search endpoint (if using FTS)
+
+**Finding Your Neptune Endpoint:**
+
+1. Log into the AWS Console
+2. Navigate to Amazon Neptune
+3. Select your Neptune cluster
+4. Copy the "Cluster endpoint" from the cluster details
+5. Append the port and path: ``https://<cluster-endpoint>:8182/sparql``
+
+Example: If your cluster endpoint is ``my-cluster.cluster-abc123.us-east-1.neptune.amazonaws.com``, your ``KNOWLEDGE_ENDPOINT`` would be:
+
+.. code-block:: python
+
+    KNOWLEDGE_ENDPOINT = 'https://my-cluster.cluster-abc123.us-east-1.neptune.amazonaws.com:8182/sparql'
+
+Configuring Full-Text Search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Neptune supports full-text search through Amazon OpenSearch Service (formerly Elasticsearch). To enable full-text search queries in your knowledge graph:
+
+.. code-block:: python
+
+    # Neptune Full-Text Search endpoint (required for FTS queries)
+    # This is your OpenSearch Service domain endpoint
     neptune_fts_endpoint = 'https://search-my-domain.us-east-1.es.amazonaws.com'
 
+**Finding Your OpenSearch Endpoint:**
+
+1. Log into the AWS Console
+2. Navigate to Amazon OpenSearch Service
+3. Select your domain that's integrated with Neptune
+4. Copy the "Domain endpoint" from the domain overview
+5. Use the HTTPS URL directly (no additional path needed)
+
+**How Full-Text Search Works:**
+
+When you execute SPARQL queries with Neptune FTS SERVICE blocks like this:
+
+.. code-block:: sparql
+
+    PREFIX fts: <http://aws.amazon.com/neptune/vocab/v01/services/fts#>
+    
+    SELECT ?resource ?label WHERE {
+        SERVICE fts:search {
+            fts:config neptune-fts:query "search term" .
+            fts:config neptune-fts:endpoint "https://search-my-domain.us-east-1.es.amazonaws.com" .
+            fts:config neptune-fts:field rdfs:label .
+            fts:config neptune-fts:return ?resource .
+        }
+        ?resource rdfs:label ?label .
+    }
+
+The Neptune plugin automatically passes AWS IAM authentication to both the Neptune SPARQL endpoint and the OpenSearch endpoint, enabling secure full-text search across your knowledge graph.
+
+Optional Configuration Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Additional optional parameters for advanced configurations:
+
+.. code-block:: python
+
+    # Optional: Custom AWS service name for SigV4 signing (defaults to 'neptune-db')
+    KNOWLEDGE_SERVICE_NAME = 'neptune-db'
+    
+    # Optional: Separate Graph Store Protocol endpoint for graph operations
+    # If not specified, uses KNOWLEDGE_ENDPOINT
+    KNOWLEDGE_GSP_ENDPOINT = 'https://my-cluster.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/data'
+    
+    # Optional: Default graph URI for RDF data
+    KNOWLEDGE_DEFAULT_GRAPH = 'http://example.org/default-graph'
+
+Complete Configuration Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here's a complete configuration example for your ``whyis.conf`` or ``system.conf``:
+
+.. code-block:: python
+
+    # Enable Neptune plugin
+    PLUGINENGINE_PLUGINS = ['neptune']
+    
+    # Neptune as knowledge database
+    KNOWLEDGE_TYPE = 'neptune'
+    KNOWLEDGE_ENDPOINT = 'https://my-cluster.cluster-abc123.us-east-1.neptune.amazonaws.com:8182/sparql'
+    KNOWLEDGE_REGION = 'us-east-1'
+    
+    # Full-text search endpoint
+    neptune_fts_endpoint = 'https://search-my-domain.us-east-1.es.amazonaws.com'
+    
+    # Optional: Graph Store Protocol endpoint
+    KNOWLEDGE_GSP_ENDPOINT = 'https://my-cluster.cluster-abc123.us-east-1.neptune.amazonaws.com:8182/data'
+
 .. important::
-    Replace the endpoint URLs with your actual Neptune cluster endpoints.
+    Replace all endpoint URLs and region names with your actual Neptune cluster and OpenSearch domain endpoints.
 
 Step 4: Configure AWS Credentials
 ----------------------------------
