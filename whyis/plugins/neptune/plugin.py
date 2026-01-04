@@ -45,19 +45,19 @@ select distinct
 (group_concat(distinct ?type; separator="||") as ?types)
 (0.9 as ?score)
 where {
-    SERVICE fts:search {
-        fts:config neptune-fts:query '''%s''' .
-        fts:config neptune-fts:endpoint '%s' .
-        fts:config neptune-fts:queryType 'match' .
-        fts:config neptune-fts:field dc:title .
-        fts:config neptune-fts:field rdfs:label .
-        fts:config neptune-fts:field skos:prefLabel .
-        fts:config neptune-fts:field skos:altLabel .
-        fts:config neptune-fts:field foaf:name .
-        fts:config neptune-fts:field dc:identifier .
-        fts:config neptune-fts:field schema:name .
-        fts:config neptune-fts:field skos:notation .
-        fts:config neptune-fts:return ?node .
+    SERVICE <http://aws.amazon.com/neptune/vocab/v01/services/fts#search> {
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#query> "%s" .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#endpoint> "%s" .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#queryType> "match" .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> dc:title .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> rdfs:label .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> skos:prefLabel .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> skos:altLabel .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> foaf:name .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> dc:identifier .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> schema:name .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#field> skos:notation .
+        <http://aws.amazon.com/neptune/vocab/v01/services/fts#config> <http://aws.amazon.com/neptune/vocab/v01/services/fts#return> ?node .
   }
 
   optional {
@@ -85,21 +85,37 @@ where {
 
     def __init__(self, database="knowledge"):
         self.database = database
+    
+    def _escape_sparql_string(self, s):
+        """
+        Escape a string for safe inclusion in a SPARQL query.
+        
+        This prevents SPARQL injection by escaping special characters.
+        """
+        if s is None:
+            return ""
+        # Escape backslashes first, then quotes, then newlines/returns
+        s = str(s).replace('\\', '\\\\')
+        s = s.replace('"', '\\"')
+        s = s.replace('\n', '\\n')
+        s = s.replace('\r', '\\r')
+        return s
 
     def on_resolve(self, term, type=None, context=None, label=True):
-        print(f'Searching {self.database} for {term}')
+        logger.info(f'Searching {self.database} for {term}')
         graph = current_app.databases[self.database]
         fts_endpoint = current_app.config['neptune_fts_endpoint']
-        #context_query = ''
-        #if context is not None:
-        #    context_query = self.context_query % context
-
+        
+        # Safely escape the search term for inclusion in SPARQL query
+        escaped_term = self._escape_sparql_string(term)
+        escaped_endpoint = self._escape_sparql_string(fts_endpoint)
+        
         type_query = ''
         if type is not None:
-             type_query = self.type_query% type
+             type_query = self.type_query % type
 
-        query =  self.query % (term, fts_endpoint, type_query)
-        #print(query)
+        query = self.query % (escaped_term, escaped_endpoint, type_query)
+        
         results = []
         for hit in graph.query(query, initNs=prefixes):
             result = hit.asdict()

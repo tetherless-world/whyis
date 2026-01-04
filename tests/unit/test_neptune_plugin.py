@@ -253,3 +253,71 @@ class TestCreateQueryStoreWithNeptune:
         # Verify it's also a Neptune store with auth
         assert isinstance(query_store, NeptuneSPARQLStore)
         assert query_store._connector.region_name == 'us-east-1'
+
+
+class TestNeptuneEntityResolver:
+    """Test the NeptuneEntityResolver class."""
+    
+    def test_escape_sparql_string(self):
+        """Test that SPARQL string escaping works correctly."""
+        from whyis.plugins.neptune.plugin import NeptuneEntityResolver
+        
+        resolver = NeptuneEntityResolver()
+        
+        # Test basic string
+        assert resolver._escape_sparql_string("test") == "test"
+        
+        # Test string with quotes
+        assert resolver._escape_sparql_string('test "quoted"') == 'test \\"quoted\\"'
+        
+        # Test string with backslashes
+        assert resolver._escape_sparql_string('test\\path') == 'test\\\\path'
+        
+        # Test string with newlines
+        assert resolver._escape_sparql_string('test\nline') == 'test\\nline'
+        
+        # Test string with carriage returns
+        assert resolver._escape_sparql_string('test\rline') == 'test\\rline'
+        
+        # Test complex string with multiple special characters
+        assert resolver._escape_sparql_string('test "quote" and\\path\nline') == 'test \\"quote\\" and\\\\path\\nline'
+        
+        # Test None
+        assert resolver._escape_sparql_string(None) == ""
+    
+    def test_fts_query_format(self):
+        """Test that the FTS query is correctly formatted."""
+        from whyis.plugins.neptune.plugin import NeptuneEntityResolver
+        
+        resolver = NeptuneEntityResolver()
+        
+        # Check that the query uses full URIs for Neptune FTS
+        assert '<http://aws.amazon.com/neptune/vocab/v01/services/fts#search>' in resolver.query
+        assert '<http://aws.amazon.com/neptune/vocab/v01/services/fts#config>' in resolver.query
+        assert '<http://aws.amazon.com/neptune/vocab/v01/services/fts#query>' in resolver.query
+        assert '<http://aws.amazon.com/neptune/vocab/v01/services/fts#endpoint>' in resolver.query
+        
+        # Check that query uses string substitution for search term (not variable binding)
+        assert '"%s"' in resolver.query  # Search term should be inserted as quoted string
+    
+    def test_on_resolve_escapes_search_term(self):
+        """Test that on_resolve properly escapes the search term."""
+        from whyis.plugins.neptune.plugin import NeptuneEntityResolver
+        
+        resolver = NeptuneEntityResolver()
+        
+        # Test that the query will safely escape special characters
+        term_with_quotes = 'test "injection" attempt'
+        escaped = resolver._escape_sparql_string(term_with_quotes)
+        
+        # Verify the quotes were escaped
+        assert escaped == 'test \\"injection\\" attempt'
+        
+        # Verify that when formatted into the query, it's safe
+        test_query = 'SELECT * WHERE { ?s ?p "%s" }' % escaped
+        
+        # The query should contain the escaped version
+        assert 'test \\"injection\\" attempt' in test_query
+        
+        # And should not contain the unescaped quotes that could break out
+        assert 'test "injection" attempt' not in test_query
