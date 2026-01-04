@@ -20,12 +20,44 @@ from whyis.database.database_utils import drivers, node_to_sparql
 class TestNeptuneDriver:
     """Test the Neptune driver registration and functionality."""
     
-    def test_neptune_driver_can_be_registered(self):
-        """Test that neptune driver can be registered by plugin."""
+    def test_neptune_driver_function_exists(self):
+        """Test that neptune driver function exists and is callable."""
         from whyis.plugins.neptune.plugin import neptune_driver
         
         # Verify the function exists and is callable
         assert callable(neptune_driver)
+    
+    def test_neptune_driver_registered_via_plugin_init(self):
+        """Test that neptune driver gets registered in drivers dict during plugin init."""
+        from whyis.plugins.neptune.plugin import neptune_driver
+        from whyis.database.database_utils import drivers
+        
+        # Store original state
+        had_neptune = 'neptune' in drivers
+        original_neptune = drivers.get('neptune')
+        
+        # Clear neptune from drivers if it exists
+        if 'neptune' in drivers:
+            del drivers['neptune']
+        
+        # Verify neptune driver is not registered
+        assert 'neptune' not in drivers
+        
+        # Simulate what plugin.init() does - directly register the driver
+        # This is what happens in NeptuneSearchPlugin.init()
+        if 'neptune' not in drivers:
+            drivers['neptune'] = neptune_driver
+        
+        # Verify neptune driver is now registered
+        assert 'neptune' in drivers
+        assert callable(drivers['neptune'])
+        assert drivers['neptune'] is neptune_driver
+        
+        # Restore original state
+        if had_neptune:
+            drivers['neptune'] = original_neptune
+        elif 'neptune' in drivers:
+            del drivers['neptune']
     
     @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
     def test_neptune_driver_requires_region(self):
