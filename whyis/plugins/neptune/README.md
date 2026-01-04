@@ -12,19 +12,40 @@ This plugin extends the Neptune full-text search capabilities to include AWS IAM
 - **Graph Store Protocol**: Supports authenticated PUT, POST, DELETE, and publish operations
 - **Configuration-Based**: Easy setup via Flask configuration
 
-## Dependencies
+## Installation and Setup
 
-The Neptune plugin with IAM authentication requires:
+### 1. Enable the Neptune Plugin
 
-```bash
-pip install boto3 requests-aws4auth
+To enable the Neptune plugin in your Whyis knowledge graph application, add it to your application's configuration file (typically `whyis.conf` or `system.conf`):
+
+```python
+# Enable the Neptune plugin
+PLUGINENGINE_PLUGINS = ['neptune']
+
+# Or if you already have other plugins enabled:
+PLUGINENGINE_PLUGINS = ['neptune', 'other_plugin']
 ```
 
-These dependencies are optional and only needed if you're using Neptune with IAM authentication.
+### 2. Install Required Dependencies
+
+The Neptune plugin with IAM authentication requires additional Python packages that are not included in the core Whyis dependencies. Add these to your knowledge graph application's `requirements.txt`:
+
+```
+boto3
+requests-aws4auth
+```
+
+Then install them in your application environment:
+
+```bash
+pip install -r requirements.txt
+```
+
+**Note**: These dependencies are only needed if you're using Neptune with IAM authentication. They are not required for core Whyis functionality.
 
 ## Configuration
 
-To use Neptune with IAM authentication, configure your Whyis application with the following settings:
+After enabling the plugin and installing dependencies, configure your Whyis application to use Neptune with IAM authentication:
 
 ### System Configuration (system.conf)
 
