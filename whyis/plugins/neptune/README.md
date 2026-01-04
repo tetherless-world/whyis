@@ -65,9 +65,14 @@ KNOWLEDGE_GSP_ENDPOINT = 'https://my-cluster.cluster-xxx.us-east-1.neptune.amazo
 # Optional: Default graph URI
 KNOWLEDGE_DEFAULT_GRAPH = 'http://example.org/default-graph'
 
+# Optional: Use temporary UUID graphs for GSP operations (defaults to True)
+# When True, ensures graph-aware semantics for RDF data with named graphs
+KNOWLEDGE_USE_TEMP_GRAPH = True
+
 # Neptune Full-Text Search endpoint
 neptune_fts_endpoint = 'https://search-my-domain.us-east-1.es.amazonaws.com'
 ```
+
 
 ### AWS Credentials
 
@@ -104,6 +109,19 @@ The Neptune plugin automatically registers a "neptune" database driver when init
 2. Signs all HTTP requests with AWS SigV4 signatures
 3. Passes authentication to full-text search queries
 4. Provides authenticated Graph Store Protocol operations
+
+### Graph-Aware Semantics with Temporary UUID Graphs
+
+By default (when `KNOWLEDGE_USE_TEMP_GRAPH = True`), the Neptune driver ensures graph-aware semantics for all Graph Store Protocol (GSP) operations:
+
+- **Problem**: Without this feature, Neptune's GSP implementation inserts triples into an explicit default graph (using `?default` parameter), causing all RDF data to lose its graph structure even when using graph-aware formats like TriG.
+
+- **Solution**: The driver generates a temporary UUID-based graph URI (e.g., `urn:uuid:...`) for each GSP operation, posts/puts data to that temporary graph, and then deletes it. This ensures that:
+  - Named graphs from TriG data are preserved correctly
+  - Graph-aware RDF data maintains its structure
+  - Union semantics are properly applied instead of explicit default graph semantics
+
+- **Configuration**: Set `KNOWLEDGE_USE_TEMP_GRAPH = False` to disable this behavior and use legacy default graph semantics.
 
 ### Request Signing
 

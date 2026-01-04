@@ -8,6 +8,7 @@ from rdflib.graph import ConjunctiveGraph
 import requests
 import logging
 import os
+import uuid
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 
 logger = logging.getLogger(__name__)
@@ -145,11 +146,15 @@ def neptune_driver(config):
     - _region: AWS region where Neptune instance is located (required)
     - _service_name: AWS service name for signing (optional, default: 'neptune-db')
     - _default_graph: Default graph URI (optional)
+    - _use_temp_graph: Use temporary UUID graphs for GSP operations (optional, default: True)
+        When True, publish/put/post operations use a temporary UUID-based graph URI
+        to ensure graph-aware semantics instead of using the default graph.
     
     Example configuration in system.conf:
         KNOWLEDGE_ENDPOINT = 'https://my-neptune.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/sparql'
         KNOWLEDGE_REGION = 'us-east-1'
         KNOWLEDGE_GSP_ENDPOINT = 'https://my-neptune.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/data'
+        KNOWLEDGE_USE_TEMP_GRAPH = True  # Default, ensures graph-aware semantics
     
     Authentication:
         Uses AWS credentials from the environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
@@ -169,6 +174,9 @@ def neptune_driver(config):
     
     service_name = config.get("_service_name", "neptune-db")
     endpoint_url = config["_endpoint"]
+    
+    # Get temporary graph usage configuration (default: True)
+    use_temp_graph = config.get("_use_temp_graph", True)
     
     # Extract host from endpoint URL for AWS auth
     parsed_url = urlparse(endpoint_url)
@@ -211,21 +219,27 @@ def neptune_driver(config):
     store.auth = None  # Neptune uses AWS SigV4, not basic auth
     
     # Add GSP protocol methods with AWS authentication
-    store = _remote_sparql_store_protocol_with_aws(store, auth)
+    store = _remote_sparql_store_protocol_with_aws(store, auth, use_temp_graph=use_temp_graph)
     
     graph = ConjunctiveGraph(store, defaultgraph)
     return graph
 
-def _remote_sparql_store_protocol_with_aws(store, aws_auth):
+def _remote_sparql_store_protocol_with_aws(store, aws_auth, use_temp_graph=True):
     """
     Add Graph Store Protocol (GSP) operations with AWS authentication.
     
     This is similar to _remote_sparql_store_protocol but uses AWS SigV4 auth
     instead of basic auth.
     
+    When use_temp_graph is True (default), publish/put/post operations use a
+    temporary UUID-based graph URI to ensure graph-aware semantics. This prevents
+    triples from being inserted into an explicit default graph and instead maintains
+    the graph structure from the RDF data (e.g., TriG format).
+    
     Args:
         store: A SPARQL store object with gsp_endpoint attribute
         aws_auth: AWSRequestsAuth object for request signing
+        use_temp_graph: If True, use temporary UUID graphs for GSP operations (default: True)
         
     Returns:
         The store object with GSP methods attached
@@ -239,9 +253,31 @@ def _remote_sparql_store_protocol_with_aws(store, aws_auth):
         kwargs = dict(
             headers={'Content-Type': format},
         )
-        r = session.post(store.gsp_endpoint, data=data, **kwargs)
-        if not r.ok:
-            logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # POST to the temporary graph
+            r = session.post(store.gsp_endpoint, 
+                           params=dict(graph=temp_graph_uri),
+                           data=data, 
+                           **kwargs)
+            
+            # Always delete the temporary graph to clean up, even if POST failed
+            delete_r = session.delete(store.gsp_endpoint,
+                                    params=dict(graph=temp_graph_uri))
+            if not delete_r.ok:
+                logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+            
+            # Log error if POST failed
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
+        else:
+            # Legacy behavior: POST without graph parameter
+            r = session.post(store.gsp_endpoint, data=data, **kwargs)
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
 
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -250,14 +286,38 @@ def _remote_sparql_store_protocol_with_aws(store, aws_auth):
         kwargs = dict(
             headers={'Content-Type': 'text/turtle;charset=utf-8'},
         )
-        r = session.put(store.gsp_endpoint,
-                  params=dict(graph=graph.identifier),
-                  data=data,
-                  **kwargs)
-        if not r.ok:
-            logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # PUT to the temporary graph
+            r = session.put(store.gsp_endpoint,
+                          params=dict(graph=temp_graph_uri),
+                          data=data,
+                          **kwargs)
+            
+            # Always delete the temporary graph to clean up, even if PUT failed
+            delete_r = session.delete(store.gsp_endpoint,
+                                    params=dict(graph=temp_graph_uri))
+            if not delete_r.ok:
+                logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+            
+            # Log result
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+            else:
+                logger.debug(f"{r.text} {r.status_code}")
         else:
-            logger.debug(f"{r.text} {r.status_code}")
+            # Legacy behavior: PUT with specified graph identifier
+            r = session.put(store.gsp_endpoint,
+                          params=dict(graph=graph.identifier),
+                          data=data,
+                          **kwargs)
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+            else:
+                logger.debug(f"{r.text} {r.status_code}")
 
     def post(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -266,9 +326,31 @@ def _remote_sparql_store_protocol_with_aws(store, aws_auth):
         kwargs = dict(
             headers={'Content-Type': 'text/trig;charset=utf-8'},
         )
-        r = session.post(store.gsp_endpoint, data=data, **kwargs)
-        if not r.ok:
-            logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # POST to the temporary graph
+            r = session.post(store.gsp_endpoint,
+                           params=dict(graph=temp_graph_uri),
+                           data=data,
+                           **kwargs)
+            
+            # Always delete the temporary graph to clean up, even if POST failed
+            delete_r = session.delete(store.gsp_endpoint,
+                                    params=dict(graph=temp_graph_uri))
+            if not delete_r.ok:
+                logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+            
+            # Log error if POST failed
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
+        else:
+            # Legacy behavior: POST without graph parameter
+            r = session.post(store.gsp_endpoint, data=data, **kwargs)
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
 
     def delete(c):
         kwargs = dict()
