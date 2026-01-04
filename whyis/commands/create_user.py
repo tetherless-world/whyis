@@ -2,7 +2,12 @@
 
 from flask_script import Command, Option
 
-from flask_security.utils import encrypt_password
+# Flask-Security-Too renamed encrypt_password to hash_password
+try:
+    from flask_security.utils import hash_password as encrypt_password
+except ImportError:
+    # Fallback for older versions
+    from flask_security.utils import encrypt_password
 
 import flask
 
