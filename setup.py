@@ -223,6 +223,7 @@ be managed and used.''',
     entry_points = {
         'console_scripts': [
             'whyis=whyis.manager:main',
+            'whyis-cli=whyis.cli:main',
             'fuseki-server=whyis.fuseki:main',
         ],
         'rdf.plugins.resultparser' : [
