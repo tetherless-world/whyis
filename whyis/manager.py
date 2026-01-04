@@ -1,5 +1,27 @@
 # -*- coding:utf-8 -*-
 
+# Flask-Script compatibility patches for Flask 3.x
+# Flask 3.x removed several modules and APIs that Flask-Script depends on
+import sys
+import types
+
+# Patch 1: Create flask._compat module
+compat_module = types.ModuleType('flask._compat')
+compat_module.text_type = str
+compat_module.string_types = (str,)
+sys.modules['flask._compat'] = compat_module
+
+# Patch 2: Add _request_ctx_stack if missing (removed in Flask 3.x)
+import flask
+if not hasattr(flask, '_request_ctx_stack'):
+    from werkzeug.local import LocalStack
+    flask._request_ctx_stack = LocalStack()
+
+# Patch 3: Add _app_ctx_stack if missing (removed in Flask 3.x)
+if not hasattr(flask, '_app_ctx_stack'):
+    from werkzeug.local import LocalStack
+    flask._app_ctx_stack = LocalStack()
+
 import flask_script as script
 
 from whyis import commands
