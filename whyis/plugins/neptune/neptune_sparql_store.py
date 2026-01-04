@@ -7,6 +7,7 @@ This module provides SPARQL store implementations that support AWS IAM authentic
 for Amazon Neptune databases using SigV4 request signing.
 """
 
+import re
 from rdflib.plugins.stores.sparqlconnector import SPARQLConnector, Result
 from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore
 from requests_aws4auth import AWS4Auth
@@ -266,7 +267,6 @@ class NeptuneSPARQLUpdateStore(SPARQLUpdateStore):
         Returns:
             Query results
         """
-        import re
         if initBindings:
             v = list(initBindings)
             values = "\nVALUES ( %s )\n{ ( %s ) }\n" % (

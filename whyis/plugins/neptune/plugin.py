@@ -1,13 +1,17 @@
 from whyis.plugin import Plugin, EntityResolverListener
+from whyis.namespace import NS
 import rdflib
 from flask import current_app
 from flask_pluginengine import PluginBlueprint, current_plugin
 from rdflib import URIRef
 from rdflib.graph import ConjunctiveGraph
 import requests
+import logging
 
 # Import the Neptune store classes from this plugin
 from .neptune_sparql_store import NeptuneSPARQLStore, NeptuneSPARQLUpdateStore
+
+logger = logging.getLogger(__name__)
 
 
 prefixes = dict(
@@ -220,7 +224,7 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
         )
         r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
+            logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
     
     def put_with_auth(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -237,9 +241,9 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
                   data=data,
                   **kwargs)
         if not r.ok:
-            print(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+            logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
         else:
-            print(r.text, r.status_code)
+            logger.debug(f"{r.text} {r.status_code}")
     
     def post_with_auth(graph):
         g = ConjunctiveGraph(store=graph.store)
@@ -253,7 +257,7 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
         )
         r = s.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
-            print(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
+            logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
     
     def delete_with_auth(c):
         s = requests.session()
@@ -265,7 +269,7 @@ def _add_neptune_gsp_auth(store, region_name, service_name):
                      params=dict(graph=c),
                      **kwargs)
         if not r.ok:
-            print(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
+            logger.error(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
     
     # Replace methods with authenticated versions
     store.publish = publish_with_auth
