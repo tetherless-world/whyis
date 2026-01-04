@@ -19,8 +19,70 @@ Prerequisites
 -------------
 
 - A Whyis knowledge graph application (created with ``whyis createapp``)
-- Access to an Amazon Neptune database cluster
+- Access to an Amazon Neptune database cluster (or see Quick Start below to create one)
 - AWS credentials with Neptune access permissions
+
+Quick Start: Automated Neptune Setup
+-------------------------------------
+
+If you don't have a Neptune cluster yet, your Whyis application includes a CloudFormation template that automatically provisions a complete Neptune environment with Full-Text Search.
+
+The CloudFormation Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your application's directory contains ``cloudformation-neptune.json``, which creates:
+
+- **Neptune Serverless Cluster** with IAM authentication enabled
+- **OpenSearch Domain** for full-text search capabilities
+- **Security Groups** for secure network access
+- **IAM Role** with necessary permissions
+- **Proper VPC Configuration** for production use
+
+Using the CloudFormation Template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. **Prepare parameters** (edit values for your environment):
+
+   .. code-block:: bash
+
+       aws cloudformation create-stack \
+         --stack-name my-kgapp-neptune \
+         --template-body file://cloudformation-neptune.json \
+         --parameters \
+             ParameterKey=VPCId,ParameterValue=vpc-xxxxxxxx \
+             ParameterKey=PrivateSubnetIds,ParameterValue="subnet-xxx,subnet-yyy" \
+             ParameterKey=AllowedCIDR,ParameterValue=10.0.0.0/16 \
+             ParameterKey=IAMRoleName,ParameterValue=my-kgapp-neptune-access \
+         --capabilities CAPABILITY_NAMED_IAM \
+         --region us-east-1
+
+2. **Wait for completion** (typically 20-30 minutes):
+
+   .. code-block:: bash
+
+       aws cloudformation wait stack-create-complete \
+         --stack-name my-kgapp-neptune \
+         --region us-east-1
+
+3. **Get configuration values**:
+
+   .. code-block:: bash
+
+       aws cloudformation describe-stacks \
+         --stack-name my-kgapp-neptune \
+         --region us-east-1 \
+         --query 'Stacks[0].Outputs'
+
+   The outputs provide all the values you need for ``whyis.conf`` (see Step 3 below).
+
+.. note::
+    For detailed CloudFormation documentation, see ``CLOUDFORMATION.md`` in your application directory. It includes:
+    
+    - Complete parameter descriptions
+    - AWS Console deployment instructions
+    - Cost estimates and optimization tips
+    - Security best practices
+    - Troubleshooting guide
 
 Step 1: Enable the Neptune Plugin
 ----------------------------------
