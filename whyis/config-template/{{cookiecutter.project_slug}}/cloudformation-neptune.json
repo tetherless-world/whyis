@@ -1,0 +1,505 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template for AWS Neptune Serverless cluster with Full-Text Search (OpenSearch) for Whyis Knowledge Graph Application",
+  "Parameters": {
+    "DBClusterIdentifier": {
+      "Type": "String",
+      "Default": "{{cookiecutter.project_slug}}-neptune",
+      "Description": "Neptune DB cluster identifier",
+      "MinLength": 1,
+      "MaxLength": 63,
+      "AllowedPattern": "^[a-zA-Z][a-zA-Z0-9-]*$",
+      "ConstraintDescription": "Must begin with a letter and contain only alphanumeric characters and hyphens"
+    },
+    "MinNCUs": {
+      "Type": "Number",
+      "Default": 2.5,
+      "Description": "Minimum Neptune Capacity Units (NCUs) for serverless cluster",
+      "AllowedValues": [1, 2.5]
+    },
+    "MaxNCUs": {
+      "Type": "Number",
+      "Default": 128,
+      "Description": "Maximum Neptune Capacity Units (NCUs) for serverless cluster",
+      "AllowedValues": [2.5, 128]
+    },
+    "OpenSearchInstanceType": {
+      "Type": "String",
+      "Default": "t3.small.search",
+      "Description": "OpenSearch instance type for Full-Text Search",
+      "AllowedValues": [
+        "t3.small.search",
+        "t3.medium.search",
+        "r6g.large.search",
+        "r6g.xlarge.search"
+      ]
+    },
+    "OpenSearchInstanceCount": {
+      "Type": "Number",
+      "Default": 1,
+      "Description": "Number of OpenSearch instances",
+      "MinValue": 1,
+      "MaxValue": 10
+    },
+    "VPCId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "VPC ID where Neptune and OpenSearch will be deployed"
+    },
+    "PrivateSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "List of private subnet IDs for Neptune and OpenSearch (at least 2 in different AZs)"
+    },
+    "AllowedCIDR": {
+      "Type": "String",
+      "Default": "10.0.0.0/8",
+      "Description": "CIDR block allowed to access Neptune and OpenSearch",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid CIDR range"
+    },
+    "IAMRoleName": {
+      "Type": "String",
+      "Default": "{{cookiecutter.project_slug}}-neptune-access-role",
+      "Description": "Name for the IAM role that will access Neptune",
+      "MinLength": 1,
+      "MaxLength": 64
+    }
+  },
+  "Resources": {
+    "NeptuneSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for Neptune cluster",
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 8182,
+            "ToPort": 8182,
+            "CidrIp": {
+              "Ref": "AllowedCIDR"
+            },
+            "Description": "Allow Neptune access from specified CIDR"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${DBClusterIdentifier}-sg"
+            }
+          }
+        ]
+      }
+    },
+    "OpenSearchSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for OpenSearch domain",
+        "VpcId": {
+          "Ref": "VPCId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "SourceSecurityGroupId": {
+              "Ref": "NeptuneSecurityGroup"
+            },
+            "Description": "Allow HTTPS from Neptune security group"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": {
+              "Ref": "AllowedCIDR"
+            },
+            "Description": "Allow HTTPS from specified CIDR"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${DBClusterIdentifier}-opensearch-sg"
+            }
+          }
+        ]
+      }
+    },
+    "NeptuneDBSubnetGroup": {
+      "Type": "AWS::Neptune::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupName": {
+          "Fn::Sub": "${DBClusterIdentifier}-subnet-group"
+        },
+        "DBSubnetGroupDescription": "Subnet group for Neptune cluster",
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${DBClusterIdentifier}-subnet-group"
+            }
+          }
+        ]
+      }
+    },
+    "NeptuneDBCluster": {
+      "Type": "AWS::Neptune::DBCluster",
+      "Properties": {
+        "DBClusterIdentifier": {
+          "Ref": "DBClusterIdentifier"
+        },
+        "Engine": "neptune",
+        "EngineVersion": "1.3.2.0",
+        "ServerlessScalingConfiguration": {
+          "MinCapacity": {
+            "Ref": "MinNCUs"
+          },
+          "MaxCapacity": {
+            "Ref": "MaxNCUs"
+          }
+        },
+        "DBSubnetGroupName": {
+          "Ref": "NeptuneDBSubnetGroup"
+        },
+        "VpcSecurityGroupIds": [
+          {
+            "Ref": "NeptuneSecurityGroup"
+          }
+        ],
+        "IamAuthEnabled": true,
+        "BackupRetentionPeriod": 7,
+        "PreferredBackupWindow": "03:00-04:00",
+        "PreferredMaintenanceWindow": "mon:04:00-mon:05:00",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "DBClusterIdentifier"
+            }
+          }
+        ]
+      }
+    },
+    "OpenSearchDomain": {
+      "Type": "AWS::OpenSearchService::Domain",
+      "Properties": {
+        "DomainName": {
+          "Fn::Sub": "${DBClusterIdentifier}-fts"
+        },
+        "EngineVersion": "OpenSearch_2.11",
+        "ClusterConfig": {
+          "InstanceType": {
+            "Ref": "OpenSearchInstanceType"
+          },
+          "InstanceCount": {
+            "Ref": "OpenSearchInstanceCount"
+          },
+          "DedicatedMasterEnabled": false,
+          "ZoneAwarenessEnabled": {
+            "Fn::If": [
+              "MultipleInstances",
+              true,
+              false
+            ]
+          }
+        },
+        "EBSOptions": {
+          "EBSEnabled": true,
+          "VolumeType": "gp3",
+          "VolumeSize": 20
+        },
+        "VPCOptions": {
+          "SubnetIds": [
+            {
+              "Fn::Select": [
+                0,
+                {
+                  "Ref": "PrivateSubnetIds"
+                }
+              ]
+            }
+          ],
+          "SecurityGroupIds": [
+            {
+              "Ref": "OpenSearchSecurityGroup"
+            }
+          ]
+        },
+        "AccessPolicies": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": "es:*",
+              "Resource": {
+                "Fn::Sub": "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DBClusterIdentifier}-fts/*"
+              },
+              "Condition": {
+                "IpAddress": {
+                  "aws:SourceIp": {
+                    "Ref": "AllowedCIDR"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "AdvancedSecurityOptions": {
+          "Enabled": true,
+          "InternalUserDatabaseEnabled": false,
+          "MasterUserOptions": {
+            "MasterUserARN": {
+              "Fn::GetAtt": [
+                "NeptuneAccessRole",
+                "Arn"
+              ]
+            }
+          }
+        },
+        "NodeToNodeEncryptionOptions": {
+          "Enabled": true
+        },
+        "EncryptionAtRestOptions": {
+          "Enabled": true
+        },
+        "DomainEndpointOptions": {
+          "EnforceHTTPS": true,
+          "TLSSecurityPolicy": "Policy-Min-TLS-1-2-2019-07"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${DBClusterIdentifier}-fts"
+            }
+          }
+        ]
+      }
+    },
+    "NeptuneAccessRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Ref": "IAMRoleName"
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com",
+                  "ecs-tasks.amazonaws.com",
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/NeptuneReadOnlyAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "NeptuneIAMAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "neptune-db:connect",
+                    "neptune-db:ReadDataViaQuery",
+                    "neptune-db:WriteDataViaQuery",
+                    "neptune-db:DeleteDataViaQuery"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:neptune-db:${AWS::Region}:${AWS::AccountId}:${NeptuneDBCluster}/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "OpenSearchAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "es:ESHttpGet",
+                    "es:ESHttpPost",
+                    "es:ESHttpPut",
+                    "es:ESHttpDelete",
+                    "es:ESHttpHead"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DBClusterIdentifier}-fts/*"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "IAMRoleName"
+            }
+          }
+        ]
+      }
+    },
+    "NeptuneAccessInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": {
+          "Fn::Sub": "${IAMRoleName}-instance-profile"
+        },
+        "Roles": [
+          {
+            "Ref": "NeptuneAccessRole"
+          }
+        ]
+      }
+    }
+  },
+  "Conditions": {
+    "MultipleInstances": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "OpenSearchInstanceCount"
+            },
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "Outputs": {
+    "NeptuneClusterEndpoint": {
+      "Description": "Neptune cluster endpoint",
+      "Value": {
+        "Fn::GetAtt": [
+          "NeptuneDBCluster",
+          "Endpoint"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-NeptuneEndpoint"
+        }
+      }
+    },
+    "NeptuneClusterPort": {
+      "Description": "Neptune cluster port",
+      "Value": {
+        "Fn::GetAtt": [
+          "NeptuneDBCluster",
+          "Port"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-NeptunePort"
+        }
+      }
+    },
+    "NeptuneSPARQLEndpoint": {
+      "Description": "Neptune SPARQL endpoint URL for Whyis configuration",
+      "Value": {
+        "Fn::Sub": "https://${NeptuneDBCluster.Endpoint}:${NeptuneDBCluster.Port}/sparql"
+      }
+    },
+    "OpenSearchDomainEndpoint": {
+      "Description": "OpenSearch domain endpoint",
+      "Value": {
+        "Fn::GetAtt": [
+          "OpenSearchDomain",
+          "DomainEndpoint"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-OpenSearchEndpoint"
+        }
+      }
+    },
+    "OpenSearchFTSEndpoint": {
+      "Description": "OpenSearch FTS endpoint URL for Whyis configuration",
+      "Value": {
+        "Fn::Sub": "https://${OpenSearchDomain.DomainEndpoint}"
+      }
+    },
+    "NeptuneAccessRoleArn": {
+      "Description": "ARN of the IAM role for accessing Neptune and OpenSearch",
+      "Value": {
+        "Fn::GetAtt": [
+          "NeptuneAccessRole",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-AccessRoleArn"
+        }
+      }
+    },
+    "NeptuneAccessInstanceProfileArn": {
+      "Description": "ARN of the instance profile for EC2 instances",
+      "Value": {
+        "Fn::GetAtt": [
+          "NeptuneAccessInstanceProfile",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-InstanceProfileArn"
+        }
+      }
+    },
+    "Region": {
+      "Description": "AWS Region where resources are deployed",
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "WhyisConfigSummary": {
+      "Description": "Configuration values for whyis.conf",
+      "Value": {
+        "Fn::Sub": [
+          "KNOWLEDGE_TYPE=neptune | KNOWLEDGE_ENDPOINT=${Endpoint} | KNOWLEDGE_REGION=${Region} | neptune_fts_endpoint=${FTSEndpoint}",
+          {
+            "Endpoint": {
+              "Fn::Sub": "https://${NeptuneDBCluster.Endpoint}:${NeptuneDBCluster.Port}/sparql"
+            },
+            "Region": {
+              "Ref": "AWS::Region"
+            },
+            "FTSEndpoint": {
+              "Fn::Sub": "https://${OpenSearchDomain.DomainEndpoint}"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

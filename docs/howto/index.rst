@@ -9,5 +9,6 @@ This section provides step-by-step guides for specific tasks.
     :maxdepth: 2
     :caption: How-to Guides
 
+    neptune-iam-auth
     sdds
  
