@@ -45,8 +45,7 @@ class TestNeptuneDriver:
         
         # Simulate what plugin.init() does - directly register the driver
         # This is what happens in NeptuneSearchPlugin.init()
-        if 'neptune' not in drivers:
-            drivers['neptune'] = neptune_driver
+        drivers['neptune'] = neptune_driver
         
         # Verify neptune driver is now registered
         assert 'neptune' in drivers
