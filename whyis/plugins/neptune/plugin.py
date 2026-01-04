@@ -135,8 +135,7 @@ def neptune_driver(config):
     """
     Create an AWS Neptune SPARQL-based RDF graph store with IAM authentication.
     
-    This driver follows the same pattern as sparql_driver but adds AWS IAM authentication
-    using SigV4 request signing for both SPARQL operations and GSP operations.
+    Uses WhyisSPARQLUpdateStore with a custom requests session for AWS SigV4 auth.
     
     Configuration options (via Flask config with prefix like KNOWLEDGE_ or ADMIN_):
     - _endpoint: Neptune SPARQL query/update endpoint (required)
@@ -167,7 +166,7 @@ def neptune_driver(config):
     
     service_name = config.get("_service_name", "neptune-db")
     
-    # Create AWS authenticated session for GSP operations
+    # Create AWS authentication
     credentials = boto3.Session().get_credentials()
     aws_auth = AWS4Auth(
         credentials.access_key,
@@ -177,8 +176,12 @@ def neptune_driver(config):
         session_token=credentials.token
     )
     
+    # Create custom requests session with AWS auth
+    session = requests.Session()
+    session.auth = aws_auth
+    
     # Create store with standard WhyisSPARQLUpdateStore
-    kwargs = dict(
+    store = WhyisSPARQLUpdateStore(
         query_endpoint=config["_endpoint"],
         update_endpoint=config["_endpoint"],
         method="POST",
@@ -186,19 +189,76 @@ def neptune_driver(config):
         node_to_sparql=node_to_sparql
     )
     
-    store = WhyisSPARQLUpdateStore(**kwargs)
     store.query_endpoint = config["_endpoint"]
     store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
     store.auth = None  # Neptune uses AWS SigV4, not basic auth
     
-    # Monkey-patch the store's connector to use AWS authentication
-    _inject_neptune_auth(store, aws_auth)
+    # Inject custom session into store's query mechanism
+    _inject_aws_session(store, session)
     
-    # Add GSP protocol methods compatible with sparql_driver but with AWS auth
+    # Add GSP protocol methods with AWS authentication
     store = _remote_sparql_store_protocol_with_aws(store, aws_auth)
     
     graph = ConjunctiveGraph(store, defaultgraph)
     return graph
+
+
+def _inject_aws_session(store, session):
+    """
+    Inject custom requests session into store's query mechanism.
+    
+    Replaces store's internal query method to use the provided session.
+    
+    Args:
+        store: SPARQLUpdateStore instance
+        session: requests.Session with AWS auth configured
+    """
+    from rdflib.plugins.stores.sparqlconnector import Result
+    from io import BytesIO
+    from urllib.parse import urlencode
+    
+    # Store original method if needed
+    original_query = store._query if hasattr(store, '_query') else store.query
+    
+    def query_with_session(query_str, *args, **kwargs):
+        """Execute SPARQL query using custom session."""
+        params = {}
+        default_graph = kwargs.get('default_graph')
+        if default_graph:
+            params["default-graph-uri"] = default_graph
+            
+        headers = {
+            "Accept": "application/sparql-results+json,application/json"
+        }
+        
+        if store.method == "POST":
+            headers["Content-Type"] = "application/sparql-query"
+            response = session.post(
+                store.query_endpoint,
+                params=params,
+                data=query_str.encode('utf-8'),
+                headers=headers
+            )
+        else:
+            params["query"] = query_str
+            response = session.get(
+                store.query_endpoint,
+                params=params,
+                headers=headers
+            )
+        
+        response.raise_for_status()
+        
+        # Return Result compatible with rdflib
+        content_type = response.headers.get('Content-Type', 'application/sparql-results+json')
+        if ';' in content_type:
+            content_type = content_type.split(';')[0]
+        
+        return Result.parse(BytesIO(response.content), content_type=content_type)
+    
+    # Replace the query method
+    store._query = query_with_session
+    store.query = lambda q, *args, **kwargs: store._query(q, *args, **kwargs)
 
 
 def _inject_neptune_auth(store, aws_auth):
