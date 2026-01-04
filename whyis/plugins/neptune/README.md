@@ -31,8 +31,7 @@ PLUGINENGINE_PLUGINS = ['neptune', 'other_plugin']
 The Neptune plugin with IAM authentication requires additional Python packages that are not included in the core Whyis dependencies. Add these to your knowledge graph application's `requirements.txt`:
 
 ```
-boto3
-requests-aws4auth
+aws_requests_auth
 ```
 
 Then install them in your application environment:
@@ -41,7 +40,7 @@ Then install them in your application environment:
 pip install -r requirements.txt
 ```
 
-**Note**: These dependencies are only needed if you're using Neptune with IAM authentication. They are not required for core Whyis functionality.
+**Note**: This dependency is only needed if you're using Neptune with IAM authentication. It is not required for core Whyis functionality.
 
 ## Configuration
 
@@ -72,16 +71,16 @@ neptune_fts_endpoint = 'https://search-my-domain.us-east-1.es.amazonaws.com'
 
 ### AWS Credentials
 
-The Neptune driver uses boto3 for AWS credential management. Credentials can be provided via:
+The Neptune driver uses environment variables for AWS credential management. Credentials can be provided via:
 
-1. **Environment Variables**:
+1. **Environment Variables** (required):
    ```bash
    export AWS_ACCESS_KEY_ID=your_access_key
    export AWS_SECRET_ACCESS_KEY=your_secret_key
    export AWS_SESSION_TOKEN=your_session_token  # Optional, for temporary credentials
    ```
 
-2. **IAM Roles**: If running on EC2 or ECS, the driver will automatically use the instance/task IAM role
+2. **IAM Roles**: If running on EC2 or ECS with an IAM role, set the environment variables from the role's credentials
 
 3. **AWS Credentials File** (`~/.aws/credentials`):
    ```ini
@@ -89,11 +88,10 @@ The Neptune driver uses boto3 for AWS credential management. Credentials can be 
    aws_access_key_id = your_access_key
    aws_secret_access_key = your_secret_key
    ```
-
-4. **AWS Config File** (`~/.aws/config`):
-   ```ini
-   [default]
-   region = us-east-1
+   Then export them:
+   ```bash
+   export AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id)
+   export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
    ```
 
 ## How It Works
@@ -153,33 +151,6 @@ config = {
 }
 
 graph = neptune_driver(config)
-```
-
-### Neptune Query Store
-
-```python
-from whyis.plugins.neptune.plugin import create_neptune_query_store
-
-# Create a read-only query store from an existing Neptune store
-query_store = create_neptune_query_store(existing_store)
-```
-
-### Neptune SPARQL Stores
-
-```python
-from whyis.plugins.neptune.neptune_sparql_store import (
-    NeptuneSPARQLStore,
-    NeptuneSPARQLUpdateStore,
-    NeptuneSPARQLConnector
-)
-
-# Create a Neptune store with IAM authentication
-store = NeptuneSPARQLUpdateStore(
-    query_endpoint='https://neptune.amazonaws.com:8182/sparql',
-    update_endpoint='https://neptune.amazonaws.com:8182/sparql',
-    region_name='us-east-1',
-    service_name='neptune-db'
-)
 ```
 
 ## Security Considerations

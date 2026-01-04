@@ -161,8 +161,7 @@ neptune_fts_endpoint = 'https://<opensearch-endpoint>'  # From OpenSearchFTSEndp
 ### 3. Add Dependencies to requirements.txt
 
 ```
-boto3
-requests-aws4auth
+aws_requests_auth
 ```
 
 Install dependencies:

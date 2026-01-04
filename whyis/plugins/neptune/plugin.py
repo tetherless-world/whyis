@@ -7,8 +7,8 @@ from rdflib import URIRef
 from rdflib.graph import ConjunctiveGraph
 import requests
 import logging
-import boto3
-from requests_aws4auth import AWS4Auth
+import os
+from aws_requests_auth.aws_auth import AWSRequestsAuth
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +154,7 @@ def neptune_driver(config):
         or IAM roles. All requests are signed with SigV4, including full text search queries.
     """
     from whyis.database.database_utils import node_to_sparql, WhyisSPARQLUpdateStore
+    from urllib.parse import urlparse
     
     defaultgraph = None
     if "_default_graph" in config:
@@ -165,152 +166,53 @@ def neptune_driver(config):
         raise ValueError("Neptune driver requires '_region' configuration parameter")
     
     service_name = config.get("_service_name", "neptune-db")
+    endpoint_url = config["_endpoint"]
     
-    # Create AWS authentication
-    credentials = boto3.Session().get_credentials()
-    aws_auth = AWS4Auth(
-        credentials.access_key,
-        credentials.secret_key,
-        region_name,
-        service_name,
-        session_token=credentials.token
+    # Extract host from endpoint URL for AWS auth
+    parsed_url = urlparse(endpoint_url)
+    aws_host = parsed_url.netloc
+    
+    # Create AWS authentication using environment credentials
+    # Credentials will be automatically picked up from environment variables or ~/.aws/credentials
+    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
+    
+    if not aws_access_key or not aws_secret_key:
+        raise ValueError("Neptune driver requires AWS credentials (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables)")
+    
+    auth = AWSRequestsAuth(
+        aws_access_key=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        aws_host=aws_host,
+        aws_region=region_name,
+        aws_service=service_name,
+        aws_token=aws_session_token
     )
     
     # Create custom requests session with AWS auth
     session = requests.Session()
-    session.auth = aws_auth
+    session.auth = auth
     
-    # Create store with standard WhyisSPARQLUpdateStore
+    # Create store with standard WhyisSPARQLUpdateStore, passing custom session
     store = WhyisSPARQLUpdateStore(
-        query_endpoint=config["_endpoint"],
-        update_endpoint=config["_endpoint"],
+        query_endpoint=endpoint_url,
+        update_endpoint=endpoint_url,
         method="POST",
         returnFormat='json',
-        node_to_sparql=node_to_sparql
+        node_to_sparql=node_to_sparql,
+        custom_requests=session  # Pass custom session directly
     )
     
-    store.query_endpoint = config["_endpoint"]
-    store.gsp_endpoint = config.get("_gsp_endpoint", config["_endpoint"])
+    store.query_endpoint = endpoint_url
+    store.gsp_endpoint = config.get("_gsp_endpoint", endpoint_url)
     store.auth = None  # Neptune uses AWS SigV4, not basic auth
     
-    # Inject custom session into store's query mechanism
-    _inject_aws_session(store, session)
-    
     # Add GSP protocol methods with AWS authentication
-    store = _remote_sparql_store_protocol_with_aws(store, aws_auth)
+    store = _remote_sparql_store_protocol_with_aws(store, auth)
     
     graph = ConjunctiveGraph(store, defaultgraph)
     return graph
-
-
-def _inject_aws_session(store, session):
-    """
-    Inject custom requests session into store's query mechanism.
-    
-    Replaces store's internal query method to use the provided session.
-    
-    Args:
-        store: SPARQLUpdateStore instance
-        session: requests.Session with AWS auth configured
-    """
-    from rdflib.plugins.stores.sparqlconnector import Result
-    from io import BytesIO
-    from urllib.parse import urlencode
-    
-    # Store original method if needed
-    original_query = store._query if hasattr(store, '_query') else store.query
-    
-    def query_with_session(query_str, *args, **kwargs):
-        """Execute SPARQL query using custom session."""
-        params = {}
-        default_graph = kwargs.get('default_graph')
-        if default_graph:
-            params["default-graph-uri"] = default_graph
-            
-        headers = {
-            "Accept": "application/sparql-results+json,application/json"
-        }
-        
-        if store.method == "POST":
-            headers["Content-Type"] = "application/sparql-query"
-            response = session.post(
-                store.query_endpoint,
-                params=params,
-                data=query_str.encode('utf-8'),
-                headers=headers
-            )
-        else:
-            params["query"] = query_str
-            response = session.get(
-                store.query_endpoint,
-                params=params,
-                headers=headers
-            )
-        
-        response.raise_for_status()
-        
-        # Return Result compatible with rdflib
-        content_type = response.headers.get('Content-Type', 'application/sparql-results+json')
-        if ';' in content_type:
-            content_type = content_type.split(';')[0]
-        
-        return Result.parse(BytesIO(response.content), content_type=content_type)
-    
-    # Replace the query method
-    store._query = query_with_session
-    store.query = lambda q, *args, **kwargs: store._query(q, *args, **kwargs)
-
-
-def _inject_neptune_auth(store, aws_auth):
-    """
-    Inject AWS authentication into the SPARQL store's query method.
-    
-    This monkey-patches the store's query and update methods to use requests with AWS auth
-    instead of rdflib's default urllib-based implementation.
-    
-    Args:
-        store: The SPARQL store object
-        aws_auth: AWS4Auth object for request signing
-    """
-    original_query = store.query
-    
-    def query_with_aws_auth(query_str, *args, **kwargs):
-        """Execute SPARQL query with AWS IAM authentication."""
-        session = requests.Session()
-        session.auth = aws_auth
-        
-        params = {}
-        default_graph = kwargs.get('default_graph')
-        if default_graph:
-            params["default-graph-uri"] = default_graph
-            
-        headers = {"Accept": store.response_mime_types()}
-        
-        if store.method == "POST":
-            headers["Content-Type"] = "application/sparql-query"
-            response = session.post(
-                store.query_endpoint,
-                params=params,
-                data=query_str.encode('utf-8'),
-                headers=headers
-            )
-        else:
-            params["query"] = query_str
-            response = session.get(
-                store.query_endpoint,
-                params=params,
-                headers=headers
-            )
-        
-        response.raise_for_status()
-        
-        # Return the response in the format rdflib expects
-        from rdflib.plugins.stores.sparqlconnector import SPARQLConnector, Result
-        from io import BytesIO
-        return Result((response.status_code, response.reason), response.headers.get('content-type'), BytesIO(response.content))
-    
-    store.query = query_with_aws_auth
-
 
 def _remote_sparql_store_protocol_with_aws(store, aws_auth):
     """

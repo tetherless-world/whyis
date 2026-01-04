@@ -10,8 +10,7 @@ from io import BytesIO
 
 # Skip all tests if dependencies not available
 pytest.importorskip("flask_security")
-pytest.importorskip("boto3")
-pytest.importorskip("requests_aws4auth")
+pytest.importorskip("aws_requests_auth")
 
 from rdflib import URIRef, Namespace, Literal
 from rdflib.graph import ConjunctiveGraph
@@ -28,8 +27,8 @@ class TestNeptuneDriver:
         # Verify the function exists and is callable
         assert callable(neptune_driver)
     
-    @patch('whyis.plugins.neptune.plugin.boto3.Session')
-    def test_neptune_driver_requires_region(self, mock_session):
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    def test_neptune_driver_requires_region(self):
         """Test that neptune driver requires region configuration."""
         from whyis.plugins.neptune.plugin import neptune_driver
         
@@ -40,17 +39,10 @@ class TestNeptuneDriver:
         with pytest.raises(ValueError, match="requires '_region'"):
             neptune_driver(config)
     
-    @patch('whyis.plugins.neptune.plugin.boto3.Session')
-    def test_neptune_driver_returns_graph(self, mock_session):
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    def test_neptune_driver_returns_graph(self):
         """Test that neptune driver returns a ConjunctiveGraph."""
         from whyis.plugins.neptune.plugin import neptune_driver
-        
-        # Mock credentials
-        mock_creds = Mock()
-        mock_creds.access_key = 'test_key'
-        mock_creds.secret_key = 'test_secret'
-        mock_creds.token = None
-        mock_session.return_value.get_credentials.return_value = mock_creds
         
         config = {
             '_endpoint': 'https://neptune.example.com/sparql',
@@ -64,17 +56,10 @@ class TestNeptuneDriver:
         assert hasattr(graph.store, 'gsp_endpoint')
         assert graph.store.gsp_endpoint == 'https://neptune.example.com/sparql'
     
-    @patch('whyis.plugins.neptune.plugin.boto3.Session')
-    def test_neptune_driver_with_custom_service_name(self, mock_session):
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    def test_neptune_driver_with_custom_service_name(self):
         """Test that neptune driver accepts custom service name."""
         from whyis.plugins.neptune.plugin import neptune_driver
-        
-        # Mock credentials
-        mock_creds = Mock()
-        mock_creds.access_key = 'test_key'
-        mock_creds.secret_key = 'test_secret'
-        mock_creds.token = None
-        mock_session.return_value.get_credentials.return_value = mock_creds
         
         config = {
             '_endpoint': 'https://neptune.example.com/sparql',
@@ -87,17 +72,10 @@ class TestNeptuneDriver:
         # Graph should be created successfully
         assert isinstance(graph, ConjunctiveGraph)
     
-    @patch('whyis.plugins.neptune.plugin.boto3.Session')
-    def test_neptune_driver_with_gsp_endpoint(self, mock_session):
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
+    def test_neptune_driver_with_gsp_endpoint(self):
         """Test that neptune driver uses separate GSP endpoint if provided."""
         from whyis.plugins.neptune.plugin import neptune_driver
-        
-        # Mock credentials
-        mock_creds = Mock()
-        mock_creds.access_key = 'test_key'
-        mock_creds.secret_key = 'test_secret'
-        mock_creds.token = None
-        mock_session.return_value.get_credentials.return_value = mock_creds
         
         config = {
             '_endpoint': 'https://neptune.example.com/sparql',
@@ -113,18 +91,11 @@ class TestNeptuneDriver:
 class TestNeptuneGSPOperations:
     """Test Neptune Graph Store Protocol operations with AWS auth."""
     
-    @patch('whyis.plugins.neptune.plugin.boto3.Session')
+    @patch('whyis.plugins.neptune.plugin.os.environ', {'AWS_ACCESS_KEY_ID': 'test_key', 'AWS_SECRET_ACCESS_KEY': 'test_secret'})
     @patch('whyis.plugins.neptune.plugin.requests.Session')
-    def test_gsp_operations_use_aws_auth(self, mock_requests_session, mock_boto_session):
+    def test_gsp_operations_use_aws_auth(self, mock_requests_session):
         """Test that GSP operations (publish, put, post, delete) use AWS auth."""
         from whyis.plugins.neptune.plugin import neptune_driver
-        
-        # Mock credentials
-        mock_creds = Mock()
-        mock_creds.access_key = 'test_key'
-        mock_creds.secret_key = 'test_secret'
-        mock_creds.token = None
-        mock_boto_session.return_value.get_credentials.return_value = mock_creds
         
         # Mock requests session
         mock_session_instance = Mock()

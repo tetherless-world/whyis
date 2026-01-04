@@ -106,8 +106,7 @@ Add these packages to your application's ``requirements.txt``:
 
 .. code-block:: text
 
-    boto3
-    requests-aws4auth
+    aws_requests_auth
 
 Then install them in your application environment:
 
@@ -116,7 +115,7 @@ Then install them in your application environment:
     pip install -r requirements.txt
 
 .. note::
-    These dependencies are only needed when using Neptune with IAM authentication. They are not required for core Whyis functionality or other database backends.
+    This dependency is only needed when using Neptune with IAM authentication. It is not required for core Whyis functionality or other database backends.
 
 Step 3: Configure Neptune Connection
 -------------------------------------
