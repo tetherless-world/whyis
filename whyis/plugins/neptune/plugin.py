@@ -111,7 +111,9 @@ where {
         
         type_query = ''
         if type is not None:
-             type_query = self.type_query % type
+            # Escape the type URI to prevent SPARQL injection
+            escaped_type = self._escape_sparql_string(type)
+            type_query = self.type_query % escaped_type
 
         query = self.query % (escaped_term, escaped_endpoint, type_query)
         
@@ -223,34 +225,32 @@ def _remote_sparql_store_protocol_with_aws(store, aws_auth):
     
     Args:
         store: A SPARQL store object with gsp_endpoint attribute
-        aws_auth: AWS4Auth object for request signing
+        aws_auth: AWSRequestsAuth object for request signing
         
     Returns:
         The store object with GSP methods attached
     """
+    # Create a reusable session with AWS auth for all GSP operations
+    session = requests.Session()
+    session.auth = aws_auth
+    session.keep_alive = False
+    
     def publish(data, format='text/trig;charset=utf-8'):
-        s = requests.Session()
-        s.auth = aws_auth
-        s.keep_alive = False
-        
         kwargs = dict(
             headers={'Content-Type': format},
         )
-        r = s.post(store.gsp_endpoint, data=data, **kwargs)
+        r = session.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
             logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
 
     def put(graph):
         g = ConjunctiveGraph(store=graph.store)
         data = g.serialize(format='turtle')
-        s = requests.Session()
-        s.auth = aws_auth
-        s.keep_alive = False
         
         kwargs = dict(
             headers={'Content-Type': 'text/turtle;charset=utf-8'},
         )
-        r = s.put(store.gsp_endpoint,
+        r = session.put(store.gsp_endpoint,
                   params=dict(graph=graph.identifier),
                   data=data,
                   **kwargs)
@@ -262,24 +262,17 @@ def _remote_sparql_store_protocol_with_aws(store, aws_auth):
     def post(graph):
         g = ConjunctiveGraph(store=graph.store)
         data = g.serialize(format='trig')
-        s = requests.Session()
-        s.auth = aws_auth
-        s.keep_alive = False
         
         kwargs = dict(
             headers={'Content-Type': 'text/trig;charset=utf-8'},
         )
-        r = s.post(store.gsp_endpoint, data=data, **kwargs)
+        r = session.post(store.gsp_endpoint, data=data, **kwargs)
         if not r.ok:
             logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
 
     def delete(c):
-        s = requests.Session()
-        s.auth = aws_auth
-        s.keep_alive = False
-        
         kwargs = dict()
-        r = s.delete(store.gsp_endpoint,
+        r = session.delete(store.gsp_endpoint,
                      params=dict(graph=c),
                      **kwargs)
         if not r.ok:

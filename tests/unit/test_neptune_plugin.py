@@ -172,12 +172,12 @@ class TestNeptuneEntityResolver:
         assert '"%s"' in resolver.query  # Search term should be inserted as quoted string
     
     def test_on_resolve_escapes_search_term(self):
-        """Test that on_resolve properly escapes the search term."""
+        """Test that on_resolve properly escapes the search term and type."""
         from whyis.plugins.neptune.plugin import NeptuneEntityResolver
         
         resolver = NeptuneEntityResolver()
         
-        # Test that the query will safely escape special characters
+        # Test that the query will safely escape special characters in search term
         term_with_quotes = 'test "injection" attempt'
         escaped = resolver._escape_sparql_string(term_with_quotes)
         
@@ -192,3 +192,8 @@ class TestNeptuneEntityResolver:
         
         # And should not contain the unescaped quotes that could break out
         assert 'test "injection" attempt' not in test_query
+        
+        # Test escaping type parameter as well
+        type_with_special_chars = 'http://example.org/Test"Type'
+        escaped_type = resolver._escape_sparql_string(type_with_special_chars)
+        assert escaped_type == 'http://example.org/Test\\"Type'
