@@ -1,5 +1,6 @@
 import os
 from distutils.core import setup
+from setuptools import find_packages
 import distutils.command.build
 import distutils.command.sdist
 import subprocess
@@ -135,7 +136,7 @@ setup(
     license = "Apache License 2.0",
     keywords = "rdf semantic knowledge graph",
     url = "http://tetherless-world.github.io/whyis",
-    packages=['whyis'],
+    packages=find_packages(),
     long_description='''Whyis is a nano-scale knowledge graph publishing,
 management, and analysis framework. Whyis aims to support domain-aware management
 and curation of knowledge from many different sources. Its primary goal is to enable

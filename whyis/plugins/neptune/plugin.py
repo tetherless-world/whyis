@@ -1,4 +1,5 @@
 from whyis.plugin import Plugin, EntityResolverListener
+from whyis.namespace import NS
 import rdflib
 from flask import current_app
 from flask_pluginengine import PluginBlueprint, current_plugin
@@ -79,7 +80,7 @@ where {
     def on_resolve(self, term, type=None, context=None, label=True):
         print(f'Searching {self.database} for {term}')
         graph = current_app.databases[self.database]
-        fts_endpoint = current_app.config['neptune_fts_endpoint']
+        fts_endpoint = current_app.config['NEPTUNE_FTS_ENDPOINT']
         #context_query = ''
         #if context is not None:
         #    context_query = self.context_query % context
