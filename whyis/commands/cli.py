@@ -181,7 +181,7 @@ def run_command(host, port, threaded, watch):
             # When run from a kgapp directory, there's a local wsgi.py that imports from whyis.wsgi
             # When run without a local wsgi.py, fall back to whyis.wsgi:celery
             celery_module = 'wsgi:celery'
-            if not os.path.exists('wsgi.py'):
+            if not os.path.isfile('wsgi.py'):
                 # No local wsgi.py, use full module path
                 celery_module = 'whyis.wsgi:celery'
             
