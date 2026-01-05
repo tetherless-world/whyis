@@ -160,7 +160,7 @@ be managed and used.''',
         'celery_once==3.0.1',
         'cookiecutter>=2.5.0',
         'email_validator>=2.1.0',
-        'eventlet>=0.40.0',
+        'eventlet>=0.35.2',
         'dnspython>=2.6.0',
         'filedepot>=0.11.0',
         # Flask 3.x with compatible ecosystem

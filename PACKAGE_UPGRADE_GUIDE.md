@@ -78,7 +78,7 @@ The Flask ecosystem has been upgraded to version 3.x with all compatible depende
 ### Other Utilities
 
 - **celery**: <6.0.0 → >=5.4.0,<6.0.0
-- **eventlet**: >=0.35.2 → >=0.40.0
+- **eventlet**: >=0.35.2 (kept, latest 0.39.1 compatible with Python 3.9+)
 - **dnspython**: 2.2.1 → 2.8+
 - **email_validator**: 1.1.3 → 2.3+
 - **cookiecutter**: 1.7.3 → 2.6+
