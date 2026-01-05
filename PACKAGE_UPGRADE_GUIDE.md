@@ -228,7 +228,7 @@ pytest --cov=whyis --cov-report=html
 
 ### Command Syntax Change
 
-Celery 5.x requires explicit attribute access syntax when specifying the app:
+Celery 5.x requires explicit attribute access syntax when specifying the app, and the **full module path** must be used:
 
 **Old syntax (Celery 4.x):**
 ```bash
@@ -237,24 +237,31 @@ celery -A wsgi.celery worker --beat
 
 **New syntax (Celery 5.x):**
 ```bash
-celery -A wsgi:celery worker --beat
+celery -A whyis.wsgi:celery worker --beat
 ```
 
-Note the change from `wsgi.celery` (dot notation) to `wsgi:celery` (colon notation).
+Note the changes:
+1. `wsgi.celery` (dot notation) → `whyis.wsgi:celery` (colon notation with full module path)
+2. Must use full module path `whyis.wsgi` instead of just `wsgi`
 
 ### Impact on Whyis
 
 - **Embedded Celery**: Automatically updated to use new syntax
-- **Manual Celery commands**: Use `celery -A wsgi:celery worker` when running celery manually
+- **Manual Celery commands**: Use `celery -A whyis.wsgi:celery worker` when running celery manually
 - **wsgi.py**: Now always exports a `celery` variable (even in setup_mode) to prevent import errors
 
 ### Troubleshooting Celery Issues
 
+If you see "The module wsgi:celery was not found" error:
+
+1. Ensure you're using the **full module path**: `celery -A whyis.wsgi:celery worker`
+2. Don't use just `wsgi:celery` - it needs the full `whyis.wsgi:celery` path
+3. Verify that the application is properly configured (check for `whyis.conf`)
+
 If you see "'app' object has no attribute 'celery'" error:
 
-1. Ensure you're using the colon syntax: `celery -A wsgi:celery worker`
-2. Check that `wsgi.py` exports `celery` at module level
-3. Verify that the application is properly configured (check for `whyis.conf`)
+1. Check that `wsgi.py` exports `celery` at module level
+2. Verify whyis package is installed correctly (`pip show whyis`)
 
 ## Getting Help
 

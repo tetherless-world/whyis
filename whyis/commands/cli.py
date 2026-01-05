@@ -176,9 +176,9 @@ def run_command(host, port, threaded, watch):
             if not celery_command:
                 # Fallback to sys.argv[0] path
                 celery_command = os.path.join(os.path.dirname(sys.argv[0]), 'celery')
-            # Use explicit colon syntax for Celery 5.x: 'wsgi:celery' instead of 'wsgi.celery'
-            # This tells Celery to import wsgi module and use the 'celery' attribute
-            celery_args = ['-A', 'wsgi:celery']
+            # Use full module path for Celery 5.x: 'whyis.wsgi:celery'
+            # This tells Celery to import whyis.wsgi module and use the 'celery' attribute
+            celery_args = ['-A', 'whyis.wsgi:celery']
             worker_args = ['worker', '--beat', '-l', 'INFO', '--logfile', 'run/logs/celery.log']
             command = [celery_command] + celery_args + worker_args
             celery_process = subprocess.Popen(command, stdin=subprocess.DEVNULL)
