@@ -12,6 +12,7 @@ except ImportError:
 import flask
 
 import datetime
+import uuid
 
 
 class CreateUser(Command):
@@ -35,6 +36,7 @@ class CreateUser(Command):
         user = dict(id=identifier, email=email,
                     password=encrypt_password(password),
                     givenName=fn, familyName=ln,
-                    confirmed_at=datetime.datetime.utcnow(), roles=role_objects)
+                    confirmed_at=datetime.datetime.utcnow(), roles=role_objects,
+                    fs_uniquifier=str(uuid.uuid4()))  # Required by Flask-Security-Too 4.0+
         user_obj = flask.current_app.datastore.create_user(**user)
         # print("Created user: %s (%s)" % (user, ''))#', '.join([r.identifier for r in user_obj.roles])))

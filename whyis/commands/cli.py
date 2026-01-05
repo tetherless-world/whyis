@@ -11,6 +11,7 @@ import datetime
 import flask
 import sys
 import os
+import uuid
 
 # Flask-Security-Too renamed encrypt_password to hash_password
 try:
@@ -41,7 +42,8 @@ def createuser_command(email, password, fn, ln, username, roles):
         givenName=fn, 
         familyName=ln,
         confirmed_at=datetime.datetime.utcnow(), 
-        roles=role_objects
+        roles=role_objects,
+        fs_uniquifier=str(uuid.uuid4())  # Required by Flask-Security-Too 4.0+
     )
     user_obj = flask.current_app.datastore.create_user(**user)
     click.echo(f"Created user: {username}")
