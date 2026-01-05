@@ -78,6 +78,10 @@ The Flask ecosystem has been upgraded to version 3.x with all compatible depende
 ### Other Utilities
 
 - **celery**: <6.0.0 → >=5.4.0,<6.0.0
+  - **Important**: Celery 5.x requires updated command syntax
+  - Embedded celery commands automatically use new syntax (`wsgi:celery` instead of `wsgi.celery`)
+  - If running celery manually, use: `celery -A wsgi:celery worker`
+  
 - **eventlet**: >=0.35.2 (kept, latest 0.39.1 compatible with Python 3.9+)
 - **dnspython**: 2.2.1 → 2.8+
 - **email_validator**: 1.1.3 → 2.3+
@@ -214,9 +218,43 @@ pytest --cov=whyis --cov-report=html
 - [ ] Test critical user workflows
 - [ ] Update any custom Flask-Script commands to Click (optional, Flask-Script still works)
 - [ ] Test embedded services (Celery, Fuseki) work correctly
+  - [ ] Verify embedded Celery starts successfully
+  - [ ] Check that background tasks execute properly
 - [ ] Check that all autonomous agents function properly
 - [ ] Verify nanopublication loading and management
 - [ ] Test user authentication and authorization
+
+## Celery 5.x Important Changes
+
+### Command Syntax Change
+
+Celery 5.x requires explicit attribute access syntax when specifying the app:
+
+**Old syntax (Celery 4.x):**
+```bash
+celery -A wsgi.celery worker --beat
+```
+
+**New syntax (Celery 5.x):**
+```bash
+celery -A wsgi:celery worker --beat
+```
+
+Note the change from `wsgi.celery` (dot notation) to `wsgi:celery` (colon notation).
+
+### Impact on Whyis
+
+- **Embedded Celery**: Automatically updated to use new syntax
+- **Manual Celery commands**: Use `celery -A wsgi:celery worker` when running celery manually
+- **wsgi.py**: Now always exports a `celery` variable (even in setup_mode) to prevent import errors
+
+### Troubleshooting Celery Issues
+
+If you see "'app' object has no attribute 'celery'" error:
+
+1. Ensure you're using the colon syntax: `celery -A wsgi:celery worker`
+2. Check that `wsgi.py` exports `celery` at module level
+3. Verify that the application is properly configured (check for `whyis.conf`)
 
 ## Getting Help
 

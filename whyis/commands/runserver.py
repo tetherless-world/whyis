@@ -35,10 +35,16 @@ class WhyisServer(Server):
 
     def run_celery(self):
         import sys
-        celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
-        celery_args = ['-A', 'wsgi.celery']
-        worker_args = ['--beat', '-l', 'INFO', '--logfile','run/logs/celery.log']
-        command = [celery_command] + celery_args + ['worker'] + worker_args
+        import shutil
+        # Use shutil.which to find celery in PATH, fallback to sys.argv[0] directory
+        celery_command = shutil.which('celery')
+        if not celery_command:
+            celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
+        # Use explicit colon syntax for Celery 5.x: 'wsgi:celery' instead of 'wsgi.celery'
+        # This tells Celery to import wsgi module and use the 'celery' attribute
+        celery_args = ['-A', 'wsgi:celery']
+        worker_args = ['worker', '--beat', '-l', 'INFO', '--logfile','run/logs/celery.log']
+        command = [celery_command] + celery_args + worker_args
         p = None
         p = subprocess.Popen(command, stdin=subprocess.DEVNULL)
         return p
