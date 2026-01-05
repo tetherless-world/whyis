@@ -100,29 +100,14 @@ Flask-Script is deprecated and incompatible with Flask 3.x. We've taken a two-pr
 1. **Backwards compatibility**: Added compatibility patches to make Flask-Script work with Flask 3.x
 2. **Modern CLI**: Created new Click-based CLI for future use
 
-### Using the Old `whyis` Command (Flask-Script)
+### Using the `whyis` Command (Click-based, Recommended)
 
-The existing `whyis` command continues to work with Flask 3.x thanks to compatibility patches:
+**As of this upgrade, `whyis` is now the modern Click-based CLI.** The previous Flask-Script version is available as `whyis-legacy` for compatibility.
 
 ```bash
 whyis run
 whyis createuser -u admin -p password
 whyis load data.ttl
-```
-
-These patches inject missing Flask APIs:
-- `flask._compat` module
-- `flask._request_ctx_stack` 
-- `flask._app_ctx_stack`
-
-### Using the New `whyis-cli` Command (Click-based)
-
-A new modern CLI is available using Flask's built-in Click support:
-
-```bash
-whyis-cli run
-whyis-cli createuser -u admin -p password
-whyis-cli load data.ttl
 ```
 
 **Available commands:**
@@ -137,6 +122,23 @@ whyis-cli load data.ttl
 - `sanitize` - Sanitize the knowledge graph
 - `test` - Run tests
 - `runagent` - Run a specific agent
+
+### Using the Legacy `whyis-legacy` Command (Flask-Script, Backwards Compatibility)
+
+The old Flask-Script-based command is still available as `whyis-legacy` for backwards compatibility:
+
+```bash
+whyis-legacy run
+whyis-legacy createuser -u admin -p password
+whyis-legacy load data.ttl
+```
+
+This version includes Flask 3.x compatibility patches that inject missing Flask APIs:
+- `flask._compat` module
+- `flask._request_ctx_stack` 
+- `flask._app_ctx_stack`
+
+**Note:** The `whyis-legacy` command is provided for transition purposes. New scripts and documentation should use the `whyis` command.
 
 ### Subprocess Management
 

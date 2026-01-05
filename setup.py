@@ -222,8 +222,8 @@ be managed and used.''',
     # }, exclude=['node_modules']),
     entry_points = {
         'console_scripts': [
-            'whyis=whyis.manager:main',
-            'whyis-cli=whyis.cli:main',
+            'whyis=whyis.cli:main',
+            'whyis-legacy=whyis.manager:main',
             'fuseki-server=whyis.fuseki:main',
         ],
         'rdf.plugins.resultparser' : [
