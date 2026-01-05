@@ -50,7 +50,7 @@ The Flask ecosystem has been upgraded to version 3.x with all compatible depende
   - Some plugin changes (should not affect normal usage)
   - All Whyis code works with rdflib 7.x
 
-- **oxrdflib**: 0.3.1 (kept - 0.5.0 requires Rust compiler, causes build issues)
+- **oxrdflib**: 0.3.1 → 0.3.7 (last 0.3.x version, compatible with rdflib 7.x, no Rust required)
 - **sadi**: (unversioned) → 1.0.0
 - **setlr**: >=1.0.1 (kept constraint)
 - **sdd2rdf**: >=1.3.2 → >=1.6.0
