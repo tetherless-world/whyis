@@ -41,13 +41,9 @@ class WhyisServer(Server):
         if not celery_command:
             celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
         
-        # Celery 5.x syntax: use 'wsgi:celery' (colon notation)
+        # Celery 5.x syntax: use 'wsgi' (only supports app object)
         # When run from a kgapp directory, there's a local wsgi.py that imports from whyis.wsgi
-        # When run without a local wsgi.py, fall back to whyis.wsgi:celery
-        celery_module = 'wsgi:celery'
-        if not os.path.isfile('wsgi.py'):
-            # No local wsgi.py, use full module path
-            celery_module = 'whyis.wsgi:celery'
+        celery_module = 'wsgi'
         
         celery_args = ['-A', celery_module]
         worker_args = ['worker', '--beat', '-l', 'INFO', '--logfile','run/logs/celery.log']
