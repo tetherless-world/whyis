@@ -2,7 +2,12 @@
 
 from flask_script import Command, Option
 
-from flask_security.utils import encrypt_password, verify_password
+# Flask-Security-Too renamed encrypt_password to hash_password and verify_password to verify_and_update_password
+try:
+    from flask_security.utils import hash_password as encrypt_password, verify_and_update_password as verify_password
+except ImportError:
+    # Fallback for older versions
+    from flask_security.utils import encrypt_password, verify_password
 
 import flask
 

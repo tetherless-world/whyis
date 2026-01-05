@@ -1,6 +1,7 @@
 from flask import current_app
 from flask_login import login_user
 import datetime
+import uuid
 
 from .authenticator import Authenticator
 
@@ -44,7 +45,8 @@ class JWTAuthenticator(Authenticator):
                                 givenName=payload[self.mapping['givenName']],
                                 familyName=payload[self.mapping['familyName']],
                                 confirmed_at=datetime.datetime.utcnow(),
-                                roles=role_objects)
+                                roles=role_objects,
+                                fs_uniquifier=str(uuid.uuid4()))  # Required by Flask-Security-Too 4.0+
                     # user_obj = flask.current_app.datastore.create_user(**user)
                     user_obj = current_app.datastore.create_user(**user)
                 else:

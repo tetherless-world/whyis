@@ -35,10 +35,19 @@ class WhyisServer(Server):
 
     def run_celery(self):
         import sys
-        celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
-        celery_args = ['-A', 'wsgi.celery']
-        worker_args = ['--beat', '-l', 'INFO', '--logfile','run/logs/celery.log']
-        command = [celery_command] + celery_args + ['worker'] + worker_args
+        import shutil
+        # Use shutil.which to find celery in PATH, fallback to sys.argv[0] directory
+        celery_command = shutil.which('celery')
+        if not celery_command:
+            celery_command = os.path.join(os.path.dirname(sys.argv[0]),'celery')
+        
+        # Celery 5.x syntax: use 'wsgi' (only supports app object)
+        # When run from a kgapp directory, there's a local wsgi.py that imports from whyis.wsgi
+        celery_module = 'wsgi'
+        
+        celery_args = ['-A', celery_module]
+        worker_args = ['worker', '--beat', '-l', 'INFO', '--logfile','run/logs/celery.log']
+        command = [celery_command] + celery_args + worker_args
         p = None
         p = subprocess.Popen(command, stdin=subprocess.DEVNULL)
         return p

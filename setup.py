@@ -1,5 +1,6 @@
 import os
 from distutils.core import setup
+from setuptools import find_packages
 import distutils.command.build
 import distutils.command.sdist
 import subprocess
@@ -135,7 +136,7 @@ setup(
     license = "Apache License 2.0",
     keywords = "rdf semantic knowledge graph",
     url = "http://tetherless-world.github.io/whyis",
-    packages=['whyis'],
+    packages=find_packages(),
     long_description='''Whyis is a nano-scale knowledge graph publishing,
 management, and analysis framework. Whyis aims to support domain-aware management
 and curation of knowledge from many different sources. Its primary goal is to enable
@@ -154,55 +155,52 @@ be managed and used.''',
         'requests'
     ],
     install_requires = [
-        'beautifulsoup4==4.7.1',
-        'bibtexparser==1.1.0',
-        'celery<6.0.0',
+        'beautifulsoup4>=4.12.0',
+        'bibtexparser>=1.4.0',
+        'celery>=5.4.0,<6.0.0',
         'celery_once==3.0.1',
-        'cookiecutter==1.7.3',
-        'email_validator==1.1.3',
+        'cookiecutter>=2.5.0',
+        'email_validator>=2.1.0',
         'eventlet>=0.35.2',
-        'dnspython==2.2.1',
-        'filedepot==0.10.0',
-        # Upgrade to 2.0 when Celery can use click 8.0
-        'Flask<2.0',
-        'Flask-Login==0.5.0',
+        'dnspython>=2.6.0',
+        'filedepot>=0.11.0',
+        # Flask 3.x with compatible ecosystem
+        'Flask>=3.0.0,<4.0.0',
+        'Flask-Login>=0.6.0',
         'Flask-Script==2.0.6',
-        'Flask-Security==3.0.0',
-        'itsdangerous<2.0,>=0.24',
+        'Flask-Security-Too>=5.3.0',
+        'itsdangerous>=2.1.0',
         'Flask-PluginEngine==0.5',
-        # remove version when upgrading to Flask 2.0
-        'Flask-WTF<0.15',
+        'Flask-WTF>=1.2.0',
         'html5lib==1.1',
-        'ijson==2.4',
-        'itsdangerous<2.0,>=0.24',
-        'jinja2-time',
-        'Jinja2==2.11.3',
+        'ijson>=3.2.0',
+        'jinja2-time>=0.2.0',
+        'Jinja2>=3.1.0',
         #'keepalive',
-        'lxml',
-        'Markdown',
-        'markupsafe==2.0.1',
+        'lxml>=4.9.0',
+        'Markdown>=3.4.0',
+        'markupsafe>=2.1.0',
         #'mod-wsgi==4.9.0',
-        'nltk==3.6.5',
-        'numpy',
-        'oxrdflib==0.3.1',
-        'pandas',
-        'PyJWT',
-        'pyparsing',
-        'pyshp',
-        'python-dateutil',
-        'puremagic==1.14',
-        'python-slugify',
-        'rdflib==6.3.2',
-        'rdflib-jsonld==0.6.2',
+        'nltk>=3.8.0',
+        'numpy>=1.22.0',
+        'oxrdflib==0.3.7',
+        'pandas>=2.0.0',
+        'PyJWT>=2.8.0',
+        'pyparsing>=3.0.0',
+        'pyshp>=2.3.0',
+        'python-dateutil>=2.8.0',
+        'puremagic>=1.20',
+        'python-slugify>=8.0.0',
+        'rdflib>=7.0.0',
         'redislite>=6',
-        'requests[security]',
-        'sadi',
-        'scipy',
+        'requests[security]>=2.31.0',
+        'sadi>=1.0.0',
+        'scipy>=1.10.0',
         'setlr>=1.0.1',
-        'sdd2rdf>=1.3.2',
+        'sdd2rdf>=1.6.0',
         'xlrd==2.0.1',
-        'werkzeug==2.0.3',
-        'Flask-Caching==1.10.1'
+        'werkzeug>=3.0.0',
+        'Flask-Caching>=2.1.0'
     ],
     tests_require=[
         'pytest>=7.0.0',
@@ -212,7 +210,7 @@ be managed and used.''',
         'coverage>=6.0',
         'flask-testing>=0.8.1'
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     include_package_data=True,
     # package_data=package_data_with_recursive_dirs({
     #     'whyis.fuseki': ['jars/*.jar','webapp'],
@@ -224,19 +222,22 @@ be managed and used.''',
     # }, exclude=['node_modules']),
     entry_points = {
         'console_scripts': [
-            'whyis=whyis.manager:main',
+            'whyis=whyis.cli:main',
+            'whyis-legacy=whyis.manager:main',
             'fuseki-server=whyis.fuseki:main',
         ],
         'rdf.plugins.resultparser' : [
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
         ],
         'whyis': [
-         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin',
+         'whyis_fuseki = whyis.plugins.fuseki:FusekiSearchPlugin',
+         'whyis_neptune = whyis.plugins.neptune:NeptuneSearchPlugin',
          'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
         ]
     },
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+#        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",

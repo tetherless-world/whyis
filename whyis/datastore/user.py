@@ -26,6 +26,7 @@ class User(MappedResource, UserMixin):
     password = single( auth.passwd)
     familyName = single(foaf.familyName)
     givenName = single(foaf.givenName)
+    fs_uniquifier = single(auth.fs_uniquifier)  # Required by Flask-Security-Too 4.0+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
