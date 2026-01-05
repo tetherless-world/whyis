@@ -93,7 +93,7 @@ def _remote_sparql_store_protocol(store):
     Returns:
         The store object with GSP methods attached
     """
-    def publish(data, format='text/trig;charset=utf-8'):
+    def publish(data, format='application/trig'):
         s = requests.session()
         s.keep_alive = False
 
@@ -102,7 +102,10 @@ def _remote_sparql_store_protocol(store):
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.gsp_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint,
+                   params=dict(default='true'),
+                   data=data,
+                   **kwargs)
         if not r.ok:
             print(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
 
@@ -114,7 +117,7 @@ def _remote_sparql_store_protocol(store):
         s.keep_alive = False
 
         kwargs = dict(
-            headers={'Content-Type':'text/turtle;charset=utf-8'},
+            headers={'Content-Type':'text/turtle'},
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
@@ -134,11 +137,11 @@ def _remote_sparql_store_protocol(store):
         s.keep_alive = False
 
         kwargs = dict(
-            headers={'Content-Type':'text/trig;charset=utf-8'},
+            headers={'Content-Type':'application/trig'},
         )
         if store.auth is not None:
             kwargs['auth'] = store.auth
-        r = s.post(store.gsp_endpoint, data=data, **kwargs)
+        r = s.post(store.gsp_endpoint, params=dict(default="true"), data=data, **kwargs)
         if not r.ok:
             print(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
 
@@ -209,11 +212,23 @@ def sparql_driver(config):
     return graph
 
 def create_query_store(store):
-    new_store = WhyisSPARQLStore(endpoint=store.query_endpoint,
-                                 query_endpoint=store.query_endpoint,
-#                            method="POST",
-#                            returnFormat='json',
-                            node_to_sparql=node_to_sparql)
+    """
+    Create a read-only query store from an existing store.
+    
+    This function creates a query-only store that can be used for read operations
+    without update capabilities.
+    
+    Args:
+        store: The source store object
+        
+    Returns:
+        A new store configured for queries only
+    """
+    new_store = WhyisSPARQLStore(
+        endpoint=store.query_endpoint,
+        query_endpoint=store.query_endpoint,
+        node_to_sparql=node_to_sparql
+    )
     return new_store
 
 # memory_graphs = collections.defaultdict(ConjunctiveGraph)

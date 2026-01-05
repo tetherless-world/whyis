@@ -1,10 +1,12 @@
 <template>
-  <div class="card h-100" style="max-width: 20em; ">
+  <div class="card">
     <img :src="getViewUrl(entity.thumbnail)" class="card-img-top" :alt="entity.label" v-if="entity.thumbnail" style="height: 10em; object-fit: contain;">
     <img :src="$root.$data.root_url + 'static/images/rdf_flyer.svg'" class="card-img-top" :alt="entity.label" v-else style="height: 10em; object-fit: contain;">
     <div class="card-body">
-      <h6 class="card-title">{{ entity.label }}</h6>
-      <p class="card-text ">{{ entity.description }}</p>
+      <h6 class="card-title" >{{ entity.label }}</h6>
+      <p class="card-text flex-grow-1">{{ entity.description }}</p>
+      <a :href="getViewUrl(entity.identifier, 'view')" class="card-link">View</a>
+      <a :href="getViewUrl(entity.identifier, 'explore')" class="card-link">Explore</a>
     </div>
   </div>
 </template>
