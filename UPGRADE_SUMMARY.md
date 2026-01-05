@@ -40,11 +40,15 @@ Upgraded rdflib from 6.x to 7.x (major version):
 
 ### 3. Data Processing Libraries ✅
 
-Updated all scientific and data processing packages:
+Updated all scientific and data processing packages with Python 3.8 compatibility:
 - beautifulsoup4: 4.7.1 → 4.12+
-- numpy, pandas, scipy: All updated to latest Python 3.8+ compatible
+- numpy: 1.22.0-1.24.x (constrained `<2.0.0` for Python 3.8 support)
+- pandas: 1.5.x (constrained `<2.0.0` for Python 3.8 support)
+- scipy: 1.10.x (constrained `<1.11.0` for Python 3.8 support)
 - lxml: Updated to latest
 - nltk: 3.6.5 → 3.9+
+
+**Note**: Upper bounds added for numpy, pandas, and scipy to ensure Python 3.8 compatibility (used in Docker builds).
 
 ### 4. Subprocess Management Preserved ✅
 

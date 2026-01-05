@@ -60,9 +60,18 @@ The Flask ecosystem has been upgraded to version 3.x with all compatible depende
 - **beautifulsoup4**: 4.7.1 → 4.12+
   - Backwards compatible
   
-- **numpy**: (unversioned) → latest (2.4+ for Python 3.12, compatible versions for Python 3.8-3.11)
-- **pandas**: (unversioned) → latest
-- **scipy**: (unversioned) → latest
+- **numpy**: (unversioned) → 1.22.0-1.24.x (constrained for Python 3.8 compatibility)
+  - NumPy 2.0+ requires Python 3.9+
+  - Python 3.8 users will get NumPy 1.24.x (last version supporting 3.8)
+  
+- **pandas**: (unversioned) → 1.5.x (constrained for Python 3.8 compatibility)
+  - Pandas 2.0+ requires Python 3.9+
+  - Python 3.8 users will get Pandas 1.5.x (last version supporting 3.8)
+  
+- **scipy**: (unversioned) → 1.10.x (constrained for Python 3.8 compatibility)
+  - SciPy 1.11+ requires Python 3.9+
+  - Python 3.8 users will get SciPy 1.10.x (last version supporting 3.8)
+  
 - **lxml**: (unversioned) → latest
 - **nltk**: 3.6.5 → 3.9+
 
@@ -159,6 +168,27 @@ For typical Whyis usage, there should be no breaking changes. All tests pass wit
 3. **rdflib plugin changes**: If you've written custom rdflib plugins, test with rdflib 7.x
 
 4. **Template edge cases**: Some Jinja2 3.x template behaviors may differ slightly from 2.x
+
+## Python Version Support
+
+- **Minimum Python version**: 3.8 (changed from 3.7)
+- **Tested versions**: 3.8, 3.9, 3.10, 3.11 (per CI configuration)
+- Python 3.12 should also work but is not officially tested in CI
+
+### Python 3.8 Specific Notes
+
+Some packages have dropped Python 3.8 support in their latest versions. The dependency specifications include upper bounds to ensure Python 3.8 compatibility:
+
+- **NumPy**: Constrained to `<2.0.0` (NumPy 2.0+ requires Python 3.9+)
+  - Python 3.8 will install NumPy 1.24.x (last series supporting 3.8)
+  
+- **Pandas**: Constrained to `<2.0.0` (Pandas 2.0+ requires Python 3.9+)
+  - Python 3.8 will install Pandas 1.5.x (last series supporting 3.8)
+  
+- **SciPy**: Constrained to `<1.11.0` (SciPy 1.11+ requires Python 3.9+)
+  - Python 3.8 will install SciPy 1.10.x (last series supporting 3.8)
+
+These constraints ensure the package can be installed on Python 3.8 (as used in Docker builds) while allowing newer versions on Python 3.9+.
 
 ## Testing Your Application
 
