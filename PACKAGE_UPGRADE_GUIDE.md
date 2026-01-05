@@ -228,7 +228,7 @@ pytest --cov=whyis --cov-report=html
 
 ### Command Syntax Change
 
-Celery 5.x requires explicit attribute access syntax when specifying the app, and the **full module path** must be used:
+Celery 5.x requires explicit attribute access syntax with colon notation instead of dot notation.
 
 **Old syntax (Celery 4.x):**
 ```bash
@@ -237,31 +237,44 @@ celery -A wsgi.celery worker --beat
 
 **New syntax (Celery 5.x):**
 ```bash
+celery -A wsgi:celery worker --beat
+```
+
+The key change: `wsgi.celery` (dot notation) → `wsgi:celery` (colon notation)
+
+### Running from kgapp vs Standalone
+
+**From a kgapp directory** (created by cookiecutter):
+```bash
+# The kgapp has a local wsgi.py that imports from whyis.wsgi
+celery -A wsgi:celery worker --beat
+```
+
+**From elsewhere** (no local wsgi.py):
+```bash
+# Use full module path
 celery -A whyis.wsgi:celery worker --beat
 ```
 
-Note the changes:
-1. `wsgi.celery` (dot notation) → `whyis.wsgi:celery` (colon notation with full module path)
-2. Must use full module path `whyis.wsgi` instead of just `wsgi`
-
 ### Impact on Whyis
 
-- **Embedded Celery**: Automatically updated to use new syntax
-- **Manual Celery commands**: Use `celery -A whyis.wsgi:celery worker` when running celery manually
-- **wsgi.py**: Now always exports a `celery` variable (even in setup_mode) to prevent import errors
+- **Embedded Celery**: Automatically detects local wsgi.py and uses correct syntax
+- **Cookiecutter kgapps**: Have a local `wsgi.py` that imports from `whyis.wsgi`
+- **wsgi.py**: Now always exports a `celery` variable to prevent import errors
 
 ### Troubleshooting Celery Issues
 
 If you see "The module wsgi:celery was not found" error:
 
-1. Ensure you're using the **full module path**: `celery -A whyis.wsgi:celery worker`
-2. Don't use just `wsgi:celery` - it needs the full `whyis.wsgi:celery` path
-3. Verify that the application is properly configured (check for `whyis.conf`)
+1. Check if you're in a kgapp directory with a local `wsgi.py` file
+2. If yes, use: `celery -A wsgi:celery worker`
+3. If no local wsgi.py, use: `celery -A whyis.wsgi:celery worker`
+4. Verify whyis package is installed correctly (`pip show whyis`)
 
 If you see "'app' object has no attribute 'celery'" error:
 
-1. Check that `wsgi.py` exports `celery` at module level
-2. Verify whyis package is installed correctly (`pip show whyis`)
+1. Check that `wsgi.py` (or `whyis/wsgi.py`) exports `celery` at module level
+2. Verify the application is properly configured (check for `whyis.conf`)
 
 ## Getting Help
 

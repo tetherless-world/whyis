@@ -176,9 +176,16 @@ def run_command(host, port, threaded, watch):
             if not celery_command:
                 # Fallback to sys.argv[0] path
                 celery_command = os.path.join(os.path.dirname(sys.argv[0]), 'celery')
-            # Use full module path for Celery 5.x: 'whyis.wsgi:celery'
-            # This tells Celery to import whyis.wsgi module and use the 'celery' attribute
-            celery_args = ['-A', 'whyis.wsgi:celery']
+            
+            # Celery 5.x syntax: use 'wsgi:celery' (colon notation)
+            # When run from a kgapp directory, there's a local wsgi.py that imports from whyis.wsgi
+            # When run without a local wsgi.py, fall back to whyis.wsgi:celery
+            celery_module = 'wsgi:celery'
+            if not os.path.exists('wsgi.py'):
+                # No local wsgi.py, use full module path
+                celery_module = 'whyis.wsgi:celery'
+            
+            celery_args = ['-A', celery_module]
             worker_args = ['worker', '--beat', '-l', 'INFO', '--logfile', 'run/logs/celery.log']
             command = [celery_command] + celery_args + worker_args
             celery_process = subprocess.Popen(command, stdin=subprocess.DEVNULL)
