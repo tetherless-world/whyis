@@ -10,7 +10,7 @@ This PR successfully upgrades all outdated packages in the Whyis project to thei
 - **Major version upgrades**: 5 (Flask, Jinja2, Werkzeug, rdflib, beautifulsoup4)
 - **Breaking changes for users**: 0
 - **Tests passing**: 235/235 (100%)
-- **Python versions supported**: 3.8, 3.9, 3.10, 3.11
+- **Python versions supported**: 3.9, 3.10, 3.11 (3.8 EOL)
 
 ## Key Accomplishments
 
@@ -40,15 +40,15 @@ Upgraded rdflib from 6.x to 7.x (major version):
 
 ### 3. Data Processing Libraries ✅
 
-Updated all scientific and data processing packages with Python 3.8 compatibility:
+Updated all scientific and data processing packages to latest versions:
 - beautifulsoup4: 4.7.1 → 4.12+
-- numpy: 1.22.0-1.24.x (constrained `<2.0.0` for Python 3.8 support)
-- pandas: 1.5.x (constrained `<2.0.0` for Python 3.8 support)
-- scipy: 1.10.x (constrained `<1.11.0` for Python 3.8 support)
+- numpy: 1.22.0+ (2.x compatible with Python 3.9+)
+- pandas: 2.0+ (requires Python 3.9+)
+- scipy: 1.10+ (1.11+ requires Python 3.9+)
 - lxml: Updated to latest
 - nltk: 3.6.5 → 3.9+
 
-**Note**: Upper bounds added for numpy, pandas, and scipy to ensure Python 3.8 compatibility (used in Docker builds).
+**Note**: Minimum Python version bumped to 3.9 to support latest package versions.
 
 ### 4. Subprocess Management Preserved ✅
 
@@ -84,6 +84,13 @@ Added extensive test coverage:
 
 ## Benefits
 
+### Python 3.9 Minimum Version
+- **Python 3.8 EOL**: Reached end-of-life in October 2024
+- **Package Support**: eventlet 0.36+, numpy 2.0+, pandas 2.0+, scipy 1.11+ all require Python 3.9+
+- **Active Support**: Python 3.9 supported until October 2025
+- **No Constraints**: Can use latest versions of all packages without upper bound workarounds
+- **Modern Features**: Access to Python 3.9+ features and performance improvements
+
 ### Security
 - All packages include latest security fixes
 - Dependencies actively maintained
@@ -96,7 +103,7 @@ Added extensive test coverage:
 
 ### Maintainability
 - Active package maintenance
-- Modern Python 3.8+ features available
+- Modern Python 3.9+ features available
 - Click-based CLI easier to extend
 - Better error handling
 

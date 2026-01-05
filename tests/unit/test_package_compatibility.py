@@ -174,7 +174,7 @@ class TestDataProcessing:
         """Test that pandas can be imported."""
         import pandas as pd
         assert hasattr(pd, '__version__')
-        # Pandas 2.0+ requires Python 3.9+, verify we're using compatible version for Python 3.8
+        # Pandas 2.0+ is compatible with Python 3.9+
         major_version = int(pd.__version__.split('.')[0])
         assert major_version >= 1, "pandas should be version 1.x or 2.x"
     
@@ -182,7 +182,7 @@ class TestDataProcessing:
         """Test that numpy can be imported."""
         import numpy as np
         assert hasattr(np, '__version__')
-        # NumPy 2.0+ requires Python 3.9+, verify we're using compatible version for Python 3.8
+        # NumPy 2.0+ is compatible with Python 3.9+
         major_version = int(np.__version__.split('.')[0])
         assert major_version >= 1, "numpy should be version 1.x or 2.x"
     
@@ -190,7 +190,7 @@ class TestDataProcessing:
         """Test that scipy can be imported."""
         import scipy
         assert hasattr(scipy, '__version__')
-        # SciPy 1.11+ requires Python 3.9+, verify we're using compatible version for Python 3.8
+        # SciPy 1.10+ is compatible with Python 3.9+
         version_parts = scipy.__version__.split('.')
         major = int(version_parts[0])
         minor = int(version_parts[1]) if len(version_parts) > 1 else 0

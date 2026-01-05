@@ -60,17 +60,17 @@ The Flask ecosystem has been upgraded to version 3.x with all compatible depende
 - **beautifulsoup4**: 4.7.1 → 4.12+
   - Backwards compatible
   
-- **numpy**: (unversioned) → 1.22.0-1.24.x (constrained for Python 3.8 compatibility)
+- **numpy**: (unversioned) → 1.22.0+ (2.0+ compatible with Python 3.9+)
   - NumPy 2.0+ requires Python 3.9+
-  - Python 3.8 users will get NumPy 1.24.x (last version supporting 3.8)
+  - No upper bound constraints needed with Python 3.9 minimum
   
-- **pandas**: (unversioned) → 1.5.x (constrained for Python 3.8 compatibility)
+- **pandas**: (unversioned) → 2.0+ (requires Python 3.9+)
   - Pandas 2.0+ requires Python 3.9+
-  - Python 3.8 users will get Pandas 1.5.x (last version supporting 3.8)
+  - Latest version available with Python 3.9+
   
-- **scipy**: (unversioned) → 1.10.x (constrained for Python 3.8 compatibility)
+- **scipy**: (unversioned) → 1.10+ (1.11+ requires Python 3.9+)
   - SciPy 1.11+ requires Python 3.9+
-  - Python 3.8 users will get SciPy 1.10.x (last version supporting 3.8)
+  - Latest version available with Python 3.9+
   
 - **lxml**: (unversioned) → latest
 - **nltk**: 3.6.5 → 3.9+
@@ -171,24 +171,26 @@ For typical Whyis usage, there should be no breaking changes. All tests pass wit
 
 ## Python Version Support
 
-- **Minimum Python version**: 3.8 (changed from 3.7)
-- **Tested versions**: 3.8, 3.9, 3.10, 3.11 (per CI configuration)
+- **Minimum Python version**: 3.9 (changed from 3.8)
+  - Python 3.8 reached EOL in October 2024
+  - eventlet 0.36+, numpy 2.0+, pandas 2.0+, and scipy 1.11+ all require Python 3.9+
+- **Tested versions**: 3.9, 3.10, 3.11 (per CI configuration)
 - Python 3.12 should also work but is not officially tested in CI
 
-### Python 3.8 Specific Notes
+### Why Python 3.9 Minimum?
 
-Some packages have dropped Python 3.8 support in their latest versions. The dependency specifications include upper bounds to ensure Python 3.8 compatibility:
+Python 3.8 reached end-of-life in October 2024, and many critical packages have dropped support:
 
-- **NumPy**: Constrained to `<2.0.0` (NumPy 2.0+ requires Python 3.9+)
-  - Python 3.8 will install NumPy 1.24.x (last series supporting 3.8)
-  
-- **Pandas**: Constrained to `<2.0.0` (Pandas 2.0+ requires Python 3.9+)
-  - Python 3.8 will install Pandas 1.5.x (last series supporting 3.8)
-  
-- **SciPy**: Constrained to `<1.11.0` (SciPy 1.11+ requires Python 3.9+)
-  - Python 3.8 will install SciPy 1.10.x (last series supporting 3.8)
+- **eventlet**: Version 0.36+ requires Python 3.9+
+- **NumPy**: Version 2.0+ requires Python 3.9+
+- **Pandas**: Version 2.0+ requires Python 3.9+
+- **SciPy**: Version 1.11+ requires Python 3.9+
 
-These constraints ensure the package can be installed on Python 3.8 (as used in Docker builds) while allowing newer versions on Python 3.9+.
+Moving to Python 3.9 allows using the latest versions of all dependencies without constraints, providing:
+- Latest security fixes
+- Better performance
+- Modern Python features
+- Active upstream support (Python 3.9 EOL: October 2025)
 
 ## Testing Your Application
 
