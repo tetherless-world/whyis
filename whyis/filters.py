@@ -115,6 +115,8 @@ def configure(app):
             if offset is not None:
                 query = query + '\n offset %s' % int(offset)
         results = graph.query(query, **params)
+        if type(results) == tuple:
+            raise rdflib.exceptions.ParserError(results[1])
         if raw:
             return results
         elif as_graph:
