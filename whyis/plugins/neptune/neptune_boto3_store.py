@@ -237,25 +237,121 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
         
         return response
     
-    def query(self, query, initNs=None, initBindings=None, queryGraph=None, DEBUG=False):
+    def query(self, query, default_graph=None, named_graph=None):
         """
-        Execute a SPARQL query with AWS authentication.
+        Execute a SPARQL query with AWS SigV4 authentication.
         
-        This method overrides the parent's query method to ensure proper
-        authentication using boto3 credentials.
+        Overrides SPARQLConnector.query() to use authenticated HTTP requests.
         
         Args:
             query (str): SPARQL query string
-            initNs (dict): Initial namespace bindings
-            initBindings (dict): Initial variable bindings
-            queryGraph: Query graph context
-            DEBUG (bool): Enable debug mode
+            default_graph: Default graph URI
+            named_graph: Named graph URI
             
         Returns:
-            Query results
+            Query results from rdflib Result.parse()
         """
-        # The parent class will use the connector which we need to patch
-        # For now, let the parent handle it but with our signed requests
-        # This requires proper integration with the SPARQLConnector
-        return super().query(query, initNs=initNs, initBindings=initBindings,
-                           queryGraph=queryGraph, DEBUG=DEBUG)
+        from urllib.parse import urlencode
+        from io import BytesIO
+        from rdflib.query import Result
+        
+        if not self.query_endpoint:
+            raise ValueError("Query endpoint not set!")
+        
+        # Build query parameters
+        params = {}
+        if default_graph is not None:
+            from rdflib.term import BNode
+            if not isinstance(default_graph, BNode):
+                params["default-graph-uri"] = default_graph
+        
+        # Build headers
+        headers = {"Accept": self.response_mime_types()}
+        
+        # Make authenticated request based on method
+        if self.method == "POST":
+            headers["Content-Type"] = "application/sparql-query"
+            qsa = "?" + urlencode(params) if params else ""
+            url = self.query_endpoint + qsa
+            
+            response = self._request(
+                method="POST",
+                url=url,
+                headers=headers,
+                body=query.encode('utf-8')
+            )
+        else:  # GET or POST_FORM
+            params["query"] = query
+            qsa = "?" + urlencode(params)
+            url = self.query_endpoint + qsa
+            
+            if self.method == "GET":
+                response = self._request(
+                    method="GET",
+                    url=url,
+                    headers=headers
+                )
+            else:  # POST_FORM
+                headers["Content-Type"] = "application/x-www-form-urlencoded"
+                response = self._request(
+                    method="POST",
+                    url=self.query_endpoint,
+                    headers=headers,
+                    body=urlencode(params).encode('utf-8')
+                )
+        
+        # Handle HTTP errors
+        if not response.ok:
+            raise IOError(f"HTTP Error {response.status_code}: {response.text}")
+        
+        # Parse the response
+        content_type = response.headers.get('Content-Type', 'application/sparql-results+xml')
+        if ';' in content_type:
+            content_type = content_type.split(';')[0]
+        
+        return Result.parse(BytesIO(response.content), content_type=content_type)
+    
+    def update(self, query, default_graph=None, named_graph=None):
+        """
+        Execute a SPARQL update with AWS SigV4 authentication.
+        
+        Overrides SPARQLConnector.update() to use authenticated HTTP requests.
+        
+        Args:
+            query (str): SPARQL update string
+            default_graph: Default graph URI
+            named_graph: Named graph URI
+        """
+        from urllib.parse import urlencode
+        
+        if not self.update_endpoint:
+            raise ValueError("Update endpoint not set!")
+        
+        # Build parameters
+        params = {}
+        if default_graph is not None:
+            params["using-graph-uri"] = default_graph
+        if named_graph is not None:
+            params["using-named-graph-uri"] = named_graph
+        
+        # Build headers
+        headers = {
+            "Accept": self.response_mime_types(),
+            "Content-Type": "application/sparql-update; charset=UTF-8"
+        }
+        
+        # Build URL with parameters
+        qsa = "?" + urlencode(params) if params else ""
+        url = self.update_endpoint + qsa
+        
+        # Make authenticated request
+        response = self._request(
+            method="POST",
+            url=url,
+            headers=headers,
+            body=query.encode('utf-8')
+        )
+        
+        # Handle HTTP errors
+        if not response.ok:
+            raise IOError(f"HTTP Error {response.status_code}: {response.text}")
