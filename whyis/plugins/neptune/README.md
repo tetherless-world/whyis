@@ -2,15 +2,37 @@
 
 ## Overview
 
-This plugin extends the Neptune full-text search capabilities to include AWS IAM authentication support for Amazon Neptune databases. It registers a "neptune" database driver that uses AWS SigV4 request signing for all SPARQL queries, updates, and Graph Store Protocol operations.
+This plugin provides AWS IAM authentication support for Amazon Neptune databases. It includes two authentication mechanisms:
+
+1. **neptune_driver**: Uses aws-requests-auth for authentication (existing implementation)
+2. **NeptuneBoto3Store**: RDFlib store subclass using boto3 with dynamic instance metadata support (new)
+
+The plugin registers a "neptune" database driver that uses AWS SigV4 request signing for all SPARQL queries, updates, and Graph Store Protocol operations. It also extends Neptune full-text search capabilities.
 
 ## Features
 
 - **AWS IAM Authentication**: Uses AWS SigV4 request signing for secure access to Neptune databases
 - **Automatic Credential Management**: Leverages boto3 for AWS credential discovery (environment variables, IAM roles, etc.)
+- **Dynamic Instance Metadata**: Automatically retrieves credentials from EC2 instance metadata when available
 - **Full Text Search Support**: Passes authentication through to Neptune's full-text search queries
 - **Graph Store Protocol**: Supports authenticated PUT, POST, DELETE, and publish operations
 - **Configuration-Based**: Easy setup via Flask configuration
+
+## Authentication Options
+
+### Option 1: neptune_driver (Existing)
+
+Uses the existing `neptune_driver` function with aws-requests-auth. Suitable for applications already using this approach.
+
+**Dependencies**: `aws_requests_auth`
+
+### Option 2: NeptuneBoto3Store (New - Recommended)
+
+A new RDFlib SPARQL store subclass that uses boto3 for credential management with automatic instance metadata support. Recommended for new projects.
+
+**Dependencies**: `boto3`, `botocore`
+
+**See**: [NeptuneBoto3Store.md](NeptuneBoto3Store.md) for detailed documentation.
 
 ## Installation and Setup
 
@@ -28,10 +50,17 @@ PLUGINENGINE_PLUGINS = ['neptune', 'other_plugin']
 
 ### 2. Install Required Dependencies
 
-The Neptune plugin with IAM authentication requires additional Python packages that are not included in the core Whyis dependencies. Add these to your knowledge graph application's `requirements.txt`:
+#### For neptune_driver (Existing):
 
 ```
 aws_requests_auth
+```
+
+#### For NeptuneBoto3Store (New):
+
+```
+boto3
+botocore
 ```
 
 Then install them in your application environment:
@@ -40,7 +69,7 @@ Then install them in your application environment:
 pip install -r requirements.txt
 ```
 
-**Note**: This dependency is only needed if you're using Neptune with IAM authentication. It is not required for core Whyis functionality.
+**Note**: These dependencies are only needed if you're using Neptune with IAM authentication. They are not required for core Whyis functionality.
 
 ## Configuration
 
@@ -155,7 +184,41 @@ The Neptune driver ensures that AWS credentials are attached to the full-text se
 
 ## API
 
-### Neptune Driver Function
+### Using NeptuneBoto3Store Directly (Recommended for New Projects)
+
+For direct use of the boto3-based store with instance metadata support:
+
+```python
+from rdflib import ConjunctiveGraph
+from whyis.plugins.neptune import NeptuneBoto3Store
+
+# Create store with automatic instance metadata retrieval
+store = NeptuneBoto3Store(
+    query_endpoint='https://neptune.amazonaws.com:8182/sparql',
+    update_endpoint='https://neptune.amazonaws.com:8182/sparql',
+    region_name='us-east-1'
+)
+
+# Create graph
+graph = ConjunctiveGraph(store)
+
+# Use the graph for SPARQL operations
+results = graph.query("""
+    SELECT ?s ?p ?o WHERE {
+        ?s ?p ?o .
+    } LIMIT 10
+""")
+```
+
+**Key Features**:
+- Automatic credential retrieval from EC2 instance metadata
+- Fallback to boto3 session credentials
+- Dynamic credential refresh
+- No explicit credential configuration needed on EC2
+
+See [NeptuneBoto3Store.md](NeptuneBoto3Store.md) for complete documentation.
+
+### Neptune Driver Function (Existing)
 
 ```python
 from whyis.plugins.neptune.plugin import neptune_driver
