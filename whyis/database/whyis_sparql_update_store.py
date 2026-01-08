@@ -31,3 +31,48 @@ class WhyisSPARQLUpdateStore(SPARQLUpdateStore):
             query = re.sub(r'where\s+{', 'WHERE {%s' % values, query, count=1, flags=re.I)
         return SPARQLUpdateStore.query(self, query, initNs=initNs, initBindings=None,
                                  queryGraph=queryGraph, DEBUG=DEBUG)
+    
+    def raw_sparql_request(self, method, params=None, data=None, headers=None):
+        """
+        Make a raw SPARQL endpoint request with authentication.
+        
+        This method is used by the SPARQL blueprint to proxy requests.
+        For stores with HTTP Basic Auth, it uses the store's auth attribute.
+        
+        Args:
+            method (str): HTTP method ('GET' or 'POST')
+            params (dict): Query parameters
+            data: Request body data
+            headers (dict): Request headers
+            
+        Returns:
+            Response object from requests library
+        """
+        import requests
+        from urllib.parse import urlencode
+        
+        # Use query_endpoint for all SPARQL requests
+        url = self.query_endpoint
+        
+        # Build URL with parameters if any
+        if params:
+            qsa = "?" + urlencode(params)
+            url = url + qsa
+        
+        # Prepare headers
+        request_headers = dict(headers) if headers else {}
+        
+        # Make request with authentication if available
+        kwargs = {}
+        if hasattr(self, 'auth') and self.auth is not None:
+            kwargs['auth'] = self.auth
+        
+        response = requests.request(
+            method=method.upper(),
+            url=url,
+            headers=request_headers,
+            data=data,
+            **kwargs
+        )
+        
+        return response

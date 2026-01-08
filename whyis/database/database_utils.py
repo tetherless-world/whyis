@@ -51,11 +51,22 @@ def _local_sparql_store_protocol(store):
 
     def delete(c):
         store.remove((None, None, None), c)
+    
+    def raw_sparql_request(self, method, params=None, data=None, headers=None):
+        """
+        Local stores don't support raw SPARQL endpoint requests.
+        This method is here for interface compatibility but raises an error.
+        """
+        raise NotImplementedError(
+            "Local stores (memory, oxigraph) don't support raw SPARQL endpoint requests. "
+            "Use the store's query() method instead."
+        )
         
     store.publish = publish
     store.put = put
     store.delete = delete
     store.post = post
+    store.raw_sparql_request = raw_sparql_request
     return store
 
 @driver(name="memory")
@@ -235,13 +246,13 @@ def create_query_store(store):
 
 def engine_from_config(config):
     engine = None
-    if "_endpoint" in config:
+    if '_type' in config:
+        t = config['_type']
+        engine = drivers[t](config)
+    elif "_endpoint" in config:
         engine = drivers['sparql'](config)
     elif '_store' in config:
         engine = drivers['oxigraph'](config)
-    elif '_memory' in config:
-        engine = drivers['memory'](config)
     else:
-        t = config['_type']
-        engine = drivers[t](config)
+        engine = drivers['memory'](config)
     return engine
