@@ -249,11 +249,12 @@ Response: {response.text[:1000]}'''
                
         return response
     
-    def query(self, query, default_graph=None, named_graph=None):
+    def _connector_query(self, query, default_graph=None, named_graph=None):
         """
-        Execute a SPARQL query with AWS SigV4 authentication.
+        Execute a SPARQL query at the connector level with AWS SigV4 authentication.
         
-        Overrides SPARQLConnector.query() to use authenticated HTTP requests.
+        This is the low-level method that makes the actual HTTP request.
+        It's called by _query() which is called by the high-level query() method.
         
         Args:
             query (str): SPARQL query string
@@ -329,11 +330,21 @@ Response: {response.text[:1000]}'''
         
         return Result.parse(BytesIO(response.content), content_type=content_type)
     
-    def update(self, query, default_graph=None, named_graph=None):
+    def _query(self, *args, **kwargs):
         """
-        Execute a SPARQL update with AWS SigV4 authentication.
+        Override SPARQLStore._query to use authenticated requests.
         
-        Overrides SPARQLConnector.update() to use authenticated HTTP requests.
+        This method increments the query counter and calls the connector-level query.
+        """
+        self._queries += 1
+        return self._connector_query(*args, **kwargs)
+    
+    def _connector_update(self, query, default_graph=None, named_graph=None):
+        """
+        Execute a SPARQL update at the connector level with AWS SigV4 authentication.
+        
+        This is the low-level method that makes the actual HTTP request.
+        It's called by _update() which is called by the high-level update() method.
         
         Args:
             query (str): SPARQL update string
@@ -379,6 +390,15 @@ Response: {response.text[:1000]}'''
             error_msg += f"Response: {response.text[:500]}"
             logger.error(error_msg)
             raise IOError(error_msg)
+    
+    def _update(self, update):
+        """
+        Override SPARQLUpdateStore._update to use authenticated requests.
+        
+        This method increments the update counter and calls the connector-level update.
+        """
+        self._updates += 1
+        self._connector_update(update)
     
     def raw_sparql_request(self, method, params=None, data=None, headers=None):
         """
