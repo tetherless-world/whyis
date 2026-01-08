@@ -174,9 +174,11 @@ def neptune_driver(config):
     region_name = config.get("_region")
     if not region_name:
         raise ValueError("Neptune driver requires '_region' configuration parameter")
-    
+
+
     service_name = config.get("_service_name", "neptune-db")
     endpoint_url = config["_endpoint"]
+    print(f"creating neptune driver against {endpoint_url}")
     
     # Get configuration options
     use_temp_graph = config.get("_use_temp_graph", True)
@@ -571,7 +573,8 @@ class NeptuneSearchPlugin(Plugin):
         """
         # Import and register the Neptune driver
         from whyis.database.database_utils import driver, drivers
-        
+
+        print('initializing neptune plugin')
         # Register the Neptune driver
         if 'neptune' not in drivers:
             drivers['neptune'] = neptune_driver

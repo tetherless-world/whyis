@@ -246,13 +246,13 @@ def create_query_store(store):
 
 def engine_from_config(config):
     engine = None
-    if "_endpoint" in config:
+    if '_type' in config:
+        t = config['_type']
+        engine = drivers[t](config)
+    elif "_endpoint" in config:
         engine = drivers['sparql'](config)
     elif '_store' in config:
         engine = drivers['oxigraph'](config)
-    elif '_memory' in config:
-        engine = drivers['memory'](config)
     else:
-        t = config['_type']
-        engine = drivers[t](config)
+        engine = drivers['memory'](config)
     return engine
