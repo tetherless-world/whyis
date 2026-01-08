@@ -206,6 +206,23 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
         
         return dict(request.headers)
     
+    def response_mime_types(self):
+        """
+        Return the MIME types to use in Accept headers for SPARQL queries.
+        
+        This method ensures that NeptuneBoto3Store always has this method available,
+        even if there are issues with the MRO or inheritance chain.
+        
+        Returns:
+            str: Comma-separated list of MIME types
+        """
+        # Try to use parent class implementation first
+        try:
+            return super().response_mime_types()
+        except AttributeError:
+            # Fallback to default MIME types if parent doesn't have it
+            return "application/sparql-results+xml, application/sparql-results+json, application/rdf+xml"
+    
     def _request(self, method, url, headers=None, body=None):
         """
         Make an authenticated HTTP request to Neptune.
@@ -239,14 +256,22 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
                 data=body
             )
             
+            # Handle HTTP errors (non-200 status codes don't trigger exceptions)
+            if response.status_code != 200:
+                error_msg = f"Neptune request failed: {method} {url}\n"
+                error_msg += f"Status code: {response.status_code}\n"
+                error_msg += f"Response: {response.text[:1000]}"
+                logger.error(error_msg)
+                raise IOError(error_msg)
+            
             return response
+        except IOError:
+            # Re-raise IOError as-is (from our HTTP error handling above)
+            raise
         except Exception as e:
-            # Improve error reporting
+            # Handle other exceptions (network errors, etc.)
             error_msg = f"Neptune request failed: {method} {url}\n"
-            error_msg += f"Error: {type(e).__name__}: {str(e)}\n"
-            if hasattr(e, 'response') and e.response is not None:
-                error_msg += f"Status code: {e.response.status_code}\n"
-                error_msg += f"Response: {e.response.text[:500]}"
+            error_msg += f"Error: {type(e).__name__}: {str(e)}"
             logger.error(error_msg)
             raise IOError(error_msg) from e
     

@@ -176,8 +176,7 @@ class TestNeptuneBoto3ConnectorUpdate:
         frozen_creds.access_key = 'test_key'
         frozen_creds.secret_key = 'test_secret'
         frozen_creds.token = None
-        mock_credentials.get_frozen_credentials.return_value = frozen_creds
-        
+        mock_credentials.get_frozen_credentials.return_value = frozen_creds        
         mock_boto_session = Mock()
         mock_boto_session.get_credentials.return_value = mock_credentials
         mock_boto_session_class.return_value = mock_boto_session
@@ -305,3 +304,126 @@ class TestNeptuneBoto3StoreQueryShortcuts:
         
         # Verify counter was incremented
         assert store._updates == initial_count + 1
+
+
+class TestNeptuneBoto3ResponseMimeTypes:
+    """Test the response_mime_types() method."""
+    
+    @patch('boto3.Session')
+    def test_response_mime_types_method_exists(self, mock_boto_session_class):
+        """Test that response_mime_types() method is always available."""
+        # Setup mocks
+        mock_credentials = Mock()
+        frozen_creds = Mock()
+        frozen_creds.access_key = 'test_key'
+        frozen_creds.secret_key = 'test_secret'
+        frozen_creds.token = None
+        mock_credentials.get_frozen_credentials.return_value = frozen_creds
+        
+        mock_boto_session = Mock()
+        mock_boto_session.get_credentials.return_value = mock_credentials
+        mock_boto_session_class.return_value = mock_boto_session
+        
+        # Create store
+        store = NeptuneBoto3Store(
+            query_endpoint='https://neptune.example.com/sparql',
+            update_endpoint='https://neptune.example.com/sparql',
+            region_name='us-east-1',
+            use_instance_metadata=False
+        )
+        
+        # Verify the method exists
+        assert hasattr(store, 'response_mime_types')
+        assert callable(store.response_mime_types)
+        
+        # Verify it returns a string
+        result = store.response_mime_types()
+        assert isinstance(result, str)
+        assert len(result) > 0
+        
+        # Verify it contains valid MIME types
+        assert 'sparql' in result.lower() or 'xml' in result.lower() or 'json' in result.lower()
+
+
+class TestNeptuneBoto3RequestErrorHandling:
+    """Test the _request() method's error handling."""
+    
+    @patch('requests.Session')
+    @patch('boto3.Session')
+    def test_request_handles_http_error_without_exception(self, mock_boto_session_class, mock_requests_session_class):
+        """Test that _request() handles HTTP errors that don't trigger exceptions."""
+        # Setup mocks
+        mock_credentials = Mock()
+        frozen_creds = Mock()
+        frozen_creds.access_key = 'test_key'
+        frozen_creds.secret_key = 'test_secret'
+        frozen_creds.token = None
+        mock_credentials.get_frozen_credentials.return_value = frozen_creds
+        
+        mock_boto_session = Mock()
+        mock_boto_session.get_credentials.return_value = mock_credentials
+        mock_boto_session_class.return_value = mock_boto_session
+        
+        # Setup requests mock to return HTTP error (non-200 status)
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.text = 'Internal Server Error: Database timeout'
+        
+        mock_requests_session = Mock()
+        mock_requests_session.request.return_value = mock_response
+        mock_requests_session_class.return_value = mock_requests_session
+        
+        # Create store
+        store = NeptuneBoto3Store(
+            query_endpoint='https://neptune.example.com/sparql',
+            update_endpoint='https://neptune.example.com/sparql',
+            region_name='us-east-1',
+            use_instance_metadata=False
+        )
+        
+        # Attempt to make a request that will get HTTP error
+        with pytest.raises(IOError) as exc_info:
+            store._request('GET', 'https://neptune.example.com/sparql?query=test')
+        
+        # Verify error message contains HTTP status and response
+        error_msg = str(exc_info.value)
+        assert '500' in error_msg
+        assert 'Internal Server Error' in error_msg or 'Database timeout' in error_msg
+    
+    @patch('requests.Session')
+    @patch('boto3.Session')
+    def test_request_handles_network_exception(self, mock_boto_session_class, mock_requests_session_class):
+        """Test that _request() handles network exceptions properly."""
+        # Setup mocks
+        mock_credentials = Mock()
+        frozen_creds = Mock()
+        frozen_creds.access_key = 'test_key'
+        frozen_creds.secret_key = 'test_secret'
+        frozen_creds.token = None
+        mock_credentials.get_frozen_credentials.return_value = frozen_creds
+        
+        mock_boto_session = Mock()
+        mock_boto_session.get_credentials.return_value = mock_credentials
+        mock_boto_session_class.return_value = mock_boto_session
+        
+        # Setup requests mock to raise an exception
+        import requests
+        mock_requests_session = Mock()
+        mock_requests_session.request.side_effect = requests.ConnectionError("Network unreachable")
+        mock_requests_session_class.return_value = mock_requests_session
+        
+        # Create store
+        store = NeptuneBoto3Store(
+            query_endpoint='https://neptune.example.com/sparql',
+            update_endpoint='https://neptune.example.com/sparql',
+            region_name='us-east-1',
+            use_instance_metadata=False
+        )
+        
+        # Attempt to make a request that will raise exception
+        with pytest.raises(IOError) as exc_info:
+            store._request('GET', 'https://neptune.example.com/sparql?query=test')
+        
+        # Verify error message contains exception info
+        error_msg = str(exc_info.value)
+        assert 'ConnectionError' in error_msg or 'Network unreachable' in error_msg
