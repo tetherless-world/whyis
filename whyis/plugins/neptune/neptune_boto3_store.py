@@ -220,22 +220,35 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
             
         Returns:
             Response object from requests library
+            
+        Raises:
+            IOError: If the request fails with detailed error information
         """
         import requests
         
-        # Sign the request
-        signed_headers = self._sign_request(method, url, headers, body)
-        
-        # Make the request
-        session = requests.Session()
-        response = session.request(
-            method=method,
-            url=url,
-            headers=signed_headers,
-            data=body
-        )
-        
-        return response
+        try:
+            # Sign the request
+            signed_headers = self._sign_request(method, url, headers, body)
+            
+            # Make the request
+            session = requests.Session()
+            response = session.request(
+                method=method,
+                url=url,
+                headers=signed_headers,
+                data=body
+            )
+            
+            return response
+        except Exception as e:
+            # Improve error reporting
+            error_msg = f"Neptune request failed: {method} {url}\n"
+            error_msg += f"Error: {type(e).__name__}: {str(e)}\n"
+            if hasattr(e, 'response') and e.response is not None:
+                error_msg += f"Status code: {e.response.status_code}\n"
+                error_msg += f"Response: {e.response.text[:500]}"
+            logger.error(error_msg)
+            raise IOError(error_msg) from e
     
     def query(self, query, default_graph=None, named_graph=None):
         """
@@ -300,9 +313,15 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
                     body=urlencode(params).encode('utf-8')
                 )
         
-        # Handle HTTP errors
+        # Handle HTTP errors with improved reporting
         if not response.ok:
-            raise IOError(f"HTTP Error {response.status_code}: {response.text}")
+            error_msg = f"Neptune SPARQL query failed\n"
+            error_msg += f"Status: {response.status_code}\n"
+            error_msg += f"URL: {url}\n"
+            error_msg += f"Query: {query[:200]}...\n" if len(query) > 200 else f"Query: {query}\n"
+            error_msg += f"Response: {response.text[:500]}"
+            logger.error(error_msg)
+            raise IOError(error_msg)
         
         # Parse the response
         content_type = response.headers.get('Content-Type', 'application/sparql-results+xml')
@@ -352,6 +371,58 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
             body=query.encode('utf-8')
         )
         
-        # Handle HTTP errors
+        # Handle HTTP errors with improved reporting
         if not response.ok:
-            raise IOError(f"HTTP Error {response.status_code}: {response.text}")
+            error_msg = f"Neptune SPARQL update failed\n"
+            error_msg += f"Status: {response.status_code}\n"
+            error_msg += f"URL: {url}\n"
+            error_msg += f"Update: {query[:200]}...\n" if len(query) > 200 else f"Update: {query}\n"
+            error_msg += f"Response: {response.text[:500]}"
+            logger.error(error_msg)
+            raise IOError(error_msg)
+    
+    def raw_sparql_request(self, method, params=None, data=None, headers=None):
+        """
+        Make a raw authenticated SPARQL endpoint request.
+        
+        This method is used by the SPARQL blueprint to proxy requests with authentication.
+        It handles both GET and POST requests with proper AWS SigV4 signing.
+        
+        Args:
+            method (str): HTTP method ('GET' or 'POST')
+            params (dict): Query parameters
+            data: Request body data
+            headers (dict): Request headers
+            
+        Returns:
+            Response object from requests library
+        """
+        from urllib.parse import urlencode
+        
+        # Use query_endpoint for all SPARQL requests
+        url = self.query_endpoint
+        
+        # Build URL with parameters if any
+        if params:
+            qsa = "?" + urlencode(params)
+            url = url + qsa
+        
+        # Prepare headers
+        request_headers = dict(headers) if headers else {}
+        
+        # Make authenticated request
+        try:
+            response = self._request(
+                method=method.upper(),
+                url=url,
+                headers=request_headers,
+                body=data
+            )
+            return response
+        except Exception as e:
+            error_msg = f"Neptune raw SPARQL request failed\n"
+            error_msg += f"Method: {method}\n"
+            error_msg += f"URL: {url}\n"
+            error_msg += f"Error: {str(e)}"
+            logger.error(error_msg)
+            raise

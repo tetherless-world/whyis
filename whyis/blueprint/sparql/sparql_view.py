@@ -17,31 +17,59 @@ def sparql_view():
             has_query = True
     if request.method == 'GET' and not has_query:
         return redirect(url_for('.sparql_form'))
-    #print self.db.store.query_endpoint
-    if request.method == 'GET':
-        headers = {}
-        headers.update(request.headers)
-        if 'Content-Length' in headers:
-            del headers['Content-Length']
-        print('getting')
-        req = requests.get(current_app.db.store.query_endpoint,
-                           headers = headers, params=request.args, stream=True)
-        print("gotten")
-    elif request.method == 'POST':
-        if 'application/sparql-update' in request.headers['content-type']:
-            return "Update not allowed.", 403
-        if 'update' in request.values:
-            return "Update not allowed.", 403
-        #print(request.get_data())
-        print("posting")
-        req = requests.post(current_app.db.store.query_endpoint,# data=request.values,
-                            headers = request.headers, data=request.values, stream=True)
-        print("posted")
-    #print self.db.store.query_endpoint
-    #print req.status_code
-    print("making response")
+    
+    # Check if store has raw_sparql_request method (all drivers should now have this)
+    if hasattr(current_app.db.store, 'raw_sparql_request'):
+        # Use the store's authenticated request method
+        try:
+            if request.method == 'GET':
+                headers = {}
+                headers.update(request.headers)
+                if 'Content-Length' in headers:
+                    del headers['Content-Length']
+                
+                req = current_app.db.store.raw_sparql_request(
+                    method='GET',
+                    params=dict(request.args),
+                    headers=headers
+                )
+            elif request.method == 'POST':
+                if 'application/sparql-update' in request.headers.get('content-type', ''):
+                    return "Update not allowed.", 403
+                if 'update' in request.values:
+                    return "Update not allowed.", 403
+                
+                req = current_app.db.store.raw_sparql_request(
+                    method='POST',
+                    headers=dict(request.headers),
+                    data=request.get_data()
+                )
+        except NotImplementedError as e:
+            # Local stores don't support proxying - return error
+            return str(e), 501
+        except Exception as e:
+            # Log and return error
+            current_app.logger.error(f"SPARQL request failed: {str(e)}")
+            return f"SPARQL request failed: {str(e)}", 500
+    else:
+        # Fallback for stores without raw_sparql_request (should not happen)
+        # This is the old behavior - direct HTTP request without authentication
+        if request.method == 'GET':
+            headers = {}
+            headers.update(request.headers)
+            if 'Content-Length' in headers:
+                del headers['Content-Length']
+            req = requests.get(current_app.db.store.query_endpoint,
+                               headers=headers, params=request.args, stream=True)
+        elif request.method == 'POST':
+            if 'application/sparql-update' in request.headers.get('content-type', ''):
+                return "Update not allowed.", 403
+            if 'update' in request.values:
+                return "Update not allowed.", 403
+            req = requests.post(current_app.db.store.query_endpoint,
+                                headers=request.headers, data=request.values, stream=True)
+    
+    # Return the response
     response = Response(FileLikeFromIter(req.iter_content()),
-                        content_type = req.headers['content-type'])
-    print("returning")
-    #response.headers[con(req.headers)
+                        content_type=req.headers.get('content-type', 'application/sparql-results+xml'))
     return response, req.status_code
