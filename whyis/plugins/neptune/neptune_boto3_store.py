@@ -226,28 +226,29 @@ class NeptuneBoto3Store(WhyisSPARQLUpdateStore):
         """
         import requests
         
-        # Sign the request
-        signed_headers = self._sign_request(method, url, headers, body)
-
-        print (url, body)
-        # Make the request
-        session = requests.Session()
-        response = session.request(
-            method=method,
-            url=url,
-            headers=signed_headers,
-            data=body
-        )
-
-        if response.status_code != 200: 
-            error_msg = f'''Neptune request failed: {method} {url}
-Status code: {e.response.status_code}
-Headers: {signed_headers}
-Body: {body}
-Response: {response.text[:1000]}'''
-            print(error_msg)
-               
-        return response
+        try:
+            # Sign the request
+            signed_headers = self._sign_request(method, url, headers, body)
+            
+            # Make the request
+            session = requests.Session()
+            response = session.request(
+                method=method,
+                url=url,
+                headers=signed_headers,
+                data=body
+            )
+            
+            return response
+        except Exception as e:
+            # Improve error reporting
+            error_msg = f"Neptune request failed: {method} {url}\n"
+            error_msg += f"Error: {type(e).__name__}: {str(e)}\n"
+            if hasattr(e, 'response') and e.response is not None:
+                error_msg += f"Status code: {e.response.status_code}\n"
+                error_msg += f"Response: {e.response.text[:500]}"
+            logger.error(error_msg)
+            raise IOError(error_msg) from e
     
     def _connector_query(self, query, default_graph=None, named_graph=None):
         """
