@@ -1,10 +1,10 @@
-{{"
+{{("
   SELECT ?identifier (sample(?d) as ?description) (0.9 as ?score)
   WHERE {
 
     SERVICE fts:search {
-        fts:config fts:query '''"+args['query']+"''' .
-        fts:config fts:endpoint '"+app.config.get('NEPTUNE_FTS_ENDPOINT')+"' .
+        fts:config fts:query '''"~args['query']~"''' .
+        fts:config fts:endpoint '"~app.config.get('NEPTUNE_FTS_ENDPOINT')~"' .
         fts:config fts:queryType 'match' .
         fts:config fts:field '*' .
         fts:config fts:return ?identifier .
@@ -17,4 +17,4 @@
           filter(lang(?d) = '' || langMatches(lang(?d), 'en'))
       }
   } group by ?identifier
-  LIMIT 1000" | query | iter_labelize("identifier","label") | tojson }}
+  LIMIT 1000") | query | iter_labelize("identifier","label") | tojson }}
