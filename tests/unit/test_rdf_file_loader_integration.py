@@ -130,13 +130,14 @@ class TestRDFFileLoaderS3:
         mock_boto3_module = Mock()
         mock_boto3_module.client.return_value = mock_s3_client
         
-        # Mock file download
+        # Mock file download - write directly to the file path
         call_count = {'count': 0}
-        def mock_download(bucket, key, fileobj):
+        def mock_download_file(bucket, key, filename):
             call_count['count'] += 1
-            fileobj.write(test_rdf_turtle.encode('utf-8'))
+            with open(filename, 'w') as f:
+                f.write(test_rdf_turtle)
         
-        mock_s3_client.download_fileobj = mock_download
+        mock_s3_client.download_file = mock_download_file
         
         with patch.dict('sys.modules', {'boto3': mock_boto3_module}):
             graph = agent._load_from_s3('s3://test-bucket/data.ttl')
@@ -160,13 +161,14 @@ class TestRDFFileLoaderS3:
         mock_boto3_module = Mock()
         mock_boto3_module.client.return_value = mock_s3_client
         
-        def mock_download(bucket, key, fileobj):
+        def mock_download_file(bucket, key, filename):
             # Verify bucket and key are parsed correctly
             assert bucket == 'my-bucket'
             assert key == 'path/to/file.ttl'
-            fileobj.write(test_rdf_turtle.encode('utf-8'))
+            with open(filename, 'w') as f:
+                f.write(test_rdf_turtle)
         
-        mock_s3_client.download_fileobj = mock_download
+        mock_s3_client.download_file = mock_download_file
         
         with patch.dict('sys.modules', {'boto3': mock_boto3_module}):
             graph = agent._load_from_s3('s3://my-bucket/path/to/file.ttl')
@@ -180,10 +182,11 @@ class TestRDFFileLoaderS3:
         mock_boto3_module = Mock()
         mock_boto3_module.client.return_value = mock_s3_client
         
-        def mock_download(bucket, key, fileobj):
-            fileobj.write(test_rdf_xml.encode('utf-8'))
+        def mock_download_file(bucket, key, filename):
+            with open(filename, 'w') as f:
+                f.write(test_rdf_xml)
         
-        mock_s3_client.download_fileobj = mock_download
+        mock_s3_client.download_file = mock_download_file
         
         with patch.dict('sys.modules', {'boto3': mock_boto3_module}):
             # Test with .rdf extension

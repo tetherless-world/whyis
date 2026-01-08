@@ -18,6 +18,7 @@ import rdflib
 import logging
 import tempfile
 import requests
+import os
 
 from .update_change_service import UpdateChangeService
 from whyis.nanopub import Nanopublication
@@ -159,22 +160,26 @@ class RDFFileLoader(UpdateChangeService):
             s3_client = boto3.client('s3')
             
             # Download file to temporary location
-            with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as tmp_file:
-                s3_client.download_fileobj(bucket_name, key, tmp_file)
-                tmp_file.flush()
+            tmp_file = None
+            try:
+                tmp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
                 tmp_path = tmp_file.name
-            
-            # Parse the file
-            graph = rdflib.Graph()
-            format = self._guess_format(key, None)
-            graph.parse(tmp_path, format=format)
-            
-            # Clean up temp file
-            import os
-            os.unlink(tmp_path)
-            
-            logger.info(f"Successfully loaded {len(graph)} triples from S3")
-            return graph
+                tmp_file.close()  # Close so boto3 can write to it
+                
+                s3_client.download_file(bucket_name, key, tmp_path)
+                
+                # Parse the file
+                graph = rdflib.Graph()
+                format = self._guess_format(key, None)
+                graph.parse(tmp_path, format=format)
+                
+                logger.info(f"Successfully loaded {len(graph)} triples from S3")
+                return graph
+                
+            finally:
+                # Clean up temp file in all cases
+                if tmp_file is not None and os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
             
         except Exception as e:
             logger.error(f"Failed to load RDF from S3 {s3_uri}: {e}")
