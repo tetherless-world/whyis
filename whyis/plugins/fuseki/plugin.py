@@ -1,6 +1,7 @@
 from whyis.plugin import Plugin, EntityResolverListener
 import rdflib
 from flask import current_app
+from flask_pluginengine import PluginBlueprint, current_plugin
 
 
 prefixes = dict(
@@ -14,7 +15,7 @@ prefixes = dict(
     dc = rdflib.URIRef("http://purl.org/dc/terms/")
 )
 
-class SPARQLEntityResolver(EntityResolverListener):
+class FusekiEntityResolver(EntityResolverListener):
 
     context_query="""
   optional {
@@ -69,6 +70,7 @@ where {
         self.database = database
 
     def on_resolve(self, term, type=None, context=None, label=True):
+        print(f'Searching {self.database} for {term}')
         graph = current_app.databases[self.database]
         context_query = ''
         if context is not None:
@@ -93,14 +95,18 @@ where {
             results.append(result)
         return results
 
+plugin_blueprint = PluginBlueprint('fuseki', __name__)
 
-class SPARQLEntityResolverPlugin(Plugin):
+class FusekiSearchPlugin(Plugin):
 
     resolvers = {
-        "sparql" : SPARQLEntityResolver,
-        "fuseki" : SPARQLEntityResolver
+        "sparql" : FusekiEntityResolver,
+        "fuseki" : FusekiEntityResolver
     }
 
+    def create_blueprint(self):
+        return plugin_blueprint
+    
     def init(self):
         resolver_type = self.app.config.get('RESOLVER_TYPE', 'fuseki')
         resolver_db = self.app.config.get('RESOLVER_DB', "knowledge")

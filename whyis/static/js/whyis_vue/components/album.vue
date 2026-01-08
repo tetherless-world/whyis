@@ -1,9 +1,9 @@
 <template>
     <div class="">
         <spinner :loading="loading" text='Loading...' v-if="loading"/>
-        <div v-else>
-            <div class="g-4 row row-cols-auto">
-                <kgcard v-for="(entity, index) in results" :key="index" :entity="entity" />
+        <div v-else class="container">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 row-cols-xxl-8 g-2 gx-2">
+                <kgcard  v-for="(entity, index) in results" class="col" :key="index" :entity="entity" />
             </div>
         </div>
     </div>

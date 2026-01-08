@@ -1,5 +1,6 @@
 import os
 from distutils.core import setup
+from setuptools import find_packages
 import distutils.command.build
 import distutils.command.sdist
 import subprocess
@@ -135,7 +136,7 @@ setup(
     license = "Apache License 2.0",
     keywords = "rdf semantic knowledge graph",
     url = "http://tetherless-world.github.io/whyis",
-    packages=['whyis'],
+    packages=find_packages(),
     long_description='''Whyis is a nano-scale knowledge graph publishing,
 management, and analysis framework. Whyis aims to support domain-aware management
 and curation of knowledge from many different sources. Its primary goal is to enable
@@ -184,7 +185,7 @@ be managed and used.''',
         #'mod-wsgi==4.9.0',
         'nltk==3.6.5',
         'numpy',
-        'oxrdflib==0.3.1',
+        'oxrdflib==0.3.7',
         'pandas',
         'PyJWT',
         'pyparsing',
@@ -192,8 +193,7 @@ be managed and used.''',
         'python-dateutil',
         'puremagic==1.14',
         'python-slugify',
-        'rdflib==6.3.2',
-        'rdflib-jsonld==0.6.2',
+        'rdflib==7.1.1',
         'redislite>=6',
         'requests[security]',
         'sadi',
@@ -231,12 +231,14 @@ be managed and used.''',
             'text/turtle = rdflib.plugins.sparql.results.graph:GraphResultParser'
         ],
         'whyis': [
-         'whyis_sparql_entity_resolver = whyis.plugins.sparql_entity_resolver:SPARQLEntityResolverPlugin',
+         'whyis_fuseki = whyis.plugins.fuseki:FusekiSearchPlugin',
+         'whyis_neptune = whyis.plugins.neptune:NeptuneSearchPlugin',
          'whyis_knowledge_explorer = whyis.plugins.knowledge_explorer:KnowledgeExplorerPlugin'
         ]
     },
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+#        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",

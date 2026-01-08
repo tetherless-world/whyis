@@ -1,0 +1,3 @@
+@prefix whyis: <http://vocab.rpi.edu/whyis/> .
+
+whyis:HomePage  whyis:searchData "whyis_fuseki:search.json".

@@ -481,22 +481,8 @@ np:Nanopublication a owl:Class;
     whyis:hasDescribe "nanopub_describe.json";
     whyis:hasView "nanopublication_view.html".
 
-# <search> a whyis:searchView.
 
-# whyis:searchView whyis:hasView "search.html".
-
-# <searchView> a whyis:searchView.
-
-# whyis:searchView whyis:hasView "search-view.html".
-
-<searchApi> a whyis:searchApi .
-
-whyis:searchApi whyis:hasView "search-api.json".
-
-<search> a whyis:search .
-
-whyis:HomePage whyis:searchView "search.html";
-  whyis:searchData "search.json".
+whyis:HomePage whyis:searchView "search.html".
 
 whyis:searchView rdfs:subPropertyOf whyis:hasView;
   dc:identifier "search".
