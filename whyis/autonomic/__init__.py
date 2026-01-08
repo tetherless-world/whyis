@@ -15,3 +15,4 @@ from .update_change_service import UpdateChangeService
 from .sdd_agent import SDDAgent
 from .nlp import HTML2Text, EntityResolver, EntityExtractor
 from .import_trigger import ImportTrigger
+from .rdf_file_loader import RDFFileLoader
