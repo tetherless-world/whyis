@@ -139,7 +139,7 @@ def neptune_driver(config):
     """
     Create an AWS Neptune SPARQL-based RDF graph store with IAM authentication.
     
-    Uses WhyisSPARQLUpdateStore with a custom requests session for AWS SigV4 auth.
+    Uses NeptuneBoto3Store with boto3 for credential management and AWS SigV4 auth.
     
     Configuration options (via Flask config with prefix like KNOWLEDGE_ or ADMIN_):
     - _endpoint: Neptune SPARQL query/update endpoint (required)
@@ -150,6 +150,7 @@ def neptune_driver(config):
     - _use_temp_graph: Use temporary UUID graphs for GSP operations (optional, default: True)
         When True, publish/put/post operations use a temporary UUID-based graph URI
         to ensure graph-aware semantics instead of using the default graph.
+    - _use_instance_metadata: Use EC2 instance metadata for credentials (optional, default: True)
     
     Example configuration in system.conf:
         KNOWLEDGE_ENDPOINT = 'https://my-neptune.cluster-xxx.us-east-1.neptune.amazonaws.com:8182/sparql'
@@ -158,11 +159,12 @@ def neptune_driver(config):
         KNOWLEDGE_USE_TEMP_GRAPH = True  # Default, ensures graph-aware semantics
     
     Authentication:
-        Uses AWS credentials from the environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-        or IAM roles. All requests are signed with SigV4, including full text search queries.
+        Uses boto3 for AWS credential discovery (environment variables, IAM roles, 
+        instance metadata, etc.). All requests are signed with SigV4, including 
+        full text search queries.
     """
-    from whyis.database.database_utils import node_to_sparql, WhyisSPARQLUpdateStore
-    from urllib.parse import urlparse
+    from whyis.database.database_utils import node_to_sparql
+    from whyis.plugins.neptune.neptune_boto3_store import NeptuneBoto3Store
     
     defaultgraph = None
     if "_default_graph" in config:
@@ -176,58 +178,241 @@ def neptune_driver(config):
     service_name = config.get("_service_name", "neptune-db")
     endpoint_url = config["_endpoint"]
     
-    # Get temporary graph usage configuration (default: True)
+    # Get configuration options
     use_temp_graph = config.get("_use_temp_graph", True)
+    use_instance_metadata = config.get("_use_instance_metadata", True)
     
-    # Extract host from endpoint URL for AWS auth
-    parsed_url = urlparse(endpoint_url)
-    aws_host = parsed_url.netloc
-    
-    # Create AWS authentication using environment credentials
-    # Credentials will be automatically picked up from environment variables or ~/.aws/credentials
-    aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
-    
-    if not aws_access_key or not aws_secret_key:
-        raise ValueError("Neptune driver requires AWS credentials (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables)")
-    
-    auth = AWSRequestsAuth(
-        aws_access_key=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
-        aws_host=aws_host,
-        aws_region=region_name,
-        aws_service=service_name,
-        aws_token=aws_session_token
-    )
-    
-    # Create custom requests session with AWS auth
-    session = requests.Session()
-    session.auth = auth
-    
-    # Create store with standard WhyisSPARQLUpdateStore, passing custom session
-    store = WhyisSPARQLUpdateStore(
+    # Create store with NeptuneBoto3Store (uses boto3 for authentication)
+    store = NeptuneBoto3Store(
         query_endpoint=endpoint_url,
         update_endpoint=endpoint_url,
+        region_name=region_name,
+        service_name=service_name,
+        use_instance_metadata=use_instance_metadata,
         method="POST",
         returnFormat='json',
-        node_to_sparql=node_to_sparql,
-        custom_requests=session  # Pass custom session directly
+        node_to_sparql=node_to_sparql
     )
     
-    store.query_endpoint = endpoint_url
+    # Set GSP endpoint
     store.gsp_endpoint = config.get("_gsp_endpoint", endpoint_url)
-    store.auth = None  # Neptune uses AWS SigV4, not basic auth
     
-    # Add GSP protocol methods with AWS authentication
-    store = _remote_sparql_store_protocol_with_aws(store, auth, use_temp_graph=use_temp_graph)
+    # Add GSP protocol methods with boto3 authentication
+    store = _add_gsp_methods_to_boto3_store(store, use_temp_graph=use_temp_graph)
     
     graph = ConjunctiveGraph(store, defaultgraph)
     return graph
 
+def _add_gsp_methods_to_boto3_store(store, use_temp_graph=True):
+    """
+    Add Graph Store Protocol (GSP) operations to a NeptuneBoto3Store.
+    
+    This adds authenticated GSP methods (publish, put, post, delete) to the store
+    using the store's built-in boto3 authentication via _request method.
+    
+    When use_temp_graph is True (default), publish/put/post operations use a
+    temporary UUID-based graph URI to ensure graph-aware semantics. This prevents
+    triples from being inserted into an explicit default graph and instead maintains
+    the graph structure from the RDF data (e.g., TriG format).
+    
+    Args:
+        store: A NeptuneBoto3Store object with gsp_endpoint attribute and _request method
+        use_temp_graph: If True, use temporary UUID graphs for GSP operations (default: True)
+        
+    Returns:
+        The store object with GSP methods attached
+    """
+    
+    def publish(data, format='text/trig;charset=utf-8'):
+        kwargs = dict(
+            headers={'Content-Type': format},
+        )
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # POST to the temporary graph using authenticated request
+            params = dict(graph=temp_graph_uri)
+            url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+            
+            try:
+                r = store._request(
+                    method='POST',
+                    url=url,
+                    headers=kwargs['headers'],
+                    body=data
+                )
+                
+                # Always delete the temporary graph to clean up, even if POST failed
+                delete_url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+                delete_r = store._request(
+                    method='DELETE',
+                    url=delete_url,
+                    headers={}
+                )
+                
+                if not delete_r.ok:
+                    logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+                
+                # Log error if POST failed
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
+            except Exception as e:
+                logger.error(f"Error in publish: {e}")
+        else:
+            # Legacy behavior: POST without graph parameter
+            try:
+                r = store._request(
+                    method='POST',
+                    url=store.gsp_endpoint,
+                    headers=kwargs['headers'],
+                    body=data
+                )
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} publish returned status {r.status_code}:\n{r.text}")
+            except Exception as e:
+                logger.error(f"Error in publish: {e}")
+
+    def put(graph):
+        g = ConjunctiveGraph(store=graph.store)
+        data = g.serialize(format='turtle')
+        
+        kwargs = dict(
+            headers={'Content-Type': 'text/turtle;charset=utf-8'},
+        )
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # PUT to the temporary graph using authenticated request
+            url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+            
+            try:
+                r = store._request(
+                    method='PUT',
+                    url=url,
+                    headers=kwargs['headers'],
+                    body=data.encode('utf-8') if isinstance(data, str) else data
+                )
+                
+                # Always delete the temporary graph to clean up
+                delete_url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+                delete_r = store._request(
+                    method='DELETE',
+                    url=delete_url,
+                    headers={}
+                )
+                
+                if not delete_r.ok:
+                    logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+                
+                # Log result
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+                else:
+                    logger.debug(f"{r.text} {r.status_code}")
+            except Exception as e:
+                logger.error(f"Error in put: {e}")
+        else:
+            # Legacy behavior: PUT with specified graph identifier
+            url = f"{store.gsp_endpoint}?graph={graph.identifier}"
+            try:
+                r = store._request(
+                    method='PUT',
+                    url=url,
+                    headers=kwargs['headers'],
+                    body=data.encode('utf-8') if isinstance(data, str) else data
+                )
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} PUT returned status {r.status_code}:\n{r.text}")
+                else:
+                    logger.debug(f"{r.text} {r.status_code}")
+            except Exception as e:
+                logger.error(f"Error in put: {e}")
+
+    def post(graph):
+        g = ConjunctiveGraph(store=graph.store)
+        data = g.serialize(format='trig')
+        
+        kwargs = dict(
+            headers={'Content-Type': 'text/trig;charset=utf-8'},
+        )
+        
+        if use_temp_graph:
+            # Generate a temporary UUID-based graph URI
+            temp_graph_uri = f"urn:uuid:{uuid.uuid4()}"
+            
+            # POST to the temporary graph using authenticated request
+            url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+            
+            try:
+                r = store._request(
+                    method='POST',
+                    url=url,
+                    headers=kwargs['headers'],
+                    body=data.encode('utf-8') if isinstance(data, str) else data
+                )
+                
+                # Always delete the temporary graph to clean up
+                delete_url = f"{store.gsp_endpoint}?graph={temp_graph_uri}"
+                delete_r = store._request(
+                    method='DELETE',
+                    url=delete_url,
+                    headers={}
+                )
+                
+                if not delete_r.ok:
+                    logger.warning(f"Warning: Failed to delete temporary graph {temp_graph_uri}: {delete_r.status_code}:\n{delete_r.text}")
+                
+                # Log error if POST failed
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
+            except Exception as e:
+                logger.error(f"Error in post: {e}")
+        else:
+            # Legacy behavior: POST without graph parameter
+            try:
+                r = store._request(
+                    method='POST',
+                    url=store.gsp_endpoint,
+                    headers=kwargs['headers'],
+                    body=data.encode('utf-8') if isinstance(data, str) else data
+                )
+                if not r.ok:
+                    logger.error(f"Error: {store.gsp_endpoint} POST returned status {r.status_code}:\n{r.text}")
+            except Exception as e:
+                logger.error(f"Error in post: {e}")
+
+    def delete(c):
+        url = f"{store.gsp_endpoint}?graph={c}"
+        try:
+            r = store._request(
+                method='DELETE',
+                url=url,
+                headers={}
+            )
+            if not r.ok:
+                logger.error(f"Error: {store.gsp_endpoint} DELETE returned status {r.status_code}:\n{r.text}")
+        except Exception as e:
+            logger.error(f"Error in delete: {e}")
+
+    store.publish = publish
+    store.put = put
+    store.post = post
+    store.delete = delete
+    
+    return store
+
+
 def _remote_sparql_store_protocol_with_aws(store, aws_auth, use_temp_graph=True):
     """
     Add Graph Store Protocol (GSP) operations with AWS authentication.
+    
+    DEPRECATED: This function is kept for backward compatibility with the old
+    aws_requests_auth approach. New code should use NeptuneBoto3Store with
+    _add_gsp_methods_to_boto3_store instead.
     
     This is similar to _remote_sparql_store_protocol but uses AWS SigV4 auth
     instead of basic auth.
