@@ -15,6 +15,26 @@ HOP_BY_HOP_HEADERS = [
 ]
 
 
+def filter_headers_for_proxying(headers):
+    """
+    Filter out hop-by-hop headers that should not be forwarded when proxying.
+    
+    Args:
+        headers: Flask headers object or dict of headers
+        
+    Returns:
+        dict: Filtered headers suitable for forwarding
+    """
+    filtered = dict(headers)
+    # Use case-insensitive comparison since HTTP headers are case-insensitive
+    headers_lower = {k.lower(): k for k in filtered.keys()}
+    for header in HOP_BY_HOP_HEADERS:
+        header_lower = header.lower()
+        if header_lower in headers_lower:
+            del filtered[headers_lower[header_lower]]
+    return filtered
+
+
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
 @conditional_login_required
 def sparql_view():
@@ -53,12 +73,8 @@ def sparql_view():
                 if 'update' in request.values:
                     return "Update not allowed.", 403
                 
-                # Prepare headers for proxying - remove headers that should not be forwarded
-                headers = dict(request.headers)
-                # Remove hop-by-hop headers and headers that will be set by requests library
-                for header in HOP_BY_HOP_HEADERS:
-                    if header in headers:
-                        del headers[header]
+                # Filter headers for proxying
+                headers = filter_headers_for_proxying(request.headers)
                 
                 req = current_app.db.store.raw_sparql_request(
                     method='POST',
@@ -92,11 +108,8 @@ def sparql_view():
             if 'update' in request.values:
                 return "Update not allowed.", 403
             
-            # Prepare headers for proxying - same filtering as main path
-            headers = dict(request.headers)
-            for header in HOP_BY_HOP_HEADERS:
-                if header in headers:
-                    del headers[header]
+            # Filter headers for proxying
+            headers = filter_headers_for_proxying(request.headers)
             
             req = requests.post(current_app.db.store.query_endpoint,
                                 headers=headers, data=raw_data, stream=True)
