@@ -37,10 +37,6 @@ export default Vue.component("yasqe", {
         showQueryButton: !this.showBtns,
         endpoint: this.endpoint,
         requestMethod: "POST",
-        // Ensure query parameter is sent in POST body
-        args: [
-          { name: "query", value: null }
-        ],
         callbacks: {
           error() {
             console.error("YASQE query error", arguments);
