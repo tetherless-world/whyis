@@ -25,9 +25,6 @@
           </div>
         </div>
         <div class="viz-editor viz-editor-show" id="sparqlc">
-          <button type="button" class="btn btn-outline-primary mb-3" @click="goToSparqlTemplates()">
-            Build query from template
-          </button>
           <yasqe v-if="query"
             :value="query"
             :readOnly="queryEditorReadOnly"
@@ -38,9 +35,6 @@
         </div>
         <div class="viz-editor" id="vegac">
           <div id="vega-spec-editor" style="height:100%">
-            <button type="button" class="btn btn-outline-primary mb-3" @click="goToDataVoyager()" :disabled="sparqlError">
-              Browse Data Voyager
-            </button>
             <v-jsoneditor v-if="baseSpec"
               :value="baseSpec"
               @input="setBaseSpec"
