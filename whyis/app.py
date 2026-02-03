@@ -101,10 +101,15 @@ class App(Empty):
         # Configure CORS to allow cross-origin requests from any origin
         # This enables external applications to access Whyis APIs and data
         # Note: supports_credentials is False when using wildcard origins for security
+        # To restrict origins, set CORS_ORIGINS in config (comma-separated list)
         CORS_MAX_AGE = 3600  # Preflight cache duration in seconds (1 hour)
+        cors_origins = self.config.get('CORS_ORIGINS', '*')
+        if cors_origins != '*' and ',' in cors_origins:
+            cors_origins = [origin.strip() for origin in cors_origins.split(',')]
+        
         CORS(self, resources={
             r"/*": {
-                "origins": "*",
+                "origins": cors_origins,
                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": ["Content-Type", "Authorization", "Accept"],
                 "expose_headers": ["Content-Type", "Authorization"],
