@@ -100,8 +100,9 @@ class App(Empty):
 
         # Configure CORS to allow cross-origin requests from any origin
         # This enables external applications to access Whyis APIs and data
-        # Note: supports_credentials is False when using wildcard origins for security
+        # Note: supports_credentials should be False with wildcard origins for security
         # To restrict origins, set CORS_ORIGINS in config (comma-separated list or single origin)
+        # To enable credentials, set CORS_SUPPORTS_CREDENTIALS=True (only with specific origins)
         CORS_MAX_AGE = 3600  # Preflight cache duration in seconds (1 hour)
         cors_origins = self.config.get('CORS_ORIGINS', '*')
         
@@ -114,13 +115,20 @@ class App(Empty):
                 # Single origin - wrap in list for Flask-CORS
                 cors_origins = [cors_origins.strip()]
         
+        # supports_credentials can only be True with specific origins (not wildcard)
+        supports_credentials = self.config.get('CORS_SUPPORTS_CREDENTIALS', False)
+        if supports_credentials and cors_origins == '*':
+            # Warn and disable credentials if wildcard is used
+            print("WARNING: CORS_SUPPORTS_CREDENTIALS cannot be True with wildcard origins. Disabling.")
+            supports_credentials = False
+        
         CORS(self, resources={
             r"/*": {
                 "origins": cors_origins,
                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
                 "allow_headers": ["Content-Type", "Authorization", "Accept"],
                 "expose_headers": ["Content-Type", "Authorization"],
-                "supports_credentials": False,
+                "supports_credentials": supports_credentials,
                 "max_age": CORS_MAX_AGE
             }
         })
