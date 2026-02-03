@@ -54,8 +54,10 @@ export default {
       this.$emit('new-vega-view', result.view)
     },
     validateSpec () {
-      // Create a copy of the spec without $schema to avoid URL resolution issues
-      // The $schema property can cause jsonValidate to attempt URL construction
+      // Create a shallow copy of the spec to remove $schema property
+      // Shallow copy is sufficient since we only delete top-level $schema
+      // and don't modify nested properties. The $schema property can cause
+      // jsonValidate to attempt URL construction, which fails
       const specToValidate = Object.assign({}, this.spec)
       delete specToValidate.$schema
       
