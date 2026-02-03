@@ -118,6 +118,7 @@ def sparql_view():
             # Filter headers for proxying
             headers = filter_headers_for_proxying(request.headers)
             
+            # Send raw_data (bytes) not request.values (dict) to preserve exact form encoding
             req = requests.post(current_app.db.store.query_endpoint,
                                 headers=headers, data=raw_data, stream=True)
     
