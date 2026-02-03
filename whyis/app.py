@@ -101,9 +101,11 @@ class App(Empty):
         # Configure CORS to allow cross-origin requests from any origin
         # This enables external applications to access Whyis APIs and data
         # Note: supports_credentials should be False with wildcard origins for security
-        # To restrict origins, set CORS_ORIGINS in config (comma-separated list or single origin)
-        # To enable credentials, set CORS_SUPPORTS_CREDENTIALS=True (only with specific origins)
-        CORS_MAX_AGE = 3600  # Preflight cache duration in seconds (1 hour)
+        # Configuration options:
+        #   CORS_ORIGINS: "*" (default), single origin, or comma-separated list
+        #   CORS_SUPPORTS_CREDENTIALS: False (default), True (only with specific origins)
+        #   CORS_MAX_AGE: 3600 (default), preflight cache duration in seconds
+        cors_max_age = self.config.get('CORS_MAX_AGE', 3600)
         cors_origins = self.config.get('CORS_ORIGINS', '*')
         
         # Parse CORS_ORIGINS: wildcard, single origin, or comma-separated list
@@ -119,7 +121,7 @@ class App(Empty):
         supports_credentials = self.config.get('CORS_SUPPORTS_CREDENTIALS', False)
         if supports_credentials and cors_origins == '*':
             # Warn and disable credentials if wildcard is used
-            print("WARNING: CORS_SUPPORTS_CREDENTIALS cannot be True with wildcard origins. Disabling.")
+            self.logger.warning("CORS: CORS_SUPPORTS_CREDENTIALS cannot be True with wildcard origins. Disabling credentials.")
             supports_credentials = False
         
         CORS(self, resources={
@@ -129,7 +131,7 @@ class App(Empty):
                 "allow_headers": ["Content-Type", "Authorization", "Accept"],
                 "expose_headers": ["Content-Type", "Authorization"],
                 "supports_credentials": supports_credentials,
-                "max_age": CORS_MAX_AGE
+                "max_age": cors_max_age
             }
         })
 
