@@ -36,13 +36,28 @@ def sparql_view():
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers.get('content-type', ''):
                     return "Update not allowed.", 403
+                
+                # Get the raw data BEFORE accessing request.values
+                # because accessing request.values consumes the input stream
+                raw_data = request.get_data()
+                
                 if 'update' in request.values:
                     return "Update not allowed.", 403
                 
+                # Prepare headers for proxying - remove headers that should not be forwarded
+                headers = {}
+                headers.update(request.headers)
+                # Remove hop-by-hop headers and headers that will be set by requests library
+                for header in ['Host', 'Content-Length', 'Connection', 'Keep-Alive', 
+                               'Proxy-Authenticate', 'Proxy-Authorization', 'TE', 'Trailers', 
+                               'Transfer-Encoding', 'Upgrade']:
+                    if header in headers:
+                        del headers[header]
+                
                 req = current_app.db.store.raw_sparql_request(
                     method='POST',
-                    headers=dict(request.headers),
-                    data=request.get_data()
+                    headers=headers,
+                    data=raw_data
                 )
         except NotImplementedError as e:
             # Local stores don't support proxying - return error
@@ -64,10 +79,14 @@ def sparql_view():
         elif request.method == 'POST':
             if 'application/sparql-update' in request.headers.get('content-type', ''):
                 return "Update not allowed.", 403
+            
+            # Get raw data before accessing request.values
+            raw_data = request.get_data()
+            
             if 'update' in request.values:
                 return "Update not allowed.", 403
             req = requests.post(current_app.db.store.query_endpoint,
-                                headers=request.headers, data=request.values, stream=True)
+                                headers=request.headers, data=raw_data, stream=True)
     
     # Return the response
     response = Response(FileLikeFromIter(req.iter_content()),
