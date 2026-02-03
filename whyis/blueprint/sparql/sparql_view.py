@@ -70,7 +70,8 @@ def sparql_view():
                     return "Update not allowed.", 403
                 
                 # Get the raw data BEFORE accessing request.values
-                # because accessing request.values consumes the input stream
+                # because accessing request.values consumes the input stream,
+                # which would cause request.get_data() to return empty bytes
                 raw_data = request.get_data()
                 
                 if 'update' in request.values:
@@ -84,6 +85,8 @@ def sparql_view():
                     headers=headers,
                     data=raw_data
                 )
+                # Note: raw_sparql_request returns a response object that supports
+                # iter_content() for streaming, same as requests library responses
         except NotImplementedError as e:
             # Local stores don't support proxying - return error
             return str(e), 501
