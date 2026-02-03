@@ -114,7 +114,6 @@ def _remote_sparql_store_protocol(store):
         if store.auth is not None:
             kwargs['auth'] = store.auth
         r = s.post(store.gsp_endpoint,
-                   params=dict(default='true'),
                    data=data,
                    **kwargs)
         if not r.ok:

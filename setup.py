@@ -202,7 +202,8 @@ be managed and used.''',
         'sdd2rdf>=1.3.2',
         'xlrd==2.0.1',
         'werkzeug==2.0.3',
-        'Flask-Caching==1.10.1'
+        'Flask-Caching==1.10.1',
+        'pytz'
     ],
     tests_require=[
         'pytest>=7.0.0',
@@ -237,8 +238,8 @@ be managed and used.''',
         ]
     },
     classifiers=[
-#        "Development Status :: 5 - Production/Stable",
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
+#        "Development Status :: 4 - Beta",
         "Framework :: Flask",
         "Environment :: Web Environment",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",

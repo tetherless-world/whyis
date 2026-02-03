@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e 
+
+source .venv/bin/activate
+
 # Check release version in Dockerfile and setup.py
 
 VERSION=`python whyis/_version.py`
