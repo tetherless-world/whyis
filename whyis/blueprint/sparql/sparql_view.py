@@ -69,9 +69,10 @@ def sparql_view():
                 if 'application/sparql-update' in request.headers.get('content-type', ''):
                     return "Update not allowed.", 403
                 
-                # Get the raw data BEFORE accessing request.values
-                # because accessing request.values consumes the input stream,
-                # which would cause request.get_data() to return empty bytes
+                # Get the raw data BEFORE accessing request.values.
+                # Flask's request.values consumes the input stream, making the body
+                # unavailable for get_data(). By calling get_data() first, we preserve
+                # the raw body, and can then safely access request.values.
                 raw_data = request.get_data()
                 
                 if 'update' in request.values:
@@ -108,7 +109,7 @@ def sparql_view():
             if 'application/sparql-update' in request.headers.get('content-type', ''):
                 return "Update not allowed.", 403
             
-            # Get raw data before accessing request.values
+            # Get raw data before accessing request.values (see comment above in main path)
             raw_data = request.get_data()
             
             if 'update' in request.values:
