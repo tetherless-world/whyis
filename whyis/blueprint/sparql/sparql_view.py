@@ -83,8 +83,6 @@ def sparql_view():
                     headers=headers,
                     data=raw_data
                 )
-                # Note: raw_sparql_request returns a response object that supports
-                # iter_content() for streaming, same as requests library responses
         except NotImplementedError as e:
             # Local stores don't support proxying - return error
             return str(e), 501
