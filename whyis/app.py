@@ -101,6 +101,7 @@ class App(Empty):
         # Configure CORS to allow cross-origin requests from any origin
         # This enables external applications to access Whyis APIs and data
         # Note: supports_credentials is False when using wildcard origins for security
+        CORS_MAX_AGE = 3600  # Preflight cache duration in seconds (1 hour)
         CORS(self, resources={
             r"/*": {
                 "origins": "*",
@@ -108,7 +109,7 @@ class App(Empty):
                 "allow_headers": ["Content-Type", "Authorization", "Accept"],
                 "expose_headers": ["Content-Type", "Authorization"],
                 "supports_credentials": False,
-                "max_age": 3600
+                "max_age": CORS_MAX_AGE
             }
         })
 
