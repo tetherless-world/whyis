@@ -14,6 +14,9 @@ HOP_BY_HOP_HEADERS = [
     'Transfer-Encoding', 'Upgrade'
 ]
 
+# Lowercase version for efficient case-insensitive lookups
+HOP_BY_HOP_HEADERS_LOWER = {h.lower() for h in HOP_BY_HOP_HEADERS}
+
 
 def filter_headers_for_proxying(headers):
     """
@@ -28,11 +31,8 @@ def filter_headers_for_proxying(headers):
     Returns:
         dict: Filtered headers suitable for forwarding (with hop-by-hop headers removed)
     """
-    # Create set of lowercase header names to filter for efficient lookup
-    hop_by_hop_lower = {h.lower() for h in HOP_BY_HOP_HEADERS}
-    
     # Filter headers in a single pass with case-insensitive comparison
-    return {k: v for k, v in headers.items() if k.lower() not in hop_by_hop_lower}
+    return {k: v for k, v in headers.items() if k.lower() not in HOP_BY_HOP_HEADERS_LOWER}
 
 
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
@@ -104,7 +104,10 @@ def sparql_view():
             if 'application/sparql-update' in request.headers.get('content-type', ''):
                 return "Update not allowed.", 403
             
-            # Get raw data before accessing request.values (see comment above in main path)
+            # Get raw data before accessing request.values to preserve request body.
+            # Flask's request.values consumes the input stream, making the body
+            # unavailable for get_data(). By calling get_data() first, we preserve
+            # the raw body, and can then safely access request.values.
             raw_data = request.get_data()
             
             if 'update' in request.values:
