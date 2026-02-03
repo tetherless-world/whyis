@@ -19,11 +19,14 @@ def filter_headers_for_proxying(headers):
     """
     Filter out hop-by-hop headers that should not be forwarded when proxying.
     
+    Performs case-insensitive header matching to comply with HTTP standards,
+    which specify that header names are case-insensitive.
+    
     Args:
         headers: Flask headers object or dict of headers
         
     Returns:
-        dict: Filtered headers suitable for forwarding
+        dict: Filtered headers suitable for forwarding (with hop-by-hop headers removed)
     """
     filtered = dict(headers)
     # Use case-insensitive comparison since HTTP headers are case-insensitive
