@@ -101,11 +101,18 @@ class App(Empty):
         # Configure CORS to allow cross-origin requests from any origin
         # This enables external applications to access Whyis APIs and data
         # Note: supports_credentials is False when using wildcard origins for security
-        # To restrict origins, set CORS_ORIGINS in config (comma-separated list)
+        # To restrict origins, set CORS_ORIGINS in config (comma-separated list or single origin)
         CORS_MAX_AGE = 3600  # Preflight cache duration in seconds (1 hour)
         cors_origins = self.config.get('CORS_ORIGINS', '*')
-        if cors_origins != '*' and ',' in cors_origins:
-            cors_origins = [origin.strip() for origin in cors_origins.split(',')]
+        
+        # Parse CORS_ORIGINS: wildcard, single origin, or comma-separated list
+        if cors_origins != '*':
+            if ',' in cors_origins:
+                # Multiple origins separated by commas
+                cors_origins = [origin.strip() for origin in cors_origins.split(',')]
+            else:
+                # Single origin - wrap in list for Flask-CORS
+                cors_origins = [cors_origins.strip()]
         
         CORS(self, resources={
             r"/*": {
