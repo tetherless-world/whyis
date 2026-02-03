@@ -22,6 +22,7 @@ from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 from depot.io.utils import FileIntent
 from flask import render_template, g, redirect, url_for, request, flash, send_from_directory, abort
+from flask_cors import CORS
 from flask_security import Security
 from flask_security.core import current_user
 from flask_security.forms import RegisterForm
@@ -96,6 +97,19 @@ class App(Empty):
     def configure_extensions(self):
 
         Empty.configure_extensions(self)
+
+        # Configure CORS to allow cross-origin requests from any origin
+        # This enables external applications to access Whyis APIs and data
+        CORS(self, resources={
+            r"/*": {
+                "origins": "*",
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+                "allow_headers": ["Content-Type", "Authorization", "Accept"],
+                "expose_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True,
+                "max_age": 3600
+            }
+        })
 
         if self.config.get('EMBEDDED_CELERY',False):
             # self.config['CELERY_BROKER_URL'] = 'redis://localhost:6379'
