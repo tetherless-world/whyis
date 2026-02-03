@@ -54,7 +54,12 @@ export default {
       this.$emit('new-vega-view', result.view)
     },
     validateSpec () {
-      const validation = jsonValidate(this.spec, vegaLiteSchema)
+      // Create a copy of the spec without $schema to avoid URL resolution issues
+      // The $schema property can cause jsonValidate to attempt URL construction
+      const specToValidate = Object.assign({}, this.spec)
+      delete specToValidate.$schema
+      
+      const validation = jsonValidate(specToValidate, vegaLiteSchema)
       if (!validation.valid) {
         console.warn('Invalid spec', validation)
       } else {
