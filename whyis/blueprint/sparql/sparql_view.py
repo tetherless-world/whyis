@@ -6,6 +6,15 @@ from whyis.decorator import conditional_login_required
 from setlr import FileLikeFromIter
 
 
+# HTTP headers that should not be forwarded when proxying requests
+# These are hop-by-hop headers or headers that will be set by the requests library
+HOP_BY_HOP_HEADERS = [
+    'Host', 'Content-Length', 'Connection', 'Keep-Alive',
+    'Proxy-Authenticate', 'Proxy-Authorization', 'TE', 'Trailers',
+    'Transfer-Encoding', 'Upgrade'
+]
+
+
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
 @conditional_login_required
 def sparql_view():
@@ -47,9 +56,7 @@ def sparql_view():
                 # Prepare headers for proxying - remove headers that should not be forwarded
                 headers = dict(request.headers)
                 # Remove hop-by-hop headers and headers that will be set by requests library
-                for header in ['Host', 'Content-Length', 'Connection', 'Keep-Alive', 
-                               'Proxy-Authenticate', 'Proxy-Authorization', 'TE', 'Trailers', 
-                               'Transfer-Encoding', 'Upgrade']:
+                for header in HOP_BY_HOP_HEADERS:
                     if header in headers:
                         del headers[header]
                 
@@ -87,9 +94,7 @@ def sparql_view():
             
             # Prepare headers for proxying - same filtering as main path
             headers = dict(request.headers)
-            for header in ['Host', 'Content-Length', 'Connection', 'Keep-Alive', 
-                           'Proxy-Authenticate', 'Proxy-Authorization', 'TE', 'Trailers', 
-                           'Transfer-Encoding', 'Upgrade']:
+            for header in HOP_BY_HOP_HEADERS:
                 if header in headers:
                     del headers[header]
             
