@@ -28,14 +28,11 @@ def filter_headers_for_proxying(headers):
     Returns:
         dict: Filtered headers suitable for forwarding (with hop-by-hop headers removed)
     """
-    filtered = dict(headers)
-    # Use case-insensitive comparison since HTTP headers are case-insensitive
-    headers_lower = {k.lower(): k for k in filtered.keys()}
-    for header in HOP_BY_HOP_HEADERS:
-        header_lower = header.lower()
-        if header_lower in headers_lower:
-            del filtered[headers_lower[header_lower]]
-    return filtered
+    # Create set of lowercase header names to filter for efficient lookup
+    hop_by_hop_lower = {h.lower() for h in HOP_BY_HOP_HEADERS}
+    
+    # Filter headers in a single pass with case-insensitive comparison
+    return {k: v for k, v in headers.items() if k.lower() not in hop_by_hop_lower}
 
 
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
