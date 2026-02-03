@@ -91,8 +91,9 @@ def sparql_view():
             current_app.logger.error(f"SPARQL request failed: {str(e)}")
             return f"SPARQL request failed: {str(e)}", 500
     else:
-        # Fallback for stores without raw_sparql_request (should not happen)
-        # This is the old behavior - direct HTTP request without authentication
+        # Fallback for stores without raw_sparql_request (should not happen in practice)
+        # This path uses requests library directly without authentication support
+        # Modern stores should implement raw_sparql_request for proper auth handling
         if request.method == 'GET':
             headers = {}
             headers.update(request.headers)
