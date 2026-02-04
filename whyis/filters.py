@@ -59,6 +59,12 @@ def configure(app):
         entry[label_key] = app.get_label(resource)
         return entry
 
+    @app.template_filter('label')
+    def label(entity):
+        key_uri = rdflib.URIRef(entity)
+        resource = app.db.resource(key_uri)
+        return app.get_label(resource)
+
     @app.template_filter('iter_labelize')
     def iter_labelize(entries, *args, **kw):
         for entry in entries:

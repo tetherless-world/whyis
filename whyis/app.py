@@ -22,6 +22,7 @@ from depot.manager import DepotManager
 from depot.middleware import FileServeApp
 from depot.io.utils import FileIntent
 from flask import render_template, g, redirect, url_for, request, flash, send_from_directory, abort
+from flask_cors import CORS
 from flask_security import Security
 from flask_security.core import current_user
 from flask_security.forms import RegisterForm
@@ -96,6 +97,43 @@ class App(Empty):
     def configure_extensions(self):
 
         Empty.configure_extensions(self)
+
+        # Configure CORS to allow cross-origin requests from any origin
+        # This enables external applications to access Whyis APIs and data
+        # Note: supports_credentials should be False with wildcard origins for security
+        # Configuration options:
+        #   CORS_ORIGINS: "*" (default), single origin, or comma-separated list
+        #   CORS_SUPPORTS_CREDENTIALS: False (default), True (only with specific origins)
+        #   CORS_MAX_AGE: 3600 (default), preflight cache duration in seconds
+        cors_max_age = self.config.get('CORS_MAX_AGE', 3600)
+        cors_origins = self.config.get('CORS_ORIGINS', '*')
+        
+        # Parse CORS_ORIGINS: wildcard, single origin, or comma-separated list
+        if cors_origins != '*':
+            if ',' in cors_origins:
+                # Multiple origins separated by commas
+                cors_origins = [origin.strip() for origin in cors_origins.split(',')]
+            else:
+                # Single origin - wrap in list for Flask-CORS
+                cors_origins = [cors_origins.strip()]
+        
+        # supports_credentials can only be True with specific origins (not wildcard)
+        supports_credentials = self.config.get('CORS_SUPPORTS_CREDENTIALS', False)
+        if supports_credentials and cors_origins == '*':
+            # Warn and disable credentials if wildcard is used
+            self.logger.warning("CORS: CORS_SUPPORTS_CREDENTIALS cannot be True with wildcard origins. Disabling credentials.")
+            supports_credentials = False
+        
+        CORS(self, resources={
+            r"/*": {
+                "origins": cors_origins,
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+                "allow_headers": ["Content-Type", "Authorization", "Accept"],
+                "expose_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": supports_credentials,
+                "max_age": cors_max_age
+            }
+        })
 
         if self.config.get('EMBEDDED_CELERY',False):
             # self.config['CELERY_BROKER_URL'] = 'redis://localhost:6379'

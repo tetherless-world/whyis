@@ -11,7 +11,7 @@
                                 v-model="searchQuery"
                                 type="text"
                                 class="form-control"
-                                placeholder="Search knowledge base..."
+                                placeholder="Search..."
                                 @keydown.enter="performSearch"
                             />
                             <button 

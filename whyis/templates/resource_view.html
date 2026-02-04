@@ -6,39 +6,40 @@
 {% set attributes = this | include("attributes") | fromjson  %}
 {% set incoming = this | include("incoming") | fromjson  %}
 {% set outgoing = this | include("outgoing") | fromjson  %}
+    <ul class="nav nav-tabs">
+        {% for v in this | get_views_list -%}
+        <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
+            <a class="nav-link {% if v['view'].value == view %}active{% endif %}"
+            href="{{url_for('entity.view', uri=this.identifier, view=v['view'])}}">
+                {{v['label']}}
+            </a>
+        </li>
+        {%- endfor %}
+        {% if this.description().value(ns.whyis.hasFileID) %}
+        <li class="nav-item">
+            <a class="nav-link"
+            href="{{url_for('entity.view',uri=this.identifier)}}">
+                Download
+            </a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#vueUploadTabModal" aria-label="Upload file for this entity" title="Upload file for this entity." >
+            Upload
+        </a>
+        </li>
+        {% if not this.identifier.startswith(ns.local) %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{this.identifier}}"
+            aria-label="Visit Page" title="Visit Page">
+            Visit
+            </a>
+        </li>
+        {% endif %}
+    </ul>
     <div class="card">
       <div class="card-header">
-            <ul class="nav nav-tabs">
-                {% for v in this | get_views_list -%}
-                <li class="nav-item {% if v['view'].value == view %}active{% endif %}">
-                    <a class="nav-link {% if v['view'].value == view %}active{% endif %}"
-                       href="{{url_for('entity.view', uri=this.identifier, view=v['view'])}}">
-                        {{v['label']}}
-                    </a>
-                </li>
-                {%- endfor %}
-                {% if this.description().value(ns.whyis.hasFileID) %}
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{url_for('entity.view',uri=this.identifier)}}">
-                        Download
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                  <a class="nav-link" data-bs-toggle="modal" data-bs-target="#vueUploadTabModal" aria-label="Upload file for this entity" title="Upload file for this entity." >
-                      Upload
-                  </a>
-                </li>
-                {% if not this.identifier.startswith(ns.local) %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{this.identifier}}"
-                       aria-label="Visit Page" title="Visit Page">
-                       Visit
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+
             <div class="row align-items-center mt-2">
                 <div class="col">
                     <h4 class="mb-1">{{attributes.label}}</h4>
@@ -78,32 +79,39 @@
             <div class="col">
                 {% for link_name, items in outgoing | groupby("link_label") %}
                 <h2>{{link_name.title() }}</h2>
-                <div class="row g-3">
+                <div class="d-flex flex-wrap">
                 {% for item in items %}
-                <div class="col-12 col-sm-6 col-lg-4">
-                  <div class="card mb-3" style="width: 300px">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">{{item.target_label}}</h5>
-                        {% if this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
+                <div class="card flex-fill m-1" >
+                    {% if this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
                         {% set depiction = this.graph.value(rdflib.URIRef(item.target), ns.foaf.depiction) %}
-                        <div class="mt-2">
-                            {% if depiction.startswith(config['LOD_PREFIX']) %}
+                        {% if depiction.startswith(config['LOD_PREFIX']) %}
                             <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.target_label}}" class="img-fluid">
-                            {% else %}
+                        {% else %}
                             <img src="{{depiction}}" alt="{{item.target_label}}" class="img-fluid">
-                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    <div class="card-header">
+                        <div class="row align-items-center mt-2">
+                            <div class="col">
+                                <h5 class="card-title">{{item.target_label}}</h5>
+                                {% if item.target_types | length > 0 %}<p class="text-muted mb-0">
+                                    {% for type in item.target_types %}{{type | label}}{% if not loop.last %}, {% endif %} {% endfor %}
+                                </p>{% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <add-knowledge-menu class="text-muted"
+                                    uri="{{item.target}}">
+                                </add-knowledge-menu>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
-
-                    <div class="card-footer">
-                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="btn btn-sm btn-outline-primary">View</a>
+                    <div class="card-body">
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='view')}}" class="card-link">View</a>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target), view='explore')}}" class="card-link">Explore</a>
                         {% if this.graph.value(rdflib.URIRef(item.target), ns.whyis.hasFileID) %}
-                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="btn btn-sm btn-outline-primary">Download</a>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.target))}}" class="card-link">Download</a>
                         {% endif %}
-                        <add-knowledge-menu uri="{{item.target}}"></add-knowledge-menu>
                     </div>
-                  </div>
                 </div>
                 {% endfor %}
                 </div>
@@ -116,32 +124,39 @@
                   {{link_name.title()}} Of
                   {% endif %}
                 </h2>
-                <div class="row g-3">
+                <div class="d-flex flex-wrap">
                 {% for item in items %}
-                <div class="col-12 col-sm-6 col-lg-4">
-                  <div class="card mb-3" style="width: 300px">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">{{item.source_label}}</h5>
-                        {% if this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
+                <div class="card flex-fill m-1" >
+                    {% if this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
                         {% set depiction = this.graph.value(rdflib.URIRef(item.source), ns.foaf.depiction) %}
-                        <div class="mt-2">
-                            {% if depiction.startswith(config['LOD_PREFIX']) %}
+                        {% if depiction.startswith(config['LOD_PREFIX']) %}
                             <img src="{{url_for('entity.view', uri=rdflib.URIRef(depiction))}}" alt="{{item.source_label}}" class="img-fluid">
-                            {% else %}
+                        {% else %}
                             <img src="{{depiction}}" alt="{{item.source_label}}" class="img-fluid">
-                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    <div class="card-header">
+                        <div class="row align-items-center mt-2">
+                            <div class="col">
+                                <h5 class="card-title">{{item.source_label}}</h5>
+                                {% if item.source_types | length > 0 %}<p class="text-muted mb-0">
+                                    {% for type in item.source_types %}{{type | label}}{% if not loop.last %}, {% endif %} {% endfor %}
+                                </p>{% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <add-knowledge-menu class="text-muted"
+                                    uri="{{item.source}}">
+                                </add-knowledge-menu>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
-
-                    <div class="card-footer">
-                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='view')}}" class="btn btn-sm btn-outline-primary">View</a>
+                    <div class="card-body">
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='view')}}" class="card-link">View</a>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source), view='explore')}}" class="card-link">Explore</a>
                         {% if this.graph.value(rdflib.URIRef(item.source), ns.whyis.hasFileID) %}
-                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source))}}" class="btn btn-sm btn-outline-primary">Download</a>
+                        <a href="{{url_for('entity.view', uri=rdflib.URIRef(item.source))}}" class="card-link">Download</a>
                         {% endif %}
-                        <add-knowledge-menu uri="{{item.source}}"></add-knowledge-menu>
                     </div>
-                  </div>
                 </div>
                 {% endfor %}
                 </div>
@@ -151,5 +166,5 @@
       </div>
     </div>
 
-{{ vue_upload_button_tab_modal(this) }}
+    {{ vue_upload_button_tab_modal(this, show_link=False) }}
 {% endblock %}

@@ -203,6 +203,7 @@ be managed and used.''',
         'xlrd==2.0.1',
         'werkzeug==2.0.3',
         'Flask-Caching==1.10.1',
+        'Flask-CORS>=3.0.10',
         'pytz'
     ],
     tests_require=[

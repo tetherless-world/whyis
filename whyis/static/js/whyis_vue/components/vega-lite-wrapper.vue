@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div v-if="specValidation.valid" v-bind:id="id"></div>
-    <p v-else-if="specValidation.valid === false">Invalid Vega-Lite specification.</p>
+    <p v-if="specValidation.valid === false">Invalid Vega-Lite specification.</p>
+    <div v-bind:id="id"></div>
   </div>
 </template>
 
@@ -19,7 +19,7 @@ export default {
   data () {
     return {
       id: 'vega-lite',
-      specValidation: {}
+      specValidation: {"valid": true}
     }
   },
   props: {
@@ -54,7 +54,14 @@ export default {
       this.$emit('new-vega-view', result.view)
     },
     validateSpec () {
-      const validation = jsonValidate(this.spec, vegaLiteSchema)
+      // Create a shallow copy of the spec to remove $schema property
+      // Shallow copy is sufficient since we only delete top-level $schema
+      // and don't modify nested properties. The $schema property can cause
+      // jsonValidate to attempt URL construction, which fails
+      const specToValidate = Object.assign({}, this.spec)
+      delete specToValidate.$schema
+      
+      const validation = jsonValidate(specToValidate, vegaLiteSchema)
       if (!validation.valid) {
         console.warn('Invalid spec', validation)
       } else {
@@ -63,10 +70,10 @@ export default {
       this.specValidation = validation
     },
     processSpec () {
-      this.validateSpec()
-      if (this.specValidation.valid) {
+      //this.validateSpec()
+      //if (this.specValidation.valid) {
         this.plotSpec()
-      }
+      //}
     }
   },
   watch: {

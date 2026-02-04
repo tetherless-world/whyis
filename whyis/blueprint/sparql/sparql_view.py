@@ -6,6 +6,35 @@ from whyis.decorator import conditional_login_required
 from setlr import FileLikeFromIter
 
 
+# HTTP headers that should not be forwarded when proxying requests
+# These are hop-by-hop headers or headers that will be set by the requests library
+HOP_BY_HOP_HEADERS = [
+    'Host', 'Content-Length', 'Connection', 'Keep-Alive',
+    'Proxy-Authenticate', 'Proxy-Authorization', 'TE', 'Trailers',
+    'Transfer-Encoding', 'Upgrade'
+]
+
+# Lowercase version for efficient case-insensitive lookups
+HOP_BY_HOP_HEADERS_LOWER = {h.lower() for h in HOP_BY_HOP_HEADERS}
+
+
+def filter_headers_for_proxying(headers):
+    """
+    Filter out hop-by-hop headers that should not be forwarded when proxying.
+    
+    Performs case-insensitive header matching to comply with HTTP standards,
+    which specify that header names are case-insensitive.
+    
+    Args:
+        headers: Flask headers object or dict of headers
+        
+    Returns:
+        dict: Filtered headers suitable for forwarding (with hop-by-hop headers removed)
+    """
+    # Filter headers in a single pass with case-insensitive comparison
+    return {k: v for k, v in headers.items() if k.lower() not in HOP_BY_HOP_HEADERS_LOWER}
+
+
 @sparql_blueprint.route('/sparql', methods=['GET', 'POST'])
 @conditional_login_required
 def sparql_view():
@@ -36,13 +65,23 @@ def sparql_view():
             elif request.method == 'POST':
                 if 'application/sparql-update' in request.headers.get('content-type', ''):
                     return "Update not allowed.", 403
+                
+                # Get the raw data BEFORE accessing request.values.
+                # Flask's request.values consumes the input stream, making the body
+                # unavailable for get_data(). By calling get_data() first, we preserve
+                # the raw body, and can then safely access request.values.
+                raw_data = request.get_data()
+                
                 if 'update' in request.values:
                     return "Update not allowed.", 403
                 
+                # Filter headers for proxying
+                headers = filter_headers_for_proxying(request.headers)
+                print (raw_data)
                 req = current_app.db.store.raw_sparql_request(
                     method='POST',
-                    headers=dict(request.headers),
-                    data=request.get_data()
+                    headers=headers,
+                    data=raw_data
                 )
         except NotImplementedError as e:
             # Local stores don't support proxying - return error
@@ -52,8 +91,9 @@ def sparql_view():
             current_app.logger.error(f"SPARQL request failed: {str(e)}")
             return f"SPARQL request failed: {str(e)}", 500
     else:
-        # Fallback for stores without raw_sparql_request (should not happen)
-        # This is the old behavior - direct HTTP request without authentication
+        # Fallback for stores without raw_sparql_request (should not happen in practice)
+        # This path uses requests library directly without authentication support
+        # Modern stores should implement raw_sparql_request for proper auth handling
         if request.method == 'GET':
             headers = {}
             headers.update(request.headers)
@@ -64,10 +104,23 @@ def sparql_view():
         elif request.method == 'POST':
             if 'application/sparql-update' in request.headers.get('content-type', ''):
                 return "Update not allowed.", 403
+            
+            # Get raw data before accessing request.values to preserve request body.
+            # Flask's request.values consumes the input stream, making the body
+            # unavailable for get_data(). By calling get_data() first, we preserve
+            # the raw body, and can then safely access request.values.
+            raw_data = request.get_data()
+            
             if 'update' in request.values:
                 return "Update not allowed.", 403
+            
+            # Filter headers for proxying
+            headers = filter_headers_for_proxying(request.headers)
+            
+            print(raw_data)
+            # Send raw_data (bytes) not request.values (dict) to preserve exact form encoding
             req = requests.post(current_app.db.store.query_endpoint,
-                                headers=request.headers, data=request.values, stream=True)
+                                headers=headers, data=raw_data, stream=True)
     
     # Return the response
     response = Response(FileLikeFromIter(req.iter_content()),

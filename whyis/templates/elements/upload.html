@@ -85,11 +85,13 @@
 {% endmacro %}
 
 
-{% macro vue_upload_button_tab_modal(resource) %}
+{% macro vue_upload_button_tab_modal(resource, show_link=True) %}
 {% if g.current_user and g.current_user.is_authenticated %}
+{% if show_link %}
 <a class="nav-link" href="#" aria-label="Upload file for this entity" title="Upload file for this entity." data-bs-toggle="modal" data-bs-target="#vueUploadTabModal">
     Upload
 </a>
+{% endif %}
 
 <div class="modal fade" id="vueUploadTabModal" tabindex="-1" role="dialog" aria-labelledby="vueUploadTabModalLabel">
   <div class="modal-dialog" role="document">

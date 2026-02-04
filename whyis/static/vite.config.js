@@ -16,13 +16,14 @@ export default defineConfig({
 	"process.env": {},
     },
     build: {
-	lib: {
-	    // Could also be a dictionary or array of multiple entry points
-	    entry: resolve(__dirname, 'js/whyis_vue/main.js'),
-	    name: 'whyis',
-	    // the proper extensions will be added
-	    fileName: 'whyis',
-	},
+		sourcemap: true,
+		lib: {
+			// Could also be a dictionary or array of multiple entry points
+			entry: resolve(__dirname, 'js/whyis_vue/main.js'),
+			name: 'whyis',
+			// the proper extensions will be added
+			fileName: 'whyis',
+		},
     },
     plugins: [
 	vue()
