@@ -1,99 +1,128 @@
 <div class="vega-editor-container">
-  <div class="viz-dark-loading" v-if="loading">
-    <spinner :loading="loading" />
-  </div>
-  <split-pane :min-percent='paneResize' v-on:resize="resize" :default-percent='50' split="vertical">
-    <template slot="paneL">
-      <div class="">
-        <div class="viz-editor-tabs" @click="showTabNavigation">
-          <div class="viz-editor-tabs-item" id="showtabs" :style="!showAllTabBtn ? showAllTabs : false">
-            <span class="material-icons">
-              double_arrow
-            </span>
-          </div>
-          <div class="viz-editor-tabs-item tabselected" id="sparql" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
-            Sparql
-            <span class="visually-hidden">Enter Query</span>
-          </div>
-          <div class="viz-editor-tabs-item" id="vegaE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
-            Vega
-            <span class="visually-hidden">Enter Vega Specs</span>
-          </div>
-          <div class="viz-editor-tabs-item" id="saveE" @click="tabNavigation" :style="showAllTabBtn ? showAllTabs : false">
-            {{actionType}}
-            <span class="visually-hidden">{{actionType}}</span>
-          </div>
-        </div>
-        <div class="viz-editor viz-editor-show" id="sparqlc">
-          <yasqe v-if="query"
-            :value="query"
-            :readOnly="queryEditorReadOnly"
-            @input="setQuery"
-            @query-success="onQuerySuccess"
-            @query-error="onQueryError"
-          />
-        </div>
-        <div class="viz-editor" id="vegac">
-          <div id="vega-spec-editor" style="height:100%">
-            <v-jsoneditor v-if="baseSpec"
-              :value="baseSpec"
-              @input="setBaseSpec"
-              :options="specJsonEditorOpts"
-              :error="onSpecJsonError" style="height: 98%">
-            </v-jsoneditor>
-          </div>
-        </div>
-        <div class="viz-editor" id="savec">
-          <form class="title-form" @submit.prevent="saveChart">
-            <div style="display: block; flex: 1">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" name="chart-title" id="chart-title" :value="title" @input="setTitle" placeholder="Title">
-                <label for="chart-title">Title</label>
+    <div class="row">
+      <div class="viz-dark-loading" v-if="loading">
+        <spinner :loading="loading" />
+      </div>    
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="accordion" id="rightPanel">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="query-heading">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#query-collapse" aria-expanded="true" aria-controls="query-collapse">
+                Query
+              </button>
+            </h2>
+            <div id="query-collapse" class="accordion-collapse collapse show" aria-labelledby="query-heading">
+              <div class="accordion-body">
+                <yasqe v-if="query"
+                      style="height: max-content"
+                      :value="query"
+                      :readOnly="queryEditorReadOnly"
+                      @input="setQuery"
+                      @query-success="onQuerySuccess"
+                      @query-error="onQueryError"/>
               </div>
             </div>
-            <div style="display: block;">
-              <div class="form-floating mb-3">
-                <textarea class="form-control" name="chart-description" id="chart-description" :value="description" @input="setDescription" placeholder="Description" style="height: 100px"></textarea>
-                <label for="chart-description">Description</label>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="vega-heading">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#vega-collapse" aria-expanded="true" aria-controls="vega-collapse">
+                Chart Design
+              </button>
+            </h2>
+            <div id="vega-collapse" class="accordion-collapse collapse show" aria-labelledby="vega-heading">
+              <div class="accordion-body">
+                <v-jsoneditor v-if="baseSpec"
+                              height="500px"
+                              :value="baseSpec"
+                              @input="setBaseSpec"
+                              :options="specJsonEditorOpts"
+                              :error="onSpecJsonError">
+                </v-jsoneditor>
               </div>
             </div>
-            <div style="display: block;">
-              <button type="submit" class="btn btn-primary">{{ actionType }} <i class="bi bi-check text-success"></i></button>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="save-heading">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#save-collapse" aria-expanded="false" aria-controls="save-collapse">
+              </button>
+            </h2>
+            <div id="save-collapse" class="accordion-collapse collapse" aria-labelledby="save-heading">
+              <div class="accordion-body">
+                <form class="title-form" @submit.prevent="saveChart">
+                  <div style="display: block; flex: 1">
+                    <div class="form-floating mb-3">
+                      <input type="text" class="form-control" name="chart-title" id="chart-title" :value="title" @input="setTitle" placeholder="Title">
+                      <label for="chart-title">Title</label>
+                    </div>
+                  </div>
+                  <div style="display: block;">
+                    <div class="form-floating mb-3">
+                      <textarea class="form-control" name="chart-description" id="chart-description" :value="description" @input="setDescription" placeholder="Description" style="height: 100px"></textarea>
+                      <label for="chart-description">Description</label>
+                    </div>
+                  </div>
+                  <div style="display: block;">
+                    <button type="submit" class="btn btn-primary">{{ actionType }} <i class="bi bi-check text-success"></i></button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
-    </template>
-    <template slot="paneR">
-      <div v-if="sparqlError">
-        <div class="alert alert-danger">
-          The SPARQL query failed to execute.  Please ensure syntax is valid and try again.
+      <div class="col">
+        <ul class="nav nav-tabs" id="rightTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" 
+                    id="chart-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#chart" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="chart" 
+                    aria-selected="true">
+              Chart
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" 
+                    id="query-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#results" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="results" 
+                    aria-selected="true">
+              Results
+            </button>
+          </li>
+        </ul>
+        <div v-if="sparqlError">
+          <div class="alert alert-danger">
+            The SPARQL query failed to execute.  Please ensure syntax is valid and try again.
+          </div>
         </div>
-      </div>
-      <div v-else>
-        <div style="text-align: right;">
-          <a @click.prevent="previewPane=true"  class="viz-editor-tabs-item" :class="{tabselected:previewPane}">
-            Chart
-            <span class="visually-hidden">Chart Preview</span>
-          </a>
-          <a @click.prevent="previewPane=false" class="viz-editor-tabs-item" :class="{tabselected:previewPane == false}">
-            Table
-            <span class="visually-hidden">Table Preview</span>
-          </a>
-        </div>
-        <div class="vega-container" v-if="previewPane">
-          <keep-alive>
-            <vega-lite :spec="spec" @new-vega-view="onNewVegaView" style="height: 98%"/>
-          </keep-alive>
-        </div>
-        <div style="overflow: scroll;" v-else>
-          <keep-alive>
+        <div class="tab-content" id="rightTabContent">
+          <div 
+            class="tab-pane fade show active"
+            id="chart" 
+            role="tabpanel" 
+            aria-labelledby="chart-tab">
+            <vega-lite :spec="spec" @new-vega-view="onNewVegaView" style="height: max-content"/>
+          </div>
+          <div 
+            class="tab-pane fade show"
+            id="results" 
+            role="tabpanel" 
+            aria-labelledby="results-tab">
             <yasr v-bind:results="results"></yasr>
-          </keep-alive>
+          </div>
         </div>
       </div>
-    </template>
-  </split-pane>
+    </div>
+  </div>
   <!-- Bootstrap floating action button replacement -->
   <div class="position-fixed bottom-0 end-0 m-4">
     <button type="button" class="btn btn-primary rounded-circle p-3" @click.prevent="navBack">
@@ -101,4 +130,3 @@
       <span class="visually-hidden">Go Back</span>
     </button>
   </div>
-</div>

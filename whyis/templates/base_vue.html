@@ -82,7 +82,6 @@
                 {% endif %}
                 <li><a class="dropdown-item" href="{{url_for('sparql_blueprint.sparql_view')}}">Query Data</a></li>
                 <li><a class="dropdown-item" href="{{url_for('entity.view', uri='http://semanticscience.org/resource/Chart', view='new')}}">Create Visualization</a></li>
-                <li><a class="dropdown-item" href="{{url_for('entity.view', uri='http://www.w3.org/ns/dcat#Dataset', view='new')}}">Upload Dataset</a></li>
               </ul>
             </div>
             <a class="btn btn-primary" aria-label="Home" href="{{url_for('entity.view',name='')}}">

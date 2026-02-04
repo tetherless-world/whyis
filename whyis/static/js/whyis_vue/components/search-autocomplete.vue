@@ -8,7 +8,7 @@
           v-model="searchQuery"
           type="text"
           class="form-control form-control-lg"
-          placeholder="Search knowledge base..."
+          placeholder="Search..."
           @input="onInput"
           @focus="onFocus"
           @blur="onBlur"

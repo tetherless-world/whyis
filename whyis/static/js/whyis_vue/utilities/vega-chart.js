@@ -15,10 +15,10 @@ import { querySparql } from './sparql'
 
 const defaultQuery = `
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT ?c (MIN(?class) AS ?class) (COUNT(?x) AS ?count)
+SELECT DISTINCT ?c (MIN(?clabel) AS ?class) (COUNT(?x) AS ?count)
 WHERE {
     ?x a ?c.
-    ?c rdfs:label ?class.
+    ?c rdfs:label ?clabel.
 }
 GROUP BY ?c
 ORDER BY DESC(?count)

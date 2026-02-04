@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div v-if="specValidation.valid" v-bind:id="id"></div>
-    <p v-else-if="specValidation.valid === false">Invalid Vega-Lite specification.</p>
+    <p v-if="specValidation.valid === false">Invalid Vega-Lite specification.</p>
+    <div v-bind:id="id"></div>
   </div>
 </template>
 
@@ -19,7 +19,7 @@ export default {
   data () {
     return {
       id: 'vega-lite',
-      specValidation: {}
+      specValidation: {"valid": true}
     }
   },
   props: {
@@ -70,10 +70,10 @@ export default {
       this.specValidation = validation
     },
     processSpec () {
-      this.validateSpec()
-      if (this.specValidation.valid) {
+      //this.validateSpec()
+      //if (this.specValidation.valid) {
         this.plotSpec()
-      }
+      //}
     }
   },
   watch: {
