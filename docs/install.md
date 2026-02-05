@@ -56,7 +56,7 @@ Whyis commands can be run from inside the container using `docker exec`.
 When you initialize a Whyis KGApp (the cookiecutter project slug directory), it includes two compose files for containerized deployments:
 
 * `docker-compose.yml` for production-style runs (Gunicorn + Redis, Celery, and Fuseki).
-* `docker-compose-dev.yml` for build/development runs (builds from `Dockerfile.dev`); in the template this file is named `docker-compose-dev.yaml`.
+* `docker-compose-dev.yaml` for build/development runs (builds from `Dockerfile.dev`); some projects rename this to `docker-compose-dev.yml`.
 
 For a production-style run, start the stack from your KGApp directory:
 
@@ -64,11 +64,13 @@ For a production-style run, start the stack from your KGApp directory:
 docker compose up -d
 ```
 
-For a build/development run, build and start the dev container (use the `.yaml` filename if you have not renamed it):
+For a build/development run, build and start the dev container:
 
 ```
-docker compose -f docker-compose-dev.yml up --build
+docker compose -f docker-compose-dev.yaml up --build
 ```
+
+If your project uses `docker-compose-dev.yml`, substitute that filename in the command above.
 
 This will expose the application on http://localhost:5000. Use `docker compose down` to stop the stack.
 
