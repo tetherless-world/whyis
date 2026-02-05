@@ -51,6 +51,27 @@ Note that `$PWD` binds the current directory as the working dir in the container
 
 Whyis commands can be run from inside the container using `docker exec`.
 
+## Using docker-compose in a KGApp
+
+When you initialize a Whyis KGApp (the cookiecutter project slug directory), it includes two compose files for containerized deployments:
+
+* `docker-compose.yml` for production-style runs (Gunicorn + Redis, Celery, and Fuseki).
+* `docker-compose-dev.yml` for build/development runs (builds from `Dockerfile.dev`); in the template this file is named `docker-compose-dev.yaml`.
+
+For a production-style run, start the stack from your KGApp directory:
+
+```
+docker compose up -d
+```
+
+For a build/development run, build and start the dev container (use the `.yaml` filename if you have not renamed it):
+
+```
+docker compose -f docker-compose-dev.yml up --build
+```
+
+This will expose the application on http://localhost:5000. Use `docker compose down` to stop the stack.
+
 ## Deploying a kgapp to a Server
 
 If you need to deploy your knowledge graph to a server, copy your kgapp dir to the server, and run the following scripts from within the kgapp dir:
