@@ -1,0 +1,11 @@
+services:
+  whyis-dev:
+    build:
+      dockerfile: Dockerfile.dev
+      context: .
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    ports:
+      - '5000:5000'

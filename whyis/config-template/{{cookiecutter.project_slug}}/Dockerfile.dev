@@ -1,0 +1,5 @@
+FROM tetherlessworld/whyis:latest
+COPY ./requirements.txt /requirements.txt
+RUN /opt/venv/bin/pip install -r /requirements.txt
+WORKDIR '/app'
+CMD [ "/opt/venv/bin/whyis", "run", "-h", "0.0.0.0" ]

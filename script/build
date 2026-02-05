@@ -13,4 +13,4 @@ echo ${VERSION}
 python setup.py build
 python setup.py sdist
 
-docker build . --build-arg __version__=${VERSION} -t tetherlessworld/whyis:${VERSION} #  -t tetherlessworld/whyis:latest
+docker build . --build-arg __version__=${VERSION} -t tetherlessworld/whyis:${VERSION} -t tetherlessworld/whyis:latest

@@ -1,0 +1,59 @@
+services:
+  redis:
+    image: "redis:alpine"
+    command: redis-server
+    volumes:
+     - type: bind
+       source: ./run/redis-data
+       target: /var/lib/redis
+  celery:
+    depends_on:
+      - redis
+      - fuseki
+    command: /opt/venv/bin/celery -A wsgi.celery worker -l INFO -c 4 --uid=nobody --gid=nogroup
+    volumes:
+      - type: bind
+        source: .
+        target: /data
+    build:
+      dockerfile: Dockerfile
+      context: .
+  celerybeat:
+    depends_on:
+      - redis
+      - fuseki
+    command: /opt/venv/bin/celery -A wsgi.celery beat -l INFO --uid=nobody --gid=nogroup
+    volumes:
+      - type: bind
+        source: .
+        target: /data
+    build:
+      dockerfile: Dockerfile
+      context: .
+  fuseki:
+    command: /opt/venv/bin/fuseki-server --mem /ds
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - '3030:3030'
+    volumes:
+      - type: bind
+        source: ./run
+        target: /app/run
+  whyis:
+    depends_on:
+      - redis
+      - fuseki
+    stdin_open: true
+    command: /opt/venv/bin/gunicorn wsgi:application --workers ${WEB_CONCURRENCY:-4} --timeout 90 -b :8000
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - type: bind
+        source: .
+        target: /data
+    ports:
+      - '8000:8000'
+      - '5000:5000'
