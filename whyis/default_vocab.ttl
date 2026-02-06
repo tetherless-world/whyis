@@ -587,3 +587,19 @@ whyis:SparqlTemplate a whyis:SparqlTemplateClass.
 sdd:SemanticDataDictionary a owl:Class ;
   rdfs:label "Semantic Data Dictionary";
   whyis:hasView "sdd_view.html".
+
+###  RDF File Loader Classes and Activities
+
+whyis:RDFFile a owl:Class ;
+  rdfs:label "RDF File" ;
+  rdfs:comment "A file containing RDF data that should be loaded into the knowledge graph" .
+
+whyis:LoadedRDFFile a owl:Class ;
+  rdfs:label "Loaded RDF File" ;
+  rdfs:comment "An RDF file that has been successfully loaded into the knowledge graph" ;
+  rdfs:subClassOf whyis:RDFFile .
+
+whyis:RDFFileLoadingActivity a owl:Class ;
+  rdfs:label "RDF File Loading Activity" ;
+  rdfs:comment "An activity that loads an RDF file into the knowledge graph" ;
+  rdfs:subClassOf prov:Activity .
