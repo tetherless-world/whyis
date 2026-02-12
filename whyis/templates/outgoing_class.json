@@ -1,7 +1,33 @@
 {{'''graph ?assertion {
       {
+         # Original class hierarchy relationships  
          ?source rdfs:subClassOf ?target.
          ?source ?link_type ?target.
+      }
+      UNION {
+         # SHACL NodeShape: current class targets other classes
+         ?source sh:targetClass ?target.
+         ?source ?link_type ?target.
+      }
+      UNION {
+         # SHACL PropertyShape: current class has property shapes pointing to other classes
+         ?source sh:property ?propshape.
+         ?propshape sh:class|sh:node ?target.
+         ?propshape ?link_type ?target.
+      }
+      UNION {
+         # Current class used as NodeShape with property shapes pointing to other classes
+         ?source rdf:type sh:NodeShape.
+         ?source sh:property ?propshape.
+         ?propshape sh:class|sh:node ?target.
+         ?propshape ?link_type ?target.
+      }
+      UNION {
+         # Property shapes where current class is referenced via sh:class/sh:node
+         ?nodeshape sh:property ?propshape.
+         ?propshape sh:class|sh:node ?source.
+         ?nodeshape sh:targetClass ?target.
+         ?nodeshape ?link_type ?target.
       }
     }
     bind(1 as ?probability)
