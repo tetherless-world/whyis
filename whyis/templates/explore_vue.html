@@ -1,0 +1,43 @@
+{% extends "base_vue.html" %}
+
+{% block title %}Exploring {{g.get_label(this)}}{% endblock %}
+
+{% block styles %}
+<style>
+  /* Full height layout for knowledge explorer */
+  #explore-app {
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #explore-app .knowledge-explorer-container {
+    flex: 1;
+    min-height: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="explore-app">
+  <div class="knowledge-explorer-container">
+    <knowledge-explorer
+      :start="'{{this.identifier}}'"
+      :title="'Exploring: {{g.get_label(this)}}'">
+    </knowledge-explorer>
+  </div>
+</div>
+
+<script type="module">
+import {createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+import KnowledgeExplorer from '{{ url_for('static', filename='js/whyis_vue/components/knowledge-explorer.vue')}}'
+
+const app = createApp({
+  components: {
+    KnowledgeExplorer
+  }
+});
+
+app.mount('#explore-app');
+</script>
+{% endblock %}

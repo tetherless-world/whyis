@@ -1,0 +1,53 @@
+{% extends "base_vue.html" %}
+
+{% block title %}New {{this.description().value(ns.RDFS.label)}}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" id="new-instance-app">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">Create New Instance</h2>
+    </div>
+    <div class="card-body">
+      <new-instance-form
+        :node-type="'{{this.identifier}}'"
+        :lod-prefix="LOD_PREFIX"
+        :root-url="ROOT_URL"
+        @saved="handleSaved"
+        @cancelled="handleCancelled">
+      </new-instance-form>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {createApp} from '{{ url_for('static', filename='dist/whyis.js')}}'
+import NewInstanceForm from '{{ url_for('static', filename='js/whyis_vue/components/new-instance-form.vue')}}'
+
+const app = createApp({
+  components: {
+    NewInstanceForm
+  },
+  methods: {
+    handleSaved(nanopub) {
+      // Redirect to the new instance view page
+      if (nanopub && nanopub.assertion && nanopub.assertion['@graph']) {
+        const instance = nanopub.assertion['@graph'].find(item => item['@type'] && item['@type'].includes('{{this.identifier}}'));
+        if (instance && instance['@id']) {
+          window.location.href = ROOT_URL + 'view?uri=' + encodeURIComponent(instance['@id']);
+          return;
+        }
+      }
+      // Fallback: redirect to class view
+      window.location.href = ROOT_URL + 'view?uri=' + encodeURIComponent('{{this.identifier}}');
+    },
+    handleCancelled() {
+      // Redirect back to class view
+      window.location.href = ROOT_URL + 'view?uri=' + encodeURIComponent('{{this.identifier}}');
+    }
+  }
+});
+
+app.mount('#new-instance-app');
+</script>
+{% endblock %}
