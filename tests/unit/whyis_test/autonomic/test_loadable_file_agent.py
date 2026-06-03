@@ -100,6 +100,29 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         # Verify output was generated
         self.assertTrue(len(results) > 0)
 
+    def test_jsonld_file_parsing(self):
+        """Test parsing a JSON-LD format RDF file."""
+        self.dry_run = False
+        
+        from whyis.autonomic import LoadableFileAgent
+        
+        # Create a resource
+        np = nanopub.Nanopublication()
+        resource_uri = URIRef("http://example.com/test_jsonld.jsonld")
+        np.assertion.add((resource_uri, RDF.type, whyis.LoadableFile))
+        
+        nanopubs = self.app.nanopub_manager.prepare(np)
+        self.app.nanopub_manager.publish(*nanopubs)
+        
+        agent = LoadableFileAgent()
+        
+        # Mock the file retrieval to return test RDF content
+        with patch.object(agent, '_get_file_content', return_value=TEST_RDF_JSONLD):
+            results = self.run_agent(agent)
+        
+        # Verify output was generated
+        self.assertTrue(len(results) > 0)
+
     def test_custom_input_class(self):
         """Test LoadableFileAgent with a custom input class."""
         self.dry_run = False

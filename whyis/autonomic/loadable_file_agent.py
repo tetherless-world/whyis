@@ -112,6 +112,10 @@ class LoadableFileAgent(UpdateChangeService):
         Retrieve file content from either a local file (via hasFileID) or
         a remote URL.
         
+        Note: URLs are fetched directly from the resource URI. Consider implementing
+        a whitelist of allowed domains if the resource URIs come from untrusted sources
+        to prevent SSRF attacks.
+        
         Args:
             resource_uri: The URI of the resource
             
