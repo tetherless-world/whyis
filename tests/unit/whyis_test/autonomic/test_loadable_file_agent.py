@@ -1,9 +1,9 @@
 import os
-from rdflib import *
+from rdflib import URIRef, RDF, Graph
 from unittest.mock import patch, MagicMock
 
 from whyis import nanopub
-from whyis.namespace import *
+from whyis.namespace import whyis, NS, prov, sio, sioc
 from whyis.test.agent_unit_test_case import AgentUnitTestCase
 
 # Sample RDF content in Turtle format
@@ -70,10 +70,11 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         self.assertTrue(len(results) > 0)
         result_np = results[0]
         
-        # Verify ParsedFile type was added
+        # Verify ParsedFile type was added to the output resource
+        # The output resource has the same identifier as the input resource
         self.assertTrue((resource_uri, RDF.type, whyis.ParsedFile) in result_np.assertion)
         
-        # Verify RDF content was parsed
+        # Verify RDF content was parsed (should have triples from the test RDF)
         self.assertTrue(len(result_np.assertion) > 1)
 
     def test_ntriples_file_parsing(self):
@@ -162,8 +163,8 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         result_np = results[0]
         
         # Verify that an error message was recorded
-        # The error should be in the assertion as sioc:content
-        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, NS.sioc.content))
+        # The error should be in the assertion as sioc:content on the assertion identifier
+        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, sioc.content))
         self.assertTrue(len(error_messages) > 0)
         self.assertIn("Could not retrieve", str(error_messages[0]))
 
@@ -192,6 +193,6 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         result_np = results[0]
         
         # Verify that an error message was recorded
-        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, NS.sioc.content))
+        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, sioc.content))
         self.assertTrue(len(error_messages) > 0)
         self.assertIn("Could not parse", str(error_messages[0]))

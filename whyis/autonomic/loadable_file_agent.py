@@ -10,7 +10,7 @@ from whyis.datastore import create_id
 import flask
 from depot.io.interfaces import StoredFile
 
-from whyis.namespace import *
+from whyis.namespace import whyis, prov, sio
 
 
 class LoadableFileAgent(UpdateChangeService):
@@ -124,12 +124,16 @@ class LoadableFileAgent(UpdateChangeService):
         fileid = resource.value(self.app.NS.whyis.hasFileID)
         if fileid is not None:
             try:
-                with self.app.file_depot.get(fileid.value) as stored_file:
+                stored_file = self.app.file_depot.get(fileid.value)
+                if hasattr(stored_file, 'read'):
                     content = stored_file.read()
-                    # Handle both bytes and string
-                    if isinstance(content, bytes):
-                        return content.decode('utf-8', errors='replace')
-                    return content
+                else:
+                    # If it's already file-like or string
+                    content = stored_file
+                # Handle both bytes and string
+                if isinstance(content, bytes):
+                    return content.decode('utf-8', errors='replace')
+                return content
             except Exception as e:
                 logging.error("Error reading local file %s: %s" % (fileid.value, str(e)))
                 return None
