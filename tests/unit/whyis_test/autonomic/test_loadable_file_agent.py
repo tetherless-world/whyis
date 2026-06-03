@@ -1,5 +1,6 @@
 import os
 from rdflib import *
+from unittest.mock import patch, MagicMock
 
 from whyis import nanopub
 from whyis.namespace import *
@@ -32,10 +33,10 @@ TEST_RDF_JSONLD = """
     "ex": "http://example.com/",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
   },
-  "@id": "ex:subject1",
-  "@type": "ex:Thing",
-  "rdfs:label": "Example Subject",
-  "ex:property": "value"
+  "@id": "http://example.com/subject1",
+  "@type": "http://example.com/Thing",
+  "http://www.w3.org/2000/01/rdf-schema#label": "Example Subject",
+  "http://example.com/property": "value"
 }
 """
 
@@ -51,7 +52,7 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         
         from whyis.autonomic import LoadableFileAgent
         
-        # Create a resource with a Turtle file
+        # Create a resource and mock file content
         np = nanopub.Nanopublication()
         resource_uri = URIRef("http://example.com/test_turtle.ttl")
         np.assertion.add((resource_uri, RDF.type, whyis.LoadableFile))
@@ -60,7 +61,10 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         self.app.nanopub_manager.publish(*nanopubs)
         
         agent = LoadableFileAgent()
-        results = self.run_agent(agent)
+        
+        # Mock the file retrieval to return test RDF content
+        with patch.object(agent, '_get_file_content', return_value=TEST_RDF_TURTLE):
+            results = self.run_agent(agent)
         
         # Verify output was generated
         self.assertTrue(len(results) > 0)
@@ -68,6 +72,9 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         
         # Verify ParsedFile type was added
         self.assertTrue((resource_uri, RDF.type, whyis.ParsedFile) in result_np.assertion)
+        
+        # Verify RDF content was parsed
+        self.assertTrue(len(result_np.assertion) > 1)
 
     def test_ntriples_file_parsing(self):
         """Test parsing an N-Triples format RDF file."""
@@ -75,7 +82,7 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         
         from whyis.autonomic import LoadableFileAgent
         
-        # Create a resource with an N-Triples file
+        # Create a resource
         np = nanopub.Nanopublication()
         resource_uri = URIRef("http://example.com/test_ntriples.nt")
         np.assertion.add((resource_uri, RDF.type, whyis.LoadableFile))
@@ -84,7 +91,10 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         self.app.nanopub_manager.publish(*nanopubs)
         
         agent = LoadableFileAgent()
-        results = self.run_agent(agent)
+        
+        # Mock the file retrieval to return test RDF content
+        with patch.object(agent, '_get_file_content', return_value=TEST_RDF_NTRIPLES):
+            results = self.run_agent(agent)
         
         # Verify output was generated
         self.assertTrue(len(results) > 0)
@@ -106,7 +116,10 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         self.app.nanopub_manager.publish(*nanopubs)
         
         agent = LoadableFileAgent(input_class=custom_class)
-        results = self.run_agent(agent)
+        
+        # Mock the file retrieval to return test RDF content
+        with patch.object(agent, '_get_file_content', return_value=TEST_RDF_TURTLE):
+            results = self.run_agent(agent)
         
         # Verify output was generated
         self.assertTrue(len(results) > 0)
@@ -124,8 +137,8 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         # Verify formats are set
         self.assertEqual(agent._formats, formats)
 
-    def test_error_handling(self):
-        """Test that errors are properly handled and reported."""
+    def test_error_handling_missing_file(self):
+        """Test that errors are properly handled for missing files."""
         self.dry_run = False
         
         from whyis.autonomic import LoadableFileAgent
@@ -140,13 +153,45 @@ class LoadableFileAgentTestCase(AgentUnitTestCase):
         
         agent = LoadableFileAgent()
         
-        # The agent should handle the error gracefully
-        # Since the file doesn't exist, we expect an error to be attached
-        # to the resource in the nanopublication
-        try:
+        # Mock the file retrieval to return None (file not found)
+        with patch.object(agent, '_get_file_content', return_value=None):
             results = self.run_agent(agent)
-            # If we get here, check if error was recorded
-            # In the actual implementation, errors are caught and recorded
-        except Exception as e:
-            # This is expected for non-existent files
-            self.assertIn("Could not retrieve", str(e))
+        
+        # Verify that an output was generated
+        self.assertTrue(len(results) > 0)
+        result_np = results[0]
+        
+        # Verify that an error message was recorded
+        # The error should be in the assertion as sioc:content
+        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, NS.sioc.content))
+        self.assertTrue(len(error_messages) > 0)
+        self.assertIn("Could not retrieve", str(error_messages[0]))
+
+    def test_error_handling_invalid_rdf(self):
+        """Test that errors are properly handled for invalid RDF."""
+        self.dry_run = False
+        
+        from whyis.autonomic import LoadableFileAgent
+        
+        # Create a resource
+        np = nanopub.Nanopublication()
+        resource_uri = URIRef("http://example.com/invalid.ttl")
+        np.assertion.add((resource_uri, RDF.type, whyis.LoadableFile))
+        
+        nanopubs = self.app.nanopub_manager.prepare(np)
+        self.app.nanopub_manager.publish(*nanopubs)
+        
+        agent = LoadableFileAgent()
+        
+        # Mock the file retrieval to return invalid RDF content
+        with patch.object(agent, '_get_file_content', return_value="This is not valid RDF content at all!!!"):
+            results = self.run_agent(agent)
+        
+        # Verify that an output was generated
+        self.assertTrue(len(results) > 0)
+        result_np = results[0]
+        
+        # Verify that an error message was recorded
+        error_messages = list(result_np.assertion.objects(result_np.assertion.identifier, NS.sioc.content))
+        self.assertTrue(len(error_messages) > 0)
+        self.assertIn("Could not parse", str(error_messages[0]))

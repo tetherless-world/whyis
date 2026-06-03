@@ -2,6 +2,7 @@ from builtins import str
 import rdflib
 from datetime import datetime
 import logging
+import requests
 
 from .update_change_service import UpdateChangeService
 from whyis.nanopub import Nanopublication
@@ -135,10 +136,9 @@ class LoadableFileAgent(UpdateChangeService):
         
         # Try to fetch from remote URL
         try:
-            import requests
             response = requests.get(str(resource_uri), timeout=30)
             response.raise_for_status()
-            content = response.text if isinstance(response.content, bytes) else response.content
+            content = response.text
             return content
         except Exception as e:
             logging.error("Error fetching remote file from %s: %s" % (resource_uri, str(e)))
@@ -187,8 +187,6 @@ class LoadableFileAgent(UpdateChangeService):
         try:
             g = rdflib.Graph()
             g.parse(data=content, format=format_name, publicID=str(resource_uri))
-            # Verify parsing was successful by serializing
-            g.serialize()
             return g
         except Exception as e:
             logging.debug("Could not parse as %s: %s" % (format_name, str(e)))
