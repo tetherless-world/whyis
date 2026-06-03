@@ -117,13 +117,13 @@ class LoadableFileAgent(UpdateChangeService):
         Returns:
             File content as string or bytes, or None if retrieval fails
         """
-        resource = flask.current_app.get_resource(resource_uri)
+        resource = self.app.get_resource(resource_uri)
         
         # Check for locally stored file via hasFileID
-        fileid = resource.value(flask.current_app.NS.whyis.hasFileID)
+        fileid = resource.value(self.app.NS.whyis.hasFileID)
         if fileid is not None:
             try:
-                with flask.current_app.file_depot.get(fileid.value) as stored_file:
+                with self.app.file_depot.get(fileid.value) as stored_file:
                     content = stored_file.read()
                     # Handle both bytes and string
                     if isinstance(content, bytes):
