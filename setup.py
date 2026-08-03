@@ -155,6 +155,12 @@ be managed and used.''',
         'requests'
     ],
     install_requires = [
+        # Python 3.12 no longer bundles setuptools, and setuptools>=81 has
+        # removed pkg_resources. Several pinned dependencies (e.g.
+        # Flask-Security 3.0.0) still import pkg_resources, so pin to a
+        # setuptools that still ships it. Whyis's own code uses whyis._resources
+        # instead and does not need pkg_resources.
+        'setuptools<81',
         'beautifulsoup4==4.7.1',
         'bibtexparser==1.1.0',
         'celery<6.0.0',

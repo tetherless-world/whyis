@@ -53,7 +53,7 @@ from whyis.namespace import NS
 from whyis.nanopub import NanopublicationManager
 from whyis.authenticator import SingleUserAuthenticator
 # from flask_login.config import EXEMPT_METHODS
-from pkg_resources import resource_filename
+from whyis._resources import resource_filename
 
 rdflib.plugin.register('sparql', Result,
         'rdflib.plugins.sparql.processor', 'SPARQLResult')

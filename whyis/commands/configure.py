@@ -5,7 +5,7 @@ from flask_script import Command
 from base64 import b64encode
 import os
 from cookiecutter.main import cookiecutter
-from pkg_resources import resource_filename, resource_listdir
+from whyis._resources import resource_filename, resource_listdir
 
 try:
     from pip._internal.operations import freeze
