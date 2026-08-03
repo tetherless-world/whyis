@@ -2,6 +2,8 @@
 
 This document provides guidance for GitHub Copilot when working on the Whyis project.
 
+> **Keep instructions in sync.** This file and [`CLAUDE.md`](../CLAUDE.md) (in the repository root) are companion instruction files — one for GitHub Copilot, one for Claude — and share the same project guidance. Whenever you change the guidance in this file, apply the equivalent change to `CLAUDE.md` so both assistants stay aligned. Only the tool-specific framing (title, intro, and this sync note) should differ between them.
+
 ## Project Overview
 
 Whyis is a nano-scale knowledge graph publishing, management, and analysis framework built with Python and Flask. It manages knowledge as nanopublications, which are the smallest publishable units of knowledge graphs with associated provenance and publication information.

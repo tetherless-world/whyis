@@ -1,7 +1,7 @@
 from flask import render_template
 from flask_pluginengine import Plugin as PluginBase
 from flask_pluginengine import PluginBlueprint, current_plugin
-from pkg_resources import resource_exists, resource_stream, resource_filename
+from whyis._resources import resource_exists, resource_stream, resource_filename
 import rdflib
 
 class Listener:

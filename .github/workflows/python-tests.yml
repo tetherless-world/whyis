@@ -51,13 +51,14 @@ jobs:
       - name: Install Python dependencies
         timeout-minutes: 15
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip wheel
+          pip install "setuptools<80"
           # Install test dependencies first (lightweight)
           pip install -r requirements-test.txt
           # Install core dependencies needed for unit tests (without full whyis package)
           # Use --no-deps where possible to avoid dependency resolution loops
           pip install rdflib rdflib-jsonld Flask Flask-Security-Too Flask-Script Flask-PluginEngine
-          pip install filedepot Markdown
+          pip install filedepot Markdown pytz
           # Optional dependencies - skip if they cause issues
           pip install celery eventlet redislite nltk || true
           pip install sadi setlr sdd2rdf oxrdflib || true

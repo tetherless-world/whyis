@@ -1,4 +1,4 @@
-from pkg_resources import resource_filename, resource_listdir, resource_string
+from whyis._resources import resource_filename, resource_listdir, resource_string
 import subprocess
 import os
 import sys

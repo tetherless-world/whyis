@@ -10,7 +10,7 @@ from re import finditer
 import sys
 import os
 from cookiecutter.main import cookiecutter
-from pkg_resources import resource_filename, resource_listdir
+from whyis._resources import resource_filename, resource_listdir
 
 from whyis.config.utils import import_config_module, UnconfiguredAppException
 import json
